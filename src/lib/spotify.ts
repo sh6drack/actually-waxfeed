@@ -1,0 +1,428 @@
+import { prisma } from './prisma'
+
+const SPOTIFY_API_BASE = 'https://api.spotify.com/v1'
+const TOKEN_ENDPOINT = 'https://accounts.spotify.com/api/token'
+
+// Cache durations in milliseconds
+const CACHE_DURATION = {
+  ALBUM: 24 * 60 * 60 * 1000, // 24 hours
+  SEARCH: 60 * 60 * 1000, // 1 hour
+  ARTIST: 7 * 24 * 60 * 60 * 1000, // 7 days
+}
+
+interface SpotifyToken {
+  access_token: string
+  token_type: string
+  expires_in: number
+}
+
+interface SpotifyImage {
+  url: string
+  height: number
+  width: number
+}
+
+interface SpotifyArtist {
+  id: string
+  name: string
+  genres?: string[]
+  images?: SpotifyImage[]
+  popularity?: number
+  external_urls: { spotify: string }
+}
+
+interface SpotifyTrack {
+  id: string
+  name: string
+  track_number: number
+  disc_number: number
+  duration_ms: number
+  external_urls: { spotify: string }
+}
+
+interface SpotifyAlbum {
+  id: string
+  name: string
+  album_type: string
+  release_date: string
+  release_date_precision: string
+  total_tracks: number
+  images: SpotifyImage[]
+  artists: SpotifyArtist[]
+  genres: string[]
+  tracks?: { items: SpotifyTrack[] }
+  external_urls: { spotify: string }
+}
+
+interface SpotifySearchResult {
+  albums: {
+    items: SpotifyAlbum[]
+    total: number
+    offset: number
+    limit: number
+  }
+}
+
+// Token management
+let cachedToken: { token: string; expiresAt: number } | null = null
+
+async function getAccessToken(): Promise<string> {
+  // Return cached token if still valid
+  if (cachedToken && Date.now() < cachedToken.expiresAt - 60000) {
+    return cachedToken.token
+  }
+
+  const clientId = process.env.SPOTIFY_CLIENT_ID
+  const clientSecret = process.env.SPOTIFY_CLIENT_SECRET
+
+  if (!clientId || !clientSecret) {
+    throw new Error('Spotify credentials not configured')
+  }
+
+  const response = await fetch(TOKEN_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
+    },
+    body: 'grant_type=client_credentials',
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to get Spotify access token')
+  }
+
+  const data: SpotifyToken = await response.json()
+
+  cachedToken = {
+    token: data.access_token,
+    expiresAt: Date.now() + data.expires_in * 1000,
+  }
+
+  return cachedToken.token
+}
+
+// Cache helpers
+async function getFromCache<T>(key: string): Promise<T | null> {
+  const cached = await prisma.spotifyCache.findUnique({
+    where: { key },
+  })
+
+  if (!cached || new Date() > cached.expiresAt) {
+    if (cached) {
+      // Clean up expired cache
+      await prisma.spotifyCache.delete({ where: { key } }).catch(() => {})
+    }
+    return null
+  }
+
+  return cached.data as T
+}
+
+async function setCache(key: string, data: unknown, duration: number): Promise<void> {
+  await prisma.spotifyCache.upsert({
+    where: { key },
+    update: {
+      data: data as object,
+      expiresAt: new Date(Date.now() + duration),
+    },
+    create: {
+      key,
+      data: data as object,
+      expiresAt: new Date(Date.now() + duration),
+    },
+  })
+}
+
+// API methods
+export async function searchAlbums(
+  query: string,
+  limit = 20,
+  offset = 0,
+  type: 'album' | 'single' | 'compilation' | 'all' = 'all'
+): Promise<{ albums: SpotifyAlbum[]; total: number }> {
+  const cacheKey = `search:${query}:${limit}:${offset}:${type}`
+  const cached = await getFromCache<SpotifySearchResult>(cacheKey)
+
+  if (cached) {
+    return { albums: cached.albums.items, total: cached.albums.total }
+  }
+
+  const token = await getAccessToken()
+
+  let searchQuery = query
+  if (type !== 'all') {
+    searchQuery = `${query} type:${type}`
+  }
+
+  const response = await fetch(
+    `${SPOTIFY_API_BASE}/search?q=${encodeURIComponent(searchQuery)}&type=album&limit=${limit}&offset=${offset}`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error(`Spotify search failed: ${response.statusText}`)
+  }
+
+  const data: SpotifySearchResult = await response.json()
+  await setCache(cacheKey, data, CACHE_DURATION.SEARCH)
+
+  return { albums: data.albums.items, total: data.albums.total }
+}
+
+export async function getAlbum(spotifyId: string, fetchTracks = true): Promise<SpotifyAlbum> {
+  const cacheKey = `album:${spotifyId}:${fetchTracks}`
+  const cached = await getFromCache<SpotifyAlbum>(cacheKey)
+
+  if (cached) {
+    return cached
+  }
+
+  const token = await getAccessToken()
+
+  const response = await fetch(
+    `${SPOTIFY_API_BASE}/albums/${spotifyId}`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error(`Failed to get album: ${response.statusText}`)
+  }
+
+  const data: SpotifyAlbum = await response.json()
+  await setCache(cacheKey, data, CACHE_DURATION.ALBUM)
+
+  return data
+}
+
+export async function getArtist(spotifyId: string): Promise<SpotifyArtist> {
+  const cacheKey = `artist:${spotifyId}`
+  const cached = await getFromCache<SpotifyArtist>(cacheKey)
+
+  if (cached) {
+    return cached
+  }
+
+  const token = await getAccessToken()
+
+  const response = await fetch(
+    `${SPOTIFY_API_BASE}/artists/${spotifyId}`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error(`Failed to get artist: ${response.statusText}`)
+  }
+
+  const data: SpotifyArtist = await response.json()
+  await setCache(cacheKey, data, CACHE_DURATION.ARTIST)
+
+  return data
+}
+
+// Bulk operations for mass import
+export async function getMultipleAlbums(spotifyIds: string[]): Promise<SpotifyAlbum[]> {
+  // Spotify API allows max 20 albums per request
+  const chunks: string[][] = []
+  for (let i = 0; i < spotifyIds.length; i += 20) {
+    chunks.push(spotifyIds.slice(i, i + 20))
+  }
+
+  const token = await getAccessToken()
+  const results: SpotifyAlbum[] = []
+
+  for (const chunk of chunks) {
+    // Check cache first
+    const uncachedIds: string[] = []
+    for (const id of chunk) {
+      const cached = await getFromCache<SpotifyAlbum>(`album:${id}:true`)
+      if (cached) {
+        results.push(cached)
+      } else {
+        uncachedIds.push(id)
+      }
+    }
+
+    if (uncachedIds.length === 0) continue
+
+    const response = await fetch(
+      `${SPOTIFY_API_BASE}/albums?ids=${uncachedIds.join(',')}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    )
+
+    if (!response.ok) {
+      console.error(`Failed to get albums batch: ${response.statusText}`)
+      continue
+    }
+
+    const data: { albums: SpotifyAlbum[] } = await response.json()
+
+    for (const album of data.albums) {
+      if (album) {
+        results.push(album)
+        await setCache(`album:${album.id}:true`, album, CACHE_DURATION.ALBUM)
+      }
+    }
+
+    // Rate limiting: wait 100ms between batches
+    await new Promise(resolve => setTimeout(resolve, 100))
+  }
+
+  return results
+}
+
+// Import album to database
+export async function importAlbumToDatabase(spotifyAlbum: SpotifyAlbum) {
+  const primaryArtist = spotifyAlbum.artists[0]
+
+  // Get artist details for genres
+  let genres = spotifyAlbum.genres
+  if (genres.length === 0 && primaryArtist) {
+    try {
+      const artist = await getArtist(primaryArtist.id)
+      genres = artist.genres || []
+    } catch {
+      genres = []
+    }
+  }
+
+  // Parse release date
+  let releaseDate: Date
+  const precision = spotifyAlbum.release_date_precision
+  const parts = spotifyAlbum.release_date.split('-')
+
+  if (precision === 'day') {
+    releaseDate = new Date(spotifyAlbum.release_date)
+  } else if (precision === 'month') {
+    releaseDate = new Date(`${parts[0]}-${parts[1]}-01`)
+  } else {
+    releaseDate = new Date(`${parts[0]}-01-01`)
+  }
+
+  // Get image URLs at different sizes
+  const images = spotifyAlbum.images.sort((a, b) => (b.width || 0) - (a.width || 0))
+  const coverArtUrlLarge = images[0]?.url || null
+  const coverArtUrlMedium = images.find(i => (i.width || 0) <= 300)?.url || coverArtUrlLarge
+  const coverArtUrlSmall = images.find(i => (i.width || 0) <= 64)?.url || coverArtUrlMedium
+
+  // Upsert album
+  const album = await prisma.album.upsert({
+    where: { spotifyId: spotifyAlbum.id },
+    update: {
+      title: spotifyAlbum.name,
+      artistName: primaryArtist?.name || 'Unknown Artist',
+      artistSpotifyId: primaryArtist?.id,
+      releaseDate,
+      releaseDatePrecision: precision,
+      coverArtUrl: coverArtUrlLarge,
+      coverArtUrlSmall,
+      coverArtUrlMedium,
+      coverArtUrlLarge,
+      genres,
+      albumType: spotifyAlbum.album_type,
+      totalTracks: spotifyAlbum.total_tracks,
+      spotifyUrl: spotifyAlbum.external_urls.spotify,
+      lastSyncedAt: new Date(),
+    },
+    create: {
+      spotifyId: spotifyAlbum.id,
+      title: spotifyAlbum.name,
+      artistName: primaryArtist?.name || 'Unknown Artist',
+      artistSpotifyId: primaryArtist?.id,
+      releaseDate,
+      releaseDatePrecision: precision,
+      coverArtUrl: coverArtUrlLarge,
+      coverArtUrlSmall,
+      coverArtUrlMedium,
+      coverArtUrlLarge,
+      genres,
+      albumType: spotifyAlbum.album_type,
+      totalTracks: spotifyAlbum.total_tracks,
+      spotifyUrl: spotifyAlbum.external_urls.spotify,
+    },
+  })
+
+  // Upsert tracks if available
+  if (spotifyAlbum.tracks?.items) {
+    for (const track of spotifyAlbum.tracks.items) {
+      await prisma.track.upsert({
+        where: { spotifyId: track.id },
+        update: {
+          name: track.name,
+          trackNumber: track.track_number,
+          discNumber: track.disc_number,
+          durationMs: track.duration_ms,
+          spotifyUrl: track.external_urls.spotify,
+        },
+        create: {
+          spotifyId: track.id,
+          albumId: album.id,
+          name: track.name,
+          trackNumber: track.track_number,
+          discNumber: track.disc_number,
+          durationMs: track.duration_ms,
+          spotifyUrl: track.external_urls.spotify,
+        },
+      })
+    }
+  }
+
+  return album
+}
+
+// Bulk import function for mass album import
+export async function bulkImportAlbums(spotifyIds: string[]): Promise<{
+  imported: number
+  failed: number
+  errors: string[]
+}> {
+  const results = { imported: 0, failed: 0, errors: [] as string[] }
+
+  const albums = await getMultipleAlbums(spotifyIds)
+
+  for (const album of albums) {
+    try {
+      await importAlbumToDatabase(album)
+      results.imported++
+    } catch (error) {
+      results.failed++
+      results.errors.push(`${album.id}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
+  return results
+}
+
+// Search and import - combines search with database import
+export async function searchAndImportAlbums(
+  query: string,
+  limit = 20
+): Promise<{ albums: Awaited<ReturnType<typeof prisma.album.findUnique>>[] }> {
+  const { albums: spotifyAlbums } = await searchAlbums(query, limit)
+
+  const importedAlbums = []
+  for (const spotifyAlbum of spotifyAlbums) {
+    const album = await importAlbumToDatabase(spotifyAlbum)
+    importedAlbums.push(album)
+  }
+
+  return { albums: importedAlbums }
+}
+
+// Clean up expired cache entries
+export async function cleanupExpiredCache(): Promise<number> {
+  const result = await prisma.spotifyCache.deleteMany({
+    where: {
+      expiresAt: { lt: new Date() },
+    },
+  })
+  return result.count
+}

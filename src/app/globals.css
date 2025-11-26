@@ -1,26 +1,136 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --muted: #888888;
+  --border: #222222;
+  --accent: #ffffff;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", Monaco, monospace;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+/* Brutalist style resets */
+* {
+  border-radius: 0 !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+
+/* Focus styles */
+main *:focus {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}
+
+header *:focus {
+  outline: 2px solid black;
+  outline-offset: 2px;
+}
+
+/* Link styles */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:hover {
+  opacity: 0.8;
+}
+
+/* Button base */
+button {
+  cursor: pointer;
+}
+
+/* Custom cursor */
+@media (hover: hover) {
+  * {
+    cursor: none !important;
+  }
+
+  .cursor {
+    --size: 12px;
+    height: var(--size);
+    width: var(--size);
+    border-radius: 50% !important;
+    pointer-events: none;
+    position: fixed;
+    transform: translate(-50%, -50%);
+    z-index: 99999;
+    background: #9b7bbd;
+    mix-blend-mode: difference;
+    transition: width 0.3s, height 0.3s, background-color 0.3s;
+    transition-timing-function: ease-out;
+  }
+
+  .cursor.active {
+    --size: 32px;
+    background-color: #ffffff;
+  }
+}
+
+/* Input styles (dark theme - for main content area) */
+main input, main textarea {
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 0.75rem 1rem;
+  color: var(--foreground);
+  font-family: inherit;
+}
+
+main input:focus, main textarea:focus {
+  border-color: var(--foreground);
+}
+
+/* Rating slider */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border);
+  height: 4px;
+  width: 100%;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--foreground);
+  cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: var(--foreground);
+  cursor: pointer;
+  border: none;
 }
