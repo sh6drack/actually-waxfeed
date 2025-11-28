@@ -4,6 +4,58 @@ import { successResponse, errorResponse } from '@/lib/api-utils'
 
 const GENIUS_ACCESS_TOKEN = process.env.GENIUS_ACCESS_TOKEN
 
+// LRCLIB API for actual lyrics
+interface LrcLibResponse {
+  id: number
+  name: string
+  trackName: string
+  artistName: string
+  albumName: string
+  duration: number
+  instrumental: boolean
+  plainLyrics: string | null
+  syncedLyrics: string | null
+}
+
+async function fetchLrcLib(trackName: string, artistName: string, albumName?: string, duration?: number): Promise<LrcLibResponse | null> {
+  try {
+    // Try exact match first
+    const params = new URLSearchParams({
+      track_name: trackName,
+      artist_name: artistName,
+    })
+    if (albumName) params.append('album_name', albumName)
+    if (duration) params.append('duration', Math.round(duration / 1000).toString())
+
+    const response = await fetch(`https://lrclib.net/api/get?${params}`, {
+      headers: { 'User-Agent': 'Waxfeed/1.0' }
+    })
+
+    if (response.ok) {
+      return await response.json()
+    }
+
+    // If exact match fails, try search
+    const searchResponse = await fetch(
+      `https://lrclib.net/api/search?track_name=${encodeURIComponent(trackName)}&artist_name=${encodeURIComponent(artistName)}`,
+      { headers: { 'User-Agent': 'Waxfeed/1.0' } }
+    )
+
+    if (searchResponse.ok) {
+      const results = await searchResponse.json()
+      if (results && results.length > 0) {
+        // Return first result with lyrics
+        return results.find((r: LrcLibResponse) => r.plainLyrics || r.syncedLyrics) || null
+      }
+    }
+
+    return null
+  } catch (error) {
+    console.error('LRCLIB fetch error:', error)
+    return null
+  }
+}
+
 interface GeniusSearchHit {
   result: {
     id: number
@@ -176,15 +228,66 @@ export async function GET(
       })
     }
 
-    // Search Genius for this track
-    const searchResult = await searchGenius(track.name, track.album.artistName)
+    // Try LRCLIB first for actual lyrics
+    const lrcResult = await fetchLrcLib(
+      track.name,
+      track.album.artistName,
+      track.album.title,
+      track.durationMs
+    )
 
-    if (!searchResult) {
-      // Cache the "not found" result
+    // Also search Genius for metadata
+    const searchResult = await searchGenius(track.name, track.album.artistName)
+    const song = searchResult ? await getGeniusSong(searchResult.result.id) : null
+
+    // If we found lyrics from LRCLIB
+    if (lrcResult && (lrcResult.plainLyrics || lrcResult.syncedLyrics)) {
+      const lyricsText = lrcResult.plainLyrics || lrcResult.syncedLyrics
+
+      // Cache the result
       await prisma.lyrics.create({
         data: {
           trackId: track.id,
-          notFound: true,
+          lyrics: lyricsText,
+          geniusId: searchResult?.result.id.toString(),
+          geniusUrl: searchResult?.result.url,
+          source: 'lrclib',
+          notFound: false,
+        }
+      })
+
+      return successResponse({
+        track: {
+          id: track.id,
+          name: track.name,
+          artistName: track.album.artistName,
+          albumTitle: track.album.title,
+          coverArtUrl: track.album.coverArtUrl,
+        },
+        lyrics: lyricsText,
+        geniusUrl: searchResult?.result.url || null,
+        geniusId: searchResult?.result.id.toString() || null,
+        source: 'lrclib',
+        notFound: false,
+        songDetails: song ? {
+          description: song.description?.plain?.slice(0, 500),
+          releaseDate: song.release_date_for_display,
+          writers: song.writer_artists?.map(w => w.name) || [],
+          producers: song.producer_artists?.map(p => p.name) || [],
+          albumName: song.album?.name,
+        } : null,
+      })
+    }
+
+    // No lyrics found from LRCLIB, but we have Genius metadata
+    if (searchResult) {
+      await prisma.lyrics.create({
+        data: {
+          trackId: track.id,
+          geniusId: searchResult.result.id.toString(),
+          geniusUrl: searchResult.result.url,
+          source: 'genius',
+          notFound: false,
         }
       })
 
@@ -197,22 +300,25 @@ export async function GET(
           coverArtUrl: track.album.coverArtUrl,
         },
         lyrics: null,
-        geniusUrl: null,
-        notFound: true,
+        geniusUrl: searchResult.result.url,
+        geniusId: searchResult.result.id.toString(),
+        source: 'genius',
+        notFound: false,
+        songDetails: song ? {
+          description: song.description?.plain?.slice(0, 500),
+          releaseDate: song.release_date_for_display,
+          writers: song.writer_artists?.map(w => w.name) || [],
+          producers: song.producer_artists?.map(p => p.name) || [],
+          albumName: song.album?.name,
+        } : null,
       })
     }
 
-    // Get full song details
-    const song = await getGeniusSong(searchResult.result.id)
-
-    // Cache the result (we don't fetch the actual lyrics text - just link to Genius)
-    const cached = await prisma.lyrics.create({
+    // Nothing found at all
+    await prisma.lyrics.create({
       data: {
         trackId: track.id,
-        geniusId: searchResult.result.id.toString(),
-        geniusUrl: searchResult.result.url,
-        source: 'genius',
-        notFound: false,
+        notFound: true,
       }
     })
 
@@ -224,18 +330,9 @@ export async function GET(
         albumTitle: track.album.title,
         coverArtUrl: track.album.coverArtUrl,
       },
-      lyrics: null, // We link to Genius rather than store lyrics (copyright)
-      geniusUrl: searchResult.result.url,
-      geniusId: cached.geniusId,
-      source: 'genius',
-      notFound: false,
-      songDetails: song ? {
-        description: song.description?.plain?.slice(0, 500),
-        releaseDate: song.release_date_for_display,
-        writers: song.writer_artists?.map(w => w.name) || [],
-        producers: song.producer_artists?.map(p => p.name) || [],
-        albumName: song.album?.name,
-      } : null,
+      lyrics: null,
+      geniusUrl: null,
+      notFound: true,
     })
   } catch (error) {
     console.error('Error fetching lyrics:', error)

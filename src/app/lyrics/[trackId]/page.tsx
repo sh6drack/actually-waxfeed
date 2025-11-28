@@ -155,54 +155,77 @@ export default function LyricsPage() {
           </div>
         ) : (
           <>
-            {/* Description */}
-            {data.songDetails?.description && (
-              <div className="mb-6 pb-6 border-b border-[#222]">
-                <h2 className="text-sm font-bold text-[#888] uppercase tracking-wide mb-2">
-                  About
-                </h2>
-                <p className="text-sm text-[#ccc] leading-relaxed">
-                  {data.songDetails.description}
-                </p>
+            {/* Actual Lyrics */}
+            {data.lyrics ? (
+              <div className="lyrics-content">
+                <pre className="whitespace-pre-wrap font-sans text-[#e0e0e0] leading-relaxed text-base">
+                  {data.lyrics}
+                </pre>
+                {data.geniusUrl && (
+                  <div className="mt-8 pt-6 border-t border-[#222] flex items-center justify-between">
+                    <p className="text-xs text-[#555]">
+                      Lyrics from LRCLIB
+                    </p>
+                    <a
+                      href={data.geniusUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-[#FFFF64] hover:underline"
+                    >
+                      View on Genius for annotations →
+                    </a>
+                  </div>
+                )}
               </div>
-            )}
+            ) : (
+              <>
+                {/* Description */}
+                {data.songDetails?.description && (
+                  <div className="mb-6 pb-6 border-b border-[#222]">
+                    <h2 className="text-sm font-bold text-[#888] uppercase tracking-wide mb-2">
+                      About
+                    </h2>
+                    <p className="text-sm text-[#ccc] leading-relaxed">
+                      {data.songDetails.description}
+                    </p>
+                  </div>
+                )}
 
-            {/* Link to Genius */}
-            <div className="text-center py-12">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#FFFF64] mb-6">
-                <span className="text-black font-bold text-2xl">G</span>
-              </div>
-              <h2 className="text-xl font-bold mb-2">View Lyrics on Genius</h2>
-              <p className="text-[#888] mb-6 max-w-md mx-auto">
-                Full lyrics, annotations, and song meanings from the Genius community
-              </p>
-              {data.geniusUrl && (
-                <a
-                  href={data.geniusUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 bg-[#FFFF64] text-black px-8 py-3 font-bold hover:bg-[#FFFF80] transition-colors no-underline"
-                >
-                  <span>Open in Genius</span>
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                    />
-                  </svg>
-                </a>
-              )}
-              <p className="text-xs text-[#555] mt-6">
-                We link to Genius to respect copyright
-              </p>
-            </div>
+                {/* Link to Genius when no lyrics available */}
+                <div className="text-center py-12">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#FFFF64] mb-6">
+                    <span className="text-black font-bold text-2xl">G</span>
+                  </div>
+                  <h2 className="text-xl font-bold mb-2">View Lyrics on Genius</h2>
+                  <p className="text-[#888] mb-6 max-w-md mx-auto">
+                    Full lyrics, annotations, and song meanings from the Genius community
+                  </p>
+                  {data.geniusUrl && (
+                    <a
+                      href={data.geniusUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 bg-[#FFFF64] text-black px-8 py-3 font-bold hover:bg-[#FFFF80] transition-colors no-underline"
+                    >
+                      <span>Open in Genius</span>
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                        />
+                      </svg>
+                    </a>
+                  )}
+                </div>
+              </>
+            )}
           </>
         )}
       </div>
