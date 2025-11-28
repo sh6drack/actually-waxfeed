@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma"
 import { ReviewCard } from "@/components/review-card"
 import { AlbumCard } from "@/components/album-card"
 import Link from "next/link"
+import { auth } from "@/lib/auth"
+import { formatDistanceToNow } from "date-fns"
 
 export const dynamic = "force-dynamic"
 
@@ -29,6 +31,54 @@ async function getRecentReviews() {
       },
       _count: {
         select: { replies: true },
+      },
+    },
+  })
+}
+
+async function getFriendsActivity(userId: string | undefined) {
+  if (!userId) return []
+
+  // Get users the current user is friends with
+  const friendships = await prisma.friendship.findMany({
+    where: {
+      OR: [
+        { user1Id: userId },
+        { user2Id: userId },
+      ],
+    },
+    select: { user1Id: true, user2Id: true },
+  })
+
+  // Extract friend IDs (the other person in each friendship)
+  const friendIds = friendships.map(f =>
+    f.user1Id === userId ? f.user2Id : f.user1Id
+  )
+
+  if (friendIds.length === 0) return []
+
+  // Get recent reviews from friends
+  return prisma.review.findMany({
+    where: { userId: { in: friendIds } },
+    take: 5,
+    orderBy: { createdAt: "desc" },
+    include: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          image: true,
+          isVerified: true,
+        },
+      },
+      album: {
+        select: {
+          id: true,
+          spotifyId: true,
+          title: true,
+          artistName: true,
+          coverArtUrl: true,
+        },
       },
     },
   })
@@ -62,14 +112,77 @@ async function getStats() {
 }
 
 export default async function Home() {
-  const [reviews, albums, stats] = await Promise.all([
+  const session = await auth()
+  const [reviews, albums, stats, friendsActivity] = await Promise.all([
     getRecentReviews(),
     getTopAlbums(),
     getStats(),
+    getFriendsActivity(session?.user?.id),
   ])
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* Friends Activity - Top Section */}
+      {session && (
+        <section className="mb-8 pb-8 border-b border-[#222]">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold">Friends Activity</h2>
+            <Link href="/following" className="text-sm text-[#888] hover:text-white no-underline">
+              See All →
+            </Link>
+          </div>
+          {friendsActivity.length === 0 ? (
+            <div className="text-center py-6 text-[#888]">
+              <p className="mb-2">No activity from friends yet.</p>
+              <p className="text-sm text-[#666]">Add friends to see their reviews here!</p>
+            </div>
+          ) : (
+            <div className="flex gap-4 overflow-x-auto pb-2">
+              {friendsActivity.map((review) => (
+                <Link
+                  key={review.id}
+                  href={`/album/${review.album.spotifyId || review.album.id}`}
+                  className="flex-shrink-0 w-48 group no-underline"
+                >
+                  <div className="aspect-square bg-[#222] mb-2 overflow-hidden">
+                    {review.album.coverArtUrl ? (
+                      <img
+                        src={review.album.coverArtUrl}
+                        alt={review.album.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-[#666]">
+                        No Cover
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 mb-1">
+                    {review.user.image ? (
+                      <img
+                        src={review.user.image}
+                        alt={review.user.username || ""}
+                        className="w-5 h-5 rounded-full"
+                      />
+                    ) : (
+                      <div className="w-5 h-5 rounded-full bg-[#333]" />
+                    )}
+                    <span className="text-sm text-[#888] truncate">
+                      {review.user.username}
+                    </span>
+                    <span className="text-sm font-bold">{review.rating}/10</span>
+                  </div>
+                  <p className="text-sm truncate">{review.album.title}</p>
+                  <p className="text-xs text-[#666]">
+                    {formatDistanceToNow(new Date(review.createdAt), { addSuffix: true })}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
       {/* Hero */}
       <section className="mb-16">
         {/* Stats - Centered */}

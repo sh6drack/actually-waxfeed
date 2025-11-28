@@ -116,7 +116,7 @@ export function Header() {
           ) : (
             <button
               onClick={() => signIn("google")}
-              className="bg-black text-white px-4 py-2 text-sm font-bold hover:bg-gray-900"
+              className="bg-white text-black px-4 py-2 text-sm font-bold hover:bg-gray-100"
             >
               Sign In
             </button>
