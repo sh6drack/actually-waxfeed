@@ -168,26 +168,22 @@ export default function LyricsPage() {
             )}
 
             {/* Link to Genius */}
-            <div className="text-center py-8">
-              <svg
-                className="w-12 h-12 mx-auto mb-4 text-[#FFFF64]"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <path d="M12.075 2.001c-5.493 0-9.952 4.458-9.952 9.952 0 5.493 4.459 9.952 9.952 9.952s9.951-4.459 9.951-9.952c0-5.494-4.458-9.952-9.951-9.952zm0 18.218c-4.564 0-8.266-3.702-8.266-8.266s3.702-8.266 8.266-8.266 8.266 3.702 8.266 8.266-3.702 8.266-8.266 8.266z" />
-                <path d="M13.703 8.138c-.37-.147-.802-.22-1.295-.22-.985 0-1.757.305-2.314.917-.558.612-.837 1.467-.837 2.565 0 1.098.279 1.954.837 2.565.558.612 1.329.917 2.314.917.493 0 .925-.073 1.295-.22.37-.147.696-.355.978-.624l.037-.035V12.19H12.22v1.395h1.483v.633c-.185.125-.396.218-.634.279-.237.06-.502.09-.793.09-.618 0-1.096-.19-1.434-.571-.337-.38-.506-.92-.506-1.617s.169-1.236.506-1.617c.338-.38.816-.571 1.434-.571.291 0 .556.03.793.09.238.061.449.154.634.279v-1.56a3.38 3.38 0 00-.978-.624 3.224 3.224 0 00-.022-.008z" />
-              </svg>
-              <p className="text-[#888] mb-4">
-                View full lyrics and annotations on Genius
+            <div className="text-center py-12">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#FFFF64] mb-6">
+                <span className="text-black font-bold text-2xl">G</span>
+              </div>
+              <h2 className="text-xl font-bold mb-2">View Lyrics on Genius</h2>
+              <p className="text-[#888] mb-6 max-w-md mx-auto">
+                Full lyrics, annotations, and song meanings from the Genius community
               </p>
               {data.geniusUrl && (
                 <a
                   href={data.geniusUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 bg-[#FFFF64] text-black px-6 py-3 font-bold hover:bg-[#FFFF80] transition-colors no-underline"
+                  className="inline-flex items-center gap-2 bg-[#FFFF64] text-black px-8 py-3 font-bold hover:bg-[#FFFF80] transition-colors no-underline"
                 >
-                  <span>View on Genius</span>
+                  <span>Open in Genius</span>
                   <svg
                     className="w-4 h-4"
                     fill="none"
@@ -203,8 +199,8 @@ export default function LyricsPage() {
                   </svg>
                 </a>
               )}
-              <p className="text-xs text-[#666] mt-4">
-                Lyrics provided by Genius. We link rather than display to respect copyright.
+              <p className="text-xs text-[#555] mt-6">
+                We link to Genius to respect copyright
               </p>
             </div>
           </>
