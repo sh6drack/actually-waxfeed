@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import { ReviewCard } from "@/components/review-card"
+import { DefaultAvatar } from "@/components/default-avatar"
 import { auth } from "@/lib/auth"
 import { ProfileActions } from "./profile-actions"
 import Link from "next/link"
@@ -138,9 +139,7 @@ export default async function ProfilePage({ params }: Props) {
               className="w-full h-full object-cover border border-[#333]"
             />
           ) : (
-            <div className="w-full h-full bg-[#222] flex items-center justify-center text-4xl font-bold">
-              {user.username?.[0]?.toUpperCase() || "?"}
-            </div>
+            <DefaultAvatar size="lg" className="w-full h-full" />
           )}
         </div>
 

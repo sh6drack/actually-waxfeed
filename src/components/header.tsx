@@ -4,6 +4,7 @@ import Link from "next/link"
 import dynamic from "next/dynamic"
 import { useSession, signIn, signOut } from "next-auth/react"
 import { useState } from "react"
+import { DefaultAvatar } from "./default-avatar"
 
 const RecordPlayer3D = dynamic(
   () => import("../../logo-versions/record-player-3d").then((mod) => mod.RecordPlayer3D),
@@ -71,9 +72,7 @@ export function Header() {
                     className="w-8 h-8 border border-black"
                   />
                 ) : (
-                  <div className="w-8 h-8 bg-black text-white flex items-center justify-center text-sm font-bold">
-                    {session.user?.name?.[0] || "?"}
-                  </div>
+                  <DefaultAvatar size="sm" />
                 )}
               </button>
 

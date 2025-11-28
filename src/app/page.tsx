@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { ReviewCard } from "@/components/review-card"
 import { AlbumCard } from "@/components/album-card"
+import { DefaultAvatar } from "@/components/default-avatar"
 import Link from "next/link"
 import { auth } from "@/lib/auth"
 import { formatDistanceToNow } from "date-fns"
@@ -165,7 +166,7 @@ export default async function Home() {
                         className="w-5 h-5 rounded-full"
                       />
                     ) : (
-                      <div className="w-5 h-5 rounded-full bg-[#333]" />
+                      <DefaultAvatar size="xs" />
                     )}
                     <span className="text-sm text-[#888] truncate">
                       {review.user.username}
