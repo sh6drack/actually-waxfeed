@@ -84,8 +84,6 @@ export default function NotificationsPage() {
         return `${actorName} sent you a friend request`
       case "friend_accept":
         return `${actorName} accepted your friend request`
-      case "new_follower":
-        return `${actorName} started following you`
       case "friend_review":
         return `${actorName} reviewed "${content.albumTitle}"`
       case "review_trending":
@@ -105,7 +103,6 @@ export default function NotificationsPage() {
         return content.reviewId ? `/review/${content.reviewId}` : "/"
       case "friend_request":
       case "friend_accept":
-      case "new_follower":
       case "friend_review":
         return content.actorId ? `/u/${content.actorName}` : "/"
       default:

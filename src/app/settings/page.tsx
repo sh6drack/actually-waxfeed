@@ -15,7 +15,6 @@ export default function SettingsPage() {
     spotify: "",
     website: "",
   })
-  const [hideFollowerCount, setHideFollowerCount] = useState(false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("")
 
@@ -39,7 +38,6 @@ export default function SettingsPage() {
             spotify: "",
             website: "",
           })
-          setHideFollowerCount(data.data.hideFollowerCount || false)
         }
       } catch (error) {
         console.error("Failed to fetch profile:", error)
@@ -59,7 +57,6 @@ export default function SettingsPage() {
         body: JSON.stringify({
           bio,
           socialLinks,
-          hideFollowerCount,
         }),
       })
 
@@ -165,21 +162,6 @@ export default function SettingsPage() {
             </div>
           </div>
         </div>
-      </section>
-
-      {/* Privacy Section */}
-      <section className="mb-12">
-        <h2 className="text-xl font-bold mb-6">Privacy</h2>
-
-        <label className="flex items-center gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={hideFollowerCount}
-            onChange={(e) => setHideFollowerCount(e.target.checked)}
-            className="w-5 h-5"
-          />
-          <span>Hide follower count on profile</span>
-        </label>
       </section>
 
       {/* Save Button */}

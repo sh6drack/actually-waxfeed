@@ -240,10 +240,29 @@ export default async function AlbumPage({ params }: Props) {
             {album.tracks.map((track, index) => (
               <div
                 key={track.id}
-                className="flex items-center gap-4 px-4 py-3 border-b border-[#222] last:border-b-0 hover:bg-[#111] transition-colors"
+                className="flex items-center gap-4 px-4 py-3 border-b border-[#222] last:border-b-0 hover:bg-[#111] transition-colors group"
               >
                 <span className="text-[#666] text-sm w-6">{index + 1}</span>
                 <span className="flex-1 truncate">{track.name}</span>
+                <Link
+                  href={`/lyrics/${track.id}`}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity text-[#666] hover:text-white p-1"
+                  title="View lyrics"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M4 6h16M4 12h16M4 18h12"
+                    />
+                  </svg>
+                </Link>
                 <span className="text-[#666] text-sm">{formatDuration(track.durationMs)}</span>
               </div>
             ))}

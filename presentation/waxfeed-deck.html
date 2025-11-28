@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, height=1080">
+  <title>WAXFEED - Letterboxd for Music</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      background: #0a0a0a;
+      color: #ededed;
+      font-family: 'Helvetica Neue', 'Inter', Arial, sans-serif;
+    }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      background: #0a0a0a;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 120px;
+      page-break-after: always;
+      position: relative;
+    }
+
+    .slide.left {
+      align-items: flex-start;
+    }
+
+    h1 {
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      font-size: 180px;
+      line-height: 0.85;
+      margin: 0;
+    }
+
+    h2 {
+      font-weight: 300;
+      letter-spacing: -0.02em;
+      font-size: 72px;
+      margin: 0;
+      line-height: 1.1;
+      color: #ccc;
+    }
+
+    h3 {
+      font-weight: 400;
+      font-size: 32px;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.25em;
+      margin-bottom: 60px;
+    }
+
+    p {
+      font-weight: 300;
+      font-size: 32px;
+      line-height: 1.6;
+      color: #666;
+      margin-top: 60px;
+    }
+
+    .big-number {
+      font-weight: 900;
+      font-size: 280px;
+      letter-spacing: -0.05em;
+      line-height: 0.8;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 40px 0;
+    }
+
+    li {
+      font-weight: 300;
+      font-size: 42px;
+      margin: 36px 0;
+      color: #aaa;
+      display: flex;
+      align-items: center;
+    }
+
+    li::before {
+      content: "—";
+      margin-right: 30px;
+      color: #333;
+    }
+
+    li strong {
+      color: #fff;
+      font-weight: 500;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 120px;
+      width: 100%;
+      text-align: left;
+      margin-top: 60px;
+    }
+
+    .grid-item {
+      font-size: 36px;
+      color: #888;
+      line-height: 1.8;
+    }
+
+    .grid-item strong {
+      display: block;
+      font-size: 28px;
+      color: #fff;
+      letter-spacing: 0.1em;
+      margin-bottom: 24px;
+    }
+
+    .year {
+      font-size: 28px;
+      color: #444;
+      margin-top: 80px;
+    }
+
+    .screenshot {
+      padding: 80px;
+    }
+
+    .screenshot img {
+      max-width: 1600px;
+      max-height: 800px;
+      border-radius: 12px;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+    }
+
+    .tagline {
+      font-size: 36px;
+      color: #444;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .copyright {
+      font-size: 22px;
+      color: #333;
+      text-transform: uppercase;
+      letter-spacing: 0.3em;
+      margin-top: 100px;
+    }
+
+    @media print {
+      .slide {
+        page-break-after: always;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Slide 1: Title -->
+<div class="slide">
+  <h1>WAXFEED</h1>
+  <h3 style="margin-top: 40px; margin-bottom: 0;">LETTERBOXD FOR MUSIC</h3>
+  <p class="year">2025</p>
+</div>
+
+<!-- Slide 2: The Opportunity -->
+<div class="slide">
+  <h3>THE OPPORTUNITY</h3>
+  <div class="big-number">$0</div>
+  <h2>spent on social music discovery</h2>
+  <p>Film has Letterboxd. Books has Goodreads. Music has nothing.</p>
+</div>
+
+<!-- Slide 3: The Gap -->
+<div class="slide">
+  <h3>THE GAP</h3>
+  <h1>LETTERBOXD</h1>
+  <h2 style="margin-top: 30px;">15M+ users — $10M+ revenue</h2>
+  <p>No equivalent exists for music</p>
+</div>
+
+<!-- Slide 4: What Exists -->
+<div class="slide left">
+  <h3>WHAT EXISTS</h3>
+  <ul>
+    <li><strong>Spotify</strong> — streaming, no community</li>
+    <li><strong>RateYourMusic</strong> — archaic UX, no social</li>
+    <li><strong>Last.fm</strong> — dead product, scrobbles only</li>
+    <li><strong>Apple Music</strong> — playlists, no reviews</li>
+  </ul>
+  <p>None let you review, rate, and discover through friends</p>
+</div>
+
+<!-- Slide 5: The Insight -->
+<div class="slide">
+  <h3>THE INSIGHT</h3>
+  <h1>Friends > Algorithms</h1>
+  <p>Letterboxd proved this for film</p>
+</div>
+
+<!-- Slide 6: WAXFEED -->
+<div class="slide">
+  <h1>WAXFEED</h1>
+</div>
+
+<!-- Slide 7: The Product -->
+<div class="slide">
+  <h3>THE PRODUCT</h3>
+  <h2>Review albums. Follow friends.<br>Discover music through taste.</h2>
+</div>
+
+<!-- Slide 8: Screenshot -->
+<div class="slide screenshot">
+  <h3>HOME FEED</h3>
+  <img src="screenshots/home.png" alt="Waxfeed Home Feed">
+</div>
+
+<!-- Slide 9: The Core Loop -->
+<div class="slide left">
+  <h3>THE CORE LOOP</h3>
+  <div class="grid">
+    <div class="grid-item">
+      <strong>LISTEN</strong>
+      Stream anywhere<br>Find on Waxfeed
+      <br><br>
+      <strong>DISCOVER</strong>
+      See friends' reviews<br>Find new favorites
+    </div>
+    <div class="grid-item">
+      <strong>REVIEW</strong>
+      Rate 0–10<br>Write your take
+      <br><br>
+      <strong>CONNECT</strong>
+      Build taste profile<br>Earn reputation
+    </div>
+  </div>
+</div>
+
+<!-- Slide 10: Features -->
+<div class="slide left">
+  <h3>FEATURES</h3>
+  <ul>
+    <li>Album reviews with 0–10 ratings</li>
+    <li>Friends-only social feed</li>
+    <li>Curated music lists</li>
+    <li>Genius lyrics integration</li>
+    <li>Personal listening diary</li>
+  </ul>
+</div>
+
+<!-- Slide 11: Wax -->
+<div class="slide">
+  <h3>WAX</h3>
+  <h3 style="color: #666;">SOCIAL CURRENCY</h3>
+  <h2>Give wax to great reviews.<br>Earn wax for taste.</h2>
+  <p>Reputation system that rewards quality</p>
+</div>
+
+<!-- Slide 12: Why Now -->
+<div class="slide left">
+  <h3>WHY NOW</h3>
+  <ul>
+    <li>Streaming killed ownership—people want connection</li>
+    <li>Gen Z craves authenticity over algorithms</li>
+    <li>Music discourse is fragmented across Twitter</li>
+    <li>Letterboxd proved the model</li>
+  </ul>
+  <p>Infrastructure exists. Product doesn't.</p>
+</div>
+
+<!-- Slide 13: The Market -->
+<div class="slide">
+  <h3>THE MARKET</h3>
+  <div class="big-number">616M</div>
+  <h2>paid streaming subscribers</h2>
+  <p>All want to share their taste</p>
+</div>
+
+<!-- Slide 14: Target User -->
+<div class="slide left">
+  <h3>TARGET USER</h3>
+  <h2 style="margin-bottom: 40px;">The music person in every friend group</h2>
+  <ul>
+    <li>Active Letterboxd user</li>
+    <li>Curates playlists for friends</li>
+    <li>Posts album recs in group chats</li>
+    <li>No platform exists for this</li>
+  </ul>
+</div>
+
+<!-- Slide 15: Moat -->
+<div class="slide">
+  <h3>MOAT</h3>
+  <h1 style="font-size: 120px;">SOCIAL GRAPH<br>+ TASTE DATA</h1>
+  <p>Once friends are here, you stay</p>
+</div>
+
+<!-- Slide 16: Business Model -->
+<div class="slide left">
+  <h3>BUSINESS MODEL</h3>
+  <div class="grid">
+    <div class="grid-item">
+      <strong>FREE</strong>
+      Review albums<br>Follow friends<br>Basic lists
+    </div>
+    <div class="grid-item">
+      <strong>PRO — $5/mo</strong>
+      Advanced stats<br>Custom profiles<br>Premium wax
+    </div>
+  </div>
+</div>
+
+<!-- Slide 17: Tech -->
+<div class="slide left">
+  <h3>TECH</h3>
+  <div class="grid">
+    <div class="grid-item">
+      <strong>FRONTEND</strong>
+      Next.js 15<br>React 19<br>Tailwind CSS
+    </div>
+    <div class="grid-item">
+      <strong>BACKEND</strong>
+      Prisma ORM<br>PostgreSQL<br>NextAuth.js
+    </div>
+  </div>
+  <p>Spotify API — Genius API</p>
+</div>
+
+<!-- Slide 18: Roadmap -->
+<div class="slide left">
+  <h3>ROADMAP</h3>
+  <ul>
+    <li>Mobile apps</li>
+    <li>Year in review stats</li>
+    <li>Artist accounts</li>
+    <li>Label partnerships</li>
+    <li>API integrations</li>
+  </ul>
+</div>
+
+<!-- Slide 19: The Vision -->
+<div class="slide">
+  <h3>THE VISION</h3>
+  <h2>The canonical place to discuss,<br>rate, and discover music</h2>
+  <p>Like Letterboxd owns film discourse</p>
+</div>
+
+<!-- Slide 20: The Ask -->
+<div class="slide">
+  <h3>THE ASK</h3>
+  <h1 style="font-size: 100px;">Join early.<br>Shape the culture.</h1>
+  <p>The music community we deserve</p>
+</div>
+
+<!-- Slide 21: Closing -->
+<div class="slide">
+  <h1>WAXFEED</h1>
+  <p class="tagline" style="margin-top: 60px;">YOUR TASTE — YOUR FRIENDS — YOUR FEED</p>
+</div>
+
+<!-- Slide 22: Fin -->
+<div class="slide">
+  <h1>FIN</h1>
+  <p style="font-style: italic; color: #555;">"MUSIC SOUNDS BETTER WITH FRIENDS"</p>
+  <p class="copyright">© 2025 WAXFEED</p>
+</div>
+
+</body>
+</html>

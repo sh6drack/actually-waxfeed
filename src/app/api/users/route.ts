@@ -12,7 +12,6 @@ const updateUserSchema = z.object({
     spotify: z.string().optional(),
     website: z.string().optional(),
   }).optional(),
-  hideFollowerCount: z.boolean().optional(),
   image: z.string().optional(),
 })
 
@@ -41,7 +40,7 @@ export async function GET(request: NextRequest) {
         bio: true,
         isVerified: true,
         _count: {
-          select: { reviews: true, lists: true, followers: true }
+          select: { reviews: true, lists: true, friendshipsAsUser1: true, friendshipsAsUser2: true }
         }
       }
     })
@@ -64,7 +63,7 @@ export async function PATCH(request: NextRequest) {
       return errorResponse(validation.error.errors[0].message, 400)
     }
 
-    const { username, bio, socialLinks, hideFollowerCount, image } = validation.data
+    const { username, bio, socialLinks, image } = validation.data
 
     // Handle username change
     if (username) {
@@ -97,7 +96,6 @@ export async function PATCH(request: NextRequest) {
         username,
         bio,
         socialLinks: socialLinks as object,
-        hideFollowerCount,
         image,
         usernameChangesUsed: username ? { increment: 1 } : undefined,
       },
@@ -113,7 +111,6 @@ export async function PATCH(request: NextRequest) {
         premiumWaxScore: true,
         isPremium: true,
         isVerified: true,
-        hideFollowerCount: true,
         usernameChangesUsed: true,
         createdAt: true,
       }

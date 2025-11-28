@@ -53,16 +53,6 @@ export async function areFriends(userId1: string, userId2: string): Promise<bool
   return !!friendship
 }
 
-// Check if user is following another
-export async function isFollowing(followerId: string, followingId: string): Promise<boolean> {
-  const follow = await prisma.follow.findUnique({
-    where: {
-      followerId_followingId: { followerId, followingId }
-    }
-  })
-  return !!follow
-}
-
 // Update album stats
 export async function updateAlbumStats(albumId: string) {
   const reviews = await prisma.review.findMany({
@@ -113,7 +103,6 @@ export async function createNotification(
     like: 'likes',
     friend_request: 'friendRequests',
     friend_accept: 'friendRequests',
-    new_follower: 'newFollowers',
     friend_review: 'friendReviews',
     review_trending: 'reviewTrending',
   }

@@ -5,10 +5,10 @@ import { Header } from "@/components/header";
 import { CustomCursor } from "@/components/custom-cursor";
 
 export const metadata: Metadata = {
-  title: "Waxfeed",
+  title: "WAXFEED",
   description: "A social music review platform - Letterboxd for music",
   openGraph: {
-    title: "Waxfeed",
+    title: "WAXFEED",
     description: "A social music review platform - Letterboxd for music",
     type: "website",
   },

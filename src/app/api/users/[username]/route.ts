@@ -5,7 +5,6 @@ import {
   errorResponse,
   getAuthenticatedUser,
   isBlocked,
-  isFollowing,
   areFriends
 } from '@/lib/api-utils'
 
@@ -31,7 +30,6 @@ export async function GET(
         premiumWaxScore: true,
         isPremium: true,
         isVerified: true,
-        hideFollowerCount: true,
         pinnedReviewId: true,
         pinnedListId: true,
         createdAt: true,
@@ -39,8 +37,6 @@ export async function GET(
           select: {
             reviews: true,
             lists: true,
-            followers: true,
-            following: true,
             friendshipsAsUser1: true,
             friendshipsAsUser2: true,
           }
@@ -61,8 +57,6 @@ export async function GET(
     const stats = {
       totalReviews: user._count.reviews,
       totalLists: user._count.lists,
-      followers: user.hideFollowerCount ? null : user._count.followers,
-      following: user._count.following,
       friends: user._count.friendshipsAsUser1 + user._count.friendshipsAsUser2,
     }
 
@@ -146,14 +140,12 @@ export async function GET(
 
     // Check relationship with current user
     let relationship = {
-      isFollowing: false,
       isFriend: false,
       hasPendingRequest: false,
     }
 
     if (currentUser && currentUser.id !== user.id) {
-      const [following, friends, pendingRequest] = await Promise.all([
-        isFollowing(currentUser.id, user.id),
+      const [friends, pendingRequest] = await Promise.all([
         areFriends(currentUser.id, user.id),
         prisma.friendRequest.findFirst({
           where: {
@@ -166,7 +158,6 @@ export async function GET(
       ])
 
       relationship = {
-        isFollowing: following,
         isFriend: friends,
         hasPendingRequest: !!pendingRequest,
       }

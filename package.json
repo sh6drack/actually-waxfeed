@@ -38,6 +38,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.0.4",
+    "puppeteer": "^24.31.0",
     "tailwindcss": "^4",
     "tsx": "^4.20.6",
     "typescript": "^5"
