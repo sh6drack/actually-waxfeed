@@ -30,6 +30,7 @@ export async function GET(
         premiumWaxScore: true,
         isPremium: true,
         isVerified: true,
+        usernameChangesUsed: true,
         pinnedReviewId: true,
         pinnedListId: true,
         createdAt: true,

@@ -2,14 +2,18 @@
 
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { DefaultAvatar } from "@/components/default-avatar"
+import { useUploadThing } from "@/lib/uploadthing"
 
 export default function SettingsPage() {
   const { data: session, status, update } = useSession()
   const router = useRouter()
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
+  const [username, setUsername] = useState("")
+  const [originalUsername, setOriginalUsername] = useState("")
+  const [usernameChangesUsed, setUsernameChangesUsed] = useState(0)
+  const [isPremium, setIsPremium] = useState(false)
   const [bio, setBio] = useState("")
   const [image, setImage] = useState<string | null>(null)
   const [socialLinks, setSocialLinks] = useState({
@@ -19,8 +23,20 @@ export default function SettingsPage() {
     website: "",
   })
   const [loading, setLoading] = useState(false)
-  const [uploading, setUploading] = useState(false)
   const [message, setMessage] = useState("")
+
+  const { startUpload, isUploading } = useUploadThing("profilePicture", {
+    onClientUploadComplete: (res) => {
+      if (res?.[0]?.url) {
+        setImage(res[0].url)
+        setMessage("Profile picture updated!")
+        update()
+      }
+    },
+    onUploadError: (error) => {
+      setMessage(error.message || "Upload failed")
+    },
+  })
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -35,6 +51,10 @@ export default function SettingsPage() {
         const res = await fetch(`/api/users/${session.user.username}`)
         const data = await res.json()
         if (data.success) {
+          setUsername(data.data.username || "")
+          setOriginalUsername(data.data.username || "")
+          setUsernameChangesUsed(data.data.usernameChangesUsed || 0)
+          setIsPremium(data.data.isPremium || false)
           setBio(data.data.bio || "")
           setImage(data.data.image || null)
           setSocialLinks(data.data.socialLinks || {
@@ -51,36 +71,11 @@ export default function SettingsPage() {
     fetchProfile()
   }, [session?.user?.username])
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-
-    setUploading(true)
     setMessage("")
-
-    try {
-      const formData = new FormData()
-      formData.append("file", file)
-
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      })
-
-      const data = await res.json()
-
-      if (res.ok) {
-        setImage(data.url)
-        setMessage("Profile picture updated!")
-        await update()
-      } else {
-        setMessage(data.error || "Upload failed")
-      }
-    } catch {
-      setMessage("Upload failed")
-    }
-
-    setUploading(false)
+    await startUpload([file])
   }
 
   const handleSave = async () => {
@@ -88,20 +83,32 @@ export default function SettingsPage() {
     setMessage("")
 
     try {
+      const payload: Record<string, unknown> = {
+        bio,
+        socialLinks,
+      }
+
+      // Only include username if it changed
+      if (username !== originalUsername) {
+        payload.username = username
+      }
+
       const res = await fetch("/api/users", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          bio,
-          socialLinks,
-        }),
+        body: JSON.stringify(payload),
       })
 
       const data = await res.json()
 
       if (res.ok) {
         setMessage("Settings saved!")
+        setOriginalUsername(username)
+        if (data.data?.usernameChangesUsed !== undefined) {
+          setUsernameChangesUsed(data.data.usernameChangesUsed)
+        }
         await update()
+        router.refresh()
       } else {
         setMessage(data.error || "Failed to save")
       }
@@ -111,6 +118,9 @@ export default function SettingsPage() {
 
     setLoading(false)
   }
+
+  const canChangeUsername = usernameChangesUsed === 0 || isPremium
+  const usernameChanged = username !== originalUsername
 
   if (status === "loading") {
     return (
@@ -133,10 +143,7 @@ export default function SettingsPage() {
           <div>
             <label className="block text-sm text-[#888] mb-2">Profile Picture</label>
             <div className="flex items-center gap-4">
-              <div
-                className="relative w-24 h-24 cursor-pointer group"
-                onClick={() => fileInputRef.current?.click()}
-              >
+              <label className="relative w-24 h-24 cursor-pointer group">
                 {image ? (
                   <img
                     src={image}
@@ -162,33 +169,58 @@ export default function SettingsPage() {
                     />
                   </svg>
                 </div>
-                {uploading && (
+                {isUploading && (
                   <div className="absolute inset-0 bg-black/80 flex items-center justify-center">
                     <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   </div>
                 )}
-              </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/gif,image/webp"
-                onChange={handleImageUpload}
-                className="hidden"
-              />
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  onChange={handleImageSelect}
+                  className="hidden"
+                />
+              </label>
               <div className="text-sm text-[#888]">
                 <p>Click to upload</p>
-                <p className="text-xs text-[#666]">Max 5MB • JPEG, PNG, GIF, WebP</p>
+                <p className="text-xs text-[#666]">Max 4MB • JPEG, PNG, GIF, WebP</p>
               </div>
             </div>
           </div>
 
-          {/* Username (display only) */}
+          {/* Username */}
           <div>
             <label className="block text-sm text-[#888] mb-2">Username</label>
-            <p className="text-lg">@{session?.user?.username || "—"}</p>
-            <p className="text-xs text-[#666] mt-1">
-              Username changes cost $5 (first change is free)
-            </p>
+            <div className="flex items-center gap-2">
+              <span className="text-[#666]">@</span>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, ""))}
+                placeholder="username"
+                maxLength={30}
+                className="flex-1 bg-[#111] border border-[#333] px-3 py-2 text-white focus:outline-none focus:border-white transition-colors"
+              />
+            </div>
+            {usernameChanged && !canChangeUsername && (
+              <p className="text-xs text-red-500 mt-1">
+                Username change requires payment ($5) or premium subscription
+              </p>
+            )}
+            {usernameChanged && canChangeUsername && usernameChangesUsed === 0 && (
+              <p className="text-xs text-green-500 mt-1">
+                First username change is free!
+              </p>
+            )}
+            {!usernameChanged && (
+              <p className="text-xs text-[#666] mt-1">
+                {usernameChangesUsed === 0
+                  ? "First username change is free"
+                  : isPremium
+                    ? "Premium members can change username anytime"
+                    : "Username changes cost $5"}
+              </p>
+            )}
           </div>
 
           {/* Bio */}
@@ -258,8 +290,8 @@ export default function SettingsPage() {
       <div className="flex items-center gap-4">
         <button
           onClick={handleSave}
-          disabled={loading}
-          className="bg-white text-black px-6 py-3 font-bold hover:bg-gray-100 transition-colors disabled:opacity-50"
+          disabled={loading || (usernameChanged && !canChangeUsername)}
+          className="bg-white text-black px-6 py-3 font-bold hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? "Saving..." : "Save Changes"}
         </button>

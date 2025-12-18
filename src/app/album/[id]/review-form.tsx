@@ -89,7 +89,7 @@ export function AlbumReviewForm({ albumId, existingReview }: Props) {
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="What did you think of this album?"
-          rows={6}
+          rows={3}
           maxLength={5000}
           disabled={loading}
           className="w-full resize-none"

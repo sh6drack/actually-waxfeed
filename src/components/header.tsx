@@ -1,15 +1,10 @@
 "use client"
 
 import Link from "next/link"
-import dynamic from "next/dynamic"
 import { useSession, signOut } from "next-auth/react"
 import { useState } from "react"
 import { DefaultAvatar } from "./default-avatar"
-
-const RecordPlayer3D = dynamic(
-  () => import("../../logo-versions/record-player-3d").then((mod) => mod.RecordPlayer3D),
-  { ssr: false }
-)
+import { RGBDotsLogo } from "./rgb-dots-logo"
 
 export function Header() {
   const { data: session, status } = useSession()
@@ -27,10 +22,8 @@ export function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-white text-black border-b border-black">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-8">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-3 no-underline">
-          <div className="w-10 h-10">
-            <RecordPlayer3D />
-          </div>
+        <Link href="/" className="flex items-center gap-2 no-underline">
+          <RGBDotsLogo className="h-8" />
           <span className="font-bold text-xl tracking-tight no-underline">WAXFEED</span>
         </Link>
 
