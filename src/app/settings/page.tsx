@@ -2,13 +2,16 @@
 
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
+import { DefaultAvatar } from "@/components/default-avatar"
 
 export default function SettingsPage() {
   const { data: session, status, update } = useSession()
   const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [bio, setBio] = useState("")
+  const [image, setImage] = useState<string | null>(null)
   const [socialLinks, setSocialLinks] = useState({
     instagram: "",
     twitter: "",
@@ -16,6 +19,7 @@ export default function SettingsPage() {
     website: "",
   })
   const [loading, setLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [message, setMessage] = useState("")
 
   useEffect(() => {
@@ -32,6 +36,7 @@ export default function SettingsPage() {
         const data = await res.json()
         if (data.success) {
           setBio(data.data.bio || "")
+          setImage(data.data.image || null)
           setSocialLinks(data.data.socialLinks || {
             instagram: "",
             twitter: "",
@@ -45,6 +50,38 @@ export default function SettingsPage() {
     }
     fetchProfile()
   }, [session?.user?.username])
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    setMessage("")
+
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setImage(data.url)
+        setMessage("Profile picture updated!")
+        await update()
+      } else {
+        setMessage(data.error || "Upload failed")
+      }
+    } catch {
+      setMessage("Upload failed")
+    }
+
+    setUploading(false)
+  }
 
   const handleSave = async () => {
     setLoading(true)
@@ -92,6 +129,59 @@ export default function SettingsPage() {
         <h2 className="text-xl font-bold mb-6">Profile</h2>
 
         <div className="space-y-6">
+          {/* Profile Picture */}
+          <div>
+            <label className="block text-sm text-[#888] mb-2">Profile Picture</label>
+            <div className="flex items-center gap-4">
+              <div
+                className="relative w-24 h-24 cursor-pointer group"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {image ? (
+                  <img
+                    src={image}
+                    alt=""
+                    className="w-full h-full object-cover border border-[#333]"
+                  />
+                ) : (
+                  <DefaultAvatar size="lg" className="w-full h-full" />
+                )}
+                {/* Hover overlay with plus icon */}
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <svg
+                    className="w-8 h-8 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                </div>
+                {uploading && (
+                  <div className="absolute inset-0 bg-black/80 flex items-center justify-center">
+                    <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  </div>
+                )}
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+              <div className="text-sm text-[#888]">
+                <p>Click to upload</p>
+                <p className="text-xs text-[#666]">Max 5MB • JPEG, PNG, GIF, WebP</p>
+              </div>
+            </div>
+          </div>
+
           {/* Username (display only) */}
           <div>
             <label className="block text-sm text-[#888] mb-2">Username</label>
@@ -174,7 +264,7 @@ export default function SettingsPage() {
           {loading ? "Saving..." : "Save Changes"}
         </button>
         {message && (
-          <p className={message.includes("saved") ? "text-green-500" : "text-red-500"}>
+          <p className={message.includes("saved") || message.includes("updated") ? "text-green-500" : "text-red-500"}>
             {message}
           </p>
         )}
