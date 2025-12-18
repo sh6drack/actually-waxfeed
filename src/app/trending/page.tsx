@@ -6,13 +6,10 @@ import Link from "next/link"
 export const dynamic = "force-dynamic"
 
 async function getTrendingAlbums() {
-  // Get albums sorted by review count and average rating
+  // Get Billboard 200 chart albums sorted by rank
   return prisma.album.findMany({
-    where: { totalReviews: { gt: 0 } },
-    orderBy: [
-      { totalReviews: "desc" },
-      { averageRating: "desc" },
-    ],
+    where: { billboardRank: { not: null } },
+    orderBy: { billboardRank: "asc" },
     take: 50,
     select: {
       id: true,
@@ -97,11 +94,11 @@ export default async function TrendingPage() {
     <div className="max-w-7xl mx-auto px-4 py-6 md:py-8">
       <h1 className="text-3xl md:text-4xl font-bold tracking-tighter mb-8 md:mb-12">Trending</h1>
 
-      {/* Top Section: Trending Albums (left) + Hot Reviews (right) */}
+      {/* Top Section: Billboard 200 (left) + Hot Reviews (right) */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 mb-12 md:mb-16">
-        {/* Trending Albums - Left Side */}
+        {/* Billboard 200 - Left Side */}
         <div className="lg:col-span-3">
-          <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Trending Albums</h2>
+          <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Billboard 200</h2>
           {trendingAlbums.length === 0 ? (
             <p className="text-[#888]">No trending albums yet.</p>
           ) : (
@@ -113,7 +110,7 @@ export default async function TrendingPage() {
                   className="flex items-center gap-3 md:gap-4 p-2 md:p-3 hover:bg-[#111] transition-colors no-underline group"
                 >
                   <span className="text-lg md:text-xl font-bold text-[#444] w-6 md:w-8 flex-shrink-0">
-                    {index + 1}
+                    {album.billboardRank}
                   </span>
                   <div className="w-12 h-12 md:w-14 md:h-14 flex-shrink-0 bg-[#222]">
                     {album.coverArtUrl && (
