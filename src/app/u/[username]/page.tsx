@@ -11,9 +11,10 @@ interface Props {
   params: Promise<{ username: string }>
 }
 
-async function getUser(username: string) {
-  return prisma.user.findUnique({
-    where: { username },
+async function getUser(identifier: string) {
+  // Try to find by username first, then by ID
+  let user = await prisma.user.findUnique({
+    where: { username: identifier },
     select: {
       id: true,
       username: true,
@@ -36,6 +37,36 @@ async function getUser(username: string) {
       }
     }
   })
+
+  // If not found by username, try by ID
+  if (!user) {
+    user = await prisma.user.findUnique({
+      where: { id: identifier },
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        image: true,
+        bio: true,
+        socialLinks: true,
+        waxScore: true,
+        premiumWaxScore: true,
+        isPremium: true,
+        isVerified: true,
+        createdAt: true,
+        _count: {
+          select: {
+            reviews: true,
+            lists: true,
+            friendshipsAsUser1: true,
+            friendshipsAsUser2: true,
+          }
+        }
+      }
+    })
+  }
+
+  return user
 }
 
 async function getUserReviews(userId: string) {
@@ -127,11 +158,11 @@ export default async function ProfilePage({ params }: Props) {
   const friendCount = user._count.friendshipsAsUser1 + user._count.friendshipsAsUser2
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-6 md:py-8">
       {/* Profile Header */}
-      <div className="flex items-start gap-8 mb-12 pb-8 border-b border-[#222]">
+      <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-8 mb-8 md:mb-12 pb-6 md:pb-8 border-b border-[#222]">
         {/* Avatar */}
-        <div className="w-32 h-32 flex-shrink-0">
+        <div className="w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0">
           {user.image ? (
             <img
               src={user.image}
@@ -144,9 +175,9 @@ export default async function ProfilePage({ params }: Props) {
         </div>
 
         {/* Info */}
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-bold">@{user.username}</h1>
+        <div className="flex-1 text-center sm:text-left w-full">
+          <div className="flex items-center justify-center sm:justify-start gap-2 sm:gap-3 mb-2 flex-wrap">
+            <h1 className="text-2xl sm:text-3xl font-bold">@{user.username || "user"}</h1>
             {user.isVerified && (
               <span className="text-[#888]" title="Verified">✓</span>
             )}
@@ -156,10 +187,10 @@ export default async function ProfilePage({ params }: Props) {
           </div>
 
           {user.name && <p className="text-[#888] mb-2">{user.name}</p>}
-          {user.bio && <p className="text-sm mb-4 max-w-xl">{user.bio}</p>}
+          {user.bio && <p className="text-sm mb-4 max-w-xl mx-auto sm:mx-0">{user.bio}</p>}
 
           {/* Stats */}
-          <div className="flex gap-6 text-sm mb-4">
+          <div className="flex justify-center sm:justify-start gap-4 sm:gap-6 text-sm mb-4">
             <div>
               <span className="font-bold">{user._count.reviews}</span>
               <span className="text-[#888] ml-1">reviews</span>
@@ -182,6 +213,18 @@ export default async function ProfilePage({ params }: Props) {
             </p>
           )}
 
+          {/* Avg Rating & Join Date - Mobile */}
+          <div className="sm:hidden text-sm text-[#888] mb-4">
+            {avgRating !== null && (
+              <span className="mr-3">
+                Avg: <span className="font-bold text-white">{avgRating.toFixed(1)}</span>
+              </span>
+            )}
+            <span className="text-[#666]">
+              Joined {format(new Date(user.createdAt), "MMM yyyy")}
+            </span>
+          </div>
+
           {/* Actions */}
           {!isOwnProfile && (
             <ProfileActions
@@ -201,8 +244,8 @@ export default async function ProfilePage({ params }: Props) {
           )}
         </div>
 
-        {/* Side Stats */}
-        <div className="text-right text-sm">
+        {/* Side Stats - Desktop only */}
+        <div className="hidden sm:block text-right text-sm flex-shrink-0">
           {avgRating !== null && (
             <div className="mb-2">
               <span className="text-[#888]">Avg rating: </span>
@@ -215,11 +258,11 @@ export default async function ProfilePage({ params }: Props) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
         {/* Reviews */}
-        <div className="lg:col-span-2">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold">Recent Reviews</h2>
+        <div className="lg:col-span-2 order-2 lg:order-1">
+          <div className="flex items-center justify-between mb-4 md:mb-6">
+            <h2 className="text-lg md:text-xl font-bold">Recent Reviews</h2>
           </div>
 
           {reviews.length === 0 ? (
@@ -251,11 +294,11 @@ export default async function ProfilePage({ params }: Props) {
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-8">
+        <div className="space-y-8 order-1 lg:order-2">
           {/* Lists */}
           <section>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold">Lists</h3>
+              <h3 className="text-lg md:text-base font-bold">Lists</h3>
             </div>
 
             {lists.length === 0 ? (

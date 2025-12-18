@@ -3,6 +3,7 @@ import "./globals.css";
 import { SessionProvider } from "@/components/session-provider";
 import { Header } from "@/components/header";
 import { CustomCursor } from "@/components/custom-cursor";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: "WAXFEED",
@@ -28,6 +29,7 @@ export default function RootLayout({
           <main className="pt-16">
             {children}
           </main>
+          <Analytics />
         </SessionProvider>
       </body>
     </html>

@@ -69,48 +69,48 @@ async function importAlbum(album: SpotifyAlbum, rank: number, chartDate: Date): 
   }
 }
 
-// Billboard 200 top albums - November 22, 2025
-const BILLBOARD_ALBUMS = [
-  { rank: 1, title: "The Life Of A Showgirl", artist: "Taylor Swift" },
-  { rank: 2, title: "I'm The Problem", artist: "Morgan Wallen" },
-  { rank: 3, title: "KPop Demon Hunters", artist: "Soundtrack" },
-  { rank: 4, title: "Lux", artist: "Rosalia" },
-  { rank: 5, title: "The Art Of Loving", artist: "Olivia Dean" },
-  { rank: 6, title: "Man's Best Friend", artist: "Sabrina Carpenter" },
-  { rank: 7, title: "SOS", artist: "SZA" },
-  { rank: 8, title: "Am I The Drama?", artist: "Cardi B" },
-  { rank: 9, title: "One Thing At A Time", artist: "Morgan Wallen" },
-  { rank: 10, title: "No Labels", artist: "YEONJUN" },
-  { rank: 11, title: "I Barely Know Her", artist: "sombr" },
-  { rank: 12, title: "Ego Death At A Bachelorette Party", artist: "Hayley Williams" },
-  { rank: 13, title: "You'll Be Alright Kid", artist: "Alex Warren" },
-  { rank: 14, title: "Stick Season", artist: "Noah Kahan" },
-  { rank: 15, title: "Lil Herb", artist: "G Herbo" },
-  { rank: 16, title: "Dangerous: The Double Album", artist: "Morgan Wallen" },
-  { rank: 17, title: "Debi Tirar Mas Fotos", artist: "Bad Bunny" },
-  { rank: 18, title: "Short n' Sweet", artist: "Sabrina Carpenter" },
-  { rank: 19, title: "Hit Me Hard And Soft", artist: "Billie Eilish" },
-  { rank: 20, title: "So Close To What", artist: "Tate McRae" },
-  { rank: 21, title: "30 Number One Hits", artist: "Jason Aldean" },
-  { rank: 22, title: "Take Care", artist: "Drake" },
-  { rank: 23, title: "Rumours", artist: "Fleetwood Mac" },
-  { rank: 24, title: "CHROMAKOPIA", artist: "Tyler, the Creator" },
-  { rank: 25, title: "Christmas", artist: "Michael Buble" },
-  { rank: 26, title: "GNX", artist: "Kendrick Lamar" },
-  { rank: 27, title: "eternal sunshine", artist: "Ariana Grande" },
-  { rank: 28, title: "The Tortured Poets Department", artist: "Taylor Swift" },
-  { rank: 29, title: "GUTS", artist: "Olivia Rodrigo" },
-  { rank: 30, title: "Cowboy Carter", artist: "Beyonce" },
-]
+interface BillboardEntry {
+  rank: number
+  title: string
+  artist: string
+}
+
+async function fetchBillboard200(): Promise<BillboardEntry[]> {
+  // Use billboard-top-100 package to fetch live chart data
+  const { getChart } = await import("billboard-top-100")
+
+  return new Promise((resolve, reject) => {
+    getChart("billboard-200", (err: Error | null, chart: { songs: Array<{ rank: number; title: string; artist: string }> }) => {
+      if (err) {
+        reject(err)
+        return
+      }
+
+      // Get top 50 albums
+      const albums = chart.songs.slice(0, 50).map((song) => ({
+        rank: song.rank,
+        title: song.title,
+        artist: song.artist,
+      }))
+
+      resolve(albums)
+    })
+  })
+}
 
 export async function GET(request: NextRequest) {
-  // Verify cron secret
+  // Verify cron secret (Vercel sends this automatically for cron jobs)
   const authHeader = request.headers.get("authorization")
   if (CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
   try {
+    // Fetch live Billboard 200 chart
+    console.log("Fetching Billboard 200 chart...")
+    const billboardAlbums = await fetchBillboard200()
+    console.log(`Found ${billboardAlbums.length} albums on chart`)
+
     // Clear previous Billboard rankings
     await prisma.album.updateMany({
       where: { billboardRank: { not: null } },
@@ -120,24 +120,38 @@ export async function GET(request: NextRequest) {
     const token = await getSpotifyToken()
     const chartDate = new Date()
     let imported = 0
+    let failed = 0
 
-    for (const { rank, title, artist } of BILLBOARD_ALBUMS) {
+    for (const { rank, title, artist } of billboardAlbums) {
       const spotifyAlbum = await searchAlbum(token, `${title} ${artist}`)
       if (spotifyAlbum) {
         const success = await importAlbum(spotifyAlbum, rank, chartDate)
-        if (success) imported++
+        if (success) {
+          imported++
+        } else {
+          failed++
+        }
+      } else {
+        failed++
       }
+      // Rate limiting for Spotify API
       await new Promise((r) => setTimeout(r, 50))
     }
+
+    console.log(`Billboard import complete: ${imported} imported, ${failed} failed`)
 
     return NextResponse.json({
       success: true,
       imported,
-      total: BILLBOARD_ALBUMS.length,
+      failed,
+      total: billboardAlbums.length,
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
     console.error("Billboard import failed:", error)
-    return NextResponse.json({ error: "Import failed" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Import failed", details: error instanceof Error ? error.message : "Unknown error" },
+      { status: 500 }
+    )
   }
 }
