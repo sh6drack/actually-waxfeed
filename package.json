@@ -21,7 +21,7 @@
     "bcryptjs": "^3.0.3",
     "billboard-top-100": "^2.6.5",
     "date-fns": "^4.1.0",
-    "next": "16.0.4",
+    "next": "^16.0.10",
     "next-auth": "^5.0.0-beta.30",
     "prisma": "^5.22.0",
     "react": "19.2.0",
@@ -41,6 +41,7 @@
     "puppeteer": "^24.31.0",
     "tailwindcss": "^4",
     "tsx": "^4.20.6",
-    "typescript": "^5"
+    "typescript": "^5",
+    "xlsx": "^0.18.5"
   }
 }
