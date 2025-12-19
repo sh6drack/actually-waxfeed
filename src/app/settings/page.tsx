@@ -4,7 +4,6 @@ import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { DefaultAvatar } from "@/components/default-avatar"
-import { useUploadThing } from "@/lib/uploadthing"
 
 export default function SettingsPage() {
   const { data: session, status, update } = useSession()
@@ -16,6 +15,7 @@ export default function SettingsPage() {
   const [isPremium, setIsPremium] = useState(false)
   const [bio, setBio] = useState("")
   const [image, setImage] = useState<string | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
   const [socialLinks, setSocialLinks] = useState({
     instagram: "",
     twitter: "",
@@ -24,19 +24,6 @@ export default function SettingsPage() {
   })
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("")
-
-  const { startUpload, isUploading } = useUploadThing("profilePicture", {
-    onClientUploadComplete: (res) => {
-      if (res?.[0]?.url) {
-        setImage(res[0].url)
-        setMessage("Profile picture updated!")
-        update()
-      }
-    },
-    onUploadError: (error) => {
-      setMessage(error.message || "Upload failed")
-    },
-  })
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -75,7 +62,31 @@ export default function SettingsPage() {
     const file = e.target.files?.[0]
     if (!file) return
     setMessage("")
-    await startUpload([file])
+    setIsUploading(true)
+
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      const data = await res.json()
+
+      if (res.ok && data.url) {
+        setImage(data.url)
+        setMessage("Profile picture updated!")
+        update()
+      } else {
+        setMessage(data.error || "Upload failed")
+      }
+    } catch {
+      setMessage("Upload failed")
+    } finally {
+      setIsUploading(false)
+    }
   }
 
   const handleSave = async () => {

@@ -19,6 +19,8 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Brutalist style resets */
@@ -26,21 +28,23 @@ body {
   border-radius: 0 !important;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
+/* Custom scrollbar - desktop only */
+@media (hover: hover) and (pointer: fine) {
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
 
-::-webkit-scrollbar-track {
-  background: var(--background);
-}
+  ::-webkit-scrollbar-track {
+    background: var(--background);
+  }
 
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-}
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+  }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--muted);
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--muted);
+  }
 }
 
 /* Focus styles */
@@ -69,8 +73,8 @@ button {
   cursor: pointer;
 }
 
-/* Custom cursor */
-@media (hover: hover) {
+/* Custom cursor - desktop with fine pointer only */
+@media (hover: hover) and (pointer: fine) {
   * {
     cursor: none !important;
   }
@@ -96,6 +100,13 @@ button {
   }
 }
 
+/* Hide cursor on touch/mobile devices */
+@media (pointer: coarse), (hover: none) {
+  .cursor {
+    display: none !important;
+  }
+}
+
 /* Input styles (dark theme - for main content area) */
 main input, main textarea {
   background: transparent;
@@ -103,10 +114,23 @@ main input, main textarea {
   padding: 0.75rem 1rem;
   color: var(--foreground);
   font-family: inherit;
+  font-size: 16px; /* Prevents iOS zoom on focus */
 }
 
 main input:focus, main textarea:focus {
   border-color: var(--foreground);
+}
+
+/* Select dropdown styling */
+select {
+  background-color: #111;
+  color: var(--foreground);
+  font-size: 14px;
+}
+
+select option {
+  background-color: #111;
+  color: var(--foreground);
 }
 
 /* Rating slider */
@@ -121,16 +145,64 @@ input[type="range"] {
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   background: var(--foreground);
   cursor: pointer;
 }
 
 input[type="range"]::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   background: var(--foreground);
   cursor: pointer;
   border: none;
+}
+
+/* Mobile touch improvements */
+@media (pointer: coarse) {
+  input[type="range"]::-webkit-slider-thumb {
+    width: 28px;
+    height: 28px;
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* Prevent text selection issues on mobile */
+.no-select {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Safe area insets for notched phones */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Line clamp utilities */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }

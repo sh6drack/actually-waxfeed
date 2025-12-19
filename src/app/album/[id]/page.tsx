@@ -72,121 +72,134 @@ export default async function AlbumPage({ params }: Props) {
   const totalDuration = album.tracks.reduce((sum, t) => sum + t.durationMs, 0)
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      {/* TIER 1: Album Cover + Info (left) | Tracklist (right) */}
-      <div className="flex flex-col lg:flex-row gap-8 mb-8">
-        {/* Left side: Cover + Album Info */}
-        <div className="flex gap-6 lg:flex-1">
-          {/* Album Cover - Large */}
-          <div className="w-48 h-48 md:w-64 md:h-64 flex-shrink-0">
-            <div className="w-full h-full bg-[#222] border border-[#333]">
-              {album.coverArtUrlLarge || album.coverArtUrl ? (
-                <img
-                  src={album.coverArtUrlLarge || album.coverArtUrl || ""}
-                  alt={`${album.title} cover`}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-[#666]">
-                  No Cover
+    <div className="max-w-7xl mx-auto px-4 py-6 md:py-8">
+      {/* Mobile: Stack vertically, Desktop: Side by side */}
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 mb-6 md:mb-8">
+
+        {/* Album Header Section */}
+        <div className="flex-1">
+          {/* Mobile: Cover on top, Info below */}
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+            {/* Album Cover */}
+            <div className="w-full sm:w-48 md:w-56 lg:w-64 flex-shrink-0">
+              <div className="aspect-square w-full max-w-[280px] mx-auto sm:max-w-none sm:mx-0 bg-[#181818]">
+                {album.coverArtUrlLarge || album.coverArtUrl ? (
+                  <img
+                    src={album.coverArtUrlLarge || album.coverArtUrl || ""}
+                    alt={`${album.title} cover`}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-[#666]">
+                    No Cover
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Album Info */}
+            <div className="flex-1 min-w-0 text-center sm:text-left">
+              <p className="text-xs sm:text-sm text-[#888] uppercase tracking-wider mb-1">
+                {album.albumType}
+              </p>
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight mb-1 line-clamp-2">
+                {album.title}
+              </h1>
+              <p className="text-base sm:text-lg text-[#888] mb-3">{album.artistName}</p>
+
+              <div className="flex items-center justify-center sm:justify-start gap-2 text-xs sm:text-sm text-[#666] mb-3 flex-wrap">
+                <span>{format(new Date(album.releaseDate), "MMM d, yyyy")}</span>
+                <span className="text-[#444]">•</span>
+                <span>{album.totalTracks} tracks</span>
+                <span className="text-[#444]">•</span>
+                <span>{formatDuration(totalDuration)}</span>
+              </div>
+
+              {/* Genres */}
+              {album.genres.length > 0 && (
+                <div className="flex flex-wrap justify-center sm:justify-start gap-1.5 mb-3">
+                  {album.genres.slice(0, 3).map((genre) => (
+                    <span
+                      key={genre}
+                      className="px-2 py-0.5 border border-[#333] text-xs text-[#888]"
+                    >
+                      {genre}
+                    </span>
+                  ))}
                 </div>
               )}
-            </div>
-          </div>
 
-          {/* Album Info - Next to cover */}
-          <div className="flex-1 min-w-0">
-            <p className="text-sm text-[#888] uppercase tracking-wide mb-1">
-              {album.albumType}
-            </p>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tighter mb-1 truncate">{album.title}</h1>
-            <p className="text-lg text-[#888] mb-2">{album.artistName}</p>
-
-            <div className="flex items-center gap-2 text-sm text-[#666] mb-2 flex-wrap">
-              <span>{format(new Date(album.releaseDate), "MMMM d, yyyy")}</span>
-              <span>•</span>
-              <span>{album.totalTracks} tracks</span>
-              <span>•</span>
-              <span>{formatDuration(totalDuration)}</span>
-            </div>
-
-            {/* Genres */}
-            {album.genres.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mb-2">
-                {album.genres.slice(0, 4).map((genre) => (
-                  <span
-                    key={genre}
-                    className="px-2 py-0.5 border border-[#333] text-xs"
-                  >
-                    {genre}
+              {/* Rating */}
+              <div className="flex items-center justify-center sm:justify-start gap-3 mb-4">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl sm:text-4xl font-bold">
+                    {album.averageRating !== null ? album.averageRating.toFixed(1) : "—"}
                   </span>
-                ))}
+                  <span className="text-sm text-[#666]">
+                    / 10
+                  </span>
+                </div>
+                <span className="text-sm text-[#666]">
+                  ({album._count.reviews} {album._count.reviews === 1 ? "review" : "reviews"})
+                </span>
               </div>
-            )}
 
-            {/* Rating */}
-            <div className="flex items-center gap-4 mb-3">
-              <div>
-                <span className="text-2xl font-bold">
-                  {album.averageRating !== null ? album.averageRating.toFixed(1) : "—"}
-                </span>
-                <span className="text-sm text-[#888] ml-2">
-                  {album._count.reviews} {album._count.reviews === 1 ? "review" : "reviews"}
-                </span>
-              </div>
+              {/* Rating Distribution - Hidden on smallest screens */}
               {album.ratingDistribution && (
-                <div className="flex items-end gap-0.5 h-6">
+                <div className="hidden sm:flex items-end gap-0.5 h-8 mb-4 justify-center sm:justify-start">
                   {Object.entries(album.ratingDistribution as Record<string, number>).map(([rating, count]) => (
                     <div
                       key={rating}
-                      className="w-1.5 bg-[#333] hover:bg-[#444] transition-colors"
+                      className="w-2 bg-[#333] hover:bg-white transition-colors"
                       style={{
-                        height: `${Math.max(3, (count / Math.max(...Object.values(album.ratingDistribution as Record<string, number>))) * 24)}px`
+                        height: `${Math.max(4, (count / Math.max(...Object.values(album.ratingDistribution as Record<string, number>))) * 32)}px`
                       }}
                       title={`${rating}: ${count} reviews`}
                     />
                   ))}
                 </div>
               )}
-            </div>
 
-            {/* Streaming Links */}
-            {album.spotifyUrl && (
-              <StreamingLinks spotifyUrl={album.spotifyUrl} />
-            )}
+              {/* Streaming Links */}
+              {album.spotifyUrl && (
+                <div className="flex justify-center sm:justify-start">
+                  <StreamingLinks spotifyUrl={album.spotifyUrl} />
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Right side: Tracklist */}
-        <div className="lg:w-96 flex-shrink-0">
-          <h2 className="text-xl font-bold mb-3">Tracklist</h2>
-          <div className="border border-[#222] max-h-64 overflow-y-auto">
+        {/* Tracklist */}
+        <div className="lg:w-80 xl:w-96 flex-shrink-0">
+          <h2 className="text-lg font-bold mb-3">Tracklist</h2>
+          <div className="border border-[#222] max-h-[300px] lg:max-h-[400px] overflow-y-auto">
             {album.tracks.map((track, index) => (
               <div
                 key={track.id}
-                className="flex items-center gap-3 px-4 py-2 border-b border-[#222] last:border-b-0 hover:bg-[#111] transition-colors group"
+                className="flex items-center gap-3 px-3 sm:px-4 py-2.5 border-b border-[#1a1a1a] last:border-b-0 hover:bg-[#111] transition-colors group"
               >
-                <span className="text-[#666] text-sm w-5">{index + 1}</span>
+                <span className="text-[#555] text-sm w-5 flex-shrink-0">{index + 1}</span>
                 <span className="flex-1 truncate text-sm">{track.name}</span>
                 <Link
                   href={`/lyrics/${track.id}`}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity text-[#666] hover:text-white p-1"
+                  className="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-[#666] hover:text-white p-1 flex-shrink-0"
                   title="View lyrics"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h12" />
                   </svg>
                 </Link>
-                <span className="text-[#666] text-sm">{formatDuration(track.durationMs)}</span>
+                <span className="text-[#555] text-sm flex-shrink-0">{formatDuration(track.durationMs)}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* TIER 2: Write a Review - Full Width */}
-      <section className="mb-8 border border-[#222] p-6">
-        <h2 className="text-xl font-bold mb-4">
+      {/* Write a Review */}
+      <section className="mb-6 md:mb-8 border border-[#222] p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-bold mb-4">
           {userReview ? "Your Review" : "Write a Review"}
         </h2>
         {session ? (
@@ -195,11 +208,12 @@ export default async function AlbumPage({ params }: Props) {
             existingReview={userReview}
           />
         ) : (
-          <div className="text-center py-4">
-            <p className="text-[#888] mb-4">Sign in to write a review</p>
+          <div className="text-center py-6 sm:py-8">
+            <p className="text-[#888] mb-4 text-sm sm:text-base">Sign in to write a review</p>
             <Link
               href="/login"
-              className="inline-block bg-white text-black px-6 py-2 font-bold no-underline hover:bg-gray-100"
+              className="inline-block bg-white px-6 py-3 font-bold no-underline hover:bg-gray-100 transition-colors text-sm sm:text-base"
+              style={{ color: '#000' }}
             >
               Sign In
             </Link>
@@ -207,11 +221,11 @@ export default async function AlbumPage({ params }: Props) {
         )}
       </section>
 
-      {/* TIER 3: Reviews - Full Width */}
+      {/* Reviews */}
       <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold">Reviews</h2>
-          <select className="bg-transparent border border-[#333] px-3 py-1 text-sm">
+        <div className="flex items-center justify-between mb-4 gap-4">
+          <h2 className="text-lg sm:text-xl font-bold">Reviews</h2>
+          <select className="bg-[#111] border border-[#333] px-3 py-2 text-sm min-w-[140px]">
             <option value="popular">Most Popular</option>
             <option value="recent">Most Recent</option>
             <option value="highest">Highest Rated</option>
@@ -220,11 +234,11 @@ export default async function AlbumPage({ params }: Props) {
         </div>
 
         {album.reviews.length === 0 ? (
-          <div className="border border-[#222] p-8 text-center">
-            <p className="text-[#888]">No reviews yet. Be the first!</p>
+          <div className="border border-[#222] p-6 sm:p-8 text-center">
+            <p className="text-[#888] text-sm sm:text-base">No reviews yet. Be the first!</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {album.reviews.map((review) => (
               <ReviewCard
                 key={review.id}

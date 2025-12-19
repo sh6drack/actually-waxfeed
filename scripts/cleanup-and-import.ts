@@ -355,39 +355,95 @@ async function importFullAlbum(album: SpotifyAlbum, token: string): Promise<bool
   }
 }
 
-const LEGENDARY_ARTISTS = [
-  "The Beatles", "Led Zeppelin", "Pink Floyd", "The Rolling Stones", "Queen",
-  "David Bowie", "Fleetwood Mac", "Stevie Wonder", "Marvin Gaye", "Prince",
-  "Michael Jackson", "Whitney Houston", "Aretha Franklin", "James Brown",
-  "Nirvana", "Radiohead", "Wu-Tang Clan", "Nas", "The Notorious B.I.G.", "2Pac",
-  "OutKast", "Lauryn Hill", "D'Angelo", "Erykah Badu", "TLC", "Aaliyah",
-  "Daft Punk", "Bjork", "Portishead", "Massive Attack",
-  "Kanye West", "Eminem", "Jay-Z", "Beyonce", "Usher", "Alicia Keys",
-  "Amy Winehouse", "Adele", "Coldplay", "Arctic Monkeys", "The Strokes",
-  "Kendrick Lamar", "J Cole", "Drake", "Travis Scott", "Frank Ocean", "The Weeknd",
-  "SZA", "Tyler the Creator", "Mac Miller", "Post Malone",
-  "Taylor Swift", "Ariana Grande", "Billie Eilish", "Dua Lipa", "Harry Styles",
-  "Bad Bunny", "Rosalia", "WizKid", "Burna Boy", "Tems",
-  "Bob Marley", "Miles Davis", "John Coltrane", "Johnny Cash", "Dolly Parton",
-  "Bob Dylan", "Joni Mitchell", "Neil Young", "U2", "Depeche Mode", "The Cure",
-  "Brent Faiyaz", "Summer Walker", "Giveon", "Daniel Caesar", "H.E.R.", "Kehlani",
-  "21 Savage", "Future", "Young Thug", "Lil Baby", "Gunna", "Lil Uzi Vert",
-  "Playboi Carti", "A$AP Rocky", "Baby Keem", "JID", "Nicki Minaj", "Cardi B",
-  "Megan Thee Stallion", "Doja Cat", "Ice Spice", "Disclosure", "Fred Again",
-  "Kaytranada", "Jamie xx", "Four Tet", "BTS", "BLACKPINK", "NewJeans",
-  "Tame Impala", "Phoebe Bridgers", "Japanese Breakfast", "Charli XCX", "Lana Del Rey",
+// Gen Z Underground & Zeitgeist Artists
+const UNDERGROUND_ARTISTS = [
+  // Hyperpop & Experimental
+  "100 gecs", "Bladee", "Ecco2K", "Yung Lean", "Drain Gang", "SOPHIE",
+  "A.G. Cook", "Caroline Polachek", "Arca", "JPEGMAFIA", "Danny Brown",
+  "Injury Reserve", "clipping.", "Death Grips", "Machine Girl", "Black Dresses",
+
+  // Underground Rap & SoundCloud Era
+  "Yeat", "Ken Carson", "Destroy Lonely", "Lancey Foux", "Lucki", "Cochise",
+  "$NOT", "Trippie Redd", "Ski Mask the Slump God", "Denzel Curry", "Rico Nasty",
+  "slowthai", "Little Simz", "Dave", "Central Cee", "Knucks", "Loyle Carner",
+  "Saba", "Smino", "Noname", "Mick Jenkins", "Joey Bada$$", "Westside Gunn",
+  "Conway the Machine", "Benny the Butcher", "Boldy James", "Larry June",
+  "Vince Staples", "Earl Sweatshirt", "MIKE", "Navy Blue", "Pink Siifu",
+  "Armand Hammer", "billy woods", "Quelle Chris", "Roc Marciano", "Ka",
+
+  // Indie/Alt R&B Underground
+  "Steve Lacy", "Omar Apollo", "Ravyn Lenae", "Jean Dawson", "Dijon",
+  "Emotional Oranges", "Kali Uchis", "Snoh Aalegra", "Jorja Smith", "Mahalia",
+  "Joy Crookes", "Arlo Parks", "Beabadoobee", "Clairo", "Remi Wolf",
+  "Faye Webster", "Soccer Mommy", "Snail Mail", "Alex G", "Adrianne Lenker",
+  "Big Thief", "Mitski", "Weyes Blood", "Angel Olsen", "Aldous Harding",
+
+  // Electronic/Club/DJ
+  "Floating Points", "Burial", "Aphex Twin", "Boards of Canada", "Autechre",
+  "Jai Paul", "James Blake", "Mount Kimbie", "Bonobo", "Ross From Friends",
+  "Mall Grab", "DJ Seinfeld", "Peggy Gou", "Jayda G", "Channel Tres",
+  "Yaeji", "Tkay Maidza", "Shygirl", "PinkPantheress", "ENNY",
+
+  // Latin Underground
+  "Peso Pluma", "Fuerza Regida", "Junior H", "Natanael Cano", "Yahritza y Su Esencia",
+  "Grupo Frontera", "Eslabon Armado", "Carin Leon", "Xavi", "DannyLux",
+  "Rauw Alejandro", "Mora", "Feid", "Jhayco", "Myke Towers", "Eladio Carrion",
+
+  // Afrobeats/Amapiano
+  "Rema", "Ayra Starr", "Asake", "CKay", "Fireboy DML", "Omah Lay",
+  "Odumodublvck", "Cruel Santino", "Amaarae", "Tyla", "Uncle Waffles",
+
+  // K-Pop & Asian Artists
+  "aespa", "IVE", "Le Sserafim", "STAYC", "NMIXX", "Seventeen", "Stray Kids",
+  "ATEEZ", "TXT", "ENHYPEN", "NCT", "EXO", "SHINee", "Red Velvet", "TWICE",
+  "ITZY", "BIBI", "eaJ", "DPR IAN", "DPR LIVE", "DEAN", "Crush", "Zico",
+  "88rising", "Rich Brian", "NIKI", "Joji", "beabadoobee",
+
+  // Rock/Post-Punk/Shoegaze Revival
+  "Turnstile", "IDLES", "Fontaines D.C.", "Dry Cleaning", "black midi",
+  "Black Country, New Road", "Squid", "Shame", "Parquet Courts", "Protomartyr",
+  "Viagra Boys", "Amyl and The Sniffers", "Spiritbox", "Knocked Loose",
+  "Show Me the Body", "Drain", "Scowl", "Militarie Gun", "Fiddlehead",
+  "Wednesday", "MJ Lenderman", "Bartees Strange", "Horsegirl",
+
+  // TikTok/Viral Gen Z
+  "Dominic Fike", "Conan Gray", "Wallows", "The Marias", "Still Woozy",
+  "boy pablo", "Men I Trust", "Khruangbin", "Crumb", "Homeshake",
+  "Current Joys", "Surf Curse", "TV Girl", "The Marías", "Inner Wave",
+  "Vacations", "Goth Babe", "Jakob Ogawa", "No Rome", "BENEE",
+
+  // Bedroom Pop/DIY
+  "Rex Orange County", "Cuco", "Gus Dapperton", "mxmtoon", "girl in red",
+  "Conan Gray", "Holly Humberstone", "Gracie Abrams", "Lizzy McAlpine",
+  "Samia", "spill tab", "Paris Texas", "Momma", "Geese",
+
+  // Jazz/Neo-Soul Revival
+  "Thundercat", "Hiatus Kaiyote", "Moonchild", "Tom Misch", "Masego",
+  "Robert Glasper", "Terrace Martin", "Kamasi Washington", "Shabaka Hutchings",
+  "Nubya Garcia", "Ezra Collective", "Kokoroko", "BADBADNOTGOOD", "Snarky Puppy",
+
+  // More Underground Hip-Hop
+  "Danny Brown", "Zelooperz", "Bruiser Wolf", "Paris Texas", "redveil",
+  "Lil Tecca", "Lil Tjay", "Fivio Foreign", "Sleepy Hallow", "Sheff G",
+  "Pop Smoke", "A Boogie wit da Hoodie", "Don Toliver", "Kali", "Anycia",
 ]
 
-async function importNewAlbums(): Promise<number> {
-  console.log("\n" + "=".repeat(50))
-  console.log("STEP 5: Import New Albums (with tracks)")
-  console.log("=".repeat(50))
+// Legacy Artists (keeping some classics)
+const LEGENDARY_ARTISTS = [
+  "The Beatles", "Pink Floyd", "Radiohead", "Frank Ocean", "Kendrick Lamar",
+  "Kanye West", "Tyler the Creator", "SZA", "The Weeknd", "Travis Scott",
+  "Billie Eilish", "Charli XCX", "Lana Del Rey", "Tame Impala", "Bad Bunny",
+]
+
+async function importArtistAlbums(artists: string[], label: string): Promise<number> {
+  console.log(`\n📀 Importing ${label} (${artists.length} artists)`)
+  console.log("-".repeat(40))
 
   let totalImported = 0
   const token = await getSpotifyToken()
 
-  for (let i = 0; i < LEGENDARY_ARTISTS.length; i++) {
-    const artistName = LEGENDARY_ARTISTS[i]
+  for (let i = 0; i < artists.length; i++) {
+    const artistName = artists[i]
 
     try {
       // Search for artist
@@ -421,7 +477,7 @@ async function importNewAlbums(): Promise<number> {
       }
 
       if ((i + 1) % 20 === 0) {
-        console.log(`\n  Progress: ${i + 1}/${LEGENDARY_ARTISTS.length} artists, ${totalImported} new albums\n`)
+        console.log(`\n  Progress: ${i + 1}/${artists.length} artists, ${totalImported} new albums\n`)
       }
 
       await sleep(BASE_DELAY)
@@ -430,7 +486,24 @@ async function importNewAlbums(): Promise<number> {
     }
   }
 
-  console.log(`\n✓ Imported ${totalImported} new albums with tracks`)
+  console.log(`\n✓ ${label}: ${totalImported} albums imported`)
+  return totalImported
+}
+
+async function importNewAlbums(): Promise<number> {
+  console.log("\n" + "=".repeat(50))
+  console.log("STEP 5: Import New Albums (with tracks)")
+  console.log("=".repeat(50))
+
+  let totalImported = 0
+
+  // Import underground/Gen Z artists first (priority)
+  totalImported += await importArtistAlbums(UNDERGROUND_ARTISTS, "Underground & Gen Z Artists")
+
+  // Then legacy essentials
+  totalImported += await importArtistAlbums(LEGENDARY_ARTISTS, "Essential Classics")
+
+  console.log(`\n✓ Total: ${totalImported} new albums with tracks`)
   return totalImported
 }
 
