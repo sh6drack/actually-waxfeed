@@ -134,6 +134,9 @@ model Album {
   albumType       String    @default("album") // album, single, ep, compilation
   totalTracks     Int       @default(0)
   spotifyUrl      String?
+  appleMusicUrl   String?
+  tidalUrl        String?
+  youtubeMusicUrl String?
 
   // Billboard tracking
   billboardRank   Int?      // Current Billboard 200 position (null if not on chart)

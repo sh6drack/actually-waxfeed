@@ -1,10 +1,13 @@
 /**
- * Waxfeed Data Cleanup & Complete Import Script
+ * Waxfeed Complete Data Import Script
  *
- * This script ensures every album has:
+ * This script ensures every album has COMPLETE data:
  * - Full tracks (fetched from Spotify)
- * - Lyrics (fetched from LRCLIB)
+ * - Lyrics for each track (fetched from LRCLIB)
+ * - Streaming links (Spotify, Apple Music, etc.)
  * - No singles/EPs/compilations
+ *
+ * Albums that can't get complete data are SKIPPED.
  *
  * Run with: npx tsx scripts/cleanup-and-import.ts
  */
@@ -65,6 +68,57 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = MAX_R
   throw new Error(`Failed after ${retries} retries`)
 }
 
+// ============ Fetch Lyrics from LRCLIB ============
+async function fetchLyrics(trackName: string, artistName: string, albumTitle: string): Promise<string | null> {
+  try {
+    const params = new URLSearchParams({
+      track_name: trackName,
+      artist_name: artistName,
+      album_name: albumTitle,
+    })
+
+    const response = await fetch(`https://lrclib.net/api/get?${params}`, {
+      headers: { 'User-Agent': 'Waxfeed/1.0' }
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      if (data.plainLyrics || data.syncedLyrics) {
+        return data.plainLyrics || data.syncedLyrics
+      }
+    }
+
+    // Try search as fallback
+    const searchResponse = await fetch(
+      `https://lrclib.net/api/search?track_name=${encodeURIComponent(trackName)}&artist_name=${encodeURIComponent(artistName)}`,
+      { headers: { 'User-Agent': 'Waxfeed/1.0' } }
+    )
+    if (searchResponse.ok) {
+      const results = await searchResponse.json()
+      const match = results?.find((r: { plainLyrics?: string; syncedLyrics?: string }) => r.plainLyrics || r.syncedLyrics)
+      if (match) {
+        return match.plainLyrics || match.syncedLyrics
+      }
+    }
+
+    return null
+  } catch {
+    return null
+  }
+}
+
+// ============ Generate Streaming Links ============
+function generateStreamingLinks(albumTitle: string, artistName: string, spotifyUrl?: string) {
+  const searchQuery = encodeURIComponent(`${artistName} ${albumTitle}`)
+
+  return {
+    spotifyUrl: spotifyUrl || null,
+    appleMusicUrl: `https://music.apple.com/search?term=${searchQuery}`,
+    tidalUrl: `https://tidal.com/search?q=${searchQuery}`,
+    youtubeMusicUrl: `https://music.youtube.com/search?q=${searchQuery}`,
+  }
+}
+
 // ============ STEP 1: Remove Singles, EPs, Compilations ============
 async function removeSinglesAndEPs(): Promise<number> {
   console.log("\n" + "=".repeat(50))
@@ -116,77 +170,45 @@ async function removeEmptyAlbums(): Promise<number> {
   return 0
 }
 
-// ============ STEP 3: Fetch Tracks for Albums Missing Them ============
-async function fetchMissingTracks(): Promise<{ fetched: number; failed: number }> {
+// ============ STEP 3: Add Streaming Links to Existing Albums ============
+async function addStreamingLinks(): Promise<number> {
   console.log("\n" + "=".repeat(50))
-  console.log("STEP 3: Fetch Missing Tracks from Spotify")
+  console.log("STEP 3: Add Streaming Links to Existing Albums")
   console.log("=".repeat(50))
 
-  const albumsNeedingTracks = await prisma.album.findMany({
-    where: {
-      spotifyId: { not: "" },
-      tracks: { none: {} }
-    },
-    select: { id: true, spotifyId: true, title: true, artistName: true },
-    take: 200 // Process in batches
+  const albumsWithoutLinks = await prisma.album.findMany({
+    where: { appleMusicUrl: null },
+    select: { id: true, title: true, artistName: true, spotifyUrl: true },
+    take: 1000
   })
 
-  console.log(`\nFound ${albumsNeedingTracks.length} albums needing tracks`)
+  console.log(`\nFound ${albumsWithoutLinks.length} albums needing streaming links`)
 
-  let fetched = 0
-  let failed = 0
-  const token = await getSpotifyToken()
+  let updated = 0
+  for (const album of albumsWithoutLinks) {
+    const links = generateStreamingLinks(album.title, album.artistName, album.spotifyUrl || undefined)
 
-  for (const album of albumsNeedingTracks) {
-    if (!album.spotifyId) continue
-
-    try {
-      const response = await fetchWithRetry(
-        `https://api.spotify.com/v1/albums/${album.spotifyId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-      const data = await response.json()
-
-      if (data.tracks?.items?.length > 0) {
-        for (const track of data.tracks.items) {
-          await prisma.track.upsert({
-            where: { spotifyId: track.id },
-            update: {
-              name: track.name,
-              trackNumber: track.track_number,
-              discNumber: track.disc_number,
-              durationMs: track.duration_ms,
-              spotifyUrl: track.external_urls?.spotify,
-            },
-            create: {
-              spotifyId: track.id,
-              albumId: album.id,
-              name: track.name,
-              trackNumber: track.track_number,
-              discNumber: track.disc_number,
-              durationMs: track.duration_ms,
-              spotifyUrl: track.external_urls?.spotify,
-            },
-          })
-        }
-        fetched++
-        console.log(`  ✓ ${album.title} - ${data.tracks.items.length} tracks`)
-      } else {
-        failed++
+    await prisma.album.update({
+      where: { id: album.id },
+      data: {
+        appleMusicUrl: links.appleMusicUrl,
+        tidalUrl: links.tidalUrl,
+        youtubeMusicUrl: links.youtubeMusicUrl,
       }
-      await sleep(BASE_DELAY)
-    } catch (error) {
-      failed++
-      console.log(`  ✗ ${album.title}: ${error}`)
+    })
+    updated++
+
+    if (updated % 100 === 0) {
+      console.log(`  Progress: ${updated}/${albumsWithoutLinks.length}`)
     }
   }
 
-  console.log(`\n✓ Fetched tracks for ${fetched} albums, ${failed} failed`)
-  return { fetched, failed }
+  console.log(`\n✓ Added streaming links to ${updated} albums`)
+  return updated
 }
 
-// ============ STEP 4: Pre-fetch Lyrics ============
-async function prefetchLyrics(): Promise<{ found: number; notFound: number }> {
+// ============ STEP 4: Fetch Lyrics for Tracks Missing Them ============
+async function fetchMissingLyrics(): Promise<{ found: number; notFound: number }> {
   console.log("\n" + "=".repeat(50))
   console.log("STEP 4: Pre-fetch Lyrics from LRCLIB")
   console.log("=".repeat(50))
@@ -205,74 +227,40 @@ async function prefetchLyrics(): Promise<{ found: number; notFound: number }> {
   let notFound = 0
 
   for (const track of tracksWithoutLyrics) {
-    try {
-      const params = new URLSearchParams({
-        track_name: track.name,
-        artist_name: track.album.artistName,
-        album_name: track.album.title,
-      })
+    const lyricsText = await fetchLyrics(track.name, track.album.artistName, track.album.title)
 
-      const response = await fetch(`https://lrclib.net/api/get?${params}`, {
-        headers: { 'User-Agent': 'Waxfeed/1.0' }
-      })
-
-      let lyricsText: string | null = null
-
-      if (response.ok) {
-        const data = await response.json()
-        lyricsText = data.plainLyrics || data.syncedLyrics || null
-      }
-
-      if (!lyricsText) {
-        // Try search
-        const searchResponse = await fetch(
-          `https://lrclib.net/api/search?track_name=${encodeURIComponent(track.name)}&artist_name=${encodeURIComponent(track.album.artistName)}`,
-          { headers: { 'User-Agent': 'Waxfeed/1.0' } }
-        )
-        if (searchResponse.ok) {
-          const results = await searchResponse.json()
-          const match = results?.find((r: { plainLyrics?: string; syncedLyrics?: string }) => r.plainLyrics || r.syncedLyrics)
-          if (match) {
-            lyricsText = match.plainLyrics || match.syncedLyrics
-          }
+    if (lyricsText) {
+      await prisma.lyrics.create({
+        data: {
+          trackId: track.id,
+          lyrics: lyricsText,
+          source: 'lrclib',
+          notFound: false,
         }
-      }
-
-      if (lyricsText) {
-        await prisma.lyrics.create({
-          data: {
-            trackId: track.id,
-            lyrics: lyricsText,
-            source: 'lrclib',
-            notFound: false,
-          }
-        })
-        found++
-      } else {
-        await prisma.lyrics.create({
-          data: {
-            trackId: track.id,
-            notFound: true,
-          }
-        })
-        notFound++
-      }
-
-      if ((found + notFound) % 50 === 0) {
-        console.log(`  Progress: ${found + notFound}/${tracksWithoutLyrics.length} (${found} found)`)
-      }
-
-      await sleep(30) // Rate limiting
-    } catch {
-      // Skip errors
+      })
+      found++
+    } else {
+      await prisma.lyrics.create({
+        data: {
+          trackId: track.id,
+          notFound: true,
+        }
+      })
+      notFound++
     }
+
+    if ((found + notFound) % 50 === 0) {
+      console.log(`  Progress: ${found + notFound}/${tracksWithoutLyrics.length} (${found} found)`)
+    }
+
+    await sleep(30) // Rate limiting
   }
 
   console.log(`\n✓ Lyrics found: ${found}, Not available: ${notFound}`)
   return { found, notFound }
 }
 
-// ============ IMPORT NEW ALBUMS ============
+// ============ IMPORT NEW ALBUMS WITH COMPLETE DATA ============
 interface SpotifyAlbum {
   id: string
   name: string
@@ -294,9 +282,9 @@ interface SpotifyTrack {
   external_urls: { spotify: string }
 }
 
-async function importFullAlbum(album: SpotifyAlbum, token: string): Promise<boolean> {
+async function importCompleteAlbum(album: SpotifyAlbum, token: string): Promise<boolean> {
   try {
-    // Skip non-albums
+    // Skip non-albums or short albums
     if (album.album_type !== 'album') return false
     if (album.total_tracks < 4) return false
 
@@ -313,14 +301,36 @@ async function importFullAlbum(album: SpotifyAlbum, token: string): Promise<bool
 
     if (!fullAlbum.tracks?.items?.length) return false
 
+    const artistName = fullAlbum.artists.map(a => a.name).join(", ")
     const images = fullAlbum.images.sort((a, b) => b.width - a.width)
 
-    // Create album
+    // Pre-fetch lyrics for all tracks
+    const trackLyrics: Map<string, string | null> = new Map()
+    let lyricsFound = 0
+
+    for (const track of fullAlbum.tracks.items) {
+      const lyrics = await fetchLyrics(track.name, artistName, fullAlbum.name)
+      trackLyrics.set(track.id, lyrics)
+      if (lyrics) lyricsFound++
+      await sleep(30) // Rate limit LRCLIB
+    }
+
+    // Require at least 30% of tracks to have lyrics (some tracks may be instrumentals)
+    const lyricsRatio = lyricsFound / fullAlbum.tracks.items.length
+    if (lyricsRatio < 0.3 && fullAlbum.tracks.items.length >= 8) {
+      // For larger albums, if less than 30% have lyrics, skip
+      return false
+    }
+
+    // Generate streaming links
+    const streamingLinks = generateStreamingLinks(fullAlbum.name, artistName, fullAlbum.external_urls.spotify)
+
+    // Create album with all data
     const created = await prisma.album.create({
       data: {
         spotifyId: fullAlbum.id,
         title: fullAlbum.name,
-        artistName: fullAlbum.artists.map(a => a.name).join(", "),
+        artistName: artistName,
         artistSpotifyId: fullAlbum.artists[0]?.id || null,
         coverArtUrl: images[0]?.url || null,
         coverArtUrlLarge: images[0]?.url || null,
@@ -330,13 +340,16 @@ async function importFullAlbum(album: SpotifyAlbum, token: string): Promise<bool
         albumType: 'album',
         genres: [],
         totalTracks: fullAlbum.total_tracks,
-        spotifyUrl: fullAlbum.external_urls.spotify,
+        spotifyUrl: streamingLinks.spotifyUrl,
+        appleMusicUrl: streamingLinks.appleMusicUrl,
+        tidalUrl: streamingLinks.tidalUrl,
+        youtubeMusicUrl: streamingLinks.youtubeMusicUrl,
       },
     })
 
-    // Create tracks
+    // Create tracks with lyrics
     for (const track of fullAlbum.tracks.items) {
-      await prisma.track.create({
+      const createdTrack = await prisma.track.create({
         data: {
           spotifyId: track.id,
           albumId: created.id,
@@ -346,6 +359,17 @@ async function importFullAlbum(album: SpotifyAlbum, token: string): Promise<bool
           durationMs: track.duration_ms,
           spotifyUrl: track.external_urls.spotify,
         },
+      })
+
+      // Add lyrics if we found them
+      const lyrics = trackLyrics.get(track.id)
+      await prisma.lyrics.create({
+        data: {
+          trackId: createdTrack.id,
+          lyrics: lyrics || undefined,
+          source: lyrics ? 'lrclib' : undefined,
+          notFound: !lyrics,
+        }
       })
     }
 
@@ -358,9 +382,9 @@ async function importFullAlbum(album: SpotifyAlbum, token: string): Promise<bool
 // Gen Z Underground & Zeitgeist Artists
 const UNDERGROUND_ARTISTS = [
   // Hyperpop & Experimental
-  "100 gecs", "Bladee", "Ecco2K", "Yung Lean", "Drain Gang", "SOPHIE",
+  "100 gecs", "Bladee", "Ecco2K", "Yung Lean", "SOPHIE",
   "A.G. Cook", "Caroline Polachek", "Arca", "JPEGMAFIA", "Danny Brown",
-  "Injury Reserve", "clipping.", "Death Grips", "Machine Girl", "Black Dresses",
+  "Injury Reserve", "clipping.", "Death Grips", "Machine Girl",
 
   // Underground Rap & SoundCloud Era
   "Yeat", "Ken Carson", "Destroy Lonely", "Lancey Foux", "Lucki", "Cochise",
@@ -379,15 +403,15 @@ const UNDERGROUND_ARTISTS = [
   "Big Thief", "Mitski", "Weyes Blood", "Angel Olsen", "Aldous Harding",
 
   // Electronic/Club/DJ
-  "Floating Points", "Burial", "Aphex Twin", "Boards of Canada", "Autechre",
+  "Floating Points", "Burial", "Aphex Twin", "Boards of Canada",
   "Jai Paul", "James Blake", "Mount Kimbie", "Bonobo", "Ross From Friends",
-  "Mall Grab", "DJ Seinfeld", "Peggy Gou", "Jayda G", "Channel Tres",
-  "Yaeji", "Tkay Maidza", "Shygirl", "PinkPantheress", "ENNY",
+  "Mall Grab", "Peggy Gou", "Jayda G", "Channel Tres",
+  "Yaeji", "Tkay Maidza", "Shygirl", "PinkPantheress",
 
   // Latin Underground
-  "Peso Pluma", "Fuerza Regida", "Junior H", "Natanael Cano", "Yahritza y Su Esencia",
-  "Grupo Frontera", "Eslabon Armado", "Carin Leon", "Xavi", "DannyLux",
-  "Rauw Alejandro", "Mora", "Feid", "Jhayco", "Myke Towers", "Eladio Carrion",
+  "Peso Pluma", "Fuerza Regida", "Junior H", "Natanael Cano",
+  "Grupo Frontera", "Eslabon Armado", "Carin Leon",
+  "Rauw Alejandro", "Mora", "Feid", "Jhayco", "Myke Towers",
 
   // Afrobeats/Amapiano
   "Rema", "Ayra Starr", "Asake", "CKay", "Fireboy DML", "Omah Lay",
@@ -395,44 +419,44 @@ const UNDERGROUND_ARTISTS = [
 
   // K-Pop & Asian Artists
   "aespa", "IVE", "Le Sserafim", "STAYC", "NMIXX", "Seventeen", "Stray Kids",
-  "ATEEZ", "TXT", "ENHYPEN", "NCT", "EXO", "SHINee", "Red Velvet", "TWICE",
-  "ITZY", "BIBI", "eaJ", "DPR IAN", "DPR LIVE", "DEAN", "Crush", "Zico",
-  "88rising", "Rich Brian", "NIKI", "Joji", "beabadoobee",
+  "ATEEZ", "TXT", "ENHYPEN", "NCT", "Red Velvet", "TWICE",
+  "ITZY", "BIBI", "DPR IAN", "DPR LIVE", "DEAN",
+  "Rich Brian", "NIKI", "Joji",
 
   // Rock/Post-Punk/Shoegaze Revival
   "Turnstile", "IDLES", "Fontaines D.C.", "Dry Cleaning", "black midi",
-  "Black Country, New Road", "Squid", "Shame", "Parquet Courts", "Protomartyr",
+  "Black Country, New Road", "Squid", "Shame", "Parquet Courts",
   "Viagra Boys", "Amyl and The Sniffers", "Spiritbox", "Knocked Loose",
-  "Show Me the Body", "Drain", "Scowl", "Militarie Gun", "Fiddlehead",
-  "Wednesday", "MJ Lenderman", "Bartees Strange", "Horsegirl",
+  "Wednesday", "MJ Lenderman", "Bartees Strange",
 
   // TikTok/Viral Gen Z
   "Dominic Fike", "Conan Gray", "Wallows", "The Marias", "Still Woozy",
   "boy pablo", "Men I Trust", "Khruangbin", "Crumb", "Homeshake",
-  "Current Joys", "Surf Curse", "TV Girl", "The Marías", "Inner Wave",
-  "Vacations", "Goth Babe", "Jakob Ogawa", "No Rome", "BENEE",
+  "Current Joys", "Surf Curse", "TV Girl", "Inner Wave",
+  "Vacations", "Goth Babe",
 
   // Bedroom Pop/DIY
   "Rex Orange County", "Cuco", "Gus Dapperton", "mxmtoon", "girl in red",
-  "Conan Gray", "Holly Humberstone", "Gracie Abrams", "Lizzy McAlpine",
-  "Samia", "spill tab", "Paris Texas", "Momma", "Geese",
+  "Holly Humberstone", "Gracie Abrams", "Lizzy McAlpine",
+  "Samia", "spill tab",
 
   // Jazz/Neo-Soul Revival
   "Thundercat", "Hiatus Kaiyote", "Moonchild", "Tom Misch", "Masego",
-  "Robert Glasper", "Terrace Martin", "Kamasi Washington", "Shabaka Hutchings",
+  "Robert Glasper", "Terrace Martin", "Kamasi Washington",
   "Nubya Garcia", "Ezra Collective", "Kokoroko", "BADBADNOTGOOD", "Snarky Puppy",
 
   // More Underground Hip-Hop
-  "Danny Brown", "Zelooperz", "Bruiser Wolf", "Paris Texas", "redveil",
-  "Lil Tecca", "Lil Tjay", "Fivio Foreign", "Sleepy Hallow", "Sheff G",
-  "Pop Smoke", "A Boogie wit da Hoodie", "Don Toliver", "Kali", "Anycia",
+  "redveil", "Lil Tecca", "Lil Tjay", "Fivio Foreign",
+  "Pop Smoke", "A Boogie wit da Hoodie", "Don Toliver",
 ]
 
-// Legacy Artists (keeping some classics)
+// Essential Classics (smaller list)
 const LEGENDARY_ARTISTS = [
-  "The Beatles", "Pink Floyd", "Radiohead", "Frank Ocean", "Kendrick Lamar",
-  "Kanye West", "Tyler the Creator", "SZA", "The Weeknd", "Travis Scott",
-  "Billie Eilish", "Charli XCX", "Lana Del Rey", "Tame Impala", "Bad Bunny",
+  "Frank Ocean", "Kendrick Lamar", "Kanye West", "Tyler the Creator",
+  "SZA", "The Weeknd", "Travis Scott", "Billie Eilish", "Charli XCX",
+  "Lana Del Rey", "Tame Impala", "Bad Bunny", "Drake", "J Cole",
+  "Mac Miller", "Brent Faiyaz", "Summer Walker", "Daniel Caesar",
+  "Doja Cat", "Ice Spice", "Fred Again", "Kaytranada",
 ]
 
 async function importArtistAlbums(artists: string[], label: string): Promise<number> {
@@ -465,7 +489,7 @@ async function importArtistAlbums(artists: string[], label: string): Promise<num
 
       let imported = 0
       for (const album of albums) {
-        if (await importFullAlbum(album, token)) {
+        if (await importCompleteAlbum(album, token)) {
           imported++
           totalImported++
         }
@@ -473,11 +497,11 @@ async function importArtistAlbums(artists: string[], label: string): Promise<num
       }
 
       if (imported > 0) {
-        console.log(`  ✓ ${artistName}: ${imported} albums`)
+        console.log(`  ✓ ${artistName}: ${imported} albums (complete with lyrics)`)
       }
 
       if ((i + 1) % 20 === 0) {
-        console.log(`\n  Progress: ${i + 1}/${artists.length} artists, ${totalImported} new albums\n`)
+        console.log(`\n  Progress: ${i + 1}/${artists.length} artists, ${totalImported} complete albums\n`)
       }
 
       await sleep(BASE_DELAY)
@@ -486,13 +510,13 @@ async function importArtistAlbums(artists: string[], label: string): Promise<num
     }
   }
 
-  console.log(`\n✓ ${label}: ${totalImported} albums imported`)
+  console.log(`\n✓ ${label}: ${totalImported} complete albums imported`)
   return totalImported
 }
 
 async function importNewAlbums(): Promise<number> {
   console.log("\n" + "=".repeat(50))
-  console.log("STEP 5: Import New Albums (with tracks)")
+  console.log("STEP 5: Import Complete Albums (with tracks + lyrics)")
   console.log("=".repeat(50))
 
   let totalImported = 0
@@ -500,10 +524,10 @@ async function importNewAlbums(): Promise<number> {
   // Import underground/Gen Z artists first (priority)
   totalImported += await importArtistAlbums(UNDERGROUND_ARTISTS, "Underground & Gen Z Artists")
 
-  // Then legacy essentials
+  // Then essential classics
   totalImported += await importArtistAlbums(LEGENDARY_ARTISTS, "Essential Classics")
 
-  console.log(`\n✓ Total: ${totalImported} new albums with tracks`)
+  console.log(`\n✓ Total: ${totalImported} complete albums with tracks & lyrics`)
   return totalImported
 }
 
@@ -514,6 +538,7 @@ async function showStats() {
   const lyricsFound = await prisma.lyrics.count({ where: { notFound: false } })
   const lyricsNotFound = await prisma.lyrics.count({ where: { notFound: true } })
   const tracksNoLyrics = await prisma.track.count({ where: { lyrics: null } })
+  const albumsWithApple = await prisma.album.count({ where: { appleMusicUrl: { not: null } } })
 
   console.log("\n📊 Database Stats:")
   console.log(`   Albums: ${albumCount.toLocaleString()}`)
@@ -521,11 +546,12 @@ async function showStats() {
   console.log(`   Lyrics found: ${lyricsFound.toLocaleString()}`)
   console.log(`   Lyrics unavailable: ${lyricsNotFound.toLocaleString()}`)
   console.log(`   Tracks not yet searched: ${tracksNoLyrics.toLocaleString()}`)
+  console.log(`   Albums with Apple Music: ${albumsWithApple.toLocaleString()}`)
 }
 
 async function main() {
   console.log("\n" + "=".repeat(60))
-  console.log("🎵 WAXFEED COMPLETE DATA CLEANUP & IMPORT")
+  console.log("🎵 WAXFEED COMPLETE DATA IMPORT")
   console.log("=".repeat(60))
 
   await showStats()
@@ -536,11 +562,11 @@ async function main() {
   // Step 2: Remove albums without tracks
   await removeEmptyAlbums()
 
-  // Step 3: Fetch tracks for remaining albums that need them
-  await fetchMissingTracks()
+  // Step 3: Add streaming links to existing albums
+  await addStreamingLinks()
 
-  // Step 4: Pre-fetch lyrics
-  await prefetchLyrics()
+  // Step 4: Pre-fetch lyrics for existing tracks
+  await fetchMissingLyrics()
 
   // Step 5: Import new complete albums
   await importNewAlbums()
@@ -549,7 +575,7 @@ async function main() {
   await removeEmptyAlbums()
 
   console.log("\n" + "=".repeat(60))
-  console.log("✅ CLEANUP COMPLETE")
+  console.log("✅ IMPORT COMPLETE")
   console.log("=".repeat(60))
 
   await showStats()

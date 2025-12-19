@@ -122,30 +122,30 @@ export default async function Home() {
   ])
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-6 lg:py-8">
       {/* Friends Activity - Top Section */}
       {session && (
-        <section className="mb-8 pb-8 border-b border-[#222]">
+        <section className="mb-6 lg:mb-8 pb-6 lg:pb-8 border-b border-[#222]">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold">Friends Activity</h2>
+            <h2 className="text-lg lg:text-xl font-bold">Friends Activity</h2>
             <Link href="/following" className="text-sm text-[#888] hover:text-white no-underline">
               See All →
             </Link>
           </div>
           {friendsActivity.length === 0 ? (
-            <div className="text-center py-6 text-[#888]">
-              <p className="mb-2">No activity from friends yet.</p>
-              <p className="text-sm text-[#666]">Add friends to see their reviews here!</p>
+            <div className="text-center py-4 lg:py-6 text-[#888]">
+              <p className="mb-2 text-sm">No activity from friends yet.</p>
+              <p className="text-xs text-[#666]">Add friends to see their reviews here!</p>
             </div>
           ) : (
-            <div className="flex gap-4 overflow-x-auto pb-2">
+            <div className="flex gap-3 lg:gap-4 overflow-x-auto pb-2 -mx-4 px-4">
               {friendsActivity.map((review) => (
                 <Link
                   key={review.id}
                   href={`/album/${review.album.spotifyId || review.album.id}`}
-                  className="flex-shrink-0 w-48 group no-underline"
+                  className="flex-shrink-0 w-32 lg:w-48 group no-underline"
                 >
-                  <div className="aspect-square bg-[#222] mb-2 overflow-hidden">
+                  <div className="aspect-square bg-[#181818] mb-2 overflow-hidden">
                     {review.album.coverArtUrl ? (
                       <img
                         src={review.album.coverArtUrl}
@@ -158,22 +158,22 @@ export default async function Home() {
                       </div>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-1.5 mb-1">
                     {review.user.image ? (
                       <img
                         src={review.user.image}
                         alt={review.user.username || ""}
-                        className="w-5 h-5 rounded-full"
+                        className="w-4 h-4 lg:w-5 lg:h-5 rounded-full"
                       />
                     ) : (
                       <DefaultAvatar size="xs" />
                     )}
-                    <span className="text-sm text-[#888] truncate">
+                    <span className="text-xs lg:text-sm text-[#888] truncate">
                       {review.user.username}
                     </span>
-                    <span className="text-sm font-bold">{review.rating}/10</span>
+                    <span className="text-xs lg:text-sm font-bold">{review.rating}/10</span>
                   </div>
-                  <p className="text-sm truncate">{review.album.title}</p>
+                  <p className="text-xs lg:text-sm truncate">{review.album.title}</p>
                   <p className="text-xs text-[#666]">
                     {formatDistanceToNow(new Date(review.createdAt), { addSuffix: true })}
                   </p>
@@ -184,36 +184,33 @@ export default async function Home() {
         </section>
       )}
 
-      {/* Hero */}
-      <section className="mb-16">
-        {/* Stats - Centered */}
-        <div className="flex justify-center gap-16 mb-8 pb-8 border-b border-[#222]">
+      {/* Hero Stats */}
+      <section className="mb-8 lg:mb-16">
+        <div className="flex justify-center gap-8 sm:gap-12 lg:gap-16 mb-6 lg:mb-8 pb-6 lg:pb-8 border-b border-[#222]">
           <div className="text-center">
-            <p className="text-5xl font-bold">{stats.albumCount.toLocaleString()}</p>
-            <p className="text-[#888] text-sm">Albums</p>
+            <p className="text-2xl sm:text-3xl lg:text-5xl font-bold">{stats.albumCount.toLocaleString()}</p>
+            <p className="text-[#888] text-xs sm:text-sm">Albums</p>
           </div>
           <div className="text-center">
-            <p className="text-5xl font-bold">{stats.reviewCount.toLocaleString()}</p>
-            <p className="text-[#888] text-sm">Reviews</p>
+            <p className="text-2xl sm:text-3xl lg:text-5xl font-bold">{stats.reviewCount.toLocaleString()}</p>
+            <p className="text-[#888] text-xs sm:text-sm">Reviews</p>
           </div>
           <div className="text-center">
-            <p className="text-5xl font-bold">{stats.userCount.toLocaleString()}</p>
-            <p className="text-[#888] text-sm">Users</p>
+            <p className="text-2xl sm:text-3xl lg:text-5xl font-bold">{stats.userCount.toLocaleString()}</p>
+            <p className="text-[#888] text-xs sm:text-sm">Users</p>
           </div>
         </div>
-        {/* Descriptor */}
-        <p className="text-center text-[#888] max-w-xl mx-auto">
-          A social music review platform.
-          Rate albums, build lists, discover new music through friends.
+        <p className="text-center text-[#888] text-sm lg:text-base max-w-xl mx-auto px-4">
+          A social music review platform. Rate albums, build lists, discover new music through friends.
         </p>
       </section>
 
-      {/* Two Column Layout - 50/50 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+      {/* Two Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
         {/* Popular Albums */}
         <section>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">Top Albums</h2>
+          <div className="flex items-center justify-between mb-4 lg:mb-6">
+            <h2 className="text-lg lg:text-2xl font-bold">Top Albums</h2>
             <Link href="/trending" className="text-sm text-[#888] hover:text-white no-underline">
               View All →
             </Link>
@@ -221,7 +218,7 @@ export default async function Home() {
           {albums.length === 0 ? (
             <p className="text-[#888] text-sm">No albums yet.</p>
           ) : (
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-4 gap-2 sm:gap-3">
               {albums.map((album) => (
                 <AlbumCard
                   key={album.id}
@@ -240,22 +237,22 @@ export default async function Home() {
 
         {/* Recent Reviews */}
         <section>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">Recent Reviews</h2>
+          <div className="flex items-center justify-between mb-4 lg:mb-6">
+            <h2 className="text-lg lg:text-2xl font-bold">Recent Reviews</h2>
             <Link href="/reviews" className="text-sm text-[#888] hover:text-white no-underline">
               View All →
             </Link>
           </div>
 
           {reviews.length === 0 ? (
-            <div className="border border-[#222] p-8 text-center">
-              <p className="text-[#888]">No reviews yet.</p>
-              <p className="text-sm text-[#666] mt-2">
+            <div className="border border-[#222] p-6 lg:p-8 text-center">
+              <p className="text-[#888] text-sm">No reviews yet.</p>
+              <p className="text-xs text-[#666] mt-2">
                 Be the first to review an album!
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 lg:space-y-4">
               {reviews.map((review) => (
                 <ReviewCard
                   key={review.id}
@@ -277,9 +274,9 @@ export default async function Home() {
       </div>
 
       {/* Footer */}
-      <footer className="mt-16 pt-8 border-t border-[#222] text-center text-xs text-[#666] space-y-2">
+      <footer className="mt-10 lg:mt-16 pt-6 lg:pt-8 border-t border-[#222] text-center text-xs text-[#666] space-y-2">
         <p>Contact: scrolling@waxfeed.com</p>
-        <p>WBRU © 2025 · BROWN BROADCASTING SERVICE, INC. · PROVIDENCE, RI</p>
+        <p>WBRU © 2025 · BROWN BROADCASTING SERVICE, INC.</p>
       </footer>
     </div>
   )
