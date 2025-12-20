@@ -160,6 +160,42 @@ export async function POST(request: NextRequest) {
     // Update album stats
     await updateAlbumStats(albumId)
 
+    // Update user streak
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    const userData = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { lastReviewDate: true, currentStreak: true, longestStreak: true }
+    })
+
+    if (userData) {
+      let newStreak = 1
+      if (userData.lastReviewDate) {
+        const lastReview = new Date(userData.lastReviewDate)
+        lastReview.setHours(0, 0, 0, 0)
+        const daysDiff = Math.floor((today.getTime() - lastReview.getTime()) / (1000 * 60 * 60 * 24))
+
+        if (daysDiff === 0) {
+          // Same day, keep current streak
+          newStreak = userData.currentStreak
+        } else if (daysDiff === 1) {
+          // Next day, increment streak
+          newStreak = userData.currentStreak + 1
+        }
+        // If daysDiff > 1, streak resets to 1
+      }
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          currentStreak: newStreak,
+          longestStreak: Math.max(newStreak, userData.longestStreak),
+          lastReviewDate: new Date(),
+        }
+      })
+    }
+
     // Delete any draft for this album
     await prisma.reviewDraft.deleteMany({
       where: { userId: user.id, albumId }

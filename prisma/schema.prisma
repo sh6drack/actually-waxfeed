@@ -34,6 +34,11 @@ model User {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
+  // Streak tracking
+  currentStreak         Int       @default(0)
+  longestStreak         Int       @default(0)
+  lastReviewDate        DateTime?
+
   // Auth relations (NextAuth)
   accounts              Account[]
   sessions              Session[]

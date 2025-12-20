@@ -27,6 +27,8 @@ async function getUser(identifier: string) {
       isPremium: true,
       isVerified: true,
       createdAt: true,
+      currentStreak: true,
+      longestStreak: true,
       _count: {
         select: {
           reviews: true,
@@ -54,6 +56,8 @@ async function getUser(identifier: string) {
         isPremium: true,
         isVerified: true,
         createdAt: true,
+        currentStreak: true,
+        longestStreak: true,
         _count: {
           select: {
             reviews: true,
@@ -205,13 +209,24 @@ export default async function ProfilePage({ params }: Props) {
             </div>
           </div>
 
-          {/* Wax Score */}
-          {user.waxScore > 0 && (
-            <p className="text-sm text-[#888] mb-4">
-              🕯️ {user.waxScore} wax
-              {user.premiumWaxScore > 0 && ` • ✨ ${user.premiumWaxScore} premium wax`}
-            </p>
-          )}
+          {/* Streak & Wax Score */}
+          <div className="flex flex-wrap justify-center sm:justify-start gap-3 text-sm text-[#888] mb-4">
+            {user.currentStreak > 0 && (
+              <span title={`Longest: ${user.longestStreak} days`}>
+                🔥 {user.currentStreak} day streak
+              </span>
+            )}
+            {user.waxScore > 0 && (
+              <span>
+                🕯️ {user.waxScore} wax
+              </span>
+            )}
+            {user.premiumWaxScore > 0 && (
+              <span>
+                ✨ {user.premiumWaxScore} premium
+              </span>
+            )}
+          </div>
 
           {/* Avg Rating & Join Date - Mobile */}
           <div className="sm:hidden text-sm text-[#888] mb-4">
