@@ -124,21 +124,12 @@ export default async function Home() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 lg:py-8">
       {/* Friends Activity - Top Section */}
-      {session && (
+      {session && friendsActivity.length > 0 && (
         <section className="mb-6 lg:mb-8 pb-6 lg:pb-8 border-b border-[#222]">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg lg:text-xl font-bold">Friends Activity</h2>
-            <Link href="/following" className="text-sm text-[#888] hover:text-white no-underline">
-              See All →
-            </Link>
           </div>
-          {friendsActivity.length === 0 ? (
-            <div className="text-center py-4 lg:py-6 text-[#888]">
-              <p className="mb-2 text-sm">No activity from friends yet.</p>
-              <p className="text-xs text-[#666]">Add friends to see their reviews here!</p>
-            </div>
-          ) : (
-            <div className="flex gap-3 lg:gap-4 overflow-x-auto pb-2 -mx-4 px-4">
+          <div className="flex gap-3 lg:gap-4 overflow-x-auto pb-2 -mx-4 px-4">
               {friendsActivity.map((review) => (
                 <Link
                   key={review.id}
@@ -179,8 +170,7 @@ export default async function Home() {
                   </p>
                 </Link>
               ))}
-            </div>
-          )}
+          </div>
         </section>
       )}
 
