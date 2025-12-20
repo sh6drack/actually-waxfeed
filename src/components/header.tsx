@@ -69,6 +69,9 @@ export function Header() {
           <Link href="/" className="no-underline hover:underline">
             Home
           </Link>
+          <Link href="/discover" className="no-underline hover:underline">
+            Discover
+          </Link>
           <Link href="/trending" className="no-underline hover:underline">
             Trending
           </Link>
@@ -206,6 +209,16 @@ export function Header() {
               onClick={() => setMobileMenuOpen(false)}
             >
               <span>Home</span>
+              <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+            <Link
+              href="/discover"
+              className="flex items-center justify-between px-4 py-4 text-lg font-medium no-underline hover:bg-gray-50 active:bg-gray-100 border-b border-gray-100"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <span>Discover</span>
               <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
