@@ -140,13 +140,15 @@ export async function searchAlbums(
   query: string,
   limit = 20,
   offset = 0,
-  type: 'album' | 'single' | 'compilation' | 'all' = 'all'
+  type: 'album' | 'compilation' | 'all' = 'all'  // Removed 'single' option - not allowed
 ): Promise<{ albums: SpotifyAlbum[]; total: number }> {
   const cacheKey = `search:${query}:${limit}:${offset}:${type}`
   const cached = await getFromCache<SpotifySearchResult>(cacheKey)
 
   if (cached) {
-    return { albums: cached.albums.items, total: cached.albums.total }
+    // Filter out singles from cached results
+    const filteredAlbums = cached.albums.items.filter(a => a.album_type !== 'single')
+    return { albums: filteredAlbums, total: filteredAlbums.length }
   }
 
   const token = await getAccessToken()
@@ -168,9 +170,13 @@ export async function searchAlbums(
   }
 
   const data: SpotifySearchResult = await response.json()
+
+  // CRITICAL: Filter out ALL singles before caching and returning
+  data.albums.items = data.albums.items.filter(album => album.album_type !== 'single')
+
   await setCache(cacheKey, data, CACHE_DURATION.SEARCH)
 
-  return { albums: data.albums.items, total: data.albums.total }
+  return { albums: data.albums.items, total: data.albums.items.length }
 }
 
 export async function getAlbum(spotifyId: string, fetchTracks = true): Promise<SpotifyAlbum> {
@@ -282,6 +288,12 @@ export async function getMultipleAlbums(spotifyIds: string[]): Promise<SpotifyAl
 
 // Import album to database
 export async function importAlbumToDatabase(spotifyAlbum: SpotifyAlbum) {
+  // CRITICAL: NEVER import singles - only albums and compilations
+  // This is a site-wide policy to maintain quality content
+  if (spotifyAlbum.album_type === 'single') {
+    throw new Error('Singles are not supported - albums and EPs only')
+  }
+
   const primaryArtist = spotifyAlbum.artists[0]
 
   // Get artist details for genres

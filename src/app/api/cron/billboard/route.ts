@@ -44,12 +44,15 @@ async function importAlbum(spotifyId: string, rank: number, chartDate: Date): Pr
     // Fetch full album data with tracks
     const spotifyAlbum = await getAlbum(spotifyId, true)
 
-    // Skip singles with less than 4 tracks
-    if (spotifyAlbum.album_type === "single" && spotifyAlbum.total_tracks < 4) {
+    // CRITICAL: Skip ALL singles - site-wide policy
+    // Singles are not allowed anywhere on waxfeed
+    if (spotifyAlbum.album_type === "single") {
+      console.log(`Skipping single: ${spotifyAlbum.name}`)
       return false
     }
 
     // Use the full import function to get all metadata + tracks
+    // This will throw if it's a single (double protection)
     const album = await importAlbumToDatabase(spotifyAlbum)
 
     // Update Billboard rank
