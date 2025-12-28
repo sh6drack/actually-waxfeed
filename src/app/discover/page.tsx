@@ -56,10 +56,12 @@ async function getRecommendations(userId: string | undefined) {
   const randomLikedAlbum = userReviews[Math.floor(Math.random() * userReviews.length)].album
 
   // Get albums by same artists that user hasn't reviewed
+  // CRITICAL: NEVER show singles
   const byFavoriteArtists = await prisma.album.findMany({
     where: {
       artistName: { in: favoriteArtists.slice(0, 5) },
       id: { notIn: reviewedAlbumIds },
+      albumType: { not: 'single' }
     },
     take: 8,
     orderBy: { averageRating: "desc" },
@@ -83,6 +85,7 @@ async function getRecommendations(userId: string | undefined) {
         genres: { has: topGenre },
         id: { notIn: reviewedAlbumIds },
         totalReviews: { gte: 1 },
+        albumType: { not: 'single' }
       },
       take: 8,
       orderBy: { averageRating: "desc" },
@@ -121,9 +124,11 @@ async function getRecommendations(userId: string | undefined) {
   let forYou: typeof byFavoriteArtists = []
   if (similarUserIds.length > 0) {
     // Get albums those similar users liked that current user hasn't reviewed
+    // CRITICAL: NEVER show singles
     forYou = await prisma.album.findMany({
       where: {
         id: { notIn: reviewedAlbumIds },
+        albumType: { not: 'single' },
         reviews: {
           some: {
             userId: { in: similarUserIds.map(u => u.userId) },
@@ -165,8 +170,12 @@ async function getRecommendations(userId: string | undefined) {
 async function getNewReleases() {
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
 
+  // CRITICAL: NEVER show singles
   return prisma.album.findMany({
-    where: { releaseDate: { gte: thirtyDaysAgo } },
+    where: {
+      releaseDate: { gte: thirtyDaysAgo },
+      albumType: { not: 'single' }
+    },
     take: 8,
     orderBy: { releaseDate: "desc" },
     select: {
@@ -182,8 +191,12 @@ async function getNewReleases() {
 }
 
 async function getTrending() {
+  // CRITICAL: NEVER show singles
   return prisma.album.findMany({
-    where: { billboardRank: { not: null } },
+    where: {
+      billboardRank: { not: null },
+      albumType: { not: 'single' }
+    },
     take: 8,
     orderBy: { billboardRank: "asc" },
     select: {

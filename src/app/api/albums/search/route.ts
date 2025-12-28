@@ -39,9 +39,15 @@ export async function GET(request: NextRequest) {
     if (source === 'local' || source === 'both') {
       results.local = await prisma.album.findMany({
         where: {
-          OR: [
-            { title: { contains: query, mode: 'insensitive' } },
-            { artistName: { contains: query, mode: 'insensitive' } },
+          AND: [
+            {
+              OR: [
+                { title: { contains: query, mode: 'insensitive' } },
+                { artistName: { contains: query, mode: 'insensitive' } },
+              ]
+            },
+            // CRITICAL: NEVER show singles
+            { albumType: { not: 'single' } }
           ]
         },
         take: limit,

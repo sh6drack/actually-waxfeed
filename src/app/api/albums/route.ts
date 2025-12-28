@@ -12,13 +12,16 @@ export async function GET(request: NextRequest) {
     const genre = searchParams.get('genre')
     const albumType = searchParams.get('type')
 
-    const where: Record<string, unknown> = {}
+    const where: Record<string, unknown> = {
+      // CRITICAL: NEVER show singles
+      albumType: { not: 'single' }
+    }
 
     if (genre) {
       where.genres = { has: genre }
     }
 
-    if (albumType && albumType !== 'all') {
+    if (albumType && albumType !== 'all' && albumType !== 'single') {
       where.albumType = albumType
     }
 

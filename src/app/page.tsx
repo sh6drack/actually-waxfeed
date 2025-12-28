@@ -87,9 +87,13 @@ async function getFriendsActivity(userId: string | undefined) {
 
 async function getTopAlbums() {
   // Get Billboard chart albums sorted by rank
+  // CRITICAL: NEVER show singles
   return prisma.album.findMany({
     take: 12,
-    where: { billboardRank: { not: null } },
+    where: {
+      billboardRank: { not: null },
+      albumType: { not: 'single' }
+    },
     orderBy: { billboardRank: "asc" },
     select: {
       id: true,
@@ -105,7 +109,8 @@ async function getTopAlbums() {
 
 async function getStats() {
   const [albumCount, reviewCount, userCount] = await Promise.all([
-    prisma.album.count(),
+    // CRITICAL: Only count albums (not singles)
+    prisma.album.count({ where: { albumType: { not: 'single' } } }),
     prisma.review.count(),
     prisma.user.count(),
   ])
