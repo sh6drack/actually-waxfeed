@@ -18,6 +18,8 @@ export default function AdminPage() {
     failed: number
     errors: string[]
   } | null>(null)
+  const [billboardLoading, setBillboardLoading] = useState(false)
+  const [billboardResult, setBillboardResult] = useState<string | null>(null)
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -80,6 +82,27 @@ export default function AdminPage() {
     setLoading(false)
   }
 
+  const handleBillboardUpdate = async () => {
+    setBillboardLoading(true)
+    setBillboardResult(null)
+
+    try {
+      const res = await fetch("/api/cron/billboard")
+      const data = await res.json()
+
+      if (res.ok) {
+        setBillboardResult(`Updated ${data.updated} albums from Billboard 200`)
+        fetchStats()
+      } else {
+        setBillboardResult(`Error: ${data.error}`)
+      }
+    } catch (error) {
+      setBillboardResult(`Error: ${String(error)}`)
+    }
+
+    setBillboardLoading(false)
+  }
+
   if (status === "loading") {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -91,6 +114,26 @@ export default function AdminPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold tracking-tighter mb-8">Admin - Album Import</h1>
+
+      {/* Billboard Update Section */}
+      <div className="mb-8 border border-[#222] p-6">
+        <h2 className="font-bold mb-4">Billboard 200 Update</h2>
+        <p className="text-sm text-[#888] mb-4">
+          Manually trigger the Billboard 200 chart update. This runs automatically daily at midnight via cron job.
+        </p>
+        <button
+          onClick={handleBillboardUpdate}
+          disabled={billboardLoading}
+          className="bg-white text-black px-6 py-3 font-bold hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {billboardLoading ? "Updating..." : "Update Billboard 200"}
+        </button>
+        {billboardResult && (
+          <div className={`mt-4 p-4 border ${billboardResult.startsWith("Error") ? "border-red-500 text-red-500" : "border-green-500 text-green-500"}`}>
+            {billboardResult}
+          </div>
+        )}
+      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-8">
