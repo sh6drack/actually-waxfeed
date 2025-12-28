@@ -2,7 +2,11 @@
   "crons": [
     {
       "path": "/api/cron/billboard",
-      "schedule": "0 0 * * 0"
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/fetch-tracks",
+      "schedule": "0 */6 * * *"
     }
   ]
 }
