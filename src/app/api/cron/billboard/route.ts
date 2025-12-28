@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { getAlbum, importAlbumToDatabase } from "@/lib/spotify"
 import * as cheerio from "cheerio"
 
 // Cron secret to prevent unauthorized access
@@ -21,18 +22,15 @@ async function getSpotifyToken(): Promise<string> {
   return data.access_token
 }
 
-interface SpotifyAlbum {
+interface SpotifySearchAlbum {
   id: string
   name: string
   artists: { name: string }[]
-  images: { url: string }[]
-  release_date: string
   album_type: string
   total_tracks: number
-  external_urls: { spotify: string }
 }
 
-async function searchAlbum(token: string, query: string): Promise<SpotifyAlbum | null> {
+async function searchAlbum(token: string, query: string): Promise<SpotifySearchAlbum | null> {
   const response = await fetch(
     `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=album&limit=1`,
     { headers: { Authorization: `Bearer ${token}` } }
@@ -41,31 +39,31 @@ async function searchAlbum(token: string, query: string): Promise<SpotifyAlbum |
   return data.albums?.items?.[0] || null
 }
 
-async function importAlbum(album: SpotifyAlbum, rank: number, chartDate: Date): Promise<boolean> {
-  if (album.album_type === "single" && album.total_tracks < 4) return false
-
+async function importAlbum(spotifyId: string, rank: number, chartDate: Date): Promise<boolean> {
   try {
-    await prisma.album.upsert({
-      where: { spotifyId: album.id },
-      update: {
+    // Fetch full album data with tracks
+    const spotifyAlbum = await getAlbum(spotifyId, true)
+
+    // Skip singles with less than 4 tracks
+    if (spotifyAlbum.album_type === "single" && spotifyAlbum.total_tracks < 4) {
+      return false
+    }
+
+    // Use the full import function to get all metadata + tracks
+    const album = await importAlbumToDatabase(spotifyAlbum)
+
+    // Update Billboard rank
+    await prisma.album.update({
+      where: { id: album.id },
+      data: {
         billboardRank: rank,
         billboardDate: chartDate,
-      },
-      create: {
-        spotifyId: album.id,
-        title: album.name,
-        artistName: album.artists.map((a) => a.name).join(", "),
-        coverArtUrl: album.images[0]?.url || null,
-        releaseDate: album.release_date ? new Date(album.release_date) : new Date(),
-        genres: [],
-        totalTracks: album.total_tracks,
-        spotifyUrl: album.external_urls.spotify,
-        billboardRank: rank,
-        billboardDate: chartDate,
-      },
+      }
     })
+
     return true
-  } catch {
+  } catch (error) {
+    console.error(`Failed to import album ${spotifyId}:`, error)
     return false
   }
 }
@@ -149,7 +147,7 @@ export async function GET(request: NextRequest) {
     for (const { rank, title, artist } of billboardAlbums) {
       const spotifyAlbum = await searchAlbum(token, `${title} ${artist}`)
       if (spotifyAlbum) {
-        const success = await importAlbum(spotifyAlbum, rank, chartDate)
+        const success = await importAlbum(spotifyAlbum.id, rank, chartDate)
         if (success) {
           imported++
         } else {
@@ -159,7 +157,7 @@ export async function GET(request: NextRequest) {
         failed++
       }
       // Rate limiting for Spotify API
-      await new Promise((r) => setTimeout(r, 50))
+      await new Promise((r) => setTimeout(r, 100))
     }
 
     console.log(`Billboard import complete: ${imported} imported, ${failed} failed`)
