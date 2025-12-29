@@ -16,8 +16,11 @@ const prisma = new PrismaClient()
 // Path to Anna's Archive SQLite database
 const SQLITE_PATH = "/Volumes/360/annas_archive_spotify_2025_07_metadata/spotify_clean.sqlite3"
 
-// Batch size for PostgreSQL inserts
-const BATCH_SIZE = 1000
+// Batch size for PostgreSQL inserts (larger = faster, more memory)
+const BATCH_SIZE = 5000
+
+// Number of concurrent batch inserts
+const CONCURRENCY = 5
 
 // Progress reporting interval
 const PROGRESS_INTERVAL = 10000
@@ -126,6 +129,7 @@ async function main() {
   let skipped = 0
   let errors = 0
   let batch: Parameters<typeof prisma.album.createMany>[0]["data"] = []
+  let pendingBatches: typeof batch[] = []
 
   // Iterate through all albums
   for (const row of albumQuery.iterate() as Iterable<SpotifyAlbumRow & { album_rowid: number }>) {
@@ -163,15 +167,25 @@ async function main() {
         spotifyUrl: `https://open.spotify.com/album/${row.spotify_id}`,
       })
 
-      // Flush batch when full
+      // Flush batch when full - use concurrent inserts
       if (batch.length >= BATCH_SIZE) {
-        const result = await prisma.album.createMany({
-          data: batch,
-          skipDuplicates: true,
-        })
-        imported += result.count
-        skipped += batch.length - result.count
+        pendingBatches.push(batch)
         batch = []
+
+        // When we have enough pending batches, flush them concurrently
+        if (pendingBatches.length >= CONCURRENCY) {
+          const results = await Promise.all(
+            pendingBatches.map(b =>
+              prisma.album.createMany({ data: b, skipDuplicates: true })
+            )
+          )
+          for (const result of results) {
+            imported += result.count
+          }
+          const totalInBatches = pendingBatches.reduce((sum, b) => sum + b.length, 0)
+          skipped += totalInBatches - results.reduce((sum, r) => sum + r.count, 0)
+          pendingBatches = []
+        }
       }
 
       // Progress report

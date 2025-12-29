@@ -121,17 +121,29 @@ async function getUserLists(userId: string) {
 }
 
 async function getRelationship(currentUserId: string, targetUserId: string) {
-  const friendship = await prisma.friendship.findFirst({
-    where: {
-      OR: [
-        { user1Id: currentUserId, user2Id: targetUserId },
-        { user1Id: targetUserId, user2Id: currentUserId },
-      ]
-    }
-  })
+  const [friendship, pendingRequest] = await Promise.all([
+    prisma.friendship.findFirst({
+      where: {
+        OR: [
+          { user1Id: currentUserId, user2Id: targetUserId },
+          { user1Id: targetUserId, user2Id: currentUserId },
+        ]
+      }
+    }),
+    prisma.friendRequest.findFirst({
+      where: {
+        OR: [
+          { senderId: currentUserId, receiverId: targetUserId, status: 'pending' },
+          { senderId: targetUserId, receiverId: currentUserId, status: 'pending' },
+        ]
+      }
+    })
+  ])
 
   return {
     isFriend: !!friendship,
+    hasPendingRequest: !!pendingRequest,
+    pendingRequestSentByMe: pendingRequest?.senderId === currentUserId,
   }
 }
 
@@ -245,6 +257,8 @@ export default async function ProfilePage({ params }: Props) {
             <ProfileActions
               username={user.username!}
               isFriend={relationship?.isFriend || false}
+              hasPendingRequest={relationship?.hasPendingRequest || false}
+              pendingRequestSentByMe={relationship?.pendingRequestSentByMe || false}
               isLoggedIn={!!session}
             />
           )}
