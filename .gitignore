@@ -44,3 +44,8 @@ next-env.d.ts
 
 # Local notes
 note.md
+
+# Secrets/credentials
+client_secret*.json
+*.pem
+credentials*.json
