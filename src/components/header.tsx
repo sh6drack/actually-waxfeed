@@ -137,7 +137,7 @@ export function Header() {
           ) : (
             <Link
               href="/login"
-              className="bg-black text-white px-4 py-2 text-sm font-bold hover:bg-gray-800 no-underline transition-colors"
+              className="bg-black text-white px-4 py-2 text-sm font-bold hover:bg-gray-800 no-underline transition-colors inline-block"
             >
               Sign In
             </Link>

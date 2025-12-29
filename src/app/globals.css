@@ -68,6 +68,15 @@ a:hover {
   opacity: 0.8;
 }
 
+/* Override for links that explicitly set text color */
+a[class*="text-white"] {
+  color: white !important;
+}
+
+a[class*="text-black"] {
+  color: black !important;
+}
+
 /* Button base */
 button {
   cursor: pointer;
