@@ -144,6 +144,11 @@ async function searchAlbum(token: string, artist: string, title: string) {
   return data.albums?.items?.[0] || null
 }
 
+// GET also works for convenience
+export async function GET(request: NextRequest) {
+  return POST(request)
+}
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth()
