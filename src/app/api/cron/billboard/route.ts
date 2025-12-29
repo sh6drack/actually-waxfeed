@@ -98,7 +98,7 @@ async function fetchBillboard200(): Promise<BillboardEntry[]> {
     const title = $(el).find("h3#title-of-a-story").first().text().trim()
     const artist = $(el).find("span.c-label.a-no-trucate").first().text().trim()
 
-    if (title && artist && rank <= 50) {
+    if (title && artist && rank <= 200) {
       albums.push({ rank, title, artist })
     }
   })
@@ -110,7 +110,7 @@ async function fetchBillboard200(): Promise<BillboardEntry[]> {
       const title = $(el).find("h3").first().text().trim()
       const artist = $(el).find("span").first().text().trim()
 
-      if (title && artist && rank <= 50) {
+      if (title && artist && rank <= 200) {
         albums.push({ rank, title, artist })
       }
     })
