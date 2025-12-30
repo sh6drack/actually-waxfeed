@@ -89,7 +89,7 @@ async function getTopAlbums() {
   // Get Billboard chart albums sorted by rank
   // CRITICAL: NEVER show singles
   return prisma.album.findMany({
-    take: 20,
+    take: 40,
     where: {
       billboardRank: { not: null },
       albumType: { not: 'single' }
