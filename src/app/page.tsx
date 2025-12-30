@@ -6,6 +6,7 @@ import Link from "next/link"
 import { auth } from "@/lib/auth"
 import { formatDistanceToNow } from "date-fns"
 
+// Force dynamic rendering for fresh data
 export const dynamic = "force-dynamic"
 
 async function getRecentReviews() {
