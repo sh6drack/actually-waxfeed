@@ -8,10 +8,19 @@ import { Analytics } from "@vercel/analytics/next";
 export const metadata: Metadata = {
   title: "WAXFEED",
   description: "A social music review platform - Letterboxd for music",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/logo/favicon-32.png", type: "image/png", sizes: "32x32" },
+      { url: "/logo/favicon-16.png", type: "image/png", sizes: "16x16" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
   openGraph: {
     title: "WAXFEED",
     description: "A social music review platform - Letterboxd for music",
     type: "website",
+    images: ["/logo/waxfeed-logo-512.png"],
   },
 };
 

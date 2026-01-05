@@ -1,0 +1,335 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usepackage{fontspec}
+
+% Use Helvetica Neue
+\setmainfont{Helvetica Neue}[
+  BoldFont = Helvetica Neue Medium,
+  ItalicFont = Helvetica Neue Italic
+]
+
+% Page geometry
+\geometry{margin=1in}
+
+% Colors
+\definecolor{waxblack}{HTML}{0A0A0A}
+\definecolor{waxwhite}{HTML}{EDEDED}
+\definecolor{waxgray}{HTML}{666666}
+\definecolor{accent}{HTML}{8B5CF6}
+
+% Hyperlinks
+\hypersetup{
+    colorlinks=true,
+    linkcolor=accent,
+    urlcolor=accent
+}
+
+% Headers
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textcolor{waxgray}{\small WAXFEED CAMPAIGN PLAN}}
+\fancyhead[R]{\textcolor{waxgray}{\small POLARITY LAB LLC}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.5pt}
+
+% Section styling
+\titleformat{\section}
+  {\Large\bfseries}{\thesection}{1em}{}[\titlerule]
+\titleformat{\subsection}
+  {\large\bfseries}{\thesubsection}{1em}{}
+
+\begin{document}
+
+% Title Page
+\begin{titlepage}
+\centering
+\vspace*{2cm}
+
+{\Huge\bfseries WAXFEED}\\[0.5cm]
+{\Large Marketing Campaign Plan}\\[2cm]
+
+{\large Q1 2025 Launch Campaign}\\[0.5cm]
+{\large \$10,000 Budget}\\[3cm]
+
+{\large Prepared by Polarity Lab LLC}\\[0.5cm]
+{\large for WBRU / Brown Broadcasting Services LLC}\\[5cm]
+
+\vfill
+{\small December 2024}
+\end{titlepage}
+
+% Executive Summary
+\section{Executive Summary}
+
+\begin{tabularx}{\textwidth}{lX}
+\textbf{Opportunity} & 616M paid streaming subscribers. Zero social discovery platform for music. Letterboxd proved \$10M+ revenue for film. \\[0.5em]
+\textbf{Position} & Waxfeed is ``Letterboxd for Music'' --- discover albums through people, not algorithms. \\[0.5em]
+\textbf{Objective} & Acquire 2,500+ early adopters who establish Waxfeed's culture. \\[0.5em]
+\textbf{Partnership} & WBRU revamp positions Brown Broadcasting Services as founding partner of a cultural platform. \\
+\end{tabularx}
+
+\section{Campaign Concept}
+
+\subsection{Creative Concept: ``Your Taste Deserves a Home''}
+
+\textbf{Insight:} Music people are the curators of their friend groups. They make the playlists. They text the recs. But there's no \textit{place} for this.
+
+\textbf{Tension:} You've spent years developing your taste. It lives nowhere.
+
+\textbf{Resolution:} Waxfeed. Your reviews. Your lists. Your friends. Your feed.
+
+\subsection{Taglines}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\textbf{Primary} & \textbf{Secondary} \\
+\midrule
+``Your taste deserves a home'' & ``Music sounds better with friends'' \\
+``Friends $>$ Algorithms'' & ``Stop texting recs. Start reviewing.'' \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{FOMO \& User Incentives}
+
+\subsection{Early Adopter Program: ``First 1,000''}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{lXl}
+\toprule
+\textbf{Incentive} & \textbf{Mechanism} & \textbf{FOMO Trigger} \\
+\midrule
+Founding Critic Badge & Permanent profile badge & ``347 spots left'' \\
+Early Adopter Wax & 100 bonus Wax to give & ``Shape the culture'' \\
+Username Priority & Claim @handle first & Scarcity \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Referral Mechanism}
+
+\begin{itemize}[noitemsep]
+    \item Each user gets unique invite link
+    \item Referrer + referee both get 25 bonus Wax
+    \item ``Top Inviters This Week'' leaderboard
+\end{itemize}
+
+\section{Copy Framework}
+
+\subsection{Headlines (A/B Test)}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Audience} & \textbf{Headline} \\
+\midrule
+Letterboxd Users & ``You rate films. Now rate albums.'' \\
+Music Twitter & ``Stop threading your takes. Build a profile.'' \\
+Spotify Power Users & ``Your library says nothing. Your reviews say everything.'' \\
+College Radio & ``Your station has taste. Now prove it.'' \\
+General & ``Music finally has its Letterboxd.'' \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Long-form Copy}
+
+\textit{``You're the music person in your friend group. You make the playlists. You text the recs. You have opinions on every album that drops. But where does all that taste live? Scattered in group chats. Lost in threads. Waxfeed is where your taste finally has a home. Review albums. Follow friends. Discover through people, not algorithms. This is Letterboxd for music.''}
+
+\subsection{Short Copy (Ads)}
+
+\begin{itemize}[noitemsep]
+    \item \textbf{Instagram:} ``Letterboxd for music. Review albums. Follow friends. Free.''
+    \item \textbf{Reddit:} ``RYM is ugly. Spotify recs suck. We fixed both.''
+    \item \textbf{TikTok:} ``POV: You finally have somewhere for your music taste''
+\end{itemize}
+
+\section{Calls to Action}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\textbf{Placement} & \textbf{CTA} \\
+\midrule
+Primary (all ads) & ``Claim Your Username $\rightarrow$'' \\
+Secondary & ``Join Free'' \\
+Landing Page & ``Start Your First Review'' \\
+Referral & ``Invite a Friend, Get Wax'' \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Budget Allocation: \$10,000}
+
+\subsection{Overview}
+
+\begin{center}
+\begin{tabular}{lrrp{5cm}}
+\toprule
+\textbf{Category} & \textbf{Budget} & \textbf{\%} & \textbf{Notes} \\
+\midrule
+\textbf{Builder Stipend} & \$2,000 & 20\% & Development \& maintenance \\
+\textbf{Advertising} & \$8,000 & 80\% & Paid media (breakdown below) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Advertising Breakdown: \$8,000}
+
+\begin{center}
+\begin{tabular}{lrrp{5cm}}
+\toprule
+\textbf{Channel} & \textbf{Budget} & \textbf{\%} & \textbf{Rationale} \\
+\midrule
+Instagram/Meta & \$3,000 & 37.5\% & Visual platform, music aesthetic \\
+Reddit & \$2,000 & 25\% & r/vinyl, r/indieheads, r/LetterboxdOfficial \\
+TikTok Ads & \$1,500 & 18.75\% & Spark Ads, in-feed video \\
+TikTok Influencers & \$1,000 & 12.5\% & 2-3 micro-influencers, paid posts \\
+Reserve/Testing & \$500 & 6.25\% & A/B testing, retargeting \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Instagram/Meta --- \$3,000}
+
+\textbf{Ad Formats:}
+\begin{itemize}[noitemsep]
+    \item Carousel (swipe through album reviews)
+    \item Reels (15-sec discovery moments)
+    \item Stories (polls: ``Do you trust Spotify recommendations?'')
+\end{itemize}
+
+\textbf{Targeting:}
+\begin{itemize}[noitemsep]
+    \item Interest: Letterboxd, Pitchfork, vinyl records
+    \item Lookalike: Music publication followers
+    \item Age: 18--34
+\end{itemize}
+
+\subsection{Reddit --- \$2,000}
+
+\begin{center}
+\begin{tabular}{lr}
+\toprule
+\textbf{Subreddit} & \textbf{Members} \\
+\midrule
+r/LetterboxdOfficial & 120K \\
+r/indieheads & 2.1M \\
+r/hiphopheads & 2.4M \\
+r/vinyl & 1.1M \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Strategy:} Organic seeding (Week 1), soft launch post (Week 2), paid promotion (Week 3--6).
+
+\subsection{TikTok --- \$2,500 Total}
+
+\textbf{TikTok Ads (\$1,500):} Spark Ads and in-feed video targeting VinylTok, music discourse, album ranking content.
+
+\textbf{TikTok Influencers (\$1,000):} 2--3 micro-influencers (10K--100K followers), \$300--500 each for authentic posts showing Waxfeed in use.
+
+\section{Campaign Timeline}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{clX}
+\toprule
+\textbf{Week} & \textbf{Phase} & \textbf{Activities} \\
+\midrule
+1 & Pre-Launch & Finalize creative, set up ad accounts, tracking pixels \\
+2 & Soft Launch & Reddit organic posts, invite-only messaging \\
+3 & Paid Launch & Meta ads live, Reddit promoted, TikTok Spark Ads \\
+4 & Optimization & A/B test creative, pause underperformers, scale winners \\
+5 & Amplification & Retargeting, referral program push \\
+6 & Sustain & Maintain top performers, report results, plan Phase 2 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{Success Metrics}
+
+\subsection{Primary KPIs}
+
+\begin{center}
+\begin{tabular}{lrl}
+\toprule
+\textbf{Metric} & \textbf{Target} & \textbf{Tracking} \\
+\midrule
+New Signups & 2,500+ & Database \\
+Cost Per Acquisition & $<$\$3.20 & Ad spend $\div$ signups \\
+Day 7 Retention & $>$30\% & Return users \\
+Reviews Written & 1,500+ & Engagement \\
+Referral Rate & $>$15\% & Invites sent \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Secondary KPIs}
+
+\begin{center}
+\begin{tabular}{lr}
+\toprule
+\textbf{Metric} & \textbf{Target} \\
+\midrule
+Impressions & 800K+ \\
+CTR & $>$1.5\% \\
+Landing Conversion & $>$25\% \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Long-Term Vision}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{lXr}
+\toprule
+\textbf{Phase} & \textbf{Milestone} & \textbf{Users} \\
+\midrule
+Phase 1 (Now) & Early adopters establish culture & 2.5K \\
+Phase 2 (Q2) & Artist accounts, press coverage & 25K \\
+Phase 3 (Q3--Q4) & Premium tier, college radio network & 100K \\
+Phase 4 (2026) & Center for music discourse & 500K+ \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{WBRU Partnership Value}
+
+This campaign positions WBRU/WBRU as a founding partner in what could become the definitive platform for music discourse. The partnership offers:
+
+\begin{itemize}[noitemsep]
+    \item \textbf{Cultural credibility:} College radio heritage meets modern platform
+    \item \textbf{Growth equity:} Early investment in a scalable consumer product
+    \item \textbf{Network effects:} WBRU community as initial user base
+    \item \textbf{Revenue potential:} Premium subscriptions, API licensing, advertising
+\end{itemize}
+
+\section{Next Steps}
+
+\begin{enumerate}[noitemsep]
+    \item Finalize partnership structure and ownership terms
+    \item Approve campaign creative concept
+    \item Set up Meta/Reddit/TikTok ad accounts
+    \item Create ad assets (in-house)
+    \item Launch Week 2 (mid-January)
+\end{enumerate}
+
+\vfill
+\begin{center}
+\textit{Prepared by Polarity Lab LLC}\\
+\textit{December 2024}
+\end{center}
+
+\end{document}

@@ -17,10 +17,10 @@ const prisma = new PrismaClient()
 const SQLITE_PATH = "/Volumes/360/annas_archive_spotify_2025_07_metadata/spotify_clean.sqlite3"
 
 // Batch size for PostgreSQL inserts (larger = faster, more memory)
-const BATCH_SIZE = 5000
+const BATCH_SIZE = 10000
 
 // Number of concurrent batch inserts
-const CONCURRENCY = 5
+const CONCURRENCY = 10
 
 // Progress reporting interval
 const PROGRESS_INTERVAL = 10000
@@ -102,7 +102,6 @@ async function main() {
     LEFT JOIN artist_albums aa ON aa.album_rowid = a.rowid AND aa.index_in_album = 0
     LEFT JOIN artists ar ON ar.rowid = aa.artist_rowid
     WHERE a.album_type IN ('album', 'compilation')
-    ORDER BY a.popularity DESC
   `)
 
   // Prepare image query
@@ -128,7 +127,7 @@ async function main() {
   let imported = 0
   let skipped = 0
   let errors = 0
-  let batch: Parameters<typeof prisma.album.createMany>[0]["data"] = []
+  let batch: NonNullable<Parameters<typeof prisma.album.createMany>[0]>["data"] = []
   let pendingBatches: typeof batch[] = []
 
   // Iterate through all albums
