@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useSession, signOut } from "next-auth/react"
 import { useState, useEffect, useRef } from "react"
 import { DefaultAvatar } from "./default-avatar"
-import { RGBDotsLogo } from "./rgb-dots-logo"
+import { WaxfeedLogo } from "./waxfeed-logo"
 
 export function Header() {
   const { data: session, status } = useSession()
@@ -49,7 +49,7 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 h-14 lg:h-16 flex items-center justify-between gap-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 no-underline flex-shrink-0">
-          <RGBDotsLogo className="h-6 lg:h-8" />
+          <WaxfeedLogo size="md" />
           <span className="font-bold text-lg lg:text-xl tracking-tight">WAXFEED</span>
         </Link>
 

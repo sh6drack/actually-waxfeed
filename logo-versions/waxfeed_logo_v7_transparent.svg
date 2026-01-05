@@ -1,0 +1,457 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <defs>
+    <!-- ========== DISC SURFACE GRADIENTS ========== -->
+    
+    <!-- Base holographic - pink/magenta dominant with color shifts -->
+    <linearGradient id="holoBase" x1="20%" y1="80%" x2="80%" y2="20%">
+      <stop offset="0%" stop-color="#e4a8c8"/>
+      <stop offset="12%" stop-color="#f0b8d8"/>
+      <stop offset="24%" stop-color="#d898c8"/>
+      <stop offset="36%" stop-color="#98d8b8"/>
+      <stop offset="48%" stop-color="#88c8d8"/>
+      <stop offset="60%" stop-color="#b898d8"/>
+      <stop offset="72%" stop-color="#d8a8c8"/>
+      <stop offset="84%" stop-color="#c8e8a8"/>
+      <stop offset="100%" stop-color="#e8c8d8"/>
+    </linearGradient>
+    
+    <!-- Iridescent sweep - that curved rainbow refraction -->
+    <radialGradient id="iridescentSweep" cx="30%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.5"/>
+      <stop offset="15%" stop-color="#ffb8e0" stop-opacity="0.6"/>
+      <stop offset="30%" stop-color="#b8ffb8" stop-opacity="0.4"/>
+      <stop offset="45%" stop-color="#b8d8ff" stop-opacity="0.35"/>
+      <stop offset="60%" stop-color="#e8b8ff" stop-opacity="0.4"/>
+      <stop offset="75%" stop-color="#ffe8b8" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#ffb8c8" stop-opacity="0.2"/>
+    </radialGradient>
+    
+    <!-- Secondary color sweep from opposite direction -->
+    <radialGradient id="iridescentSweep2" cx="70%" cy="70%" r="60%">
+      <stop offset="0%" stop-color="#c8ffe8" stop-opacity="0.3"/>
+      <stop offset="30%" stop-color="#ffc8e8" stop-opacity="0.25"/>
+      <stop offset="60%" stop-color="#c8c8ff" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#ffe8c8" stop-opacity="0.15"/>
+    </radialGradient>
+    
+    <!-- Light streak across disc surface -->
+    <linearGradient id="lightStreak" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="35%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="45%" stop-color="#ffffff" stop-opacity="0.7"/>
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="55%" stop-color="#ffffff" stop-opacity="0.7"/>
+      <stop offset="65%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    
+    <!-- Disc edge shadow/depth -->
+    <radialGradient id="discEdgeDepth" cx="50%" cy="50%" r="50%">
+      <stop offset="88%" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="94%" stop-color="#000000" stop-opacity="0.1"/>
+      <stop offset="97%" stop-color="#000000" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.35"/>
+    </radialGradient>
+    
+    <!-- ========== CENTER HUB GRADIENTS ========== -->
+    
+    <!-- Main hub metallic surface -->
+    <radialGradient id="hubMetal" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#f8f8f8"/>
+      <stop offset="15%" stop-color="#e8e8e8"/>
+      <stop offset="35%" stop-color="#d0d0d0"/>
+      <stop offset="55%" stop-color="#a8a8a8"/>
+      <stop offset="75%" stop-color="#888888"/>
+      <stop offset="100%" stop-color="#686868"/>
+    </radialGradient>
+    
+    <!-- Inner ring metallic -->
+    <radialGradient id="ringMetal1" cx="40%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#d8d8d8"/>
+      <stop offset="50%" stop-color="#a0a0a0"/>
+      <stop offset="100%" stop-color="#707070"/>
+    </radialGradient>
+    
+    <radialGradient id="ringMetal2" cx="45%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#c0c0c0"/>
+      <stop offset="50%" stop-color="#909090"/>
+      <stop offset="100%" stop-color="#606060"/>
+    </radialGradient>
+    
+    <!-- Spindle clamp gradient -->
+    <radialGradient id="spindleClamp" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#e0e0e0"/>
+      <stop offset="30%" stop-color="#b8b8b8"/>
+      <stop offset="60%" stop-color="#909090"/>
+      <stop offset="100%" stop-color="#585858"/>
+    </radialGradient>
+    
+    <!-- ========== CASE GRADIENTS ========== -->
+    
+    <!-- Main case body - clear plastic with depth -->
+    <linearGradient id="caseMain" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f6f6f6"/>
+      <stop offset="25%" stop-color="#efefef"/>
+      <stop offset="50%" stop-color="#e6e6e6"/>
+      <stop offset="75%" stop-color="#dedede"/>
+      <stop offset="100%" stop-color="#d4d4d4"/>
+    </linearGradient>
+    
+    <!-- Case inner well - where disc sits -->
+    <radialGradient id="caseWell" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#e8e8e8"/>
+      <stop offset="70%" stop-color="#e0e0e0"/>
+      <stop offset="100%" stop-color="#c8c8c8"/>
+    </radialGradient>
+    
+    <!-- Case wall left (lit) -->
+    <linearGradient id="wallLeft" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#e8e8e8"/>
+      <stop offset="50%" stop-color="#d8d8d8"/>
+      <stop offset="100%" stop-color="#c0c0c0"/>
+    </linearGradient>
+    
+    <!-- Case wall right (shadow) -->
+    <linearGradient id="wallRight" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#c8c8c8"/>
+      <stop offset="50%" stop-color="#b8b8b8"/>
+      <stop offset="100%" stop-color="#a8a8a8"/>
+    </linearGradient>
+    
+    <!-- Case wall top (lit) -->
+    <linearGradient id="wallTop" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f0f0f0"/>
+      <stop offset="50%" stop-color="#e0e0e0"/>
+      <stop offset="100%" stop-color="#d0d0d0"/>
+    </linearGradient>
+    
+    <!-- Case wall bottom (shadow) -->
+    <linearGradient id="wallBottom" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#c0c0c0"/>
+      <stop offset="50%" stop-color="#b0b0b0"/>
+      <stop offset="100%" stop-color="#a0a0a0"/>
+    </linearGradient>
+    
+    <!-- ========== SHUTTER GRADIENTS ========== -->
+    
+    <!-- Shutter body - matte purple with subtle texture -->
+    <linearGradient id="shutterBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a078b0"/>
+      <stop offset="20%" stop-color="#b890c8"/>
+      <stop offset="40%" stop-color="#c8a0d8"/>
+      <stop offset="60%" stop-color="#c8a0d8"/>
+      <stop offset="80%" stop-color="#b890c8"/>
+      <stop offset="100%" stop-color="#9870a8"/>
+    </linearGradient>
+    
+    <!-- Shutter edge highlight -->
+    <linearGradient id="shutterHighlight" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#d8c0e8"/>
+      <stop offset="50%" stop-color="#c8b0d8"/>
+      <stop offset="100%" stop-color="#b8a0c8"/>
+    </linearGradient>
+    
+    <!-- ========== FILTERS ========== -->
+    
+    <!-- Main drop shadow -->
+    <filter id="mainShadow" x="-15%" y="-15%" width="135%" height="140%">
+      <feDropShadow dx="5" dy="8" stdDeviation="10" flood-color="#000000" flood-opacity="0.3"/>
+    </filter>
+    
+    <!-- Subtle inner shadow for depth -->
+    <filter id="innerDepth" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="1" dy="1" stdDeviation="2" flood-color="#000000" flood-opacity="0.15"/>
+    </filter>
+    
+    <!-- Groove texture -->
+    <pattern id="groovePattern" x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.5" fill="none" stroke="#000" stroke-width="0.1" opacity="0.05"/>
+    </pattern>
+  </defs>
+  
+  <!-- ==================== BACKGROUND ==================== -->
+  
+  
+  <!-- ==================== CASE STRUCTURE ==================== -->
+  
+  <!-- Main case with shadow -->
+  <g filter="url(#mainShadow)">
+    <rect x="28" y="28" width="444" height="444" rx="10" fill="url(#caseMain)"/>
+  </g>
+  
+  <!-- Case outer bevel - top edge (bright) -->
+  <path d="M38,28 L462,28 Q472,28 472,38 L472,32 Q472,28 462,28 L38,28 Q28,28 28,38 L28,32" fill="#ffffff" opacity="0.7"/>
+  
+  <!-- Case outer bevel - left edge (bright) -->
+  <path d="M28,38 L28,462 Q28,472 38,472 L32,472 Q28,472 28,462 L28,38 Q28,28 38,28 L32,28" fill="#ffffff" opacity="0.5"/>
+  
+  <!-- Case outer bevel - bottom edge (dark) -->
+  <path d="M38,472 L462,472 Q472,472 472,462 L472,468 Q472,472 462,472 L38,472 Q28,472 28,462 L28,468" fill="#000000" opacity="0.15"/>
+  
+  <!-- Case outer bevel - right edge (dark) -->
+  <path d="M472,38 L472,462 Q472,472 462,472 L468,472 Q472,472 472,462 L472,38 Q472,28 462,28 L468,28" fill="#000000" opacity="0.12"/>
+  
+  <!-- Inner case well (recessed area) -->
+  <rect x="42" y="42" width="416" height="416" rx="6" fill="url(#caseWell)"/>
+  
+  <!-- Inner well shadow edges (showing depth) -->
+  <!-- Top inner shadow -->
+  <rect x="42" y="42" width="416" height="8" fill="url(#wallTop)" rx="3"/>
+  <!-- Left inner shadow -->
+  <rect x="42" y="42" width="8" height="416" fill="url(#wallLeft)" rx="3"/>
+  <!-- Bottom inner lip -->
+  <rect x="42" y="450" width="416" height="8" fill="url(#wallBottom)" rx="3"/>
+  <!-- Right inner lip -->
+  <rect x="450" y="42" width="8" height="416" fill="url(#wallRight)" rx="3"/>
+  
+  <!-- Case wall thickness indicators - molded ridges -->
+  <!-- Left ridge -->
+  <rect x="35" y="80" width="4" height="340" fill="#d8d8d8" rx="1"/>
+  <rect x="35" y="80" width="1" height="340" fill="#e8e8e8"/>
+  
+  <!-- Right ridge -->
+  <rect x="461" y="80" width="4" height="340" fill="#c0c0c0" rx="1"/>
+  <rect x="464" y="80" width="1" height="340" fill="#a8a8a8"/>
+  
+  <!-- Top ridge -->
+  <rect x="80" y="35" width="340" height="4" fill="#e0e0e0" rx="1"/>
+  <rect x="80" y="35" width="340" height="1" fill="#f0f0f0"/>
+  
+  <!-- Bottom ridge -->
+  <rect x="80" y="461" width="340" height="4" fill="#b0b0b0" rx="1"/>
+  <rect x="80" y="464" width="340" height="1" fill="#a0a0a0"/>
+  
+  <!-- ==================== CORNER SCREW MOUNTS ==================== -->
+  
+  <!-- Top-left corner mount -->
+  <g transform="translate(58, 58)">
+    <circle cx="0" cy="0" r="12" fill="#e4e4e4"/>
+    <circle cx="0" cy="0" r="10" fill="#d8d8d8"/>
+    <circle cx="0" cy="0" r="8" fill="#e0e0e0"/>
+    <circle cx="0" cy="0" r="6" fill="#c8c8c8"/>
+    <circle cx="0" cy="0" r="4" fill="#b8b8b8"/>
+    <circle cx="0" cy="0" r="2" fill="#a0a0a0"/>
+    <!-- Highlight -->
+    <ellipse cx="-3" cy="-3" rx="3" ry="2" fill="#ffffff" opacity="0.6" transform="rotate(-45)"/>
+  </g>
+  
+  <!-- Top-right corner mount -->
+  <g transform="translate(442, 58)">
+    <circle cx="0" cy="0" r="12" fill="#e0e0e0"/>
+    <circle cx="0" cy="0" r="10" fill="#d4d4d4"/>
+    <circle cx="0" cy="0" r="8" fill="#dcdcdc"/>
+    <circle cx="0" cy="0" r="6" fill="#c4c4c4"/>
+    <circle cx="0" cy="0" r="4" fill="#b4b4b4"/>
+    <circle cx="0" cy="0" r="2" fill="#9c9c9c"/>
+    <ellipse cx="-3" cy="-3" rx="3" ry="2" fill="#ffffff" opacity="0.5" transform="rotate(-45)"/>
+  </g>
+  
+  <!-- Bottom-left corner mount -->
+  <g transform="translate(58, 442)">
+    <circle cx="0" cy="0" r="12" fill="#d8d8d8"/>
+    <circle cx="0" cy="0" r="10" fill="#cccccc"/>
+    <circle cx="0" cy="0" r="8" fill="#d4d4d4"/>
+    <circle cx="0" cy="0" r="6" fill="#bcbcbc"/>
+    <circle cx="0" cy="0" r="4" fill="#acacac"/>
+    <circle cx="0" cy="0" r="2" fill="#949494"/>
+    <ellipse cx="-2" cy="-2" rx="2.5" ry="1.5" fill="#ffffff" opacity="0.4" transform="rotate(-45)"/>
+  </g>
+  
+  <!-- Bottom-right corner mount -->
+  <g transform="translate(442, 442)">
+    <circle cx="0" cy="0" r="12" fill="#d4d4d4"/>
+    <circle cx="0" cy="0" r="10" fill="#c8c8c8"/>
+    <circle cx="0" cy="0" r="8" fill="#d0d0d0"/>
+    <circle cx="0" cy="0" r="6" fill="#b8b8b8"/>
+    <circle cx="0" cy="0" r="4" fill="#a8a8a8"/>
+    <circle cx="0" cy="0" r="2" fill="#909090"/>
+    <ellipse cx="-2" cy="-2" rx="2.5" ry="1.5" fill="#ffffff" opacity="0.35" transform="rotate(-45)"/>
+  </g>
+  
+  <!-- ==================== VINYL DISC ==================== -->
+  
+  <g transform="translate(250, 250)">
+    
+    <!-- Disc base with holographic surface -->
+    <circle cx="0" cy="0" r="175" fill="url(#holoBase)"/>
+    
+    <!-- Iridescent color sweeps -->
+    <circle cx="0" cy="0" r="175" fill="url(#iridescentSweep)"/>
+    <circle cx="0" cy="0" r="175" fill="url(#iridescentSweep2)"/>
+    
+    <!-- Data track rings - like on real disc, catching light differently -->
+    <g fill="none" stroke-opacity="0.08">
+      <circle cx="0" cy="0" r="168" stroke="#000" stroke-width="12"/>
+      <circle cx="0" cy="0" r="150" stroke="#fff" stroke-width="1"/>
+      <circle cx="0" cy="0" r="145" stroke="#000" stroke-width="8"/>
+      <circle cx="0" cy="0" r="132" stroke="#fff" stroke-width="0.5"/>
+      <circle cx="0" cy="0" r="128" stroke="#000" stroke-width="6"/>
+      <circle cx="0" cy="0" r="118" stroke="#fff" stroke-width="0.5"/>
+      <circle cx="0" cy="0" r="112" stroke="#000" stroke-width="5"/>
+      <circle cx="0" cy="0" r="102" stroke="#fff" stroke-width="0.5"/>
+      <circle cx="0" cy="0" r="95" stroke="#000" stroke-width="4"/>
+      <circle cx="0" cy="0" r="85" stroke="#fff" stroke-width="0.5"/>
+      <circle cx="0" cy="0" r="78" stroke="#000" stroke-width="3"/>
+      <circle cx="0" cy="0" r="68" stroke="#fff" stroke-width="0.5"/>
+      <circle cx="0" cy="0" r="62" stroke="#000" stroke-width="2"/>
+    </g>
+    
+    <!-- Light streak reflection -->
+    <circle cx="0" cy="0" r="175" fill="url(#lightStreak)"/>
+    
+    <!-- Edge depth/shadow -->
+    <circle cx="0" cy="0" r="175" fill="url(#discEdgeDepth)"/>
+    
+    <!-- Disc rim highlight (top-left lit) -->
+    <circle cx="0" cy="0" r="174" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.5" 
+            stroke-dasharray="300 250" stroke-dashoffset="50"/>
+    
+    <!-- Disc rim shadow (bottom-right) -->
+    <circle cx="0" cy="0" r="175" fill="none" stroke="#000000" stroke-width="1" opacity="0.25"
+            stroke-dasharray="300 250" stroke-dashoffset="-200"/>
+    
+    <!-- ========== CENTER HUB ASSEMBLY ========== -->
+    
+    <!-- Outer hub ring -->
+    <circle cx="0" cy="0" r="52" fill="url(#hubMetal)"/>
+    <circle cx="0" cy="0" r="52" fill="none" stroke="#888" stroke-width="0.5"/>
+    
+    <!-- Hub ring groove 1 -->
+    <circle cx="0" cy="0" r="48" fill="none" stroke="#666" stroke-width="2"/>
+    <circle cx="0" cy="0" r="47" fill="url(#ringMetal1)"/>
+    
+    <!-- Hub ring groove 2 -->
+    <circle cx="0" cy="0" r="42" fill="none" stroke="#555" stroke-width="1.5"/>
+    <circle cx="0" cy="0" r="40" fill="url(#ringMetal2)"/>
+    
+    <!-- Hub ring groove 3 -->
+    <circle cx="0" cy="0" r="35" fill="none" stroke="#666" stroke-width="1"/>
+    <circle cx="0" cy="0" r="33" fill="#a8a8a8"/>
+    
+    <!-- Inner clamp ring -->
+    <circle cx="0" cy="0" r="28" fill="none" stroke="#505050" stroke-width="2"/>
+    <circle cx="0" cy="0" r="25" fill="url(#spindleClamp)"/>
+    
+    <!-- Innermost ring -->
+    <circle cx="0" cy="0" r="20" fill="none" stroke="#606060" stroke-width="1.5"/>
+    <circle cx="0" cy="0" r="17" fill="#909090"/>
+    
+    <!-- Spindle contact ring -->
+    <circle cx="0" cy="0" r="12" fill="none" stroke="#484848" stroke-width="2"/>
+    <circle cx="0" cy="0" r="9" fill="#787878"/>
+    
+    <!-- Center hole -->
+    <circle cx="0" cy="0" r="5" fill="#1c1c1c"/>
+    <circle cx="0" cy="0" r="3.5" fill="#282828"/>
+    <circle cx="0" cy="0" r="2" fill="#101010"/>
+    
+    <!-- Hub specular highlights -->
+    <ellipse cx="-15" cy="-18" rx="18" ry="8" fill="#ffffff" opacity="0.6" transform="rotate(-50 -15 -18)"/>
+    <ellipse cx="-8" cy="-10" rx="8" ry="4" fill="#ffffff" opacity="0.8" transform="rotate(-50 -8 -10)"/>
+    <ellipse cx="10" cy="12" rx="6" ry="3" fill="#ffffff" opacity="0.25" transform="rotate(40 10 12)"/>
+    
+    <!-- "88" printed on disc surface -->
+    <text x="85" y="12" 
+          font-family="Helvetica Neue, Helvetica, Arial, sans-serif" 
+          font-size="34" 
+          font-weight="700"
+          fill="#1a1a1a" 
+          opacity="0.8"
+          text-anchor="middle">
+      88
+    </text>
+    
+    <!-- Small technical text like on real discs -->
+    <g opacity="0.4" fill="#333">
+      <text x="-45" y="70" 
+            font-family="Helvetica, Arial, sans-serif" 
+            font-size="5" 
+            letter-spacing="0.5"
+            transform="rotate(-20 -45 70)">
+        RECORDABLE
+      </text>
+      <text x="-80" y="50" 
+            font-family="Helvetica, Arial, sans-serif" 
+            font-size="4.5" 
+            letter-spacing="0.3"
+            transform="rotate(-35 -80 50)">
+        74 / 2892
+      </text>
+    </g>
+  </g>
+  
+  <!-- ==================== SHUTTER MECHANISM ==================== -->
+  
+  <!-- Shutter shadow -->
+  <rect x="358" y="152" width="78" height="196" rx="3" fill="#000000" opacity="0.15" transform="translate(3,4)"/>
+  
+  <!-- Shutter body -->
+  <rect x="358" y="152" width="78" height="196" rx="3" fill="url(#shutterBody)"/>
+  
+  <!-- Shutter surface texture (horizontal lines) -->
+  <g stroke="#00000010" stroke-width="0.5">
+    <line x1="360" y1="165" x2="434" y2="165"/>
+    <line x1="360" y1="180" x2="434" y2="180"/>
+    <line x1="360" y1="195" x2="434" y2="195"/>
+    <line x1="360" y1="210" x2="434" y2="210"/>
+    <line x1="360" y1="225" x2="434" y2="225"/>
+    <line x1="360" y1="240" x2="434" y2="240"/>
+    <line x1="360" y1="255" x2="434" y2="255"/>
+    <line x1="360" y1="270" x2="434" y2="270"/>
+    <line x1="360" y1="285" x2="434" y2="285"/>
+    <line x1="360" y1="300" x2="434" y2="300"/>
+    <line x1="360" y1="315" x2="434" y2="315"/>
+    <line x1="360" y1="330" x2="434" y2="330"/>
+  </g>
+  
+  <!-- Shutter left edge (lit) -->
+  <rect x="358" y="152" width="3" height="196" fill="url(#shutterHighlight)" rx="1"/>
+  
+  <!-- Shutter right edge (shadow) -->
+  <rect x="433" y="152" width="3" height="196" fill="#785888" opacity="0.3" rx="1"/>
+  
+  <!-- Shutter top edge -->
+  <rect x="358" y="152" width="78" height="2" fill="#d8c0e8" opacity="0.5" rx="1"/>
+  
+  <!-- Shutter bottom edge -->
+  <rect x="358" y="346" width="78" height="2" fill="#786088" opacity="0.3" rx="1"/>
+  
+  <!-- WAXFEED on shutter -->
+  <text x="397" y="262" 
+        font-family="Helvetica Neue, Helvetica, Arial, sans-serif" 
+        font-size="14" 
+        font-weight="700"
+        fill="#1a1a1a" 
+        text-anchor="middle"
+        letter-spacing="2"
+        transform="rotate(-90 397 262)">
+    WAXFEED
+  </text>
+  
+  <!-- ==================== WF LOGO (like MD logo) ==================== -->
+  
+  <g transform="translate(68, 398)">
+    <rect x="0" y="0" width="36" height="28" fill="none" stroke="#606060" stroke-width="1.5" rx="3"/>
+    <rect x="2" y="2" width="32" height="24" fill="none" stroke="#808080" stroke-width="0.5" rx="2"/>
+    <text x="18" y="19" 
+          font-family="Helvetica Neue, Helvetica, Arial, sans-serif" 
+          font-size="12" 
+          font-weight="700"
+          fill="#505050" 
+          text-anchor="middle">
+      WF
+    </text>
+  </g>
+  
+  <!-- ==================== CASE SURFACE REFLECTIONS ==================== -->
+  
+  <!-- Main diagonal reflection -->
+  <polygon points="28,140 140,28 200,28 28,220" fill="#ffffff" opacity="0.12"/>
+  
+  <!-- Secondary smaller reflection -->
+  <polygon points="28,280 60,28 80,28 28,310" fill="#ffffff" opacity="0.06"/>
+  
+  <!-- Bottom corner subtle reflection -->
+  <polygon points="400,472 472,390 472,430 440,472" fill="#ffffff" opacity="0.05"/>
+  
+</svg>

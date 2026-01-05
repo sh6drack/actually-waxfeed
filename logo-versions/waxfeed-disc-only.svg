@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <!-- Base holographic - pink/magenta dominant with color shifts -->
+    <linearGradient id="holoBase" x1="20%" y1="80%" x2="80%" y2="20%">
+      <stop offset="0%" stop-color="#e4a8c8"/>
+      <stop offset="12%" stop-color="#f0b8d8"/>
+      <stop offset="24%" stop-color="#d898c8"/>
+      <stop offset="36%" stop-color="#98d8b8"/>
+      <stop offset="48%" stop-color="#88c8d8"/>
+      <stop offset="60%" stop-color="#b898d8"/>
+      <stop offset="72%" stop-color="#d8a8c8"/>
+      <stop offset="84%" stop-color="#c8e8a8"/>
+      <stop offset="100%" stop-color="#e8c8d8"/>
+    </linearGradient>
+
+    <!-- Iridescent sweep -->
+    <radialGradient id="iridescentSweep" cx="30%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.5"/>
+      <stop offset="15%" stop-color="#ffb8e0" stop-opacity="0.6"/>
+      <stop offset="30%" stop-color="#b8ffb8" stop-opacity="0.4"/>
+      <stop offset="45%" stop-color="#b8d8ff" stop-opacity="0.35"/>
+      <stop offset="60%" stop-color="#e8b8ff" stop-opacity="0.4"/>
+      <stop offset="75%" stop-color="#ffe8b8" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#ffb8c8" stop-opacity="0.2"/>
+    </radialGradient>
+
+    <!-- Secondary color sweep -->
+    <radialGradient id="iridescentSweep2" cx="70%" cy="70%" r="60%">
+      <stop offset="0%" stop-color="#c8ffe8" stop-opacity="0.3"/>
+      <stop offset="30%" stop-color="#ffc8e8" stop-opacity="0.25"/>
+      <stop offset="60%" stop-color="#c8c8ff" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#ffe8c8" stop-opacity="0.15"/>
+    </radialGradient>
+
+    <!-- Light streak -->
+    <linearGradient id="lightStreak" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="35%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="45%" stop-color="#ffffff" stop-opacity="0.7"/>
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="55%" stop-color="#ffffff" stop-opacity="0.7"/>
+      <stop offset="65%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Edge depth -->
+    <radialGradient id="discEdgeDepth" cx="50%" cy="50%" r="50%">
+      <stop offset="88%" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="94%" stop-color="#000000" stop-opacity="0.1"/>
+      <stop offset="97%" stop-color="#000000" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.35"/>
+    </radialGradient>
+
+    <!-- Hub gradients -->
+    <radialGradient id="hubMetal" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#f8f8f8"/>
+      <stop offset="15%" stop-color="#e8e8e8"/>
+      <stop offset="35%" stop-color="#d0d0d0"/>
+      <stop offset="55%" stop-color="#a8a8a8"/>
+      <stop offset="75%" stop-color="#888888"/>
+      <stop offset="100%" stop-color="#686868"/>
+    </radialGradient>
+
+    <radialGradient id="ringMetal1" cx="40%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#d8d8d8"/>
+      <stop offset="50%" stop-color="#a0a0a0"/>
+      <stop offset="100%" stop-color="#707070"/>
+    </radialGradient>
+
+    <radialGradient id="ringMetal2" cx="45%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#c0c0c0"/>
+      <stop offset="50%" stop-color="#909090"/>
+      <stop offset="100%" stop-color="#606060"/>
+    </radialGradient>
+
+    <radialGradient id="spindleClamp" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#e0e0e0"/>
+      <stop offset="30%" stop-color="#b8b8b8"/>
+      <stop offset="60%" stop-color="#909090"/>
+      <stop offset="100%" stop-color="#585858"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Transparent background -->
+
+  <g transform="translate(200, 200)">
+    <!-- Disc base -->
+    <circle cx="0" cy="0" r="190" fill="url(#holoBase)"/>
+    <circle cx="0" cy="0" r="190" fill="url(#iridescentSweep)"/>
+    <circle cx="0" cy="0" r="190" fill="url(#iridescentSweep2)"/>
+
+    <!-- Data track rings -->
+    <g fill="none" stroke-opacity="0.08">
+      <circle cx="0" cy="0" r="182" stroke="#000" stroke-width="14"/>
+      <circle cx="0" cy="0" r="162" stroke="#fff" stroke-width="1"/>
+      <circle cx="0" cy="0" r="156" stroke="#000" stroke-width="10"/>
+      <circle cx="0" cy="0" r="140" stroke="#fff" stroke-width="0.5"/>
+      <circle cx="0" cy="0" r="134" stroke="#000" stroke-width="8"/>
+      <circle cx="0" cy="0" r="120" stroke="#fff" stroke-width="0.5"/>
+      <circle cx="0" cy="0" r="112" stroke="#000" stroke-width="6"/>
+      <circle cx="0" cy="0" r="100" stroke="#fff" stroke-width="0.5"/>
+      <circle cx="0" cy="0" r="92" stroke="#000" stroke-width="5"/>
+      <circle cx="0" cy="0" r="80" stroke="#fff" stroke-width="0.5"/>
+      <circle cx="0" cy="0" r="72" stroke="#000" stroke-width="4"/>
+    </g>
+
+    <!-- Light streak -->
+    <circle cx="0" cy="0" r="190" fill="url(#lightStreak)"/>
+
+    <!-- Edge depth -->
+    <circle cx="0" cy="0" r="190" fill="url(#discEdgeDepth)"/>
+
+    <!-- Rim highlights -->
+    <circle cx="0" cy="0" r="188" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.5"
+            stroke-dasharray="320 280" stroke-dashoffset="50"/>
+    <circle cx="0" cy="0" r="190" fill="none" stroke="#000000" stroke-width="1.5" opacity="0.25"
+            stroke-dasharray="320 280" stroke-dashoffset="-200"/>
+
+    <!-- Center hub -->
+    <circle cx="0" cy="0" r="56" fill="url(#hubMetal)"/>
+    <circle cx="0" cy="0" r="56" fill="none" stroke="#888" stroke-width="0.5"/>
+    <circle cx="0" cy="0" r="52" fill="none" stroke="#666" stroke-width="2"/>
+    <circle cx="0" cy="0" r="50" fill="url(#ringMetal1)"/>
+    <circle cx="0" cy="0" r="44" fill="none" stroke="#555" stroke-width="1.5"/>
+    <circle cx="0" cy="0" r="42" fill="url(#ringMetal2)"/>
+    <circle cx="0" cy="0" r="36" fill="none" stroke="#666" stroke-width="1"/>
+    <circle cx="0" cy="0" r="34" fill="#a8a8a8"/>
+    <circle cx="0" cy="0" r="28" fill="none" stroke="#505050" stroke-width="2"/>
+    <circle cx="0" cy="0" r="25" fill="url(#spindleClamp)"/>
+    <circle cx="0" cy="0" r="20" fill="none" stroke="#606060" stroke-width="1.5"/>
+    <circle cx="0" cy="0" r="17" fill="#909090"/>
+    <circle cx="0" cy="0" r="12" fill="none" stroke="#484848" stroke-width="2"/>
+    <circle cx="0" cy="0" r="9" fill="#787878"/>
+    <circle cx="0" cy="0" r="5" fill="#1c1c1c"/>
+    <circle cx="0" cy="0" r="3.5" fill="#282828"/>
+    <circle cx="0" cy="0" r="2" fill="#101010"/>
+
+    <!-- Hub highlights -->
+    <ellipse cx="-16" cy="-20" rx="20" ry="10" fill="#ffffff" opacity="0.6" transform="rotate(-50 -16 -20)"/>
+    <ellipse cx="-8" cy="-12" rx="10" ry="5" fill="#ffffff" opacity="0.8" transform="rotate(-50 -8 -12)"/>
+    <ellipse cx="12" cy="14" rx="8" ry="4" fill="#ffffff" opacity="0.25" transform="rotate(40 12 14)"/>
+  </g>
+</svg>

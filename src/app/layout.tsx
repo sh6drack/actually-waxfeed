@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     title: "WAXFEED",
     description: "A social music review platform - Letterboxd for music",
     type: "website",
-    images: ["/logo/waxfeed-logo-512.png"],
+    images: ["/logo/waxfeed-disc-512.png"],
   },
 };
 
