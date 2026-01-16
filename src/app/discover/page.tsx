@@ -245,7 +245,7 @@ export default async function DiscoverPage() {
       {recommendations.becauseYouLiked && recommendations.becauseYouLiked.recommendations.length > 0 && (
         <section className="mb-10">
           <h2 className="text-lg font-bold mb-4">
-            Because you liked "{recommendations.becauseYouLiked.album.title}"
+            Because you liked {recommendations.becauseYouLiked.album.title}
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {recommendations.becauseYouLiked.recommendations.map((album) => (

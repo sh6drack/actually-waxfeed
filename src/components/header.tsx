@@ -45,7 +45,7 @@ export function Header() {
   }, [mobileMenuOpen])
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white text-black border-b border-black">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a] text-[#ededed] border-b border-[#222]">
       <div className="max-w-7xl mx-auto px-4 h-14 lg:h-16 flex items-center justify-between gap-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 no-underline flex-shrink-0">
@@ -60,7 +60,7 @@ export function Header() {
             placeholder="Search albums, users, lists..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white border border-black px-4 py-2 text-sm text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-1"
+            className="w-full bg-[#111] border border-[#333] px-4 py-2 text-sm text-[#ededed] placeholder-[#666] focus:outline-none focus:border-white"
           />
         </form>
 
@@ -91,7 +91,7 @@ export function Header() {
                   <img
                     src={session.user.image}
                     alt=""
-                    className="w-8 h-8 border border-black object-cover"
+                    className="w-8 h-8 border border-[#333] object-cover"
                   />
                 ) : (
                   <DefaultAvatar size="sm" />
@@ -99,35 +99,35 @@ export function Header() {
               </button>
 
               {showDropdown && (
-                <div className="absolute right-0 top-full mt-2 bg-white border border-black min-w-48 py-2 shadow-lg">
-                  <div className="px-4 py-2 border-b border-black">
+                <div className="absolute right-0 top-full mt-2 bg-[#111] border border-[#333] min-w-48 py-2 shadow-lg">
+                  <div className="px-4 py-2 border-b border-[#333]">
                     <p className="font-bold">{session.user?.username || session.user?.name}</p>
-                    <p className="text-xs text-gray-600">{session.user?.email}</p>
+                    <p className="text-xs text-[#888]">{session.user?.email}</p>
                   </div>
                   <Link
                     href={`/u/${session.user?.username || session.user?.id}`}
-                    className="block px-4 py-2 no-underline hover:bg-gray-100"
+                    className="block px-4 py-2 no-underline hover:bg-[#222]"
                     onClick={() => setShowDropdown(false)}
                   >
                     Profile
                   </Link>
                   <Link
                     href="/notifications"
-                    className="block px-4 py-2 no-underline hover:bg-gray-100"
+                    className="block px-4 py-2 no-underline hover:bg-[#222]"
                     onClick={() => setShowDropdown(false)}
                   >
                     Notifications
                   </Link>
                   <Link
                     href="/settings"
-                    className="block px-4 py-2 no-underline hover:bg-gray-100"
+                    className="block px-4 py-2 no-underline hover:bg-[#222]"
                     onClick={() => setShowDropdown(false)}
                   >
                     Settings
                   </Link>
                   <button
                     onClick={() => signOut()}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-100 border-t border-black mt-2"
+                    className="w-full text-left px-4 py-2 hover:bg-[#222] border-t border-[#333] mt-2"
                   >
                     Sign Out
                   </button>
@@ -137,7 +137,7 @@ export function Header() {
           ) : (
             <Link
               href="/login"
-              className="bg-black text-white px-4 py-2 text-sm font-bold hover:bg-gray-800 no-underline transition-colors inline-block"
+              className="bg-white text-black px-4 py-2 text-sm font-bold hover:bg-gray-200 no-underline transition-colors inline-block"
             >
               Sign In
             </Link>
@@ -149,7 +149,7 @@ export function Header() {
           {/* Search icon - links to search page */}
           <Link
             href="/search"
-            className="p-2 hover:bg-gray-100 transition-colors"
+            className="p-2 hover:bg-[#222] transition-colors"
             aria-label="Search"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -160,7 +160,7 @@ export function Header() {
           {/* Menu button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 hover:bg-gray-100 transition-colors"
+            className="p-2 hover:bg-[#222] transition-colors"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? (
@@ -178,21 +178,21 @@ export function Header() {
 
       {/* Mobile/Tablet Menu Overlay */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 top-14 bg-white z-40 overflow-y-auto">
+        <div className="lg:hidden fixed inset-0 top-14 bg-[#0a0a0a] z-40 overflow-y-auto">
           {/* Search bar in menu */}
-          <form onSubmit={handleSearch} className="p-4 border-b border-gray-200">
+          <form onSubmit={handleSearch} className="p-4 border-b border-[#222]">
             <div className="relative">
               <input
                 type="text"
                 placeholder="Search albums, artists, users..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-300 px-4 py-3 text-base text-black placeholder-gray-500 focus:outline-none focus:border-black focus:bg-white"
+                className="w-full bg-[#111] border border-[#333] px-4 py-3 text-base text-[#ededed] placeholder-[#666] focus:outline-none focus:border-white"
                 autoFocus
               />
               <button
                 type="submit"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888]"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -205,41 +205,41 @@ export function Header() {
           <nav>
             <Link
               href="/"
-              className="flex items-center justify-between px-4 py-4 text-lg font-medium no-underline hover:bg-gray-50 active:bg-gray-100 border-b border-gray-100"
+              className="flex items-center justify-between px-4 py-4 text-lg font-medium no-underline hover:bg-[#111] active:bg-[#181818] border-b border-[#222]"
               onClick={() => setMobileMenuOpen(false)}
             >
               <span>Home</span>
-              <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-5 h-5 text-[#666]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </Link>
             <Link
               href="/discover"
-              className="flex items-center justify-between px-4 py-4 text-lg font-medium no-underline hover:bg-gray-50 active:bg-gray-100 border-b border-gray-100"
+              className="flex items-center justify-between px-4 py-4 text-lg font-medium no-underline hover:bg-[#111] active:bg-[#181818] border-b border-[#222]"
               onClick={() => setMobileMenuOpen(false)}
             >
               <span>Discover</span>
-              <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-5 h-5 text-[#666]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </Link>
             <Link
               href="/trending"
-              className="flex items-center justify-between px-4 py-4 text-lg font-medium no-underline hover:bg-gray-50 active:bg-gray-100 border-b border-gray-100"
+              className="flex items-center justify-between px-4 py-4 text-lg font-medium no-underline hover:bg-[#111] active:bg-[#181818] border-b border-[#222]"
               onClick={() => setMobileMenuOpen(false)}
             >
               <span>Trending</span>
-              <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-5 h-5 text-[#666]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </Link>
             <Link
               href="/lists"
-              className="flex items-center justify-between px-4 py-4 text-lg font-medium no-underline hover:bg-gray-50 active:bg-gray-100 border-b border-gray-100"
+              className="flex items-center justify-between px-4 py-4 text-lg font-medium no-underline hover:bg-[#111] active:bg-[#181818] border-b border-[#222]"
               onClick={() => setMobileMenuOpen(false)}
             >
               <span>Lists</span>
-              <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-5 h-5 text-[#666]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </Link>
@@ -247,51 +247,51 @@ export function Header() {
             {/* User Section */}
             {status !== "loading" && (
               session ? (
-                <div className="mt-4 border-t border-gray-200">
+                <div className="mt-4 border-t border-[#222]">
                   {/* User info header */}
-                  <div className="px-4 py-4 flex items-center gap-3 bg-gray-50">
+                  <div className="px-4 py-4 flex items-center gap-3 bg-[#111]">
                     {session.user?.image ? (
                       <img
                         src={session.user.image}
                         alt=""
-                        className="w-12 h-12 border border-gray-300 object-cover"
+                        className="w-12 h-12 border border-[#333] object-cover"
                       />
                     ) : (
                       <DefaultAvatar size="md" />
                     )}
                     <div className="min-w-0 flex-1">
                       <p className="font-bold truncate">{session.user?.username || session.user?.name}</p>
-                      <p className="text-sm text-gray-500 truncate">{session.user?.email}</p>
+                      <p className="text-sm text-[#888] truncate">{session.user?.email}</p>
                     </div>
                   </div>
 
                   <Link
                     href={`/u/${session.user?.username || session.user?.id}`}
-                    className="flex items-center justify-between px-4 py-4 text-base no-underline hover:bg-gray-50 border-b border-gray-100"
+                    className="flex items-center justify-between px-4 py-4 text-base no-underline hover:bg-[#111] border-b border-[#222]"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <span>Your Profile</span>
-                    <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-5 h-5 text-[#666]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </Link>
                   <Link
                     href="/notifications"
-                    className="flex items-center justify-between px-4 py-4 text-base no-underline hover:bg-gray-50 border-b border-gray-100"
+                    className="flex items-center justify-between px-4 py-4 text-base no-underline hover:bg-[#111] border-b border-[#222]"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <span>Notifications</span>
-                    <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-5 h-5 text-[#666]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </Link>
                   <Link
                     href="/settings"
-                    className="flex items-center justify-between px-4 py-4 text-base no-underline hover:bg-gray-50 border-b border-gray-100"
+                    className="flex items-center justify-between px-4 py-4 text-base no-underline hover:bg-[#111] border-b border-[#222]"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <span>Settings</span>
-                    <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-5 h-5 text-[#666]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </Link>
@@ -300,23 +300,23 @@ export function Header() {
                       signOut()
                       setMobileMenuOpen(false)
                     }}
-                    className="w-full text-left px-4 py-4 text-base hover:bg-gray-50 text-red-600 font-medium"
+                    className="w-full text-left px-4 py-4 text-base hover:bg-[#111] text-red-500 font-medium"
                   >
                     Sign Out
                   </button>
                 </div>
               ) : (
-                <div className="p-4 mt-4 space-y-3 border-t border-gray-200">
+                <div className="p-4 mt-4 space-y-3 border-t border-[#222]">
                   <Link
                     href="/login"
-                    className="block w-full bg-black text-white px-4 py-4 text-base font-bold text-center no-underline hover:bg-gray-800 transition-colors"
+                    className="block w-full bg-white text-black px-4 py-4 text-base font-bold text-center no-underline hover:bg-gray-200 transition-colors"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Sign In
                   </Link>
                   <Link
                     href="/signup"
-                    className="block w-full border-2 border-black text-black px-4 py-4 text-base font-bold text-center no-underline hover:bg-gray-50 transition-colors"
+                    className="block w-full border-2 border-white text-white px-4 py-4 text-base font-bold text-center no-underline hover:bg-[#111] transition-colors"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Create Account

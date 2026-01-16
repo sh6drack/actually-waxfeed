@@ -90,7 +90,7 @@ export function ListContent({ items, isRanked }: ListContentProps) {
 
               {item.notes && (
                 <div className="text-sm text-[#888] italic max-w-xs truncate">
-                  "{item.notes}"
+                  {item.notes}
                 </div>
               )}
             </div>
