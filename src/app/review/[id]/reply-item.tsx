@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
 import { DefaultAvatar } from "@/components/default-avatar"
+import { VerifiedIcon } from "@/components/icons"
 
 interface ReplyItemProps {
   reply: {
@@ -71,7 +72,7 @@ export function ReplyItem({ reply, currentUserId }: ReplyItemProps) {
               {reply.user.username}
             </Link>
             {reply.user.isVerified && (
-              <span className="text-blue-400 text-xs">✓</span>
+              <VerifiedIcon size={12} className="text-blue-400" />
             )}
             <span className="text-[#666] text-xs">
               {formatDistanceToNow(new Date(reply.createdAt), { addSuffix: true })}

@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { ViewToggle } from "@/components/view-toggle"
+import { VerifiedIcon, HeartIcon } from "@/components/icons"
 
 interface ListData {
   id: string
@@ -59,11 +60,11 @@ function ListCard({ list }: { list: ListData }) {
       <h3 className="font-bold truncate mb-1">{list.title}</h3>
       <div className="flex items-center gap-2 text-xs text-[#888]">
         <span>@{list.user.username}</span>
-        {list.user.isVerified && <span>✓</span>}
+        {list.user.isVerified && <VerifiedIcon size={12} className="text-blue-400" />}
         <span>•</span>
         <span>{list._count.items} albums</span>
         <span>•</span>
-        <span>♡ {list._count.likes}</span>
+        <span className="flex items-center gap-1"><HeartIcon size={12} /> {list._count.likes}</span>
       </div>
     </Link>
   )
@@ -92,12 +93,12 @@ function ListRow({ list }: { list: ListData }) {
         <h3 className="font-bold truncate">{list.title}</h3>
         <div className="flex items-center gap-2 text-xs text-[#888]">
           <span>@{list.user.username}</span>
-          {list.user.isVerified && <span>✓</span>}
+          {list.user.isVerified && <VerifiedIcon size={12} className="text-blue-400" />}
         </div>
       </div>
       <div className="text-right text-xs text-[#888]">
         <div>{list._count.items} albums</div>
-        <div>♡ {list._count.likes}</div>
+        <div className="flex items-center justify-end gap-1"><HeartIcon size={12} /> {list._count.likes}</div>
       </div>
     </Link>
   )

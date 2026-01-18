@@ -4,6 +4,18 @@ import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
 import { useState, memo, useMemo, useCallback } from "react"
 import { useSession } from "next-auth/react"
+import {
+  HeartIcon,
+  HeartFilledIcon,
+  FlameIcon,
+  LightbulbIcon,
+  SmileIcon,
+  BoltIcon,
+  MessageIcon,
+  ArrowRightIcon,
+  VerifiedIcon,
+  ReactionsIcon,
+} from "@/components/icons"
 
 interface ReviewCardProps {
   id: string
@@ -35,10 +47,10 @@ interface ReviewCardProps {
 }
 
 const REACTIONS = [
-  { type: "fire", emoji: "🔥", label: "Fire" },
-  { type: "insightful", emoji: "💡", label: "Insightful" },
-  { type: "funny", emoji: "😂", label: "Funny" },
-  { type: "controversial", emoji: "🌶️", label: "Hot Take" },
+  { type: "fire", Icon: FlameIcon, label: "Fire" },
+  { type: "insightful", Icon: LightbulbIcon, label: "Insightful" },
+  { type: "funny", Icon: SmileIcon, label: "Funny" },
+  { type: "controversial", Icon: BoltIcon, label: "Hot Take" },
 ] as const
 
 export const ReviewCard = memo(function ReviewCard({
@@ -153,7 +165,7 @@ export const ReviewCard = memo(function ReviewCard({
                   {user.username || "Anonymous"}
                 </Link>
                 {user.isVerified && (
-                  <span className="text-[#888] text-xs">✓</span>
+                  <VerifiedIcon size={14} className="text-blue-400" />
                 )}
                 <span className="text-xs" style={{ color: 'var(--muted)' }}>
                   {formatDistanceToNow(date, { addSuffix: true })}
@@ -185,12 +197,12 @@ export const ReviewCard = memo(function ReviewCard({
           )}
 
           {/* Actions */}
-          <div className="flex items-center gap-2 sm:gap-3 text-xs flex-wrap" style={{ color: 'var(--muted)' }}>
+          <div className="flex items-center gap-3 sm:gap-4 text-xs flex-wrap" style={{ color: 'var(--muted)' }}>
             <button
               onClick={handleLike}
-              className={`hover:text-white transition-colors flex items-center gap-1 ${liked ? "text-red-500" : ""}`}
+              className={`hover:text-white transition-colors flex items-center gap-1.5 ${liked ? "text-red-500" : ""}`}
             >
-              <span>{liked ? "♥" : "♡"}</span>
+              {liked ? <HeartFilledIcon size={16} /> : <HeartIcon size={16} />}
               <span>{likeCount}</span>
             </button>
 
@@ -198,24 +210,24 @@ export const ReviewCard = memo(function ReviewCard({
             <div className="relative">
               <button
                 onClick={() => setShowReactions(!showReactions)}
-                className="hover:text-white transition-colors flex items-center gap-1"
+                className="hover:text-white transition-colors flex items-center gap-1.5"
               >
-                <span>✨</span>
+                <ReactionsIcon size={16} />
                 <span>{totalReactions}</span>
               </button>
 
               {showReactions && (
-                <div className="absolute bottom-full left-0 mb-1 bg-[#1a1a1a] border border-[#333] p-1 flex gap-1 z-10">
-                  {REACTIONS.map(({ type, emoji, label }) => (
+                <div className="absolute bottom-full left-0 mb-1 bg-[#1a1a1a] border border-[#333] p-1.5 flex gap-1 z-10 rounded">
+                  {REACTIONS.map(({ type, Icon, label }) => (
                     <button
                       key={type}
                       onClick={() => handleReaction(type)}
-                      className={`p-1.5 hover:bg-[#333] rounded transition-colors ${
-                        userReactions.includes(type) ? "bg-[#333]" : ""
+                      className={`p-2 hover:bg-[#333] rounded transition-colors ${
+                        userReactions.includes(type) ? "bg-[#333] text-white" : ""
                       }`}
                       title={`${label} (${reactionCounts[type as keyof typeof reactionCounts]})`}
                     >
-                      <span className="text-sm">{emoji}</span>
+                      <Icon size={16} />
                     </button>
                   ))}
                 </div>
@@ -224,29 +236,28 @@ export const ReviewCard = memo(function ReviewCard({
 
             {/* Show top reactions if any */}
             {totalReactions > 0 && !compact && (
-              <div className="flex items-center gap-0.5">
+              <div className="flex items-center gap-1">
                 {REACTIONS.filter(r => reactionCounts[r.type as keyof typeof reactionCounts] > 0)
                   .slice(0, 3)
-                  .map(({ type, emoji }) => (
-                    <span key={type} className="text-xs" title={`${reactionCounts[type as keyof typeof reactionCounts]}`}>
-                      {emoji}
-                    </span>
+                  .map(({ type, Icon }) => (
+                    <Icon key={type} size={14} className="opacity-60" title={`${reactionCounts[type as keyof typeof reactionCounts]}`} />
                   ))}
               </div>
             )}
 
             <Link
               href={`/review/${id}`}
-              className="hover:text-white transition-colors no-underline flex items-center gap-1"
+              className="hover:text-white transition-colors no-underline flex items-center gap-1.5"
             >
-              <span>💬</span>
+              <MessageIcon size={16} />
               <span>{replyCount || 0}</span>
             </Link>
             <Link
               href={`/review/${id}`}
-              className="hover:text-white transition-colors no-underline ml-auto"
+              className="hover:text-white transition-colors no-underline ml-auto flex items-center gap-1"
             >
-              View →
+              <span>View</span>
+              <ArrowRightIcon size={14} />
             </Link>
           </div>
         </div>

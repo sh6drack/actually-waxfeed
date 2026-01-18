@@ -7,6 +7,7 @@ import { DefaultAvatar } from "@/components/default-avatar"
 import { ReviewActions } from "./review-actions"
 import { ReplyForm } from "./reply-form"
 import { ReplyItem } from "./reply-item"
+import { VerifiedIcon } from "@/components/icons"
 import type { Metadata } from "next"
 
 export const dynamic = "force-dynamic"
@@ -187,7 +188,7 @@ export default async function ReviewPage({ params }: PageProps) {
                 {review.user.username}
               </Link>
               {review.user.isVerified && (
-                <span className="text-blue-400 text-xs">✓</span>
+                <VerifiedIcon size={14} className="text-blue-400" />
               )}
               <span className="text-[#666] text-sm">·</span>
               <span className="text-[#666] text-sm">

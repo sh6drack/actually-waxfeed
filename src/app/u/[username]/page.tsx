@@ -6,6 +6,15 @@ import { auth } from "@/lib/auth"
 import { ProfileActions } from "./profile-actions"
 import Link from "next/link"
 import { format, formatDistanceToNow } from "date-fns"
+import {
+  VerifiedIcon,
+  FlameIcon,
+  VinylIcon,
+  SparkleIcon,
+  ChartIcon,
+  ArrowRightIcon,
+  HeartIcon,
+} from "@/components/icons"
 
 interface Props {
   params: Promise<{ username: string }>
@@ -228,7 +237,7 @@ export default async function ProfilePage({ params }: Props) {
           <div className="flex items-center justify-center sm:justify-start gap-2 sm:gap-3 mb-2 flex-wrap">
             <h1 className="text-2xl sm:text-3xl font-bold">@{user.username || "user"}</h1>
             {user.isVerified && (
-              <span title="Verified" style={{ color: 'var(--muted)' }}>✓</span>
+              <VerifiedIcon size={20} className="text-blue-400" title="Verified" />
             )}
             {user.isPremium && (
               <span className="text-xs px-2 py-1" style={{ backgroundColor: 'var(--border)' }}>PRO</span>
@@ -255,20 +264,23 @@ export default async function ProfilePage({ params }: Props) {
           </div>
 
           {/* Streak & Wax Score */}
-          <div className="flex flex-wrap justify-center sm:justify-start gap-3 text-sm mb-4" style={{ color: 'var(--muted)' }}>
+          <div className="flex flex-wrap justify-center sm:justify-start gap-4 text-sm mb-4" style={{ color: 'var(--muted)' }}>
             {user.currentStreak > 0 && (
-              <span title={`Longest: ${user.longestStreak} days`}>
-                🔥 {user.currentStreak} day streak
+              <span className="flex items-center gap-1.5" title={`Longest: ${user.longestStreak} days`}>
+                <FlameIcon size={16} className="text-orange-500" />
+                {user.currentStreak} day streak
               </span>
             )}
             {user.waxScore > 0 && (
-              <span>
-                🕯️ {user.waxScore} wax
+              <span className="flex items-center gap-1.5">
+                <VinylIcon size={16} />
+                {user.waxScore} wax
               </span>
             )}
             {user.premiumWaxScore > 0 && (
-              <span>
-                ✨ {user.premiumWaxScore} premium
+              <span className="flex items-center gap-1.5">
+                <SparkleIcon size={16} className="text-yellow-500" />
+                {user.premiumWaxScore} premium
               </span>
             )}
           </div>
@@ -307,10 +319,11 @@ export default async function ProfilePage({ params }: Props) {
               </Link>
               <Link
                 href={`/u/${user.username}/stats`}
-                className="inline-block border px-4 py-2 text-sm no-underline transition-opacity hover:opacity-70"
+                className="inline-flex items-center gap-2 border px-4 py-2 text-sm no-underline transition-opacity hover:opacity-70"
                 style={{ borderColor: 'var(--border)' }}
               >
-                📊 Stats
+                <ChartIcon size={16} />
+                Stats
               </Link>
             </div>
           )}
@@ -416,7 +429,7 @@ export default async function ProfilePage({ params }: Props) {
                           {reply.likeCount > 0 && (
                             <>
                               <span style={{ color: 'var(--border)' }}>·</span>
-                              <span>♥ {reply.likeCount}</span>
+                              <span className="flex items-center gap-1"><HeartIcon size={12} /> {reply.likeCount}</span>
                             </>
                           )}
                         </div>

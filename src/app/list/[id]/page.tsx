@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import { ListContent } from "@/components/list-content"
+import { VerifiedIcon, HeartIcon } from "@/components/icons"
 
 export const dynamic = "force-dynamic"
 
@@ -62,14 +63,14 @@ export default async function ListPage({
           <p className="text-[#888] text-lg mb-4">{list.description}</p>
         )}
         <div className="flex items-center gap-4 text-sm text-[#888]">
-          <Link href={`/u/${list.user.username}`} className="hover:text-white">
+          <Link href={`/u/${list.user.username}`} className="hover:text-white flex items-center gap-1.5">
             @{list.user.username}
-            {list.user.isVerified && <span className="ml-1">✓</span>}
+            {list.user.isVerified && <VerifiedIcon size={14} className="text-blue-400" />}
           </Link>
           <span>•</span>
           <span>{list.items.length} albums</span>
           <span>•</span>
-          <span>♡ {list._count.likes} likes</span>
+          <span className="flex items-center gap-1"><HeartIcon size={14} /> {list._count.likes} likes</span>
           {list.isRanked && (
             <>
               <span>•</span>
