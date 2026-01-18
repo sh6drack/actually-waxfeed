@@ -7,11 +7,62 @@ import { DefaultAvatar } from "@/components/default-avatar"
 import { ReviewActions } from "./review-actions"
 import { ReplyForm } from "./reply-form"
 import { ReplyItem } from "./reply-item"
+import type { Metadata } from "next"
 
 export const dynamic = "force-dynamic"
 
 interface PageProps {
   params: Promise<{ id: string }>
+}
+
+// Generate dynamic metadata for rich iMessage/social embeds
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params
+
+  const review = await prisma.review.findUnique({
+    where: { id },
+    include: {
+      user: { select: { username: true } },
+      album: { select: { title: true, artistName: true, coverArtUrl: true } }
+    }
+  })
+
+  if (!review) {
+    return { title: "Review not found | WAXFEED" }
+  }
+
+  const title = `@${review.user.username} rated ${review.album.title} a ${review.rating.toFixed(1)}`
+  const description = review.text
+    ? review.text.slice(0, 200) + (review.text.length > 200 ? "..." : "")
+    : `Check out this review of ${review.album.title} by ${review.album.artistName} on WAXFEED`
+
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://waxfeed.com'
+  const ogImageUrl = `${baseUrl}/api/og/review/${id}`
+
+  return {
+    title: `${title} | WAXFEED`,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      siteName: "WAXFEED",
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: `${review.album.title} review by @${review.user.username}`,
+        }
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImageUrl],
+    },
+  }
 }
 
 async function getReview(id: string, userId?: string) {
