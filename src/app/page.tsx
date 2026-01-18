@@ -6,24 +6,12 @@ import { formatDistanceToNow } from "date-fns"
 
 export const dynamic = "force-dynamic"
 
-// Get trending albums from last 30 days
-async function getTrendingAlbums() {
-  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-
+// Get Billboard 200 albums
+async function getBillboardAlbums() {
   return prisma.album.findMany({
-    where: {
-      albumType: { not: 'single' },
-      reviews: {
-        some: {
-          createdAt: { gte: thirtyDaysAgo }
-        }
-      }
-    },
-    orderBy: [
-      { totalReviews: 'desc' },
-      { averageRating: 'desc' }
-    ],
-    take: 12,
+    where: { billboardRank: { not: null } },
+    orderBy: { billboardRank: 'asc' },
+    take: 10,
     select: {
       id: true,
       spotifyId: true,
@@ -32,6 +20,7 @@ async function getTrendingAlbums() {
       coverArtUrl: true,
       averageRating: true,
       totalReviews: true,
+      billboardRank: true,
     },
   })
 }
@@ -74,8 +63,8 @@ async function getStats() {
 
 export default async function Home() {
   const session = await auth()
-  const [trendingAlbums, recentReviews, stats] = await Promise.all([
-    getTrendingAlbums(),
+  const [billboardAlbums, recentReviews, stats] = await Promise.all([
+    getBillboardAlbums(),
     getRecentReviews(),
     getStats(),
   ])
@@ -129,7 +118,7 @@ export default async function Home() {
           <div className="lg:col-span-5 lg:border-r lg:border-[--border] lg:pr-8">
             <div className="flex items-baseline justify-between mb-6">
               <h2 className="text-[11px] tracking-[0.2em] uppercase text-[--muted]">
-                Trending This Month
+                Billboard 200
               </h2>
               <Link
                 href="/trending"
@@ -140,7 +129,7 @@ export default async function Home() {
             </div>
 
             <div className="space-y-0">
-              {trendingAlbums.slice(0, 10).map((album, i) => (
+              {billboardAlbums.map((album) => (
                 <Link
                   key={album.id}
                   href={`/album/${album.spotifyId}`}
@@ -148,7 +137,7 @@ export default async function Home() {
                 >
                   {/* Rank */}
                   <span className="w-6 text-[13px] font-medium tabular-nums text-[--border] flex-shrink-0">
-                    {i + 1}
+                    {album.billboardRank}
                   </span>
 
                   {/* Album art */}
