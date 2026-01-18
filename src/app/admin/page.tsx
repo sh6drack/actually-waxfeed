@@ -21,12 +21,18 @@ export default function AdminPage() {
   const [billboardLoading, setBillboardLoading] = useState(false)
   const [billboardResult, setBillboardResult] = useState<string | null>(null)
 
+  const isAdmin = session?.user?.role === "ADMIN"
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login")
+    } else if (status === "authenticated" && !isAdmin) {
+      router.push("/")
     }
-    fetchStats()
-  }, [status, router])
+    if (isAdmin) {
+      fetchStats()
+    }
+  }, [status, router, isAdmin])
 
   const fetchStats = async () => {
     try {
@@ -107,6 +113,14 @@ export default function AdminPage() {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
         <p className="text-[#888]">Loading...</p>
+      </div>
+    )
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <p className="text-[#888]">Access denied. Admin privileges required.</p>
       </div>
     )
   }

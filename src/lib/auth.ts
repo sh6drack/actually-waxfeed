@@ -80,6 +80,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           where: { id: token.id as string },
           select: {
             username: true,
+            role: true,
             isPremium: true,
             isVerified: true,
             waxScore: true,
@@ -88,7 +89,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         })
         if (dbUser) {
           session.user.username = dbUser.username
-          session.user.isPremium = dbUser.isPremium
+          session.user.role = dbUser.role
+          // ADMIN and PREMIUM roles always have premium features
+          session.user.isPremium = dbUser.isPremium || dbUser.role === 'ADMIN' || dbUser.role === 'PREMIUM'
           session.user.isVerified = dbUser.isVerified
           session.user.waxScore = dbUser.waxScore
           // Only override image if DB has one (preserve OAuth image otherwise)

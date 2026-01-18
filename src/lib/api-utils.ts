@@ -32,6 +32,28 @@ export async function requireAuth() {
   return user
 }
 
+// Check if user is admin
+export async function requireAdmin() {
+  const user = await getAuthenticatedUser()
+  if (!user) {
+    throw new Error('UNAUTHORIZED')
+  }
+  if (user.role !== 'ADMIN') {
+    throw new Error('FORBIDDEN')
+  }
+  return user
+}
+
+// Check if user has premium features (ADMIN or PREMIUM role, or isPremium flag)
+export function hasPremiumAccess(user: { role?: string; isPremium?: boolean }) {
+  return user.role === 'ADMIN' || user.role === 'PREMIUM' || user.isPremium === true
+}
+
+// Check if user is admin
+export function isAdmin(user: { role?: string }) {
+  return user.role === 'ADMIN'
+}
+
 // Check if a user is blocked
 export async function isBlocked(blockerId: string, blockedId: string): Promise<boolean> {
   const block = await prisma.block.findUnique({

@@ -69,7 +69,7 @@ export async function PATCH(request: NextRequest) {
     if (username) {
       const dbUser = await prisma.user.findUnique({
         where: { id: user.id },
-        select: { username: true, usernameChangesUsed: true, isPremium: true }
+        select: { username: true, usernameChangesUsed: true, isPremium: true, role: true }
       })
 
       if (dbUser?.username && dbUser.username !== username) {
@@ -82,8 +82,9 @@ export async function PATCH(request: NextRequest) {
           return errorResponse('Username already taken', 409)
         }
 
-        // Check if user can change username
-        const canChange = dbUser.usernameChangesUsed === 0 || dbUser.isPremium
+        // ADMIN and PREMIUM roles can always change username, or first change is free
+        const hasPrivilegedRole = dbUser.role === 'ADMIN' || dbUser.role === 'PREMIUM'
+        const canChange = dbUser.usernameChangesUsed === 0 || dbUser.isPremium || hasPrivilegedRole
         if (!canChange) {
           return errorResponse('Username change requires payment ($5) or premium subscription', 403)
         }

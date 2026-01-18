@@ -11,6 +11,16 @@ datasource db {
 }
 
 // ============================================
+// USER ROLES
+// ============================================
+
+enum UserRole {
+  USER      // Regular user
+  PREMIUM   // Premium subscriber - all features unlocked
+  ADMIN     // Admin - all features + admin panel access
+}
+
+// ============================================
 // USER & AUTHENTICATION
 // ============================================
 
@@ -24,6 +34,7 @@ model User {
   image                 String?
   bio                   String?   @db.VarChar(150)
   socialLinks           Json?     // { instagram, twitter, spotify, etc. }
+  role                  UserRole  @default(USER)
   waxScore              Int       @default(0)
   premiumWaxScore       Int       @default(0)
   isPremium             Boolean   @default(false)

@@ -26,6 +26,7 @@ export async function GET(
         image: true,
         bio: true,
         socialLinks: true,
+        role: true,
         waxScore: true,
         premiumWaxScore: true,
         isPremium: true,

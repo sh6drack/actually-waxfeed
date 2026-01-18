@@ -6,6 +6,7 @@ import { formatDistanceToNow } from "date-fns"
 import { DefaultAvatar } from "@/components/default-avatar"
 import { ReviewActions } from "./review-actions"
 import { ReplyForm } from "./reply-form"
+import { ReplyItem } from "./reply-item"
 
 export const dynamic = "force-dynamic"
 
@@ -197,38 +198,11 @@ export default async function ReviewPage({ params }: PageProps) {
         {review.replies.length > 0 ? (
           <div className="divide-y divide-[#222]">
             {review.replies.map((reply) => (
-              <div key={reply.id} className="p-4">
-                <div className="flex items-start gap-3">
-                  <Link href={`/u/${reply.user.username}`} className="flex-shrink-0">
-                    {reply.user.image ? (
-                      <img
-                        src={reply.user.image}
-                        alt={reply.user.username || ""}
-                        className="w-8 h-8 object-cover border border-[#333]"
-                      />
-                    ) : (
-                      <DefaultAvatar size="sm" />
-                    )}
-                  </Link>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Link
-                        href={`/u/${reply.user.username}`}
-                        className="font-bold text-sm hover:underline no-underline"
-                      >
-                        {reply.user.username}
-                      </Link>
-                      {reply.user.isVerified && (
-                        <span className="text-blue-400 text-xs">✓</span>
-                      )}
-                      <span className="text-[#666] text-xs">
-                        {formatDistanceToNow(new Date(reply.createdAt), { addSuffix: true })}
-                      </span>
-                    </div>
-                    <p className="text-sm mt-1 whitespace-pre-wrap break-words">{reply.text}</p>
-                  </div>
-                </div>
-              </div>
+              <ReplyItem
+                key={reply.id}
+                reply={reply}
+                currentUserId={session?.user?.id}
+              />
             ))}
           </div>
         ) : (

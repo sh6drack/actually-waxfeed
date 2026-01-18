@@ -13,6 +13,7 @@ export default function SettingsPage() {
   const [originalUsername, setOriginalUsername] = useState("")
   const [usernameChangesUsed, setUsernameChangesUsed] = useState(0)
   const [isPremium, setIsPremium] = useState(false)
+  const [userRole, setUserRole] = useState<string | undefined>(undefined)
   const [bio, setBio] = useState("")
   const [image, setImage] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
@@ -42,6 +43,7 @@ export default function SettingsPage() {
           setOriginalUsername(data.data.username || "")
           setUsernameChangesUsed(data.data.usernameChangesUsed || 0)
           setIsPremium(data.data.isPremium || false)
+          setUserRole(data.data.role)
           setBio(data.data.bio || "")
           setImage(data.data.image || null)
           setSocialLinks(data.data.socialLinks || {
@@ -130,7 +132,9 @@ export default function SettingsPage() {
     setLoading(false)
   }
 
-  const canChangeUsername = usernameChangesUsed === 0 || isPremium
+  // ADMIN and PREMIUM roles can always change username
+  const hasPrivilegedRole = userRole === 'ADMIN' || userRole === 'PREMIUM'
+  const canChangeUsername = usernameChangesUsed === 0 || isPremium || hasPrivilegedRole
   const usernameChanged = username !== originalUsername
 
   if (status === "loading") {
@@ -225,11 +229,13 @@ export default function SettingsPage() {
             )}
             {!usernameChanged && (
               <p className="text-xs text-[#666] mt-1">
-                {usernameChangesUsed === 0
-                  ? "First username change is free"
-                  : isPremium
-                    ? "Premium members can change username anytime"
-                    : "Username changes cost $5"}
+                {hasPrivilegedRole
+                  ? "You can change your username anytime"
+                  : usernameChangesUsed === 0
+                    ? "First username change is free"
+                    : isPremium
+                      ? "Premium members can change username anytime"
+                      : "Username changes cost $5"}
               </p>
             )}
           </div>
@@ -254,23 +260,29 @@ export default function SettingsPage() {
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <span className="text-[#888] w-20">Instagram</span>
-                <input
-                  type="text"
-                  value={socialLinks.instagram}
-                  onChange={(e) => setSocialLinks({ ...socialLinks, instagram: e.target.value })}
-                  placeholder="@username or URL"
-                  className="flex-1"
-                />
+                <div className="flex-1 flex items-center gap-1">
+                  <span className="text-[#666]">@</span>
+                  <input
+                    type="text"
+                    value={socialLinks.instagram}
+                    onChange={(e) => setSocialLinks({ ...socialLinks, instagram: e.target.value.replace(/^@/, '').replace(/[^a-zA-Z0-9._]/g, '') })}
+                    placeholder="username"
+                    className="flex-1"
+                  />
+                </div>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-[#888] w-20">Twitter</span>
-                <input
-                  type="text"
-                  value={socialLinks.twitter}
-                  onChange={(e) => setSocialLinks({ ...socialLinks, twitter: e.target.value })}
-                  placeholder="@username or URL"
-                  className="flex-1"
-                />
+                <span className="text-[#888] w-20">Twitter/X</span>
+                <div className="flex-1 flex items-center gap-1">
+                  <span className="text-[#666]">@</span>
+                  <input
+                    type="text"
+                    value={socialLinks.twitter}
+                    onChange={(e) => setSocialLinks({ ...socialLinks, twitter: e.target.value.replace(/^@/, '').replace(/[^a-zA-Z0-9_]/g, '') })}
+                    placeholder="username"
+                    className="flex-1"
+                  />
+                </div>
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-[#888] w-20">Spotify</span>
