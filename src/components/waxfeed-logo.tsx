@@ -226,7 +226,7 @@ export function WaxfeedLogo({ className = "", size = "md" }: { className?: strin
         <ellipse cx="-2" cy="-2" rx="2.5" ry="1.5" fill="#ffffff" opacity="0.35" transform="rotate(-45)"/>
       </g>
 
-      {/* SPINNING IRIDESCENT VINYL DISC ONLY - the colorful record part */}
+      {/* ENTIRE VINYL DISC - spins around its center like a real record */}
       <g className="animate-spin-slow" style={{ transformOrigin: '250px 250px' }}>
         {/* Disc base with holographic surface */}
         <circle cx="250" cy="250" r="175" fill="url(#holoBase)"/>
@@ -266,7 +266,39 @@ export function WaxfeedLogo({ className = "", size = "md" }: { className?: strin
         <circle cx="250" cy="250" r="175" fill="none" stroke="#000000" strokeWidth="1" opacity="0.25"
                 strokeDasharray="300 250" strokeDashoffset="-200"/>
 
-        {/* "88" printed on disc surface - spins with disc */}
+        {/* CENTER HUB/LABEL - part of the disc, spins with it */}
+        <circle cx="250" cy="250" r="52" fill="url(#hubMetal)"/>
+        <circle cx="250" cy="250" r="52" fill="none" stroke="#888" strokeWidth="0.5"/>
+
+        <circle cx="250" cy="250" r="48" fill="none" stroke="#666" strokeWidth="2"/>
+        <circle cx="250" cy="250" r="47" fill="url(#ringMetal1)"/>
+
+        <circle cx="250" cy="250" r="42" fill="none" stroke="#555" strokeWidth="1.5"/>
+        <circle cx="250" cy="250" r="40" fill="url(#ringMetal2)"/>
+
+        <circle cx="250" cy="250" r="35" fill="none" stroke="#666" strokeWidth="1"/>
+        <circle cx="250" cy="250" r="33" fill="#a8a8a8"/>
+
+        <circle cx="250" cy="250" r="28" fill="none" stroke="#505050" strokeWidth="2"/>
+        <circle cx="250" cy="250" r="25" fill="url(#spindleClamp)"/>
+
+        <circle cx="250" cy="250" r="20" fill="none" stroke="#606060" strokeWidth="1.5"/>
+        <circle cx="250" cy="250" r="17" fill="#909090"/>
+
+        <circle cx="250" cy="250" r="12" fill="none" stroke="#484848" strokeWidth="2"/>
+        <circle cx="250" cy="250" r="9" fill="#787878"/>
+
+        {/* Center hole */}
+        <circle cx="250" cy="250" r="5" fill="#1c1c1c"/>
+        <circle cx="250" cy="250" r="3.5" fill="#282828"/>
+        <circle cx="250" cy="250" r="2" fill="#101010"/>
+
+        {/* Hub specular highlights */}
+        <ellipse cx="235" cy="232" rx="18" ry="8" fill="#ffffff" opacity="0.6" transform="rotate(-50 235 232)"/>
+        <ellipse cx="242" cy="240" rx="8" ry="4" fill="#ffffff" opacity="0.8" transform="rotate(-50 242 240)"/>
+        <ellipse cx="260" cy="262" rx="6" ry="3" fill="#ffffff" opacity="0.25" transform="rotate(40 260 262)"/>
+
+        {/* "88" printed on disc surface */}
         <text x="335" y="262"
               fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif"
               fontSize="34"
@@ -277,7 +309,7 @@ export function WaxfeedLogo({ className = "", size = "md" }: { className?: strin
           88
         </text>
 
-        {/* Small technical text - spins with disc */}
+        {/* Small technical text */}
         <g opacity="0.4" fill="#333">
           <text x="205" y="320"
                 fontFamily="Helvetica, Arial, sans-serif"
@@ -295,38 +327,6 @@ export function WaxfeedLogo({ className = "", size = "md" }: { className?: strin
           </text>
         </g>
       </g>
-
-      {/* CENTER HUB ASSEMBLY - STATIC, doesn't spin */}
-      <circle cx="250" cy="250" r="52" fill="url(#hubMetal)"/>
-      <circle cx="250" cy="250" r="52" fill="none" stroke="#888" strokeWidth="0.5"/>
-
-      <circle cx="250" cy="250" r="48" fill="none" stroke="#666" strokeWidth="2"/>
-      <circle cx="250" cy="250" r="47" fill="url(#ringMetal1)"/>
-
-      <circle cx="250" cy="250" r="42" fill="none" stroke="#555" strokeWidth="1.5"/>
-      <circle cx="250" cy="250" r="40" fill="url(#ringMetal2)"/>
-
-      <circle cx="250" cy="250" r="35" fill="none" stroke="#666" strokeWidth="1"/>
-      <circle cx="250" cy="250" r="33" fill="#a8a8a8"/>
-
-      <circle cx="250" cy="250" r="28" fill="none" stroke="#505050" strokeWidth="2"/>
-      <circle cx="250" cy="250" r="25" fill="url(#spindleClamp)"/>
-
-      <circle cx="250" cy="250" r="20" fill="none" stroke="#606060" strokeWidth="1.5"/>
-      <circle cx="250" cy="250" r="17" fill="#909090"/>
-
-      <circle cx="250" cy="250" r="12" fill="none" stroke="#484848" strokeWidth="2"/>
-      <circle cx="250" cy="250" r="9" fill="#787878"/>
-
-      {/* Center hole */}
-      <circle cx="250" cy="250" r="5" fill="#1c1c1c"/>
-      <circle cx="250" cy="250" r="3.5" fill="#282828"/>
-      <circle cx="250" cy="250" r="2" fill="#101010"/>
-
-      {/* Hub specular highlights */}
-      <ellipse cx="235" cy="232" rx="18" ry="8" fill="#ffffff" opacity="0.6" transform="rotate(-50 235 232)"/>
-      <ellipse cx="242" cy="240" rx="8" ry="4" fill="#ffffff" opacity="0.8" transform="rotate(-50 242 240)"/>
-      <ellipse cx="260" cy="262" rx="6" ry="3" fill="#ffffff" opacity="0.25" transform="rotate(40 260 262)"/>
 
       {/* SHUTTER MECHANISM - static */}
       <rect x="358" y="152" width="78" height="196" rx="3" fill="#000000" opacity="0.15" transform="translate(3,4)"/>
