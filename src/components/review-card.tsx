@@ -119,7 +119,7 @@ export const ReviewCard = memo(function ReviewCard({
   )
 
   return (
-    <article className="border border-[#222] p-3 sm:p-4 hover:border-[#333] transition-colors">
+    <article className="border p-3 sm:p-4 transition-colors" style={{ borderColor: 'var(--border)' }}>
       <div className="flex gap-3 sm:gap-4">
         {/* Album Cover */}
         {showAlbum && (
@@ -155,7 +155,7 @@ export const ReviewCard = memo(function ReviewCard({
                 {user.isVerified && (
                   <span className="text-[#888] text-xs">✓</span>
                 )}
-                <span className="text-[#555] text-xs">
+                <span className="text-xs" style={{ color: 'var(--muted)' }}>
                   {formatDistanceToNow(date, { addSuffix: true })}
                   {isEdited && " (edited)"}
                 </span>
@@ -163,7 +163,8 @@ export const ReviewCard = memo(function ReviewCard({
               {showAlbum && (
                 <Link
                   href={`/album/${album.spotifyId}`}
-                  className="text-xs sm:text-sm text-[#888] hover:underline no-underline line-clamp-1"
+                  className="text-xs sm:text-sm hover:underline no-underline line-clamp-1"
+                  style={{ color: 'var(--muted)' }}
                 >
                   {album.title} — {album.artistName}
                 </Link>
@@ -178,13 +179,13 @@ export const ReviewCard = memo(function ReviewCard({
 
           {/* Review Text */}
           {text && (
-            <p className={`text-sm mb-2 sm:mb-3 text-[#ccc] leading-relaxed ${compact ? "line-clamp-2" : "line-clamp-4 sm:line-clamp-none"}`}>
+            <p className={`text-sm mb-2 sm:mb-3 leading-relaxed ${compact ? "line-clamp-2" : "line-clamp-4 sm:line-clamp-none"}`} style={{ color: 'var(--foreground)', opacity: 0.85 }}>
               {text}
             </p>
           )}
 
           {/* Actions */}
-          <div className="flex items-center gap-2 sm:gap-3 text-xs text-[#666] flex-wrap">
+          <div className="flex items-center gap-2 sm:gap-3 text-xs flex-wrap" style={{ color: 'var(--muted)' }}>
             <button
               onClick={handleLike}
               className={`hover:text-white transition-colors flex items-center gap-1 ${liked ? "text-red-500" : ""}`}
