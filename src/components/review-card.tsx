@@ -15,6 +15,7 @@ import {
   ArrowRightIcon,
   VerifiedIcon,
   ReactionsIcon,
+  ShareIcon,
 } from "@/components/icons"
 
 interface ReviewCardProps {
@@ -83,6 +84,28 @@ export const ReviewCard = memo(function ReviewCard({
     controversial: initialControversialCount,
   })
   const [userReactions, setUserReactions] = useState<string[]>([])
+
+  const handleShare = useCallback(async () => {
+    const shareUrl = typeof window !== 'undefined'
+      ? `${window.location.origin}/review/${id}`
+      : `/review/${id}`
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${user.username}'s review on WAXFEED`,
+          url: shareUrl,
+        })
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          // Fallback to copy
+          await navigator.clipboard.writeText(shareUrl)
+        }
+      }
+    } else {
+      await navigator.clipboard.writeText(shareUrl)
+    }
+  }, [id, user.username])
 
   const handleLike = useCallback(async () => {
     if (!session) return
@@ -252,6 +275,15 @@ export const ReviewCard = memo(function ReviewCard({
               <MessageIcon size={16} />
               <span>{replyCount || 0}</span>
             </Link>
+
+            <button
+              onClick={handleShare}
+              className="hover:text-white transition-colors flex items-center gap-1.5"
+              title="Share"
+            >
+              <ShareIcon size={16} />
+            </button>
+
             <Link
               href={`/review/${id}`}
               className="hover:text-white transition-colors no-underline ml-auto flex items-center gap-1"
