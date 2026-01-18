@@ -85,14 +85,8 @@ export default async function Home() {
       {/* Header section */}
       <section style={{ borderBottom: '1px solid var(--border)' }}>
         <div className="max-w-7xl mx-auto px-6 py-12 lg:py-16">
-          <p className="text-[10px] tracking-[0.25em] uppercase mb-3" style={{ color: 'var(--muted)' }}>
-            Track what you listen to
-          </p>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-light leading-[1.1] tracking-[-0.02em]">
-            Your music diary.
-          </h1>
-          <p className="text-3xl md:text-4xl lg:text-5xl font-light leading-[1.1] tracking-[-0.02em]" style={{ color: 'var(--muted)' }}>
-            Rate, review, discover.
+          <p className="text-base md:text-lg lg:text-xl font-medium leading-relaxed max-w-2xl">
+            A social music review platform. Rate albums, build lists, discover new music through friends.
           </p>
 
           {!session && (

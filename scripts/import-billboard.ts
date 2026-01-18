@@ -76,44 +76,64 @@ async function importAlbum(album: SpotifyAlbum, rank: number): Promise<boolean> 
   }
 }
 
-// Current Billboard 200 chart - November 22, 2025
-// Source: https://creativedisc.com/2025/11/billboard-200-albums-chart-22-nov-2025/
+// Current Billboard 200 chart - January 10, 2026
+// Source: https://creativedisc.com/2026/01/billboard-200-albums-chart-10-jan-2026/
 const BILLBOARD_200_CURRENT: { rank: number; title: string; artist: string }[] = [
   { rank: 1, title: "The Life Of A Showgirl", artist: "Taylor Swift" },
   { rank: 2, title: "I'm The Problem", artist: "Morgan Wallen" },
   { rank: 3, title: "KPop Demon Hunters", artist: "Soundtrack" },
-  { rank: 4, title: "Lux", artist: "Rosalia" },
-  { rank: 5, title: "The Art Of Loving", artist: "Olivia Dean" },
-  { rank: 6, title: "Man's Best Friend", artist: "Sabrina Carpenter" },
+  { rank: 4, title: "The Art Of Loving", artist: "Olivia Dean" },
+  { rank: 5, title: "Man's Best Friend", artist: "Sabrina Carpenter" },
+  { rank: 6, title: "DINASTIA", artist: "Peso Pluma & Tito Double P" },
   { rank: 7, title: "SOS", artist: "SZA" },
-  { rank: 8, title: "Am I The Drama?", artist: "Cardi B" },
+  { rank: 8, title: "So Close To What", artist: "Tate McRae" },
   { rank: 9, title: "One Thing At A Time", artist: "Morgan Wallen" },
-  { rank: 10, title: "No Labels", artist: "YEONJUN" },
-  { rank: 11, title: "I Barely Know Her", artist: "sombr" },
-  { rank: 12, title: "Ego Death At A Bachelorette Party", artist: "Hayley Williams" },
-  { rank: 13, title: "You'll Be Alright Kid", artist: "Alex Warren" },
-  { rank: 14, title: "Stick Season", artist: "Noah Kahan" },
-  { rank: 15, title: "Lil Herb", artist: "G Herbo" },
-  { rank: 16, title: "Dangerous: The Double Album", artist: "Morgan Wallen" },
-  { rank: 17, title: "Debi Tirar Mas Fotos", artist: "Bad Bunny" },
-  { rank: 18, title: "Short n' Sweet", artist: "Sabrina Carpenter" },
-  { rank: 19, title: "Hit Me Hard And Soft", artist: "Billie Eilish" },
-  { rank: 20, title: "So Close To What", artist: "Tate McRae" },
-  { rank: 21, title: "30 Number One Hits", artist: "Jason Aldean" },
+  { rank: 10, title: "Short n' Sweet", artist: "Sabrina Carpenter" },
+  { rank: 11, title: "You'll Be Alright, Kid", artist: "Alex Warren" },
+  { rank: 12, title: "Debi Tirar Mas Fotos", artist: "Bad Bunny" },
+  { rank: 13, title: "Stick Season", artist: "Noah Kahan" },
+  { rank: 14, title: "The Diamond Collection", artist: "Post Malone" },
+  { rank: 15, title: "Rumours", artist: "Fleetwood Mac" },
+  { rank: 16, title: "Hit Me Hard And Soft", artist: "Billie Eilish" },
+  { rank: 17, title: "Beautiful Chaos", artist: "KATSEYE" },
+  { rank: 18, title: "Dangerous: The Double Album", artist: "Morgan Wallen" },
+  { rank: 19, title: "DO IT", artist: "Stray Kids" },
+  { rank: 20, title: "The Tortured Poets Department", artist: "Taylor Swift" },
+  { rank: 21, title: "Thy Will Be Done", artist: "$uicideboy$" },
   { rank: 22, title: "Take Care", artist: "Drake" },
-  { rank: 23, title: "Rumours", artist: "Fleetwood Mac" },
-  { rank: 24, title: "CHROMAKOPIA", artist: "Tyler, the Creator" },
-  { rank: 25, title: "Christmas", artist: "Michael Buble" },
-  { rank: 26, title: "GNX", artist: "Kendrick Lamar" },
-  { rank: 27, title: "eternal sunshine", artist: "Ariana Grande" },
-  { rank: 28, title: "The Tortured Poets Department", artist: "Taylor Swift" },
-  { rank: 29, title: "GUTS", artist: "Olivia Rodrigo" },
-  { rank: 30, title: "Cowboy Carter", artist: "Beyonce" },
+  { rank: 23, title: "Am I The Drama?", artist: "Cardi B" },
+  { rank: 24, title: "The Rise And Fall Of A Midwest Princess", artist: "Chappell Roan" },
+  { rank: 25, title: "I Barely Know Her", artist: "sombr" },
+  { rank: 26, title: "30 Number One Hits", artist: "Jason Aldean" },
+  { rank: 27, title: "Diamonds", artist: "Elton John" },
+  { rank: 28, title: "GNX", artist: "Kendrick Lamar" },
+  { rank: 29, title: "Rebel", artist: "EsDeeKid" },
+  { rank: 30, title: "Midnights", artist: "Taylor Swift" },
+  { rank: 31, title: "$ome $exy $ongs 4 U", artist: "PARTYNEXTDOOR & Drake" },
+  { rank: 32, title: "Folklore", artist: "Taylor Swift" },
+  { rank: 33, title: "CHROMAKOPIA", artist: "Tyler, The Creator" },
+  { rank: 34, title: "+-=÷x (Tour Collection)", artist: "Ed Sheeran" },
+  { rank: 35, title: "Un Verano Sin Ti", artist: "Bad Bunny" },
+  { rank: 36, title: "Sour", artist: "Olivia Rodrigo" },
+  { rank: 37, title: "What Happened To The Streets?", artist: "21 Savage" },
+  { rank: 38, title: "The Secret Of Us", artist: "Gracie Abrams" },
+  { rank: 39, title: "good kid, m.A.A.d city", artist: "Kendrick Lamar" },
+  { rank: 40, title: "Hungover", artist: "Ella Langley" },
+  { rank: 41, title: "Ultimate Christmas", artist: "Bing Crosby" },
+  { rank: 42, title: "Lover", artist: "Taylor Swift" },
+  { rank: 43, title: "Curtain Call: The Hits", artist: "Eminem" },
+  { rank: 44, title: "Hazbin Hotel: Season Two", artist: "Soundtrack" },
+  { rank: 45, title: "111XPANTIA", artist: "Fuerza Regida" },
+  { rank: 46, title: "Where I've Been, Isn't Where I'm Going", artist: "Shaboozey" },
+  { rank: 47, title: "I Hope You're Happy", artist: "BigXthaPlug" },
+  { rank: 48, title: "Ctrl", artist: "SZA" },
+  { rank: 49, title: "Views", artist: "Drake" },
+  { rank: 50, title: "Greatest Hits", artist: "Queen" },
 ]
 
 async function main() {
-  console.log("Importing Billboard 200 Top 30...")
-  console.log("Chart date: November 22, 2025\n")
+  console.log("Importing Billboard 200 Top 50...")
+  console.log("Chart date: January 10, 2026\n")
 
   // Clear previous Billboard rankings before importing new chart
   console.log("Clearing previous Billboard rankings...")
