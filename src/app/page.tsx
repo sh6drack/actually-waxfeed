@@ -11,7 +11,7 @@ async function getBillboardAlbums() {
   return prisma.album.findMany({
     where: { billboardRank: { not: null } },
     orderBy: { billboardRank: 'asc' },
-    take: 10,
+    take: 15,
     select: {
       id: true,
       spotifyId: true,
