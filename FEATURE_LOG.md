@@ -280,6 +280,9 @@ npm run db:seed      # Seed database
   - Right: Recent reviews feed
   - 50/50 split down the middle
   - Trending pulls from `billboardRank` field in Album model
+- **Auth Account Linking**: Google OAuth now links to existing email accounts
+  - If user signs up with email, then later signs in with Google (same email), accounts are merged
+  - Google profile picture syncs to existing account if none set
 
 ### November 26, 2025
 - Initial project setup
