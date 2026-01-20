@@ -507,7 +507,7 @@ function getRecommendationReason(
   const factors = [
     { key: 'genre', value: scoreBreakdown.genre, reason: 'Matches your taste' },
     { key: 'quality', value: scoreBreakdown.quality, reason: 'Highly rated' },
-    { key: 'collaborative', value: scoreBreakdown.collaborative, reason: 'Loved by similar critics' },
+    { key: 'collaborative', value: scoreBreakdown.collaborative, reason: 'Loved by similar listeners' },
     { key: 'freshness', value: scoreBreakdown.freshness, reason: 'Fresh release' },
   ]
 

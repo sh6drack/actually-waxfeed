@@ -1,0 +1,47 @@
+<svg width="1584" height="396" viewBox="0 0 1584 396" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Subtle gradient for depth -->
+    <radialGradient id="bg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0d0d0d"/>
+      <stop offset="100%" stop-color="#050505"/>
+    </radialGradient>
+
+    <!-- Vinyl groove gradient -->
+    <linearGradient id="groove" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1a1a1a"/>
+      <stop offset="50%" stop-color="#252525"/>
+      <stop offset="100%" stop-color="#1a1a1a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1584" height="396" fill="url(#bg)"/>
+
+  <!-- Abstract vinyl grooves - concentric arcs suggesting a record, positioned right -->
+  <g transform="translate(1100, 198)">
+    <!-- Outer grooves - increasingly transparent -->
+    <circle cx="0" cy="0" r="280" fill="none" stroke="#1a1a1a" stroke-width="0.5" opacity="0.3"/>
+    <circle cx="0" cy="0" r="260" fill="none" stroke="#1a1a1a" stroke-width="0.5" opacity="0.35"/>
+    <circle cx="0" cy="0" r="240" fill="none" stroke="#1a1a1a" stroke-width="0.5" opacity="0.4"/>
+    <circle cx="0" cy="0" r="220" fill="none" stroke="#1c1c1c" stroke-width="0.5" opacity="0.45"/>
+    <circle cx="0" cy="0" r="200" fill="none" stroke="#1c1c1c" stroke-width="0.5" opacity="0.5"/>
+    <circle cx="0" cy="0" r="180" fill="none" stroke="#1e1e1e" stroke-width="0.5" opacity="0.55"/>
+    <circle cx="0" cy="0" r="160" fill="none" stroke="#1e1e1e" stroke-width="0.5" opacity="0.6"/>
+    <circle cx="0" cy="0" r="140" fill="none" stroke="#202020" stroke-width="0.5" opacity="0.65"/>
+    <circle cx="0" cy="0" r="120" fill="none" stroke="#202020" stroke-width="0.5" opacity="0.7"/>
+    <circle cx="0" cy="0" r="100" fill="none" stroke="#222222" stroke-width="0.5" opacity="0.75"/>
+    <circle cx="0" cy="0" r="80" fill="none" stroke="#242424" stroke-width="0.5" opacity="0.8"/>
+    <circle cx="0" cy="0" r="60" fill="none" stroke="#262626" stroke-width="0.5" opacity="0.85"/>
+    <circle cx="0" cy="0" r="40" fill="none" stroke="#282828" stroke-width="0.5" opacity="0.9"/>
+
+    <!-- Label area - subtle -->
+    <circle cx="0" cy="0" r="25" fill="#0a0a0a"/>
+    <circle cx="0" cy="0" r="4" fill="#151515"/>
+  </g>
+
+  <!-- Single horizontal line - suggests a sound wave or timeline, minimal accent -->
+  <line x1="80" y1="198" x2="700" y2="198" stroke="#1a1a1a" stroke-width="1" opacity="0.4"/>
+
+  <!-- Tiny pulse point on the line -->
+  <circle cx="700" cy="198" r="2" fill="#2a2a2a" opacity="0.6"/>
+</svg>

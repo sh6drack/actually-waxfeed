@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { DefaultAvatar } from "@/components/default-avatar"
 import Link from "next/link"
 import { auth } from "@/lib/auth"
-import { formatDistanceToNow } from "date-fns"
+import { format, formatDistanceToNow } from "date-fns"
 
 export const dynamic = "force-dynamic"
 
@@ -74,15 +74,26 @@ export default async function Home() {
     getRecentReviews(),
     getStats(),
   ])
+  const weekOf = format(new Date(), "MMM d, yyyy")
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
       {/* Header section */}
       <section style={{ borderBottom: '1px solid var(--border)' }}>
         <div className="max-w-7xl mx-auto px-6 py-12 lg:py-16">
-          <p className="text-base md:text-lg lg:text-xl font-medium leading-relaxed max-w-2xl">
-            A social music review platform. Rate albums, build lists, discover new music through friends.
-          </p>
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8">
+            <p className="text-base md:text-lg lg:text-xl font-medium leading-relaxed max-w-2xl">
+              A social music review platform. Rate albums, build lists, discover new music through friends.
+            </p>
+            <div className="flex-shrink-0 lg:text-right">
+              <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-1">
+                Week Of
+              </p>
+              <p className="text-2xl lg:text-3xl font-light tracking-tight">
+                {weekOf}
+              </p>
+            </div>
+          </div>
 
           {!session && (
             <Link

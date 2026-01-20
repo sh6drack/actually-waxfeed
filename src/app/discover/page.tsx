@@ -223,7 +223,7 @@ export default async function DiscoverPage() {
                   <div>
                     <h2 className="text-2xl lg:text-3xl font-bold tracking-tight mb-2">For You</h2>
                     <p className="text-[11px] tracking-[0.15em] uppercase text-[--muted]">
-                      Based on similar critics taste profiles
+                      Based on similar listeners
                     </p>
                   </div>
                 </div>
@@ -444,12 +444,12 @@ export default async function DiscoverPage() {
               {session ? 'Start Your Journey' : 'Join the Discourse'}
             </p>
             <h2 className="text-3xl lg:text-5xl font-bold tracking-tight mb-4">
-              {session ? 'Review albums to unlock personalized discovery' : 'Become a critic'}
+              {session ? 'Review albums to unlock personalized discovery' : 'Join the community'}
             </h2>
             <p className="text-[--muted] mb-8 max-w-md mx-auto">
               {session
                 ? 'Your taste shapes your feed. The more you review, the better we understand what you want to hear next.'
-                : 'Join critics worldwide in rating, reviewing, and discovering music together.'
+                : 'Rate albums, build lists, discover new music through friends.'
               }
             </p>
             <Link
