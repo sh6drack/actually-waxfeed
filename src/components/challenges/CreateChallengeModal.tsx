@@ -1,12 +1,24 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { DefaultAvatar } from "@/components/default-avatar"
 
 interface CreateChallengeModalProps {
-  partnerId: string
-  partnerUsername: string
+  partnerId?: string | null
   onClose: () => void
-  onCreated: () => void
+  onCreate: (data: {
+    partnerId: string
+    challengeType: string
+    targetAlbumId?: string
+    targetGenre?: string
+    targetDecade?: string
+  }) => void
+}
+
+interface SearchUser {
+  id: string
+  username: string
+  image: string | null
 }
 
 const CHALLENGE_TYPES = [
@@ -39,11 +51,15 @@ const CHALLENGE_TYPES = [
 const DECADES = ["1960s", "1970s", "1980s", "1990s", "2000s", "2010s", "2020s"]
 
 export function CreateChallengeModal({
-  partnerId,
-  partnerUsername,
+  partnerId: initialPartnerId,
   onClose,
-  onCreated,
+  onCreate,
 }: CreateChallengeModalProps) {
+  const [selectedPartnerId, setSelectedPartnerId] = useState<string | null>(initialPartnerId || null)
+  const [selectedPartner, setSelectedPartner] = useState<SearchUser | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [searchResults, setSearchResults] = useState<SearchUser[]>([])
+  const [searching, setSearching] = useState(false)
   const [selectedType, setSelectedType] = useState<string | null>(null)
   const [targetGenre, setTargetGenre] = useState("")
   const [targetDecade, setTargetDecade] = useState("")
@@ -51,34 +67,53 @@ export function CreateChallengeModal({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Search for users
+  useEffect(() => {
+    if (searchQuery.length < 2) {
+      setSearchResults([])
+      return
+    }
+
+    const timer = setTimeout(async () => {
+      setSearching(true)
+      try {
+        const response = await fetch(`/api/users/search?q=${encodeURIComponent(searchQuery)}&limit=5`)
+        if (response.ok) {
+          const data = await response.json()
+          setSearchResults(data.users || [])
+        }
+      } catch (err) {
+        console.error("Search failed:", err)
+      } finally {
+        setSearching(false)
+      }
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
+  const selectPartner = (user: SearchUser) => {
+    setSelectedPartnerId(user.id)
+    setSelectedPartner(user)
+    setSearchQuery("")
+    setSearchResults([])
+  }
+
   const handleCreate = async () => {
-    if (!selectedType) return
+    if (!selectedType || !selectedPartnerId) return
 
     setLoading(true)
     setError(null)
 
     try {
-      const response = await fetch("/api/challenges", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          partnerId,
-          challengeType: selectedType,
-          targetGenre: selectedType === "genre_swap" ? targetGenre : undefined,
-          targetDecade: selectedType === "decade_dive" ? targetDecade : undefined,
-          title: title || undefined,
-        }),
+      onCreate({
+        partnerId: selectedPartnerId,
+        challengeType: selectedType,
+        targetGenre: selectedType === "genre_swap" ? targetGenre : undefined,
+        targetDecade: selectedType === "decade_dive" ? targetDecade : undefined,
       })
-
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || "Failed to create challenge")
-      }
-
-      onCreated()
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create challenge")
-    } finally {
       setLoading(false)
     }
   }
@@ -98,7 +133,9 @@ export function CreateChallengeModal({
         <div className="flex items-center justify-between p-4 border-b border-[--border]">
           <div>
             <h2 className="text-lg font-bold">Create Challenge</h2>
-            <p className="text-xs text-[--muted]">Challenge @{partnerUsername}</p>
+            {selectedPartner && (
+              <p className="text-xs text-[--muted]">Challenge @{selectedPartner.username}</p>
+            )}
           </div>
           <button
             onClick={onClose}
@@ -112,6 +149,75 @@ export function CreateChallengeModal({
 
         {/* Content */}
         <div className="p-4 space-y-4">
+          {/* Partner selection */}
+          {!selectedPartnerId ? (
+            <div>
+              <label className="text-xs text-[--muted] uppercase tracking-wider block mb-2">
+                Challenge Who?
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search for a user..."
+                  className="w-full px-3 py-2 bg-transparent border border-[--border] text-sm focus:border-white outline-none transition-colors"
+                />
+                {searching && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  </div>
+                )}
+              </div>
+              {searchResults.length > 0 && (
+                <div className="mt-2 border border-[--border] divide-y divide-[--border]">
+                  {searchResults.map((user) => (
+                    <button
+                      key={user.id}
+                      onClick={() => selectPartner(user)}
+                      className="w-full flex items-center gap-3 p-3 hover:bg-[--surface] transition-colors"
+                    >
+                      <div className="w-8 h-8 overflow-hidden">
+                        {user.image ? (
+                          <img src={user.image} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <DefaultAvatar size="sm" className="w-full h-full" />
+                        )}
+                      </div>
+                      <span className="font-medium">@{user.username}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center justify-between p-3 border border-[--border]">
+              <div className="flex items-center gap-3">
+                {selectedPartner && (
+                  <>
+                    <div className="w-8 h-8 overflow-hidden">
+                      {selectedPartner.image ? (
+                        <img src={selectedPartner.image} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <DefaultAvatar size="sm" className="w-full h-full" />
+                      )}
+                    </div>
+                    <span className="font-medium">@{selectedPartner.username}</span>
+                  </>
+                )}
+              </div>
+              <button
+                onClick={() => {
+                  setSelectedPartnerId(null)
+                  setSelectedPartner(null)
+                }}
+                className="text-xs text-[--muted] hover:text-white"
+              >
+                Change
+              </button>
+            </div>
+          )}
+
           {/* Custom title */}
           <div>
             <label className="text-xs text-[--muted] uppercase tracking-wider block mb-2">
@@ -208,7 +314,7 @@ export function CreateChallengeModal({
           </button>
           <button
             onClick={handleCreate}
-            disabled={!selectedType || needsAdditionalInput || loading}
+            disabled={!selectedType || !selectedPartnerId || needsAdditionalInput || loading}
             className="flex-1 py-2 bg-white text-black text-sm font-bold hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Creating..." : "Send Challenge"}

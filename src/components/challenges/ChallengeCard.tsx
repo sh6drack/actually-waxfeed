@@ -8,21 +8,29 @@ interface Challenge {
   id: string
   challengeType: string
   status: string
-  title?: string
-  targetGenre?: string
-  targetDecade?: string
-  creatorProgress: { albumsRated: string[]; score: number } | null
-  partnerProgress: { albumsRated: string[]; score: number } | null
+  title?: string | null
+  targetGenre?: string | null
+  targetDecade?: string | null
+  creatorProgress: { albumsRated?: string[]; score?: number } | Record<string, unknown> | null
+  partnerProgress: { albumsRated?: string[]; score?: number } | Record<string, unknown> | null
   creator: { id: string; username: string; image: string | null }
   partner: { id: string; username: string; image: string | null }
-  targetAlbum?: { id: string; title: string; artistName: string; coverArtUrl: string | null } | null
-  isCreator: boolean
+  targetAlbum?: {
+    id: string
+    title?: string
+    name?: string
+    artistName?: string
+    artist?: string
+    coverArtUrl?: string | null
+    imageUrl?: string | null
+  } | null
   expiresAt: string
   createdAt: string
 }
 
 interface ChallengeCardProps {
   challenge: Challenge
+  currentUserId: string
   onAccept?: (id: string) => void
   onDecline?: (id: string) => void
 }
@@ -41,11 +49,12 @@ const STATUS_STYLES: Record<string, { bg: string; text: string }> = {
   expired: { bg: "bg-red-500/10", text: "text-red-400" },
 }
 
-export function ChallengeCard({ challenge, onAccept, onDecline }: ChallengeCardProps) {
+export function ChallengeCard({ challenge, currentUserId, onAccept, onDecline }: ChallengeCardProps) {
   const [loading, setLoading] = useState(false)
   const typeInfo = CHALLENGE_TYPES[challenge.challengeType] || CHALLENGE_TYPES.discover_together
   const statusStyle = STATUS_STYLES[challenge.status] || STATUS_STYLES.pending
-  const opponent = challenge.isCreator ? challenge.partner : challenge.creator
+  const isCreator = challenge.creator.id === currentUserId
+  const opponent = isCreator ? challenge.partner : challenge.creator
 
   const handleAccept = async () => {
     if (!onAccept || loading) return
@@ -61,8 +70,8 @@ export function ChallengeCard({ challenge, onAccept, onDecline }: ChallengeCardP
     setLoading(false)
   }
 
-  const creatorScore = challenge.creatorProgress?.score || 0
-  const partnerScore = challenge.partnerProgress?.score || 0
+  const creatorScore = (challenge.creatorProgress as { score?: number })?.score || 0
+  const partnerScore = (challenge.partnerProgress as { score?: number })?.score || 0
 
   return (
     <div className="border border-[--border] overflow-hidden hover:border-white/30 transition-colors">
@@ -97,7 +106,7 @@ export function ChallengeCard({ challenge, onAccept, onDecline }: ChallengeCardP
             <div>
               <p className="font-semibold group-hover:underline">@{opponent.username}</p>
               <p className="text-xs text-[--muted]">
-                {challenge.isCreator ? "Challenged by you" : "Challenged you"}
+                {isCreator ? "Challenged by you" : "Challenged you"}
               </p>
             </div>
           </Link>
@@ -106,13 +115,13 @@ export function ChallengeCard({ challenge, onAccept, onDecline }: ChallengeCardP
         {/* Target info */}
         {challenge.targetAlbum && (
           <div className="flex items-center gap-3 p-3 border border-[--border] mb-4">
-            {challenge.targetAlbum.coverArtUrl && (
-              <img src={challenge.targetAlbum.coverArtUrl} alt="" className="w-12 h-12" />
+            {(challenge.targetAlbum.coverArtUrl || challenge.targetAlbum.imageUrl) && (
+              <img src={challenge.targetAlbum.coverArtUrl || challenge.targetAlbum.imageUrl || ""} alt="" className="w-12 h-12" />
             )}
             <div className="min-w-0">
               <p className="text-xs text-[--muted] uppercase tracking-wider">Target Album</p>
-              <p className="font-medium truncate">{challenge.targetAlbum.title}</p>
-              <p className="text-xs text-[--muted] truncate">{challenge.targetAlbum.artistName}</p>
+              <p className="font-medium truncate">{challenge.targetAlbum.title || challenge.targetAlbum.name}</p>
+              <p className="text-xs text-[--muted] truncate">{challenge.targetAlbum.artistName || challenge.targetAlbum.artist}</p>
             </div>
           </div>
         )}
@@ -171,7 +180,7 @@ export function ChallengeCard({ challenge, onAccept, onDecline }: ChallengeCardP
       </div>
 
       {/* Actions for pending challenges */}
-      {challenge.status === "pending" && !challenge.isCreator && (
+      {challenge.status === "pending" && !isCreator && (
         <div className="flex border-t border-[--border]">
           <button
             onClick={handleDecline}
