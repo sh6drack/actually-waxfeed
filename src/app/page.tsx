@@ -160,47 +160,55 @@ export default async function Home() {
       {/* People to Connect With */}
       {activeUsers.length > 0 && (
         <section className="border-b border-[--border]">
-          <div className="max-w-7xl mx-auto px-6 py-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-[11px] tracking-[0.2em] uppercase text-[--muted]">
-                People to Connect With
-              </h2>
+          <div className="max-w-7xl mx-auto px-6 py-10">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-4">
+                <h2 className="text-[11px] tracking-[0.2em] uppercase text-[--muted]">
+                  Connect
+                </h2>
+                <div className="h-px w-8 bg-[--border]" />
+              </div>
               <Link
-                href="/discover/similar-tasters"
-                className="text-[10px] tracking-[0.15em] uppercase text-[--muted] hover:text-white transition-colors"
+                href="/friends"
+                className="text-[10px] tracking-[0.15em] uppercase text-[--muted] hover:text-white transition-colors flex items-center gap-2"
               >
-                See All
+                View All
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
               </Link>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-2 -mx-2 px-2 scrollbar-hide">
-              {activeUsers.map((user) => (
+            <div className="grid grid-cols-4 sm:grid-cols-8 gap-6">
+              {activeUsers.map((user, index) => (
                 <Link
                   key={user.id}
                   href={`/u/${user.username}`}
-                  className="flex-shrink-0 group"
+                  className="group animate-fade-in"
+                  style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <div className="w-16 h-16 mb-2 border border-[--border] overflow-hidden group-hover:border-white transition-colors">
+                  <div className="aspect-square w-full mb-3 border-2 border-[--border] overflow-hidden group-hover:border-white transition-colors relative">
                     {user.image ? (
                       <img
                         src={user.image}
                         alt=""
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
                       <DefaultAvatar size="lg" className="w-full h-full" />
                     )}
+                    {/* Review count badge */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-black/80 py-1 px-2">
+                      <span className="text-[9px] font-bold tracking-wider">{user._count.reviews}</span>
+                    </div>
                   </div>
-                  <p className="text-[11px] font-medium truncate w-16 text-center group-hover:text-[--muted] transition-colors">
+                  <p className="text-[11px] font-bold truncate group-hover:text-[--muted] transition-colors">
                     @{user.username}
                   </p>
                   {user.tasteId?.primaryArchetype && (
-                    <p className="text-[9px] text-[--muted] truncate w-16 text-center">
+                    <p className="text-[9px] text-[--muted] truncate uppercase tracking-wider">
                       {user.tasteId.primaryArchetype.replace(/_/g, ' ')}
                     </p>
                   )}
-                  <p className="text-[9px] text-[--border] text-center">
-                    {user._count.reviews} reviews
-                  </p>
                 </Link>
               ))}
             </div>
