@@ -1,86 +1,105 @@
 "use client"
 
-import { useMemo } from "react"
+import React, { useMemo } from "react"
+import { MUSIC_NETWORKS, type MusicNetworkId } from "@/lib/tasteid"
+import { NETWORK_COLORS, type NetworkKey } from "./types"
 
-// TasteID 7 Music Networks - adapted from Yeo 7-Network cognitive model
-// Maps listening behavior to 7 distinct modes of musical engagement
-export const MUSIC_NETWORKS = {
-  DISCOVERY: {
+// Re-export for backward compatibility
+export { MUSIC_NETWORKS } from "@/lib/tasteid"
+export type { MusicNetworkId as MusicNetworkKey } from "@/lib/tasteid"
+
+// Accept both uppercase (MusicNetworkId) and lowercase (NetworkKey) formats
+type NetworkActivationsInput =
+  | Partial<Record<NetworkKey, number>>
+  | Partial<Record<MusicNetworkId, number>>
+
+/**
+ * Normalize network activations to lowercase keys
+ */
+function normalizeActivations(input: NetworkActivationsInput): Partial<Record<NetworkKey, number>> {
+  const result: Partial<Record<NetworkKey, number>> = {}
+
+  for (const [key, value] of Object.entries(input)) {
+    if (value !== undefined) {
+      const normalizedKey = key.toLowerCase() as NetworkKey
+      result[normalizedKey] = value
+    }
+  }
+
+  return result
+}
+
+// Extended network info for visualization (adds colors and visual properties)
+const NETWORK_DISPLAY_INFO: Record<NetworkKey, {
+  name: string
+  abbrev: string
+  color: string
+  typicalRange: string
+  signals: string[]
+}> = {
+  discovery: {
     name: "Discovery",
     abbrev: "FP",
-    yeoNetwork: "Frontoparietal",
-    color: "#60a5fa", // blue
-    icon: "🔍",
-    description: "New artist exploration, genre breadth",
+    color: NETWORK_COLORS.discovery,
     typicalRange: "15-30%",
-    signals: ["First-time artist reviews", "Genre diversity", "Low artist repeat rate"]
+    signals: ["First-time artist reviews", "Genre diversity", "Low artist repeat rate"],
   },
-  COMFORT: {
+  comfort: {
     name: "Comfort",
     abbrev: "DMN",
-    yeoNetwork: "Default Mode",
-    color: "#a78bfa", // violet
-    icon: "🏠",
-    description: "Returning to known favorites",
+    color: NETWORK_COLORS.comfort,
     typicalRange: "18-32%",
-    signals: ["Re-listens to favorites", "Artist loyalty", "Genre consistency"]
+    signals: ["Re-listens to favorites", "Artist loyalty", "Genre consistency"],
   },
-  DEEP_DIVE: {
+  deep_dive: {
     name: "Deep Dive",
     abbrev: "DA",
-    yeoNetwork: "Dorsal Attention",
-    color: "#34d399", // emerald
-    icon: "💿",
-    description: "Artist catalog exploration depth",
+    color: NETWORK_COLORS.deep_dive,
     typicalRange: "8-20%",
-    signals: ["Multiple albums from same artist", "Chronological exploration", "Discography patterns"]
+    signals: ["Multiple albums from same artist", "Chronological exploration", "Discography patterns"],
   },
-  REACTIVE: {
+  reactive: {
     name: "Reactive",
     abbrev: "VA",
-    yeoNetwork: "Ventral Attention",
-    color: "#fbbf24", // amber
-    icon: "⚡",
-    description: "Response to new releases, trends",
+    color: NETWORK_COLORS.reactive,
     typicalRange: "10-22%",
-    signals: ["New release reviews", "Trending album activity", "Current chart engagement"]
+    signals: ["New release reviews", "Trending album activity", "Current chart engagement"],
   },
-  EMOTIONAL: {
+  emotional: {
     name: "Emotional",
     abbrev: "LIM",
-    yeoNetwork: "Limbic",
-    color: "#f87171", // red
-    icon: "💜",
-    description: "Rating variance, strong reactions",
+    color: NETWORK_COLORS.emotional,
     typicalRange: "8-20%",
-    signals: ["Rating variance", "Strong written reactions", "Polarized scores"]
+    signals: ["Rating variance", "Strong written reactions", "Polarized scores"],
   },
-  SOCIAL: {
+  social: {
     name: "Social",
     abbrev: "SMN",
-    yeoNetwork: "Somatomotor",
-    color: "#fb923c", // orange
-    icon: "🤝",
-    description: "Community engagement, sharing",
+    color: NETWORK_COLORS.social,
     typicalRange: "3-12%",
-    signals: ["List collaborations", "Comment activity", "Friend interactions"]
+    signals: ["List collaborations", "Comment activity", "Friend interactions"],
   },
-  AESTHETIC: {
+  aesthetic: {
     name: "Aesthetic",
     abbrev: "VIS",
-    yeoNetwork: "Visual",
-    color: "#818cf8", // indigo
-    icon: "🎨",
-    description: "Visual/presentation attention",
+    color: NETWORK_COLORS.aesthetic,
     typicalRange: "2-10%",
-    signals: ["Album art attention", "Visual curation", "Presentation focus"]
+    signals: ["Album art attention", "Visual curation", "Presentation focus"],
   },
-} as const
+}
 
-export type MusicNetworkKey = keyof typeof MUSIC_NETWORKS
+const NETWORK_ICONS: Record<NetworkKey, string> = {
+  discovery: "\uD83D\uDD0D",
+  comfort: "\uD83C\uDFE0",
+  deep_dive: "\uD83D\uDCBF",
+  reactive: "\u26A1",
+  emotional: "\uD83D\uDC9C",
+  social: "\uD83E\uDD1D",
+  aesthetic: "\uD83C\uDFA8",
+}
 
 interface MusicNetworksVisualizationProps {
-  networkActivations: Partial<Record<MusicNetworkKey, number>> // 0-1 values
+  networkActivations: NetworkActivationsInput
   size?: number
   className?: string
   showLabels?: boolean
@@ -93,25 +112,29 @@ export function MusicNetworksVisualization({
   className = "",
   showLabels = true,
   interactive = true,
-}: MusicNetworksVisualizationProps) {
-  // Map to array with all network data
+}: MusicNetworksVisualizationProps): React.ReactElement {
+  const normalizedActivations = useMemo(
+    () => normalizeActivations(networkActivations),
+    [networkActivations]
+  )
+
   const networks = useMemo(() => {
-    const keys = Object.keys(MUSIC_NETWORKS) as MusicNetworkKey[]
+    const keys = Object.keys(NETWORK_DISPLAY_INFO) as NetworkKey[]
     return keys.map(key => ({
       key,
-      ...MUSIC_NETWORKS[key],
-      value: networkActivations[key] ?? 0,
+      ...NETWORK_DISPLAY_INFO[key],
+      icon: NETWORK_ICONS[key],
+      value: normalizedActivations[key] ?? 0,
     }))
-  }, [networkActivations])
+  }, [normalizedActivations])
 
   const numPoints = networks.length
   const center = size / 2
-  const maxRadius = (size / 2) * 0.65 // Leave room for labels
+  const maxRadius = (size / 2) * 0.65
 
-  // Calculate points for each network
   const angleStep = (2 * Math.PI) / numPoints
   const networkPoints = networks.map((network, i) => {
-    const angle = angleStep * i - Math.PI / 2 // Start from top
+    const angle = angleStep * i - Math.PI / 2
     const radius = network.value * maxRadius
 
     return {
@@ -126,12 +149,10 @@ export function MusicNetworksVisualization({
     }
   })
 
-  // Create filled polygon path for the activation shape
   const polygonPath = networkPoints.map((p, i) =>
     `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`
   ).join(" ") + " Z"
 
-  // Concentric rings for scale
   const rings = [0.25, 0.5, 0.75, 1].map((scale) => {
     const ringPoints = Array.from({ length: numPoints }, (_, i) => {
       const angle = angleStep * i - Math.PI / 2
@@ -145,14 +166,11 @@ export function MusicNetworksVisualization({
     <div className={`relative ${className}`} style={{ width: size, height: size }}>
       <svg width={size} height={size} className="font-mono">
         <defs>
-          {/* Gradient for the listening signature shape */}
           <linearGradient id="signatureGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#60a5fa" stopOpacity="0.3" />
-            <stop offset="50%" stopColor="#a78bfa" stopOpacity="0.2" />
-            <stop offset="100%" stopColor="#34d399" stopOpacity="0.3" />
+            <stop offset="0%" stopColor={NETWORK_COLORS.discovery} stopOpacity="0.3" />
+            <stop offset="50%" stopColor={NETWORK_COLORS.comfort} stopOpacity="0.2" />
+            <stop offset="100%" stopColor={NETWORK_COLORS.deep_dive} stopOpacity="0.3" />
           </linearGradient>
-
-          {/* Glow effect */}
           <filter id="signatureGlow" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="2" result="coloredBlur" />
             <feMerge>
@@ -162,7 +180,6 @@ export function MusicNetworksVisualization({
           </filter>
         </defs>
 
-        {/* Background rings */}
         {rings.map((points, i) => (
           <polygon
             key={i}
@@ -175,7 +192,6 @@ export function MusicNetworksVisualization({
           />
         ))}
 
-        {/* Axis lines */}
         {networkPoints.map((p, i) => (
           <line
             key={i}
@@ -189,7 +205,6 @@ export function MusicNetworksVisualization({
           />
         ))}
 
-        {/* Main activation polygon with gradient */}
         <path
           d={polygonPath}
           fill="url(#signatureGradient)"
@@ -199,18 +214,9 @@ export function MusicNetworksVisualization({
           filter="url(#signatureGlow)"
         />
 
-        {/* Individual network dots with their specific colors */}
         {networkPoints.map((p, i) => (
           <g key={i}>
-            {/* Outer glow */}
-            <circle
-              cx={p.x}
-              cy={p.y}
-              r="8"
-              fill={p.color}
-              fillOpacity="0.3"
-            />
-            {/* Main dot */}
+            <circle cx={p.x} cy={p.y} r="8" fill={p.color} fillOpacity="0.3" />
             <circle
               cx={p.x}
               cy={p.y}
@@ -223,9 +229,7 @@ export function MusicNetworksVisualization({
           </g>
         ))}
 
-        {/* Labels */}
         {showLabels && networkPoints.map((p, i) => {
-          // Determine text anchor based on position
           let textAnchor: "start" | "middle" | "end" = "middle"
           if (p.labelX < center - 15) textAnchor = "end"
           if (p.labelX > center + 15) textAnchor = "start"
@@ -243,14 +247,13 @@ export function MusicNetworksVisualization({
               >
                 {p.name}
               </text>
-              {/* Show percentage */}
               <text
                 x={p.labelX}
                 y={p.labelY + 12}
                 textAnchor={textAnchor}
                 dominantBaseline="middle"
                 className="text-[8px]"
-                fill="var(--muted)"
+                fill="var(--muted-foreground)"
               >
                 {Math.round(p.value * 100)}%
               </text>
@@ -258,14 +261,13 @@ export function MusicNetworksVisualization({
           )
         })}
 
-        {/* Center label */}
         <text
           x={center}
           y={center - 8}
           textAnchor="middle"
           dominantBaseline="middle"
           className="text-[8px] uppercase tracking-widest"
-          fill="var(--muted)"
+          fill="var(--muted-foreground)"
         >
           LISTENING
         </text>
@@ -284,16 +286,15 @@ export function MusicNetworksVisualization({
   )
 }
 
-// Compact version for inline display
 export function MusicNetworksMini({
   networkActivations,
   size = 80,
   className = "",
 }: {
-  networkActivations: Partial<Record<MusicNetworkKey, number>>
+  networkActivations: NetworkActivationsInput
   size?: number
   className?: string
-}) {
+}): React.ReactElement {
   return (
     <MusicNetworksVisualization
       networkActivations={networkActivations}
@@ -305,13 +306,12 @@ export function MusicNetworksMini({
   )
 }
 
-// Network legend component
 export function MusicNetworksLegend({
-  showYeoMapping = false
+  showYeoMapping = false,
 }: {
   showYeoMapping?: boolean
-}) {
-  const networks = Object.entries(MUSIC_NETWORKS) as [MusicNetworkKey, typeof MUSIC_NETWORKS[MusicNetworkKey]][]
+}): React.ReactElement {
+  const networks = Object.entries(NETWORK_DISPLAY_INFO) as [NetworkKey, typeof NETWORK_DISPLAY_INFO[NetworkKey]][]
 
   return (
     <div className="space-y-2">
@@ -319,36 +319,38 @@ export function MusicNetworksLegend({
         7 Music Networks
       </p>
       <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-        {networks.map(([key, network]) => (
-          <div key={key} className="flex items-start gap-2">
-            <div
-              className="w-3 h-3 flex-shrink-0 mt-0.5"
-              style={{ backgroundColor: network.color }}
-            />
-            <div className="min-w-0">
-              <p className="text-xs font-bold truncate">
-                {network.icon} {network.name}
-              </p>
-              <p className="text-[10px] text-muted-foreground truncate">{network.typicalRange}</p>
-              {showYeoMapping && (
-                <p className="text-[9px] text-muted-foreground/70 mt-0.5">
-                  {network.abbrev} → {network.yeoNetwork}
+        {networks.map(([key, network]) => {
+          const libNetwork = MUSIC_NETWORKS[key.toUpperCase() as keyof typeof MUSIC_NETWORKS]
+          return (
+            <div key={key} className="flex items-start gap-2">
+              <div
+                className="w-3 h-3 flex-shrink-0 mt-0.5"
+                style={{ backgroundColor: network.color }}
+              />
+              <div className="min-w-0">
+                <p className="text-xs font-bold truncate">
+                  {NETWORK_ICONS[key]} {network.name}
                 </p>
-              )}
+                <p className="text-[10px] text-muted-foreground truncate">{network.typicalRange}</p>
+                {showYeoMapping && libNetwork && (
+                  <p className="text-[9px] text-muted-foreground/70 mt-0.5">
+                    {network.abbrev} {"\u2192"} {libNetwork.yeoAnalog}
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )
 }
 
-// Loading skeleton
-export function MusicNetworksSkeleton({ size = 280 }: { size?: number }) {
+export function MusicNetworksSkeleton({ size = 280 }: { size?: number }): React.ReactElement {
   return (
     <div
       className="bg-muted/20 animate-pulse"
-      style={{ width: size, height: size, borderRadius: '50%' }}
+      style={{ width: size, height: size, borderRadius: "50%" }}
     />
   )
 }

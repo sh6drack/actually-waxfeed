@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma"
-import { ListeningSignature } from "@/lib/tasteid"
+import type { ListeningSignature } from "@/lib/tasteid"
 
-// Mood types based on TasteID Music Networks
+// Mood types derived from TasteID Music Networks
 export type ListeningMood = "comfort" | "discovery" | "depth" | "reactive" | "emotional"
 
 interface MoodRecommendation {
@@ -18,37 +18,52 @@ interface MoodRecommendation {
   moodMatch: number
 }
 
-// Derive the current listening mood from a user's listening signature
+// Map listening signature keys to mood types
+const SIGNATURE_TO_MOOD: Record<string, ListeningMood> = {
+  discovery: "discovery",
+  comfort: "comfort",
+  deep_dive: "depth",
+  reactive: "reactive",
+  emotional: "emotional",
+}
+
+/**
+ * Derive the current listening mood from a user's listening signature
+ */
 export function deriveCognitiveState(signature: ListeningSignature): ListeningMood {
-  // Find the dominant mode
   let maxMode: ListeningMood = "comfort"
   let maxValue = 0
 
-  const moodMap: Record<string, ListeningMood> = {
-    discovery: "discovery",
-    comfort: "comfort",
-    deep_dive: "depth",
-    reactive: "reactive",
-    emotional: "emotional",
-  }
-
-  Object.entries(signature).forEach(([key, value]) => {
-    if (moodMap[key] && value > maxValue) {
+  for (const [key, value] of Object.entries(signature)) {
+    const mood = SIGNATURE_TO_MOOD[key]
+    if (mood && value > maxValue) {
       maxValue = value
-      maxMode = moodMap[key]
+      maxMode = mood
     }
-  })
+  }
 
   return maxMode
 }
 
-// Get mood-aware recommendations based on current listening state
+// Album selection fields for queries
+const ALBUM_SELECT = {
+  id: true,
+  spotifyId: true,
+  title: true,
+  artistName: true,
+  coverArtUrl: true,
+  averageRating: true,
+  genres: true,
+} as const
+
+/**
+ * Get mood-aware recommendations based on current listening state
+ */
 export async function getMoodAwareRecommendations(
   userId: string,
   mood: ListeningMood,
   limit: number = 6
 ): Promise<MoodRecommendation[]> {
-  // Get the user's taste profile
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: {
@@ -67,9 +82,7 @@ export async function getMoodAwareRecommendations(
           albumId: true,
           rating: true,
           album: {
-            select: {
-              artistName: true,
-            },
+            select: { artistName: true },
           },
         },
       },
@@ -84,53 +97,15 @@ export async function getMoodAwareRecommendations(
   const favoriteArtists = user.tasteId.topArtists || []
   const topGenres = user.tasteId.topGenres || []
 
-  // Different recommendation strategies based on mood
-  let albums: MoodRecommendation[] = []
-
-  switch (mood) {
-    case "comfort":
-      // Recommend albums from favorite artists they haven't reviewed
-      albums = await getComfortRecommendations(
-        favoriteArtists,
-        reviewedAlbumIds,
-        limit
-      )
-      break
-
-    case "discovery":
-      // Recommend albums from unfamiliar genres or new artists
-      albums = await getDiscoveryRecommendations(
-        topGenres,
-        reviewedAlbumIds,
-        limit
-      )
-      break
-
-    case "depth":
-      // Recommend deeper cuts from artists they've reviewed positively
-      albums = await getDepthRecommendations(
-        user.reviews,
-        reviewedAlbumIds,
-        limit
-      )
-      break
-
-    case "reactive":
-      // Recommend new releases and trending albums
-      albums = await getReactiveRecommendations(reviewedAlbumIds, limit)
-      break
-
-    case "emotional":
-      // Recommend highly-rated albums that match emotional resonance
-      albums = await getEmotionalRecommendations(
-        topGenres,
-        reviewedAlbumIds,
-        limit
-      )
-      break
+  const moodHandlers: Record<ListeningMood, () => Promise<MoodRecommendation[]>> = {
+    comfort: () => getComfortRecommendations(favoriteArtists, reviewedAlbumIds, limit),
+    discovery: () => getDiscoveryRecommendations(topGenres, reviewedAlbumIds, limit),
+    depth: () => getDepthRecommendations(user.reviews, reviewedAlbumIds, limit),
+    reactive: () => getReactiveRecommendations(reviewedAlbumIds, limit),
+    emotional: () => getEmotionalRecommendations(topGenres, reviewedAlbumIds, limit),
   }
 
-  return albums
+  return moodHandlers[mood]()
 }
 
 async function getComfortRecommendations(
@@ -145,15 +120,7 @@ async function getComfortRecommendations(
     },
     take: limit * 2,
     orderBy: { averageRating: "desc" },
-    select: {
-      id: true,
-      spotifyId: true,
-      title: true,
-      artistName: true,
-      coverArtUrl: true,
-      averageRating: true,
-      genres: true,
-    },
+    select: ALBUM_SELECT,
   })
 
   return albums.slice(0, limit).map((album) => ({
@@ -168,7 +135,6 @@ async function getDiscoveryRecommendations(
   excludeIds: Set<string>,
   limit: number
 ): Promise<MoodRecommendation[]> {
-  // Find albums in adjacent genres
   const albums = await prisma.album.findMany({
     where: {
       id: { notIn: Array.from(excludeIds) },
@@ -176,18 +142,10 @@ async function getDiscoveryRecommendations(
     },
     take: limit * 3,
     orderBy: { averageRating: "desc" },
-    select: {
-      id: true,
-      spotifyId: true,
-      title: true,
-      artistName: true,
-      coverArtUrl: true,
-      averageRating: true,
-      genres: true,
-    },
+    select: ALBUM_SELECT,
   })
 
-  // Filter to albums that aren't in their top genres
+  // Filter to albums that are NOT in their top genres
   const discoveryAlbums = albums.filter((album) => {
     const albumGenres = album.genres || []
     return !topGenres.some((g) => albumGenres.includes(g))
@@ -195,7 +153,7 @@ async function getDiscoveryRecommendations(
 
   return discoveryAlbums.slice(0, limit).map((album) => ({
     album,
-    reason: `Expand your horizons`,
+    reason: "Expand your horizons",
     moodMatch: 0.85,
   }))
 }
@@ -217,16 +175,8 @@ async function getDepthRecommendations(
       id: { notIn: Array.from(excludeIds) },
     },
     take: limit * 2,
-    orderBy: { releaseDate: "asc" }, // Get earlier albums
-    select: {
-      id: true,
-      spotifyId: true,
-      title: true,
-      artistName: true,
-      coverArtUrl: true,
-      averageRating: true,
-      genres: true,
-    },
+    orderBy: { releaseDate: "asc" },
+    select: ALBUM_SELECT,
   })
 
   return albums.slice(0, limit).map((album) => ({
@@ -240,7 +190,6 @@ async function getReactiveRecommendations(
   excludeIds: Set<string>,
   limit: number
 ): Promise<MoodRecommendation[]> {
-  // Get recently released albums
   const sixMonthsAgo = new Date()
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
 
@@ -251,20 +200,12 @@ async function getReactiveRecommendations(
     },
     take: limit * 2,
     orderBy: { releaseDate: "desc" },
-    select: {
-      id: true,
-      spotifyId: true,
-      title: true,
-      artistName: true,
-      coverArtUrl: true,
-      averageRating: true,
-      genres: true,
-    },
+    select: ALBUM_SELECT,
   })
 
   return albums.slice(0, limit).map((album) => ({
     album,
-    reason: `Fresh release`,
+    reason: "Fresh release",
     moodMatch: 0.92,
   }))
 }
@@ -274,7 +215,6 @@ async function getEmotionalRecommendations(
   excludeIds: Set<string>,
   limit: number
 ): Promise<MoodRecommendation[]> {
-  // Get highly-rated albums in their favorite genres
   const albums = await prisma.album.findMany({
     where: {
       id: { notIn: Array.from(excludeIds) },
@@ -282,18 +222,10 @@ async function getEmotionalRecommendations(
     },
     take: limit * 3,
     orderBy: { averageRating: "desc" },
-    select: {
-      id: true,
-      spotifyId: true,
-      title: true,
-      artistName: true,
-      coverArtUrl: true,
-      averageRating: true,
-      genres: true,
-    },
+    select: ALBUM_SELECT,
   })
 
-  // Prefer albums in their favorite genres
+  // Sort to prefer albums in their favorite genres
   const sortedAlbums = albums.sort((a, b) => {
     const aMatch = (a.genres || []).some((g) => topGenres.includes(g)) ? 1 : 0
     const bMatch = (b.genres || []).some((g) => topGenres.includes(g)) ? 1 : 0
@@ -302,7 +234,7 @@ async function getEmotionalRecommendations(
 
   return sortedAlbums.slice(0, limit).map((album) => ({
     album,
-    reason: `Emotionally resonant`,
+    reason: "Emotionally resonant",
     moodMatch: 0.95,
   }))
 }

@@ -1,13 +1,26 @@
 "use client"
 
-// TasteID Pattern Detection - from the architecture doc
-// These patterns unlock as users review more albums
+import React from "react"
+import { PATTERN_CATEGORY_COLORS } from "./types"
 
-export const TASTEID_PATTERNS = {
+// Pattern categories for organization
+export type PatternCategory = "signature" | "rating" | "engagement"
+
+// Pattern definition
+interface Pattern {
+  id: string
+  name: string
+  description: string
+  category: PatternCategory
+  minReviews: number
+}
+
+// TasteID Pattern Detection - patterns that unlock as users review more albums
+export const TASTEID_PATTERNS: Record<string, Pattern> = {
   // Signature-Based Patterns
   DISCOVERY_COMFORT_OSCILLATION: {
     id: "discovery_comfort_oscillation",
-    name: "Discovery↔Comfort Oscillation",
+    name: "Discovery\u2194Comfort Oscillation",
     description: "Healthy balance between exploring new music and returning to favorites",
     category: "signature",
     minReviews: 10,
@@ -38,21 +51,21 @@ export const TASTEID_PATTERNS = {
   CRITICAL_EAR: {
     id: "critical_ear",
     name: "Critical Ear",
-    description: "Average rating below 5.5 — high standards",
+    description: "Average rating below 5.5 \u2014 high standards",
     category: "rating",
     minReviews: 15,
   },
   MUSIC_OPTIMIST: {
     id: "music_optimist",
     name: "Music Optimist",
-    description: "Average rating above 7.5 — finds joy everywhere",
+    description: "Average rating above 7.5 \u2014 finds joy everywhere",
     category: "rating",
     minReviews: 15,
   },
   POLARIZED_TASTE: {
     id: "polarized_taste",
     name: "Polarized Taste",
-    description: "Bimodal ratings — loves it or hates it",
+    description: "Bimodal ratings \u2014 loves it or hates it",
     category: "rating",
     minReviews: 20,
   },
@@ -93,9 +106,13 @@ export const TASTEID_PATTERNS = {
     category: "engagement",
     minReviews: 15,
   },
-} as const
+}
 
 export type PatternKey = keyof typeof TASTEID_PATTERNS
+
+function getCategoryColor(category: PatternCategory): string {
+  return PATTERN_CATEGORY_COLORS[category]
+}
 
 interface PatternBadgeProps {
   pattern: PatternKey
@@ -103,15 +120,9 @@ interface PatternBadgeProps {
   className?: string
 }
 
-const CATEGORY_COLORS = {
-  signature: "#60a5fa", // blue
-  rating: "#a78bfa", // violet
-  engagement: "#34d399", // emerald
-}
-
-export function PatternBadge({ pattern, unlocked = true, className = "" }: PatternBadgeProps) {
+export function PatternBadge({ pattern, unlocked = true, className = "" }: PatternBadgeProps): React.ReactElement {
   const patternData = TASTEID_PATTERNS[pattern]
-  const color = CATEGORY_COLORS[patternData.category]
+  const color = getCategoryColor(patternData.category)
 
   if (!unlocked) {
     return (
@@ -125,10 +136,7 @@ export function PatternBadge({ pattern, unlocked = true, className = "" }: Patte
   }
 
   return (
-    <div
-      className={`border p-3 ${className}`}
-      style={{ borderColor: color }}
-    >
+    <div className={`border p-3 ${className}`} style={{ borderColor: color }}>
       <p className="text-xs font-bold" style={{ color }}>
         {patternData.name}
       </p>
@@ -143,75 +151,70 @@ interface PatternGridProps {
   className?: string
 }
 
-export function PatternGrid({ unlockedPatterns, totalReviews, className = "" }: PatternGridProps) {
+function PatternCategorySection({
+  title,
+  patterns,
+  unlockedSet,
+}: {
+  title: string
+  patterns: PatternKey[]
+  unlockedSet: Set<string>
+}): React.ReactElement {
+  return (
+    <div className="mb-6">
+      <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
+        {title}
+      </p>
+      <div className="grid grid-cols-2 gap-2">
+        {patterns.map(pattern => (
+          <PatternBadge
+            key={pattern}
+            pattern={pattern}
+            unlocked={unlockedSet.has(pattern)}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+export function PatternGrid({ unlockedPatterns, totalReviews, className = "" }: PatternGridProps): React.ReactElement {
   const allPatterns = Object.keys(TASTEID_PATTERNS) as PatternKey[]
   const unlockedSet = new Set(unlockedPatterns)
 
-  // Group by category
   const signaturePatterns = allPatterns.filter(p => TASTEID_PATTERNS[p].category === "signature")
   const ratingPatterns = allPatterns.filter(p => TASTEID_PATTERNS[p].category === "rating")
   const engagementPatterns = allPatterns.filter(p => TASTEID_PATTERNS[p].category === "engagement")
 
+  const progressPercent = (unlockedPatterns.length / allPatterns.length) * 100
+
   return (
     <div className={className}>
-      {/* Signature Patterns */}
-      <div className="mb-6">
-        <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
-          Signature Patterns
-        </p>
-        <div className="grid grid-cols-2 gap-2">
-          {signaturePatterns.map(pattern => (
-            <PatternBadge
-              key={pattern}
-              pattern={pattern}
-              unlocked={unlockedSet.has(pattern)}
-            />
-          ))}
-        </div>
-      </div>
+      <PatternCategorySection
+        title="Signature Patterns"
+        patterns={signaturePatterns}
+        unlockedSet={unlockedSet}
+      />
+      <PatternCategorySection
+        title="Rating Patterns"
+        patterns={ratingPatterns}
+        unlockedSet={unlockedSet}
+      />
+      <PatternCategorySection
+        title="Engagement Patterns"
+        patterns={engagementPatterns}
+        unlockedSet={unlockedSet}
+      />
 
-      {/* Rating Patterns */}
-      <div className="mb-6">
-        <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
-          Rating Patterns
-        </p>
-        <div className="grid grid-cols-2 gap-2">
-          {ratingPatterns.map(pattern => (
-            <PatternBadge
-              key={pattern}
-              pattern={pattern}
-              unlocked={unlockedSet.has(pattern)}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Engagement Patterns */}
-      <div>
-        <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
-          Engagement Patterns
-        </p>
-        <div className="grid grid-cols-2 gap-2">
-          {engagementPatterns.map(pattern => (
-            <PatternBadge
-              key={pattern}
-              pattern={pattern}
-              unlocked={unlockedSet.has(pattern)}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Progress indicator */}
       <div className="mt-6 pt-4 border-t border-border">
         <div className="flex justify-between text-xs text-muted-foreground">
           <span>{unlockedPatterns.length} / {allPatterns.length} patterns unlocked</span>
           <span>{totalReviews} reviews</span>
         </div>
-        <div className="mt-2 h-1 bg-[--border] overflow-hidden">
+        <div className="mt-2 h-1 bg-border overflow-hidden">
           <div
             className="h-full bg-foreground transition-all"
-            style={{ width: `${(unlockedPatterns.length / allPatterns.length) * 100}%` }}
+            style={{ width: `${progressPercent}%` }}
           />
         </div>
       </div>
@@ -219,15 +222,14 @@ export function PatternGrid({ unlockedPatterns, totalReviews, className = "" }: 
   )
 }
 
-// Compact inline display of unlocked patterns
-export function PatternList({ patterns, className = "" }: { patterns: PatternKey[], className?: string }) {
+export function PatternList({ patterns, className = "" }: { patterns: PatternKey[]; className?: string }): React.ReactElement | null {
   if (patterns.length === 0) return null
 
   return (
     <div className={`flex flex-wrap gap-2 ${className}`}>
       {patterns.map(pattern => {
         const data = TASTEID_PATTERNS[pattern]
-        const color = CATEGORY_COLORS[data.category]
+        const color = getCategoryColor(data.category)
         return (
           <span
             key={pattern}

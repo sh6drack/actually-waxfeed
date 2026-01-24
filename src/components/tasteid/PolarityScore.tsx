@@ -1,10 +1,10 @@
 "use client"
 
-// TasteID Polarity Score 2.0
-// The enhanced Polarity Score combines multiple dimensions into a single identity strength metric
+import React from "react"
+import { SCORE_LEVELS, getScoreLevel } from "./types"
 
 interface PolarityScoreProps {
-  score: number // 0-1
+  score: number
   signatureStrength?: number
   patternDiversity?: number
   consolidationScore?: number
@@ -14,16 +14,51 @@ interface PolarityScoreProps {
   showBreakdown?: boolean
 }
 
-// Score interpretation thresholds from the doc
-const SCORE_LEVELS = [
-  { threshold: 0.8, label: "Highly Distinct", description: "Unmistakable listening identity", color: "#22c55e" },
-  { threshold: 0.6, label: "Well-Defined", description: "Clear patterns and preferences", color: "#60a5fa" },
-  { threshold: 0.4, label: "Emerging", description: "Patterns forming, more data helpful", color: "#fbbf24" },
-  { threshold: 0, label: "Nascent", description: "Early stage, keep reviewing", color: "#a78bfa" },
-]
+// Component weights for the formula
+const COMPONENT_WEIGHTS = {
+  signatureStrength: 0.25,
+  patternDiversity: 0.20,
+  consolidationScore: 0.20,
+  uniquenessScore: 0.20,
+  engagementDepth: 0.15,
+} as const
 
-function getScoreLevel(score: number) {
-  return SCORE_LEVELS.find(level => score >= level.threshold) || SCORE_LEVELS[SCORE_LEVELS.length - 1]
+const COMPONENT_LABELS: Record<keyof typeof COMPONENT_WEIGHTS, { label: string; description: string }> = {
+  signatureStrength: { label: "Signature Strength", description: "Network activation clarity" },
+  patternDiversity: { label: "Pattern Diversity", description: "Number of detected patterns" },
+  consolidationScore: { label: "Consolidation", description: "Taste stability" },
+  uniquenessScore: { label: "Uniqueness", description: "Deviation from typical" },
+  engagementDepth: { label: "Engagement Depth", description: "Review depth & length" },
+}
+
+function ScoreRow({
+  label,
+  value,
+  weight,
+  description,
+}: {
+  label: string
+  value: number
+  weight: number
+  description: string
+}): React.ReactElement {
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        <span className="text-muted-foreground/70">{label}</span>
+        <span className="text-[9px] text-muted-foreground">{"\u00d7"}{weight}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="w-16 h-1 bg-border overflow-hidden">
+          <div
+            className="h-full bg-foreground"
+            style={{ width: `${value * 100}%` }}
+          />
+        </div>
+        <span className="w-8 text-right text-muted-foreground">{Math.round(value * 100)}</span>
+      </div>
+    </div>
+  )
 }
 
 export function PolarityScore({
@@ -35,9 +70,17 @@ export function PolarityScore({
   engagementDepth,
   className = "",
   showBreakdown = true,
-}: PolarityScoreProps) {
+}: PolarityScoreProps): React.ReactElement {
   const level = getScoreLevel(score)
   const displayScore = Math.round(score * 100)
+
+  const components = {
+    signatureStrength,
+    patternDiversity,
+    consolidationScore,
+    uniquenessScore,
+    engagementDepth,
+  }
 
   return (
     <div className={`border border-border p-4 ${className}`}>
@@ -60,72 +103,41 @@ export function PolarityScore({
         </div>
       </div>
 
-      {/* Score bar */}
       <div className="mb-4">
         <div className="h-2 bg-border overflow-hidden">
           <div
             className="h-full transition-all duration-500"
-            style={{
-              width: `${displayScore}%`,
-              backgroundColor: level.color,
-            }}
+            style={{ width: `${displayScore}%`, backgroundColor: level.color }}
           />
         </div>
         <p className="text-xs text-muted-foreground/70 mt-2">{level.description}</p>
       </div>
 
-      {/* Score breakdown */}
       {showBreakdown && (
         <div className="pt-4 border-t border-border">
           <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-3">
             Formula Components
           </p>
           <div className="space-y-2 text-xs">
-            {signatureStrength !== undefined && (
-              <ScoreRow
-                label="Signature Strength"
-                value={signatureStrength}
-                weight={0.25}
-                description="Network activation clarity"
-              />
-            )}
-            {patternDiversity !== undefined && (
-              <ScoreRow
-                label="Pattern Diversity"
-                value={patternDiversity}
-                weight={0.20}
-                description="Number of detected patterns"
-              />
-            )}
-            {consolidationScore !== undefined && (
-              <ScoreRow
-                label="Consolidation"
-                value={consolidationScore}
-                weight={0.20}
-                description="Taste stability"
-              />
-            )}
-            {uniquenessScore !== undefined && (
-              <ScoreRow
-                label="Uniqueness"
-                value={uniquenessScore}
-                weight={0.20}
-                description="Deviation from typical"
-              />
-            )}
-            {engagementDepth !== undefined && (
-              <ScoreRow
-                label="Engagement Depth"
-                value={engagementDepth}
-                weight={0.15}
-                description="Review depth & length"
-              />
-            )}
+            {(Object.keys(COMPONENT_WEIGHTS) as Array<keyof typeof COMPONENT_WEIGHTS>).map(key => {
+              const value = components[key]
+              if (value === undefined) return null
+
+              const { label, description } = COMPONENT_LABELS[key]
+              return (
+                <ScoreRow
+                  key={key}
+                  label={label}
+                  value={value}
+                  weight={COMPONENT_WEIGHTS[key]}
+                  description={description}
+                />
+              )
+            })}
           </div>
         </div>
       )}
 
-      {/* Score interpretation legend */}
       <div className="mt-4 pt-4 border-t border-border">
         <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-3">
           Score Interpretation
@@ -133,12 +145,9 @@ export function PolarityScore({
         <div className="grid grid-cols-2 gap-2">
           {SCORE_LEVELS.map((lvl, i) => (
             <div key={i} className="flex items-center gap-2">
-              <div
-                className="w-2 h-2"
-                style={{ backgroundColor: lvl.color }}
-              />
+              <div className="w-2 h-2" style={{ backgroundColor: lvl.color }} />
               <span className="text-xs text-muted-foreground">
-                {lvl.threshold * 100}+ — {lvl.label}
+                {lvl.threshold * 100}+ {"\u2014"} {lvl.label}
               </span>
             </div>
           ))}
@@ -148,38 +157,7 @@ export function PolarityScore({
   )
 }
 
-function ScoreRow({
-  label,
-  value,
-  weight,
-  description,
-}: {
-  label: string
-  value: number
-  weight: number
-  description: string
-}) {
-  return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <span className="text-muted-foreground/70">{label}</span>
-        <span className="text-[9px] text-muted-foreground">×{weight}</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <div className="w-16 h-1 bg-border overflow-hidden">
-          <div
-            className="h-full bg-foreground"
-            style={{ width: `${value * 100}%` }}
-          />
-        </div>
-        <span className="w-8 text-right text-muted-foreground">{Math.round(value * 100)}</span>
-      </div>
-    </div>
-  )
-}
-
-// Compact inline Polarity Score
-export function PolarityScoreBadge({ score, className = "" }: { score: number, className?: string }) {
+export function PolarityScoreBadge({ score, className = "" }: { score: number; className?: string }): React.ReactElement {
   const level = getScoreLevel(score)
   const displayScore = Math.round(score * 100)
 
@@ -196,7 +174,6 @@ export function PolarityScoreBadge({ score, className = "" }: { score: number, c
   )
 }
 
-// Calculate Polarity Score 2.0 from components
 export function calculatePolarityScore({
   signatureStrength,
   patternDiversity,
@@ -211,10 +188,10 @@ export function calculatePolarityScore({
   engagementDepth: number
 }): number {
   return (
-    (signatureStrength * 0.25) +
-    (patternDiversity * 0.20) +
-    (consolidationScore * 0.20) +
-    (uniquenessScore * 0.20) +
-    (engagementDepth * 0.15)
+    signatureStrength * COMPONENT_WEIGHTS.signatureStrength +
+    patternDiversity * COMPONENT_WEIGHTS.patternDiversity +
+    consolidationScore * COMPONENT_WEIGHTS.consolidationScore +
+    uniquenessScore * COMPONENT_WEIGHTS.uniquenessScore +
+    engagementDepth * COMPONENT_WEIGHTS.engagementDepth
   )
 }

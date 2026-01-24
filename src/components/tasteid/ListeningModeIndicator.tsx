@@ -1,60 +1,88 @@
 "use client"
 
-import { useMemo } from "react"
-import { MUSIC_NETWORKS, MusicNetworkKey } from "./MusicNetworks"
+import React, { useMemo } from "react"
+import { MUSIC_NETWORKS, type MusicNetworkId } from "@/lib/tasteid"
+import { NETWORK_COLORS, type NetworkKey } from "./types"
+
+// Accept both uppercase (MusicNetworkId) and lowercase (NetworkKey) formats
+type NetworkActivationsInput =
+  | Partial<Record<NetworkKey, number>>
+  | Partial<Record<MusicNetworkId, number>>
 
 interface ListeningModeIndicatorProps {
-  networkActivations: Partial<Record<MusicNetworkKey, number>>
+  networkActivations: NetworkActivationsInput
   className?: string
 }
 
-// Determine dominant listening mode from network activations
-function getDominantMode(activations: Partial<Record<MusicNetworkKey, number>>): {
-  mode: MusicNetworkKey
+// Mode-specific suggestions
+const MODE_SUGGESTIONS: Record<NetworkKey, string> = {
+  discovery: "Try something outside your usual genres",
+  comfort: "Revisit an album you haven't played in a while",
+  deep_dive: "Explore another album from an artist you love",
+  reactive: "Check out this week's new releases",
+  emotional: "Find something that matches your current mood",
+  social: "See what your friends are listening to",
+  aesthetic: "Discover albums with iconic cover art",
+}
+
+interface DominantMode {
+  mode: NetworkKey
   value: number
   label: string
   suggestion: string
   icon: string
   color: string
-} {
-  let maxMode: MusicNetworkKey = "COMFORT"
+}
+
+/**
+ * Normalize network activations to lowercase keys
+ */
+function normalizeActivations(input: NetworkActivationsInput): Partial<Record<NetworkKey, number>> {
+  const result: Partial<Record<NetworkKey, number>> = {}
+
+  for (const [key, value] of Object.entries(input)) {
+    if (value !== undefined) {
+      const normalizedKey = key.toLowerCase() as NetworkKey
+      result[normalizedKey] = value
+    }
+  }
+
+  return result
+}
+
+function getDominantMode(activations: Partial<Record<NetworkKey, number>>): DominantMode {
+  let maxMode: NetworkKey = "comfort"
   let maxValue = 0
 
-  Object.entries(activations).forEach(([key, value]) => {
+  for (const [key, value] of Object.entries(activations)) {
     if (value !== undefined && value > maxValue) {
       maxValue = value
-      maxMode = key as MusicNetworkKey
+      maxMode = key as NetworkKey
     }
-  })
-
-  const network = MUSIC_NETWORKS[maxMode]
-
-  // Mode-specific suggestions based on the architecture doc
-  const suggestions: Record<MusicNetworkKey, string> = {
-    DISCOVERY: "Try something outside your usual genres",
-    COMFORT: "Revisit an album you haven't played in a while",
-    DEEP_DIVE: "Explore another album from an artist you love",
-    REACTIVE: "Check out this week's new releases",
-    EMOTIONAL: "Find something that matches your current mood",
-    SOCIAL: "See what your friends are listening to",
-    AESTHETIC: "Discover albums with iconic cover art",
   }
+
+  const networkKey = maxMode.toUpperCase() as keyof typeof MUSIC_NETWORKS
+  const network = MUSIC_NETWORKS[networkKey]
 
   return {
     mode: maxMode,
     value: maxValue,
-    label: network.name,
-    suggestion: suggestions[maxMode],
-    icon: network.icon,
-    color: network.color,
+    label: network?.name.replace(" Mode", "") || maxMode,
+    suggestion: MODE_SUGGESTIONS[maxMode],
+    icon: network?.icon || "\uD83C\uDFB5",
+    color: NETWORK_COLORS[maxMode],
   }
 }
 
 export function ListeningModeIndicator({
   networkActivations,
   className = "",
-}: ListeningModeIndicatorProps) {
-  const dominant = useMemo(() => getDominantMode(networkActivations), [networkActivations])
+}: ListeningModeIndicatorProps): React.ReactElement {
+  const normalizedActivations = useMemo(
+    () => normalizeActivations(networkActivations),
+    [networkActivations]
+  )
+  const dominant = useMemo(() => getDominantMode(normalizedActivations), [normalizedActivations])
 
   return (
     <div className={`border border-border p-4 ${className}`}>
@@ -84,12 +112,15 @@ export function ListeningModeIndicator({
   )
 }
 
-// Compact badge version
 export function ListeningModeBadge({
   networkActivations,
   className = "",
-}: ListeningModeIndicatorProps) {
-  const dominant = useMemo(() => getDominantMode(networkActivations), [networkActivations])
+}: ListeningModeIndicatorProps): React.ReactElement {
+  const normalizedActivations = useMemo(
+    () => normalizeActivations(networkActivations),
+    [networkActivations]
+  )
+  const dominant = useMemo(() => getDominantMode(normalizedActivations), [normalizedActivations])
 
   return (
     <span
