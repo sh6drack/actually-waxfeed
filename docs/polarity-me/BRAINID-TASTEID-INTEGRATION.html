@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BrainID ↔ TasteID Integration | Polarity × WaxFeed</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      border-radius: 0 !important;
+    }
+
+    :root {
+      --background: #0a0a0a;
+      --foreground: #ededed;
+      --muted: #888888;
+      --border: #222222;
+      --accent: #ffffff;
+      --purple: #9b7bbd;
+    }
+
+    body {
+      background: var(--background);
+      color: var(--foreground);
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.6;
+      padding: 60px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      letter-spacing: -0.02em;
+      font-weight: 700;
+    }
+
+    h1 {
+      font-size: 48px;
+      margin-bottom: 8px;
+      color: var(--accent);
+    }
+
+    h2 {
+      font-size: 28px;
+      margin-top: 60px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    h3 {
+      font-size: 20px;
+      margin-top: 32px;
+      margin-bottom: 16px;
+      color: var(--purple);
+    }
+
+    p {
+      margin-bottom: 16px;
+      color: var(--foreground);
+    }
+
+    .subtitle {
+      font-size: 18px;
+      color: var(--muted);
+      margin-bottom: 40px;
+      font-style: italic;
+    }
+
+    .meta {
+      display: flex;
+      gap: 32px;
+      margin-bottom: 40px;
+      padding: 16px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .meta-item {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .meta-label {
+      color: var(--muted);
+    }
+
+    .meta-value {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .highlight-box {
+      background: var(--border);
+      padding: 32px;
+      margin: 32px 0;
+      border-left: 4px solid var(--purple);
+    }
+
+    .highlight-box p {
+      font-size: 20px;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 16px;
+      border: 1px solid var(--border);
+    }
+
+    th {
+      background: var(--border);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+
+    td {
+      font-size: 14px;
+    }
+
+    .code-block {
+      background: #111;
+      padding: 24px;
+      margin: 24px 0;
+      font-family: "SF Mono", Monaco, monospace;
+      font-size: 13px;
+      line-height: 1.8;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+    }
+
+    .flywheel {
+      background: #111;
+      padding: 40px;
+      margin: 40px 0;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+
+    .flywheel-step {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 20px 0;
+    }
+
+    .flywheel-box {
+      background: var(--border);
+      padding: 20px 32px;
+      max-width: 500px;
+      text-align: left;
+    }
+
+    .flywheel-arrow {
+      color: var(--purple);
+      font-size: 32px;
+      margin: 16px 0;
+    }
+
+    .network-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      margin: 32px 0;
+    }
+
+    .network-card {
+      background: var(--border);
+      padding: 24px;
+    }
+
+    .network-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .network-name {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+
+    .network-desc {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .arrow {
+      text-align: center;
+      font-size: 24px;
+      color: var(--purple);
+      margin: 16px 0;
+    }
+
+    .phase {
+      margin: 40px 0;
+      padding: 32px;
+      background: #0f0f0f;
+      border: 1px solid var(--border);
+    }
+
+    .phase-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .phase-number {
+      background: var(--purple);
+      color: var(--background);
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .phase-title {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .phase-timing {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 16px 0;
+    }
+
+    li {
+      padding: 8px 0;
+      padding-left: 24px;
+      position: relative;
+    }
+
+    li::before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: var(--purple);
+    }
+
+    .footer {
+      margin-top: 80px;
+      padding-top: 32px;
+      border-top: 2px solid var(--border);
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .logo-line {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 16px;
+    }
+
+    .logo-text {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+    }
+
+    .logo-divider {
+      color: var(--purple);
+      font-size: 28px;
+    }
+
+    @media print {
+      body {
+        background: white;
+        color: black;
+        padding: 40px;
+      }
+
+      h2, h3 {
+        break-after: avoid;
+      }
+
+      .phase, .highlight-box {
+        break-inside: avoid;
+      }
+
+      table {
+        break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-line">
+      <span class="logo-text">POLARITY</span>
+      <span class="logo-divider">×</span>
+      <span class="logo-text">WAXFEED</span>
+    </div>
+    <h1>BrainID ↔ TasteID Integration</h1>
+    <p class="subtitle">How cognitive signature and music signature inform each other</p>
+    <div class="meta">
+      <div class="meta-item">
+        <span class="meta-label">Created:</span>
+        <span class="meta-value">2026-01-24</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Status:</span>
+        <span class="meta-value">Design Draft</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Framework:</span>
+        <span class="meta-value">Polarity 1.2</span>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <h2>The Core Hypothesis</h2>
+    <div class="highlight-box">
+      <p>Your cognitive signature (BrainID) and your listening signature (TasteID) are two views of the same underlying system.</p>
+    </div>
+    <p style="text-align: center; font-size: 20px; color: var(--muted); margin: 40px 0;">
+      How you think → How you listen → How you think
+    </p>
+    <p>They should <strong>correlate</strong> (patterns in one domain appear in the other), <strong>predict</strong> (one can inform recommendations in the other), and <strong>calibrate</strong> (explicit data like music ratings can ground inferred cognitive states).</p>
+  </section>
+
+  <section>
+    <h2>Network Mapping</h2>
+    <h3>Yeo 7-Network ↔ TasteID Listening Modes</h3>
+
+    <div class="network-grid">
+      <div class="network-card">
+        <div class="network-label">Cognitive Network</div>
+        <div class="network-name">DMN</div>
+        <div class="network-desc">Default Mode Network</div>
+      </div>
+      <div class="network-card">
+        <div class="network-label">Music Mode</div>
+        <div class="network-name">COMFORT</div>
+        <div class="network-desc">Self-reflection, familiar territory</div>
+      </div>
+    </div>
+    <div class="arrow">↔</div>
+    <div class="network-grid">
+      <div class="network-card">
+        <div class="network-label">Cognitive Network</div>
+        <div class="network-name">FP</div>
+        <div class="network-desc">Frontoparietal</div>
+      </div>
+      <div class="network-card">
+        <div class="network-label">Music Mode</div>
+        <div class="network-name">DISCOVERY</div>
+        <div class="network-desc">Planning, novelty-seeking</div>
+      </div>
+    </div>
+    <div class="arrow">↔</div>
+    <div class="network-grid">
+      <div class="network-card">
+        <div class="network-label">Cognitive Network</div>
+        <div class="network-name">LIM</div>
+        <div class="network-desc">Limbic</div>
+      </div>
+      <div class="network-card">
+        <div class="network-label">Music Mode</div>
+        <div class="network-name">EMOTION</div>
+        <div class="network-desc">Affect, feeling processing</div>
+      </div>
+    </div>
+    <div class="arrow">↔</div>
+    <div class="network-grid">
+      <div class="network-card">
+        <div class="network-label">Cognitive Network</div>
+        <div class="network-name">DA</div>
+        <div class="network-desc">Dorsal Attention</div>
+      </div>
+      <div class="network-card">
+        <div class="network-label">Music Mode</div>
+        <div class="network-name">DEPTH</div>
+        <div class="network-desc">Focused analysis, technical appreciation</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Testable Predictions</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>BrainID Pattern</th>
+          <th>Expected TasteID Behavior</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>FP-dominant thinkers</td>
+          <td>Higher Discovery scores</td>
+        </tr>
+        <tr>
+          <td>DMN-dominant thinkers</td>
+          <td>Higher Comfort scores</td>
+        </tr>
+        <tr>
+          <td>High Polarity Score (cognitive range)</td>
+          <td>High Adventureness Score (music range)</td>
+        </tr>
+        <tr>
+          <td>Challenge-Before-Accept pattern</td>
+          <td>Critical reviewer (lower avg ratings, detailed reviews)</td>
+        </tr>
+        <tr>
+          <td>High FP↔DMN oscillation</td>
+          <td>High Discovery↔Comfort oscillation</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Integration Points</h2>
+
+    <h3>1. Mood-Aware Recommendations</h3>
+    <div class="code-block">
+IF current_brainid.dominant_network == "LIM" (high emotional):
+    → Suggest from TasteID.comfort_zone
+    → Avoid Discovery music that requires cognitive load
+
+IF current_brainid.dominant_network == "FP" (planning/focus):
+    → Suggest from TasteID.discovery OR focus_conducive genres
+    → Match the "get stuff done" energy
+
+IF current_brainid.dominant_network == "DMN" (reflective):
+    → Suggest from TasteID.depth OR contemplative artists
+    → Match the introspective mood
+    </div>
+
+    <h3>2. Review Language → Cognitive Calibration</h3>
+    <p>Music reviews are explicit. Cognitive states are inferred. Use one to calibrate the other.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Review Language</th>
+          <th>Inferred Network</th>
+          <th>Calibration Effect</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>"This makes me feel..."</td>
+          <td>LIM</td>
+          <td>Strengthen LIM detection patterns</td>
+        </tr>
+        <tr>
+          <td>"Technically impressive"</td>
+          <td>DA/FP</td>
+          <td>Strengthen analytical markers</td>
+        </tr>
+        <tr>
+          <td>"Reminds me of..."</td>
+          <td>DMN</td>
+          <td>Strengthen self-referential markers</td>
+        </tr>
+        <tr>
+          <td>"Wait, this part is..."</td>
+          <td>VA</td>
+          <td>Strengthen salience markers</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>3. Listening Patterns → Cognitive State Proxy</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Listening Behavior</th>
+          <th>Inferred Cognitive State</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Playing comfort albums</td>
+          <td>DMN dominant, reflective/relaxed</td>
+        </tr>
+        <tr>
+          <td>Exploring new genres</td>
+          <td>FP dominant, seeking/planning</td>
+        </tr>
+        <tr>
+          <td>Replaying emotional songs</td>
+          <td>LIM dominant, processing feelings</td>
+        </tr>
+        <tr>
+          <td>Deep album listening (start to finish)</td>
+          <td>DA dominant, focused attention</td>
+        </tr>
+        <tr>
+          <td>Skipping frequently</td>
+          <td>VA dominant, seeking salience</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>The Integration Flywheel</h2>
+    <div class="flywheel">
+      <div class="flywheel-step">
+        <div class="flywheel-box">
+          <strong style="color: var(--purple);">MORE REVIEWS</strong>
+          <p style="margin: 8px 0 0; color: var(--muted);">Explicit data from user</p>
+        </div>
+      </div>
+      <div class="flywheel-arrow">↓</div>
+      <div class="flywheel-step">
+        <div class="flywheel-box">
+          <strong>TasteID gets more accurate</strong>
+          <ul>
+            <li>Better listening signature</li>
+            <li>Better genre predictions</li>
+            <li>Better music recommendations</li>
+          </ul>
+        </div>
+      </div>
+      <div class="flywheel-arrow">↓</div>
+      <div class="flywheel-step">
+        <div class="flywheel-box">
+          <strong>Review language calibrates BrainID</strong>
+          <ul>
+            <li>"This makes me feel X" → LIM markers</li>
+            <li>"Technically impressive" → DA/FP markers</li>
+            <li>"Reminds me of..." → DMN markers</li>
+          </ul>
+        </div>
+      </div>
+      <div class="flywheel-arrow">↓</div>
+      <div class="flywheel-step">
+        <div class="flywheel-box">
+          <strong>BrainID gets more accurate</strong>
+          <ul>
+            <li>Better cognitive signature</li>
+            <li>Better mood detection</li>
+            <li>Better response personalization</li>
+          </ul>
+        </div>
+      </div>
+      <div class="flywheel-arrow">↓</div>
+      <div class="flywheel-step">
+        <div class="flywheel-box">
+          <strong>Mood-aware music recommendations</strong>
+          <ul>
+            <li>LIM high → Comfort music</li>
+            <li>FP high → Discovery music</li>
+            <li>More engagement → More reviews</li>
+          </ul>
+        </div>
+      </div>
+      <div class="flywheel-arrow">↻</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Implementation Roadmap</h2>
+
+    <div class="phase">
+      <div class="phase-header">
+        <div class="phase-number">1</div>
+        <div>
+          <div class="phase-title">Data Collection</div>
+          <div class="phase-timing">Now</div>
+        </div>
+      </div>
+      <ul>
+        <li>Add cognitive markers to review schema</li>
+        <li>Track review language patterns automatically</li>
+        <li>Link TasteID computation to Polarity patterns</li>
+        <li>Build dataset of music-cognition relationships</li>
+      </ul>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header">
+        <div class="phase-number">2</div>
+        <div>
+          <div class="phase-title">Cross-Prediction</div>
+          <div class="phase-timing">Later</div>
+        </div>
+      </div>
+      <ul>
+        <li>Predict cognitive state from listening (Spotify integration)</li>
+        <li>Predict music from cognitive state</li>
+        <li>Validate correlation hypotheses</li>
+      </ul>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header">
+        <div class="phase-number">3</div>
+        <div>
+          <div class="phase-title">Unified Profile</div>
+          <div class="phase-timing">Future</div>
+        </div>
+      </div>
+      <ul>
+        <li>Single Polarity profile includes BrainID + TasteID</li>
+        <li>Cross-domain pattern detection</li>
+        <li>Signature-based user matching</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>Research Questions</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Question</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>How stable is the cognitive-music correlation? Does it vary by context?</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>Can music shift cognitive state? Music as cognitive intervention?</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>Are there cognitive-music archetypes? "The Analytical Explorer" (FP + Discovery)</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>Can we identify someone from music alone? How unique is TasteID?</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <footer class="footer">
+    <div class="logo-line" style="margin-bottom: 24px;">
+      <span class="logo-text" style="font-size: 18px;">POLARITY</span>
+      <span class="logo-divider" style="font-size: 20px;">×</span>
+      <span class="logo-text" style="font-size: 18px;">WAXFEED</span>
+    </div>
+    <p>Cognitive modeling that extends from how you think to how you listen.</p>
+    <p style="margin-top: 8px; font-size: 12px; color: #444;">Generated by Claude Opus 4.5 | 2026-01-24</p>
+  </footer>
+</body>
+</html>
