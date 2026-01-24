@@ -822,59 +822,182 @@ function computeListeningSignature(reviews: ReviewWithAlbum[]): ListeningSignatu
 
 /**
  * Detect signature patterns from listening behavior
+ * Enhanced with more nuanced patterns from Polarity 1.2
  */
 function detectSignaturePatterns(
   reviews: ReviewWithAlbum[],
   signature: ListeningSignature
 ): string[] {
   const patterns: string[] = []
+  const ratings = reviews.map(r => r.rating)
+  const avgRating = ratings.reduce((a, b) => a + b, 0) / Math.max(ratings.length, 1)
 
-  // Discovery↔Comfort Oscillation
-  if (signature.discovery > 0.2 && signature.comfort > 0.15) {
+  // ===========================================
+  // SIGNATURE-BASED PATTERNS
+  // ===========================================
+
+  // Discovery↔Comfort Oscillation - Healthy balance between new and familiar
+  if (signature.discovery > 0.18 && signature.comfort > 0.15) {
     patterns.push('Discovery↔Comfort Oscillation')
   }
 
-  // Deep Dive Sprints
+  // Deep Dive Sprints - Goes all-in on artists
   if (signature.deep_dive > 0.15) {
     patterns.push('Deep Dive Sprints')
   }
 
-  // Reactive Spikes (engages heavily with new releases)
+  // New Release Hunter - Stays on top of current music
   if (signature.reactive > 0.2) {
     patterns.push('New Release Hunter')
   }
 
-  // Emotional Clusters
+  // Emotional Listener - Strong reactions to music
   if (signature.emotional > 0.25) {
     patterns.push('Emotional Listener')
   }
 
-  // Harsh Critic pattern
-  const ratings = reviews.map(r => r.rating)
-  const avgRating = ratings.reduce((a, b) => a + b, 0) / Math.max(ratings.length, 1)
+  // ===========================================
+  // RATING DISTRIBUTION PATTERNS
+  // ===========================================
+
+  // Harsh Critic vs Music Optimist
   if (avgRating < 5.5) {
     patterns.push('Critical Ear')
   } else if (avgRating > 7.5) {
     patterns.push('Music Optimist')
   }
 
-  // Completionist (deep dives into discographies)
+  // Bimodal Rater - Loves it or hates it (high ratings at extremes)
+  const extremeCount = ratings.filter(r => r <= 3 || r >= 8).length
+  const middleCount = ratings.filter(r => r > 3 && r < 8).length
+  if (extremeCount > middleCount * 1.5 && reviews.length > 10) {
+    patterns.push('Polarized Taste')
+  }
+
+  // Generous Perfectionist - Gives 10s but rarely anything between 6-9
+  const perfectScores = ratings.filter(r => r === 10).length
+  const nearPerfectScores = ratings.filter(r => r >= 8 && r < 10).length
+  if (perfectScores > nearPerfectScores && perfectScores >= 3) {
+    patterns.push('Perfection Seeker')
+  }
+
+  // ===========================================
+  // ARTIST & GENRE PATTERNS
+  // ===========================================
+
+  // Track artist engagement
   const artistCounts: Record<string, number> = {}
+  const artistRatings: Record<string, number[]> = {}
   reviews.forEach(r => {
     artistCounts[r.album.artistName] = (artistCounts[r.album.artistName] || 0) + 1
+    if (!artistRatings[r.album.artistName]) {
+      artistRatings[r.album.artistName] = []
+    }
+    artistRatings[r.album.artistName].push(r.rating)
   })
+
   const maxArtistAlbums = Math.max(...Object.values(artistCounts), 0)
+
+  // Discography Completionist - Deep dives into artist catalogs
   if (maxArtistAlbums >= 5) {
     patterns.push('Discography Completionist')
   }
 
-  // Genre Explorer
+  // Loyal Fan - High average rating for repeat artists
+  const loyalArtists = Object.entries(artistRatings)
+    .filter(([, ratings]) => ratings.length >= 3)
+    .filter(([, ratings]) => ratings.reduce((a, b) => a + b, 0) / ratings.length >= 7)
+  if (loyalArtists.length >= 3) {
+    patterns.push('Artist Loyalist')
+  }
+
+  // Genre Explorer - Wide genre coverage
   const uniqueGenres = new Set(reviews.flatMap(r => r.album.genres))
   if (uniqueGenres.size > 15) {
     patterns.push('Genre Explorer')
   }
 
-  return patterns
+  // Genre Specialist - 70%+ reviews in top 3 genres
+  const genreCounts: Record<string, number> = {}
+  reviews.forEach(r => {
+    r.album.genres.forEach(g => {
+      genreCounts[g.toLowerCase()] = (genreCounts[g.toLowerCase()] || 0) + 1
+    })
+  })
+  const sortedGenres = Object.entries(genreCounts).sort((a, b) => b[1] - a[1])
+  const topGenreCount = sortedGenres.slice(0, 3).reduce((sum, [, c]) => sum + c, 0)
+  if (topGenreCount / reviews.length > 0.7 && reviews.length > 10) {
+    patterns.push('Genre Specialist')
+  }
+
+  // ===========================================
+  // TEMPORAL PATTERNS
+  // ===========================================
+
+  // Archive Diver - Prefers older music (average album age > 15 years)
+  const currentYear = new Date().getFullYear()
+  const albumAges = reviews.map(r => currentYear - new Date(r.album.releaseDate).getFullYear())
+  const avgAlbumAge = albumAges.reduce((a, b) => a + b, 0) / Math.max(albumAges.length, 1)
+  if (avgAlbumAge > 15) {
+    patterns.push('Archive Diver')
+  }
+
+  // Decade Obsessed - 60%+ of reviews from one decade
+  const decadeCounts: Record<string, number> = {}
+  reviews.forEach(r => {
+    const year = new Date(r.album.releaseDate).getFullYear()
+    const decade = `${Math.floor(year / 10) * 10}s`
+    decadeCounts[decade] = (decadeCounts[decade] || 0) + 1
+  })
+  const maxDecadePercent = Math.max(...Object.values(decadeCounts)) / reviews.length
+  if (maxDecadePercent > 0.6) {
+    patterns.push('Era Specialist')
+  }
+
+  // ===========================================
+  // ENGAGEMENT PATTERNS
+  // ===========================================
+
+  // Essay Writer - Long, thoughtful reviews
+  const reviewLengths = reviews.map(r => r.text?.split(/\s+/).length || 0)
+  const avgReviewLength = reviewLengths.reduce((a, b) => a + b, 0) / Math.max(reviewLengths.length, 1)
+  if (avgReviewLength > 100) {
+    patterns.push('Essay Writer')
+  }
+
+  // Contrarian - Often differs from consensus (rates highly-rated albums lower or vice versa)
+  let contrarianCount = 0
+  reviews.forEach(r => {
+    if (r.album.averageRating) {
+      const diff = Math.abs(r.rating - r.album.averageRating)
+      if (diff > 3) contrarianCount++
+    }
+  })
+  if (contrarianCount / reviews.length > 0.3 && reviews.length > 10) {
+    patterns.push('Contrarian')
+  }
+
+  // Consensus Builder - Usually aligns with popular opinion
+  let consensusCount = 0
+  reviews.forEach(r => {
+    if (r.album.averageRating) {
+      const diff = Math.abs(r.rating - r.album.averageRating)
+      if (diff <= 1) consensusCount++
+    }
+  })
+  if (consensusCount / reviews.length > 0.6 && reviews.length > 10) {
+    patterns.push('Consensus Builder')
+  }
+
+  // Hidden Gem Hunter - High ratings for low-popularity albums
+  const hiddenGems = reviews.filter(r =>
+    r.rating >= 8 && r.album.totalReviews < 50
+  )
+  if (hiddenGems.length / reviews.length > 0.3 && reviews.length > 10) {
+    patterns.push('Hidden Gem Hunter')
+  }
+
+  return patterns.slice(0, 8) // Limit to most relevant patterns
 }
 
 /**
@@ -1304,6 +1427,9 @@ export async function createTasteIDSnapshot(tasteId: string) {
       primaryArchetype: taste.primaryArchetype,
       adventurenessScore: taste.adventurenessScore,
       reviewCount: taste.reviewCount,
+      // Polarity 1.2
+      listeningSignature: taste.listeningSignature ? (taste.listeningSignature as object) : undefined,
+      polarityScore2: taste.polarityScore2,
       month: now.getMonth() + 1,
       year: now.getFullYear(),
     },
@@ -1313,6 +1439,9 @@ export async function createTasteIDSnapshot(tasteId: string) {
       primaryArchetype: taste.primaryArchetype,
       adventurenessScore: taste.adventurenessScore,
       reviewCount: taste.reviewCount,
+      // Polarity 1.2
+      listeningSignature: taste.listeningSignature ? (taste.listeningSignature as object) : undefined,
+      polarityScore2: taste.polarityScore2,
     },
   })
 }
@@ -1372,6 +1501,20 @@ export function getDominantNetworks(signature: ListeningSignature, topN: number 
 }
 
 /**
+ * Typical ranges for listening networks (based on Polarity's concept)
+ * These represent the "average" user baseline for comparison
+ */
+export const TYPICAL_NETWORK_RANGES: Record<keyof ListeningSignature, { min: number; max: number; typical: number }> = {
+  discovery: { min: 0.15, max: 0.30, typical: 0.22 },
+  comfort: { min: 0.18, max: 0.32, typical: 0.25 },
+  deep_dive: { min: 0.08, max: 0.20, typical: 0.14 },
+  reactive: { min: 0.10, max: 0.22, typical: 0.16 },
+  emotional: { min: 0.08, max: 0.20, typical: 0.14 },
+  social: { min: 0.03, max: 0.12, typical: 0.06 },
+  aesthetic: { min: 0.02, max: 0.10, typical: 0.05 },
+}
+
+/**
  * Format listening signature for display
  */
 export function formatListeningSignature(signature: ListeningSignature): Array<{
@@ -1380,6 +1523,9 @@ export function formatListeningSignature(signature: ListeningSignature): Array<{
   icon: string
   percentage: number
   bar: string
+  typicalRange: { min: number; max: number }
+  deviation: 'above' | 'below' | 'typical'
+  deviationAmount: number
 }> {
   const entries = Object.entries(signature) as [keyof ListeningSignature, number][]
   const maxActivation = Math.max(...entries.map(([, v]) => v))
@@ -1392,12 +1538,298 @@ export function formatListeningSignature(signature: ListeningSignature): Array<{
       const barLength = Math.round((activation / maxActivation) * 20)
       const bar = '█'.repeat(barLength) + '░'.repeat(20 - barLength)
 
+      const typical = TYPICAL_NETWORK_RANGES[id]
+      let deviation: 'above' | 'below' | 'typical' = 'typical'
+      let deviationAmount = 0
+
+      if (activation > typical.max) {
+        deviation = 'above'
+        deviationAmount = Math.round((activation - typical.max) * 100)
+      } else if (activation < typical.min) {
+        deviation = 'below'
+        deviationAmount = Math.round((typical.min - activation) * 100)
+      }
+
       return {
         network: id,
         name: info.name,
         icon: info.icon,
         percentage,
         bar,
+        typicalRange: { min: Math.round(typical.min * 100), max: Math.round(typical.max * 100) },
+        deviation,
+        deviationAmount,
       }
     })
+}
+
+/**
+ * Compute signature uniqueness score - how different is this signature from typical?
+ */
+export function computeSignatureUniqueness(signature: ListeningSignature): {
+  score: number  // 0-1, higher = more unique
+  standoutNetworks: Array<{ network: string; direction: 'high' | 'low'; deviation: number }>
+} {
+  const entries = Object.entries(signature) as [keyof ListeningSignature, number][]
+  let totalDeviation = 0
+  const standoutNetworks: Array<{ network: string; direction: 'high' | 'low'; deviation: number }> = []
+
+  for (const [network, value] of entries) {
+    const typical = TYPICAL_NETWORK_RANGES[network]
+    const typicalMid = (typical.min + typical.max) / 2
+    const deviation = Math.abs(value - typicalMid)
+    totalDeviation += deviation
+
+    if (value > typical.max) {
+      standoutNetworks.push({
+        network,
+        direction: 'high',
+        deviation: Math.round((value - typical.max) * 100),
+      })
+    } else if (value < typical.min) {
+      standoutNetworks.push({
+        network,
+        direction: 'low',
+        deviation: Math.round((typical.min - value) * 100),
+      })
+    }
+  }
+
+  // Normalize: 0 deviation = 0 uniqueness, max possible deviation = 1
+  const maxPossibleDeviation = entries.length * 0.5 // Each network can deviate by max 0.5
+  const score = Math.min(totalDeviation / maxPossibleDeviation, 1)
+
+  return {
+    score: Math.round(score * 100) / 100,
+    standoutNetworks: standoutNetworks.sort((a, b) => b.deviation - a.deviation).slice(0, 3),
+  }
+}
+
+// ============================================
+// POLARITY 1.2 - CONSOLIDATION TRACKING
+// ============================================
+
+export interface ConsolidatedTaste {
+  type: 'genre' | 'artist' | 'decade' | 'pattern'
+  name: string
+  strength: number  // 0-1 how consolidated
+  consistency: number  // How consistent over time
+  trend: 'strengthening' | 'stable' | 'fading'
+}
+
+/**
+ * Compute taste consolidation - what tastes are "sticking"
+ * Based on Polarity's memory consolidation concept
+ */
+export function computeTasteConsolidation(
+  reviews: Array<{ rating: number; createdAt: Date; album: { genres: string[]; artistName: string; releaseDate: Date } }>,
+  genreVector: Record<string, number>,
+  artistDNA: Array<{ artistName: string; weight: number; avgRating: number; reviewCount: number }>
+): ConsolidatedTaste[] {
+  const consolidated: ConsolidatedTaste[] = []
+  const now = new Date()
+  const sixMonthsAgo = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000)
+
+  const recentReviews = reviews.filter(r => r.createdAt > sixMonthsAgo)
+  const olderReviews = reviews.filter(r => r.createdAt <= sixMonthsAgo)
+
+  // ===========================================
+  // GENRE CONSOLIDATION
+  // ===========================================
+  const recentGenreCounts: Record<string, { count: number; totalRating: number }> = {}
+  const olderGenreCounts: Record<string, { count: number; totalRating: number }> = {}
+
+  recentReviews.forEach(r => {
+    r.album.genres.forEach(g => {
+      const genre = g.toLowerCase()
+      if (!recentGenreCounts[genre]) recentGenreCounts[genre] = { count: 0, totalRating: 0 }
+      recentGenreCounts[genre].count++
+      recentGenreCounts[genre].totalRating += r.rating
+    })
+  })
+
+  olderReviews.forEach(r => {
+    r.album.genres.forEach(g => {
+      const genre = g.toLowerCase()
+      if (!olderGenreCounts[genre]) olderGenreCounts[genre] = { count: 0, totalRating: 0 }
+      olderGenreCounts[genre].count++
+      olderGenreCounts[genre].totalRating += r.rating
+    })
+  })
+
+  // Find genres that are consolidated (present in both periods with good ratings)
+  const allGenres = new Set([...Object.keys(recentGenreCounts), ...Object.keys(olderGenreCounts)])
+  allGenres.forEach(genre => {
+    const recent = recentGenreCounts[genre]
+    const older = olderGenreCounts[genre]
+
+    if (recent && older && recent.count >= 2 && older.count >= 2) {
+      const recentAvg = recent.totalRating / recent.count
+      const olderAvg = older.totalRating / older.count
+      const vectorStrength = genreVector[genre] || 0
+
+      // High ratings in both periods = consolidated
+      if (recentAvg >= 6 && olderAvg >= 6) {
+        const trend = recentAvg > olderAvg + 0.5
+          ? 'strengthening'
+          : recentAvg < olderAvg - 0.5
+          ? 'fading'
+          : 'stable'
+
+        consolidated.push({
+          type: 'genre',
+          name: genre,
+          strength: vectorStrength,
+          consistency: 1 - Math.abs(recentAvg - olderAvg) / 10,
+          trend,
+        })
+      }
+    }
+  })
+
+  // ===========================================
+  // ARTIST CONSOLIDATION
+  // ===========================================
+  const artistHistory: Record<string, { ratings: number[]; recent: boolean; older: boolean }> = {}
+
+  reviews.forEach(r => {
+    const artist = r.album.artistName
+    if (!artistHistory[artist]) {
+      artistHistory[artist] = { ratings: [], recent: false, older: false }
+    }
+    artistHistory[artist].ratings.push(r.rating)
+    if (r.createdAt > sixMonthsAgo) {
+      artistHistory[artist].recent = true
+    } else {
+      artistHistory[artist].older = true
+    }
+  })
+
+  // Artists reviewed in both periods
+  Object.entries(artistHistory)
+    .filter(([, data]) => data.recent && data.older && data.ratings.length >= 3)
+    .forEach(([artist, data]) => {
+      const avgRating = data.ratings.reduce((a, b) => a + b, 0) / data.ratings.length
+      const dnaEntry = artistDNA.find(a => a.artistName === artist)
+
+      if (avgRating >= 7) {
+        consolidated.push({
+          type: 'artist',
+          name: artist,
+          strength: dnaEntry?.weight || 0.5,
+          consistency: 1 - (Math.max(...data.ratings) - Math.min(...data.ratings)) / 10,
+          trend: 'stable', // Artists with consistent engagement are stable
+        })
+      }
+    })
+
+  // Sort by strength and return top entries
+  return consolidated
+    .sort((a, b) => b.strength - a.strength)
+    .slice(0, 10)
+}
+
+/**
+ * Get a human-readable consolidation summary
+ */
+export function getConsolidationSummary(consolidated: ConsolidatedTaste[]): {
+  headline: string
+  details: string
+  coreGenres: string[]
+  coreArtists: string[]
+} {
+  const genres = consolidated.filter(c => c.type === 'genre')
+  const artists = consolidated.filter(c => c.type === 'artist')
+  const strengthening = consolidated.filter(c => c.trend === 'strengthening')
+  const fading = consolidated.filter(c => c.trend === 'fading')
+
+  let headline = 'Your taste is evolving.'
+  let details = ''
+
+  if (genres.length >= 3 && artists.length >= 2) {
+    headline = 'Strong taste foundation.'
+    details = `Your love for ${genres.slice(0, 2).map(g => g.name).join(' and ')} is well-established, along with consistent appreciation for ${artists.slice(0, 2).map(a => a.name).join(' and ')}.`
+  } else if (genres.length >= 2) {
+    headline = 'Core genres emerging.'
+    details = `${genres[0].name} and ${genres[1]?.name || 'related sounds'} are becoming your musical home.`
+  } else if (strengthening.length > fading.length) {
+    headline = 'Taste is crystallizing.'
+    details = 'Your preferences are becoming clearer and more defined.'
+  } else if (fading.length > strengthening.length) {
+    headline = 'Taste in flux.'
+    details = "You're in an exploration phase - old favorites are making room for new discoveries."
+  }
+
+  return {
+    headline,
+    details,
+    coreGenres: genres.slice(0, 3).map(g => g.name),
+    coreArtists: artists.slice(0, 3).map(a => a.name),
+  }
+}
+
+/**
+ * Compare two listening signatures (for taste drift tracking)
+ */
+export function compareSignatures(
+  current: ListeningSignature,
+  previous: ListeningSignature
+): {
+  overallDrift: number  // 0-1, how much has changed
+  networkChanges: Array<{
+    network: string
+    change: number  // positive = increased, negative = decreased
+    direction: 'increased' | 'decreased' | 'stable'
+  }>
+  interpretation: string
+} {
+  const entries = Object.entries(current) as [keyof ListeningSignature, number][]
+  let totalChange = 0
+  const networkChanges: Array<{
+    network: string
+    change: number
+    direction: 'increased' | 'decreased' | 'stable'
+  }> = []
+
+  for (const [network, currentValue] of entries) {
+    const previousValue = previous[network] || 0
+    const change = currentValue - previousValue
+    totalChange += Math.abs(change)
+
+    let direction: 'increased' | 'decreased' | 'stable' = 'stable'
+    if (change > 0.05) direction = 'increased'
+    else if (change < -0.05) direction = 'decreased'
+
+    networkChanges.push({
+      network,
+      change: Math.round(change * 100),
+      direction,
+    })
+  }
+
+  const overallDrift = Math.min(totalChange / 2, 1) // Normalize
+
+  // Generate interpretation
+  const significantChanges = networkChanges.filter(c => Math.abs(c.change) > 5)
+  let interpretation = 'Your listening signature has remained stable.'
+
+  if (significantChanges.length > 0) {
+    const increased = significantChanges.filter(c => c.direction === 'increased').map(c => c.network)
+    const decreased = significantChanges.filter(c => c.direction === 'decreased').map(c => c.network)
+
+    const parts: string[] = []
+    if (increased.length > 0) {
+      parts.push(`More ${increased.join(', ')} mode`)
+    }
+    if (decreased.length > 0) {
+      parts.push(`less ${decreased.join(', ')} mode`)
+    }
+    interpretation = `Your taste is evolving: ${parts.join(', ')}.`
+  }
+
+  return {
+    overallDrift: Math.round(overallDrift * 100) / 100,
+    networkChanges: networkChanges.sort((a, b) => Math.abs(b.change) - Math.abs(a.change)),
+    interpretation,
+  }
 }

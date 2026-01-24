@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TasteID Deep Dive — WaxFeed</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 1.5cm;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      background: #0a0a0a;
+      color: #ededed;
+      font-size: 11pt;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px;
+    }
+
+    /* Typography */
+    h1 {
+      font-size: 32pt;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      border-bottom: 2px solid #fff;
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+
+    h2 {
+      font-size: 10pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #888;
+      margin-top: 48px;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #333;
+    }
+
+    h3 {
+      font-size: 14pt;
+      font-weight: 700;
+      margin-top: 24px;
+      margin-bottom: 12px;
+    }
+
+    h4 {
+      font-size: 11pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #888;
+      margin-top: 20px;
+      margin-bottom: 8px;
+    }
+
+    p {
+      margin-bottom: 12px;
+      color: #ccc;
+    }
+
+    /* Hero section */
+    .hero {
+      border: 2px solid #fff;
+      padding: 32px;
+      margin-bottom: 32px;
+      position: relative;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 120px;
+      height: 120px;
+      background: linear-gradient(to bottom left, rgba(255,255,255,0.05), transparent);
+    }
+
+    .hero-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.3em;
+      color: #888;
+      margin-bottom: 8px;
+    }
+
+    .hero-title {
+      font-size: 28pt;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+      border: none;
+      padding: 0;
+    }
+
+    .hero-subtitle {
+      font-size: 12pt;
+      color: #666;
+      margin-bottom: 16px;
+    }
+
+    .hero-version {
+      display: inline-block;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 4px 12px;
+      border: 1px solid #333;
+      color: #666;
+    }
+
+    /* Stats grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      border: 2px solid #fff;
+      padding: 16px;
+    }
+
+    .stat-label {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 20pt;
+      font-weight: 700;
+    }
+
+    .stat-desc {
+      font-size: 9px;
+      color: #555;
+      margin-top: 4px;
+    }
+
+    /* Network table */
+    .network-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+    }
+
+    .network-table th {
+      text-align: left;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #666;
+      padding: 8px 12px;
+      border-bottom: 1px solid #333;
+    }
+
+    .network-table td {
+      padding: 12px;
+      border-bottom: 1px solid #222;
+      font-size: 10pt;
+    }
+
+    .network-table tr:hover {
+      background: rgba(255,255,255,0.02);
+    }
+
+    .network-icon {
+      font-size: 18pt;
+      width: 40px;
+    }
+
+    .network-name {
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .network-desc {
+      color: #888;
+    }
+
+    /* Code blocks */
+    pre {
+      background: #111;
+      border: 1px solid #222;
+      padding: 16px;
+      font-family: "SF Mono", Monaco, Consolas, monospace;
+      font-size: 9pt;
+      overflow-x: auto;
+      margin: 16px 0;
+      white-space: pre-wrap;
+    }
+
+    code {
+      font-family: "SF Mono", Monaco, Consolas, monospace;
+      background: #181818;
+      padding: 2px 6px;
+      font-size: 0.9em;
+    }
+
+    /* Diagrams (ASCII art) */
+    .diagram {
+      background: #0d0d0d;
+      border: 1px solid #333;
+      padding: 20px;
+      font-family: "SF Mono", Monaco, Consolas, monospace;
+      font-size: 8pt;
+      line-height: 1.3;
+      margin: 20px 0;
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 4px 10px;
+      border: 1px solid #444;
+      margin: 2px;
+    }
+
+    .badge-green {
+      border-color: rgba(74, 222, 128, 0.5);
+      color: #4ade80;
+    }
+
+    .badge-orange {
+      border-color: rgba(251, 146, 60, 0.5);
+      color: #fb923c;
+    }
+
+    .badge-blue {
+      border-color: rgba(96, 165, 250, 0.5);
+      color: #60a5fa;
+    }
+
+    /* Section cards */
+    .section-card {
+      border: 1px solid #333;
+      padding: 20px;
+      margin: 16px 0;
+    }
+
+    .section-card-highlight {
+      border: 2px solid #fff;
+      padding: 24px;
+      margin: 20px 0;
+    }
+
+    /* Lists */
+    ul, ol {
+      margin: 12px 0;
+      padding-left: 20px;
+    }
+
+    li {
+      margin: 6px 0;
+      color: #ccc;
+    }
+
+    /* Two column layout */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    /* Pattern list */
+    .pattern-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .pattern-item {
+      border: 1px solid #333;
+      padding: 12px;
+    }
+
+    .pattern-item:hover {
+      border-color: #fff;
+    }
+
+    .pattern-name {
+      font-weight: 700;
+      font-size: 10pt;
+      margin-bottom: 4px;
+    }
+
+    .pattern-desc {
+      font-size: 9pt;
+      color: #888;
+    }
+
+    /* Threshold table */
+    .threshold-table {
+      width: 100%;
+      margin: 16px 0;
+    }
+
+    .threshold-table td {
+      padding: 10px 16px;
+      border: 1px solid #333;
+    }
+
+    .threshold-table td:first-child {
+      font-weight: 700;
+      font-family: "SF Mono", Monaco, monospace;
+      width: 80px;
+      text-align: center;
+      background: #111;
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 60px;
+      padding-top: 20px;
+      border-top: 1px solid #333;
+      text-align: center;
+    }
+
+    .footer-text {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: #444;
+    }
+
+    /* Page breaks */
+    .page-break {
+      page-break-after: always;
+    }
+
+    /* Progress bar */
+    .progress-bar {
+      height: 8px;
+      background: #1a1a1a;
+      margin: 8px 0;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #fff;
+    }
+
+    .progress-fill-green { background: #4ade80; }
+    .progress-fill-orange { background: #fb923c; }
+
+    /* Quote */
+    blockquote {
+      border-left: 3px solid #fff;
+      padding-left: 16px;
+      margin: 20px 0;
+      font-style: italic;
+      color: #999;
+    }
+
+    /* Flywheel diagram special */
+    .flywheel {
+      border: 2px solid #fff;
+      padding: 24px;
+      margin: 24px 0;
+      text-align: center;
+    }
+
+    .flywheel-title {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: #888;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-label">WaxFeed</div>
+      <h1 class="hero-title">TasteID</h1>
+      <div class="hero-subtitle">How we understand your music taste</div>
+      <div style="margin-top: 16px; display: flex; gap: 12px; align-items: center;">
+        <span class="hero-version">January 2026</span>
+        <span class="hero-version">Powered by Polarity 1.2</span>
+      </div>
+    </div>
+
+    <!-- KEY STATS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Music Networks</div>
+        <div class="stat-value">7</div>
+        <div class="stat-desc">Cognitive modes mapped from Yeo model</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Patterns</div>
+        <div class="stat-value">20+</div>
+        <div class="stat-desc">Behavioral signatures detected</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Min Reviews</div>
+        <div class="stat-value">20</div>
+        <div class="stat-desc">For stable signature</div>
+      </div>
+    </div>
+
+    <h2>Overview</h2>
+    <p>
+      WaxFeed's TasteID goes beyond simple genre preferences. Powered by Polarity 1.2 — a cognitive
+      modeling framework — it analyzes <strong>how you listen</strong>, not just what you listen to.
+      The result is a unique listening signature that captures your relationship with music.
+    </p>
+
+    <blockquote>
+      "Your listening signature is as unique as a fingerprint — the characteristic way you
+      engage with music across discovery, comfort, depth, and emotion."
+    </blockquote>
+
+    <div class="page-break"></div>
+
+    <!-- MUSIC NETWORKS -->
+    <h2>Part I: The Seven Music Networks</h2>
+    <p>
+      Adapted from the Yeo 7-Network cognitive model used in neuroscience, each network
+      represents a distinct mode of musical engagement.
+    </p>
+
+    <table class="network-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Network</th>
+          <th>What It Measures</th>
+          <th>Typical Range</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="network-icon">🔭</td>
+          <td><span class="network-name">Discovery</span><br><span class="network-desc">FP → Discovery</span></td>
+          <td>New artist exploration, genre breadth</td>
+          <td>15-30%</td>
+        </tr>
+        <tr>
+          <td class="network-icon">🏠</td>
+          <td><span class="network-name">Comfort</span><br><span class="network-desc">DMN → Comfort</span></td>
+          <td>Returning to known favorites</td>
+          <td>18-32%</td>
+        </tr>
+        <tr>
+          <td class="network-icon">🎯</td>
+          <td><span class="network-name">Deep Dive</span><br><span class="network-desc">DA → Deep Dive</span></td>
+          <td>Artist catalog exploration depth</td>
+          <td>8-20%</td>
+        </tr>
+        <tr>
+          <td class="network-icon">⚡</td>
+          <td><span class="network-name">Reactive</span><br><span class="network-desc">VA → Reactive</span></td>
+          <td>Response to new releases, trends</td>
+          <td>10-22%</td>
+        </tr>
+        <tr>
+          <td class="network-icon">💜</td>
+          <td><span class="network-name">Emotional</span><br><span class="network-desc">LIM → Emotional</span></td>
+          <td>Rating variance, strong reactions</td>
+          <td>8-20%</td>
+        </tr>
+        <tr>
+          <td class="network-icon">🤝</td>
+          <td><span class="network-name">Social</span><br><span class="network-desc">SMN → Social</span></td>
+          <td>Community engagement, sharing</td>
+          <td>3-12%</td>
+        </tr>
+        <tr>
+          <td class="network-icon">🎨</td>
+          <td><span class="network-name">Aesthetic</span><br><span class="network-desc">VIS → Aesthetic</span></td>
+          <td>Visual/presentation attention</td>
+          <td>2-10%</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Network Detection Signals</h3>
+    <div class="two-col">
+      <div class="section-card">
+        <h4>Discovery Mode</h4>
+        <ul>
+          <li>First-time artist reviews</li>
+          <li>Genre diversity in recent reviews</li>
+          <li>Low artist repeat rate</li>
+        </ul>
+      </div>
+      <div class="section-card">
+        <h4>Deep Dive Mode</h4>
+        <ul>
+          <li>Multiple albums from same artist</li>
+          <li>Chronological exploration</li>
+          <li>Complete discography patterns</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- PATTERNS -->
+    <h2>Part II: Pattern Detection</h2>
+    <p>
+      Beyond network activation, TasteID detects behavioral patterns that characterize
+      your unique listening style. These patterns unlock as you review more albums.
+    </p>
+
+    <h3>Signature-Based Patterns</h3>
+    <div class="pattern-grid">
+      <div class="pattern-item">
+        <div class="pattern-name">Discovery↔Comfort Oscillation</div>
+        <div class="pattern-desc">Healthy balance between exploring new music and returning to favorites</div>
+      </div>
+      <div class="pattern-item">
+        <div class="pattern-name">Deep Dive Sprints</div>
+        <div class="pattern-desc">Goes all-in on artists when something clicks</div>
+      </div>
+      <div class="pattern-item">
+        <div class="pattern-name">New Release Hunter</div>
+        <div class="pattern-desc">Stays on top of current music as it drops</div>
+      </div>
+      <div class="pattern-item">
+        <div class="pattern-name">Emotional Listener</div>
+        <div class="pattern-desc">Strong reactions reflected in rating variance</div>
+      </div>
+    </div>
+
+    <h3>Rating Patterns</h3>
+    <div class="pattern-grid">
+      <div class="pattern-item">
+        <div class="pattern-name">Critical Ear</div>
+        <div class="pattern-desc">Average rating below 5.5 — high standards</div>
+      </div>
+      <div class="pattern-item">
+        <div class="pattern-name">Music Optimist</div>
+        <div class="pattern-desc">Average rating above 7.5 — finds joy everywhere</div>
+      </div>
+      <div class="pattern-item">
+        <div class="pattern-name">Polarized Taste</div>
+        <div class="pattern-desc">Bimodal ratings — loves it or hates it</div>
+      </div>
+      <div class="pattern-item">
+        <div class="pattern-name">Perfection Seeker</div>
+        <div class="pattern-desc">More 10s than near-perfect scores</div>
+      </div>
+    </div>
+
+    <h3>Engagement Patterns</h3>
+    <div class="pattern-grid">
+      <div class="pattern-item">
+        <div class="pattern-name">Contrarian</div>
+        <div class="pattern-desc">Often differs 3+ points from consensus</div>
+      </div>
+      <div class="pattern-item">
+        <div class="pattern-name">Hidden Gem Hunter</div>
+        <div class="pattern-desc">High ratings for low-popularity albums</div>
+      </div>
+      <div class="pattern-item">
+        <div class="pattern-name">Discography Completionist</div>
+        <div class="pattern-desc">5+ albums from single artists</div>
+      </div>
+      <div class="pattern-item">
+        <div class="pattern-name">Archive Diver</div>
+        <div class="pattern-desc">Average album age over 15 years</div>
+      </div>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- CONSOLIDATION -->
+    <h2>Part III: Taste Consolidation</h2>
+    <p>
+      Inspired by how memory consolidation works in neuroscience, TasteID tracks which
+      tastes are "sticking" versus "fading" over time.
+    </p>
+
+    <div class="section-card-highlight">
+      <h4>How It Works</h4>
+      <p>
+        Reviews are split into two periods: recent (last 6 months) and older. Genres and artists
+        that appear consistently across both periods with good ratings are considered "consolidated."
+      </p>
+      <div style="margin-top: 16px;">
+        <span class="badge badge-green">Strengthening</span>
+        <span>Recent ratings higher than older</span>
+      </div>
+      <div style="margin-top: 8px;">
+        <span class="badge badge-orange">Fading</span>
+        <span>Recent ratings lower than older</span>
+      </div>
+      <div style="margin-top: 8px;">
+        <span class="badge">Stable</span>
+        <span>Consistent appreciation over time</span>
+      </div>
+    </div>
+
+    <h3>Consolidation Thresholds</h3>
+    <table class="threshold-table">
+      <tr>
+        <td>≥2</td>
+        <td>Reviews in each period (recent + older) for genre consolidation</td>
+      </tr>
+      <tr>
+        <td>≥3</td>
+        <td>Total reviews for artist consolidation</td>
+      </tr>
+      <tr>
+        <td>≥6</td>
+        <td>Average rating for "consolidated" status</td>
+      </tr>
+      <tr>
+        <td>±0.5</td>
+        <td>Rating difference threshold for trend detection</td>
+      </tr>
+    </table>
+
+    <div class="page-break"></div>
+
+    <!-- DRIFT TRACKING -->
+    <h2>Part IV: Taste Evolution & Drift</h2>
+    <p>
+      By comparing your current listening signature to historical snapshots, TasteID can
+      visualize how your taste evolves over time.
+    </p>
+
+    <h3>Snapshot System</h3>
+    <ul>
+      <li>Snapshots captured monthly with TasteID recomputation</li>
+      <li>Each snapshot stores: genre vector, artist DNA, listening signature, Polarity score</li>
+      <li>Up to 12 months of history retained for drift analysis</li>
+    </ul>
+
+    <h3>Drift Metrics</h3>
+    <div class="section-card">
+      <h4>Overall Drift (0-100%)</h4>
+      <p>Sum of absolute changes across all networks, normalized. Higher = more change.</p>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 15%;"></div>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 9px; color: #666;">
+        <span>Stable (0-15%)</span>
+        <span>Evolving (15-30%)</span>
+        <span>Transforming (30%+)</span>
+      </div>
+    </div>
+
+    <h3>Network-Level Changes</h3>
+    <p>Each network's change is tracked individually:</p>
+    <ul>
+      <li><span class="badge badge-green">↑ Increased</span> — Change greater than +5%</li>
+      <li><span class="badge badge-orange">↓ Decreased</span> — Change less than -5%</li>
+      <li><span class="badge">→ Stable</span> — Change within ±5%</li>
+    </ul>
+
+    <div class="page-break"></div>
+
+    <!-- POLARITY SCORE -->
+    <h2>Part V: Polarity Score 2.0</h2>
+    <p>
+      The enhanced Polarity Score combines multiple dimensions into a single identity strength metric.
+    </p>
+
+    <div class="section-card-highlight">
+      <h4>Formula Components</h4>
+      <pre style="background: transparent; border: none; padding: 0;">
+polarityScore2 =
+  (signatureStrength × 0.25) +    // Network activation clarity
+  (patternDiversity × 0.20) +     // Number of detected patterns
+  (consolidationScore × 0.20) +   // Taste stability
+  (uniquenessScore × 0.20) +      // Deviation from typical
+  (engagementDepth × 0.15)        // Review depth & length</pre>
+    </div>
+
+    <h3>Score Interpretation</h3>
+    <table class="threshold-table">
+      <tr>
+        <td>0.8+</td>
+        <td><strong>Highly Distinct</strong> — Unmistakable listening identity</td>
+      </tr>
+      <tr>
+        <td>0.6-0.8</td>
+        <td><strong>Well-Defined</strong> — Clear patterns and preferences</td>
+      </tr>
+      <tr>
+        <td>0.4-0.6</td>
+        <td><strong>Emerging</strong> — Patterns forming, more data helpful</td>
+      </tr>
+      <tr>
+        <td>&lt;0.4</td>
+        <td><strong>Nascent</strong> — Early stage, keep reviewing</td>
+      </tr>
+    </table>
+
+    <div class="page-break"></div>
+
+    <!-- DATA FLYWHEEL -->
+    <h2>Part VI: The Data Flywheel</h2>
+    <p>
+      TasteID gets smarter the more you use it — both at the individual level (more reviews =
+      better insights) and platform level (more users = better baselines).
+    </p>
+
+    <div class="flywheel">
+      <div class="flywheel-title">The Data Flywheel</div>
+      <div class="diagram">
+              ┌─────────────────────┐
+              │    MORE REVIEWS     │
+              │    ───────────      │
+              │    User rates more  │
+              │    albums over time │
+              └──────────┬──────────┘
+                         │
+                         ▼
+    ┌─────────────────────────────────────────────┐
+    │  SIGNATURE      PATTERN       CONSOLIDATION │
+    │  STABILITY      DETECTION     TRACKING      │
+    │  ──────────     ─────────     ────────────  │
+    │  Networks       More          Distinguish   │
+    │  stabilize      patterns      "sticky" vs   │
+    │  at ~20         unlock at     "fading"      │
+    │  reviews        10+ reviews   tastes        │
+    └─────────────────────────────────────────────┘
+                         │
+                         ▼
+    ┌─────────────────────────────────────────────┐
+    │  DRIFT          FUTURE        MATCHING      │
+    │  TRACKING       SELVES        ACCURACY      │
+    │  ────────       ──────        ────────      │
+    │  Compare        Clearer       Better taste  │
+    │  snapshots      trajectories  twin          │
+    │  over time      emerge        discovery     │
+    └─────────────────────────────────────────────┘
+                         │
+                         ▼
+              ┌─────────────────────┐
+              │   BETTER INSIGHTS   │────┐
+              │   ───────────────   │    │
+              │   User sees value,  │    │
+              │   reviews more      │    │
+              └─────────────────────┘    │
+                         ▲               │
+                         └───────────────┘</div>
+    </div>
+
+    <h3>Per-User Data Thresholds</h3>
+    <table class="threshold-table">
+      <tr><td>3</td><td>Basic TasteID generation (genre vector, archetype)</td></tr>
+      <tr><td>10</td><td>Pattern detection activates</td></tr>
+      <tr><td>15</td><td>Consolidation tracking begins</td></tr>
+      <tr><td>20</td><td>Listening signature stabilizes, TasteID page unlocks</td></tr>
+      <tr><td>50</td><td>High-confidence signature, reliable drift tracking</td></tr>
+      <tr><td>100+</td><td>Future selves become accurate, strong consolidation data</td></tr>
+    </table>
+
+    <h3>Platform-Level Benefits</h3>
+    <div class="two-col">
+      <div class="section-card">
+        <h4>With More Users</h4>
+        <ul>
+          <li>Refine typical network ranges</li>
+          <li>Validate discriminating patterns</li>
+          <li>Better taste twin matching</li>
+        </ul>
+      </div>
+      <div class="section-card">
+        <h4>Future Possibilities</h4>
+        <ul>
+          <li>Population percentiles</li>
+          <li>Predictive trajectory modeling</li>
+          <li>Signature-based recommendations</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- RESEARCH QUESTIONS -->
+    <h2>Part VII: What We're Learning</h2>
+    <p>As TasteID grows, we're exploring some interesting questions:</p>
+
+    <div class="section-card-highlight">
+      <ol>
+        <li style="margin-bottom: 12px;">
+          <strong>How unique are listening signatures?</strong><br>
+          <span style="color: #888;">Can we identify someone from their Discovery/Comfort ratio alone?</span>
+        </li>
+        <li style="margin-bottom: 12px;">
+          <strong>What's the minimum data needed?</strong><br>
+          <span style="color: #888;">How many reviews before reliable identification?</span>
+        </li>
+        <li style="margin-bottom: 12px;">
+          <strong>Which patterns are most discriminating?</strong><br>
+          <span style="color: #888;">What signatures vary most between people?</span>
+        </li>
+        <li style="margin-bottom: 12px;">
+          <strong>Are there "listening twins"?</strong><br>
+          <span style="color: #888;">People with nearly identical signatures?</span>
+        </li>
+        <li>
+          <strong>Does music signature correlate with cognitive signature?</strong><br>
+          <span style="color: #888;">Do FP-dominant thinkers have Discovery-dominant listening?</span>
+        </li>
+      </ol>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+      <div class="footer-text">WaxFeed TasteID • Powered by Polarity 1.2 • January 2026</div>
+    </div>
+
+  </div>
+</body>
+</html>

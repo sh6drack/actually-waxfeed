@@ -777,6 +777,10 @@ model TasteIDSnapshot {
   adventurenessScore Float
   reviewCount     Int
 
+  // Polarity 1.2 - Listening signature snapshot for drift tracking
+  listeningSignature Json?
+  polarityScore2     Float?
+
   // When this snapshot was taken
   month           Int      // 1-12
   year            Int

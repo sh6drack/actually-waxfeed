@@ -25,7 +25,7 @@ export function GenerateTasteIDButton() {
     <button
       type="button"
       disabled={loading}
-      className="px-6 py-3 border-2 border-white text-sm font-bold uppercase tracking-wider hover:bg-white hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      className="w-full sm:w-auto px-6 py-3 border-2 border-white text-sm font-bold uppercase tracking-wider hover:bg-white hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       onClick={handleGenerate}
     >
       {loading ? "COMPUTING..." : "GENERATE MY TASTEID"}
@@ -55,7 +55,7 @@ export function RecomputeButton() {
     <button
       type="button"
       disabled={loading}
-      className="px-4 py-2 border-2 border-white text-sm font-bold uppercase tracking-wider hover:bg-white hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      className="w-full sm:w-auto px-4 py-3 sm:py-2 border-2 border-white text-sm font-bold uppercase tracking-wider hover:bg-white hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       onClick={handleRecompute}
     >
       {loading ? "COMPUTING..." : "RECOMPUTE"}
