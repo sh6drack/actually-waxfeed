@@ -246,7 +246,7 @@ export default async function Home() {
 
       {/* Main Split Layout */}
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col lg:flex-row lg:items-start">
+        <div className="flex flex-col lg:flex-row items-start">
           {/* LEFT: Trending */}
           <section className="lg:w-1/2 px-6 py-12 lg:py-16 lg:border-r border-[--border]">
             <div className="flex items-baseline justify-between mb-8">
