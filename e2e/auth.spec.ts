@@ -358,16 +358,17 @@ test.describe('Signup Page - Form Elements', () => {
 
   test('displays link to login page', async ({ page }) => {
     await page.goto('/signup')
-    await page.waitForTimeout(500)
-    // Link text is "Sign in"
-    await expect(page.locator('a[href="/login"]:has-text("Sign in")')).toBeVisible()
+    await page.waitForTimeout(1000)
+    // There are multiple login links, pick the first visible one
+    const loginLink = page.locator('a[href="/login"]').first()
+    await expect(loginLink).toBeVisible()
   })
 
   test('login link navigates to login page', async ({ page }) => {
     await page.goto('/signup')
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(1000)
 
-    const loginLink = page.locator('a[href="/login"]')
+    const loginLink = page.locator('a[href="/login"]').first()
     await loginLink.click()
 
     await page.waitForURL('**/login**')

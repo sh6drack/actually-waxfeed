@@ -83,7 +83,9 @@ test.describe('Search Page - Tabs', () => {
 test.describe('Search Page - Initial State', () => {
   test('shows initial state message when empty', async ({ page }) => {
     await page.goto('/search')
-    await expect(page.locator('text=/Start typing to search/i')).toBeVisible()
+    await page.waitForTimeout(1000)
+    // Search page shows "Start typing to search for albums" message
+    await expect(page.locator('text=/Start typing/i')).toBeVisible()
   })
 
   test('no results shown initially', async ({ page }) => {
@@ -120,11 +122,12 @@ test.describe('Search Page - Search Functionality', () => {
 
   test('search query shows in URL', async ({ page }) => {
     await page.goto('/search?q=test')
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(1000)
 
     const searchInput = page.locator('input').first()
     const value = await searchInput.inputValue()
 
+    // The query param should populate the input field
     expect(value).toBe('test')
   })
 

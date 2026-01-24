@@ -30,8 +30,8 @@ export function BillboardList({ albums }: BillboardListProps) {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Mobile: 12 albums (4 rows × 3 cols), Desktop: 15 in list
-  const initialCount = isMobile ? 12 : 15
+  // Mobile: 21 albums (7 rows × 3 cols), Desktop: show all 50
+  const initialCount = isMobile ? 21 : 50
   const displayedAlbums = isExpanded ? albums : albums.slice(0, initialCount)
   const hasMore = albums.length > initialCount
 
