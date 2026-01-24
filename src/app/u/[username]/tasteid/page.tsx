@@ -846,7 +846,7 @@ export default async function TasteIDPage({ params }: Props) {
                             ? 'bg-green-400'
                             : item.trend === 'fading'
                             ? 'bg-orange-400'
-                            : 'bg-white'
+                            : 'bg-foreground'
                         }`}
                         style={{ width: `${item.strength * 100}%` }}
                       />
