@@ -35,12 +35,13 @@ interface SpotifyAlbum {
   genres: string | null
 }
 
-function parseArgs(): { batchSize: number; offset: number; limit: number; minPopularity: number } {
+function parseArgs(): { batchSize: number; offset: number; limit: number; minPopularity: number; skipSingles: boolean } {
   const args = process.argv.slice(2)
   let batchSize = DEFAULT_BATCH_SIZE
   let offset = 0
   let limit = DEFAULT_LIMIT
   let minPopularity = 0
+  let skipSingles = false
 
   for (const arg of args) {
     if (arg.startsWith('--batch-size=')) {
@@ -51,10 +52,12 @@ function parseArgs(): { batchSize: number; offset: number; limit: number; minPop
       limit = parseInt(arg.split('=')[1], 10)
     } else if (arg.startsWith('--min-popularity=')) {
       minPopularity = parseInt(arg.split('=')[1], 10)
+    } else if (arg === '--skip-singles') {
+      skipSingles = true
     }
   }
 
-  return { batchSize, offset, limit, minPopularity }
+  return { batchSize, offset, limit, minPopularity, skipSingles }
 }
 
 function parseDateWithPrecision(dateStr: string, precision: string): { date: Date; precision: string } {
@@ -86,7 +89,7 @@ function parseDateWithPrecision(dateStr: string, precision: string): { date: Dat
 }
 
 async function main() {
-  const { batchSize, offset, limit, minPopularity } = parseArgs()
+  const { batchSize, offset, limit, minPopularity, skipSingles } = parseArgs()
 
   console.log('='.repeat(60))
   console.log('Spotify Metadata Import Script')
@@ -96,6 +99,7 @@ async function main() {
   console.log(`Offset: ${offset}`)
   console.log(`Limit: ${limit === 0 ? 'unlimited' : limit}`)
   console.log(`Min Popularity: ${minPopularity}`)
+  console.log(`Skip Singles: ${skipSingles}`)
   console.log('='.repeat(60))
 
   // Connect to SQLite
@@ -108,14 +112,16 @@ async function main() {
 
   try {
     // Get total count (simple query without joins - faster)
-    const countResult = sqlite.prepare(`
-      SELECT COUNT(*) as count FROM albums WHERE popularity >= ?
-    `).get(minPopularity) as { count: number }
+    const countQuery = skipSingles
+      ? `SELECT COUNT(*) as count FROM albums WHERE popularity >= ? AND album_type != 'single'`
+      : `SELECT COUNT(*) as count FROM albums WHERE popularity >= ?`
+    const countResult = sqlite.prepare(countQuery).get(minPopularity) as { count: number }
 
     const totalAlbums = countResult.count
     console.log(`\nTotal albums to process (approx): ${totalAlbums.toLocaleString()}`)
 
     // Prepare the query - get albums with their primary artist and images
+    const albumTypeFilter = skipSingles ? `AND a.album_type != 'single'` : ''
     const stmt = sqlite.prepare(`
       SELECT
         a.id as spotify_id,
@@ -137,7 +143,7 @@ async function main() {
       JOIN artists ar ON aa.artist_rowid = ar.rowid
       LEFT JOIN album_images ai ON a.rowid = ai.album_rowid
       LEFT JOIN artist_genres ag ON ar.rowid = ag.artist_rowid
-      WHERE a.popularity >= ?
+      WHERE a.popularity >= ? ${albumTypeFilter}
       GROUP BY a.rowid
       ORDER BY a.popularity DESC, a.rowid
       LIMIT ? OFFSET ?

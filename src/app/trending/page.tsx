@@ -50,7 +50,7 @@ async function getRecentReleases() {
 
   return prisma.album.findMany({
     where: { releaseDate: { gte: thirtyDaysAgo } },
-    take: 10,
+    take: 8,
     orderBy: { releaseDate: "desc" },
     select: {
       id: true,
@@ -105,7 +105,7 @@ export default async function TrendingPage() {
               <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted] lg:writing-mode-vertical lg:rotate-180" style={{ writingMode: 'vertical-rl' as const }}>
                 Charts
               </span>
-              <span className="text-4xl lg:text-6xl font-bold text-[--border]">01</span>
+              <span className="text-4xl lg:text-6xl font-bold text-[--muted]">01</span>
             </div>
 
             {/* Billboard Chart - uses existing BillboardList component */}
@@ -203,7 +203,7 @@ export default async function TrendingPage() {
               <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted] lg:writing-mode-vertical lg:rotate-180" style={{ writingMode: 'vertical-rl' as const }}>
                 New
               </span>
-              <span className="text-4xl lg:text-6xl font-bold text-[--border]">02</span>
+              <span className="text-4xl lg:text-6xl font-bold text-[--muted]">02</span>
             </div>
 
             <div className="col-span-12 lg:col-span-11 py-10 lg:py-14 px-6 lg:px-8">
@@ -213,12 +213,12 @@ export default async function TrendingPage() {
               {recentReleases.length === 0 ? (
                 <p className="text-[--muted]">No recent releases</p>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
-                  {recentReleases.map((album) => (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-5">
+                  {recentReleases.map((album, index) => (
                     <Link
                       key={album.id}
                       href={`/album/${album.spotifyId}`}
-                      className="group"
+                      className={`group ${index >= 4 ? 'hidden sm:block' : ''}`}
                     >
                       <div className="aspect-square bg-[--border] overflow-hidden mb-3">
                         {album.coverArtUrl && (

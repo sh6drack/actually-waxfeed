@@ -163,8 +163,8 @@ export default async function TasteIDPage({ params }: Props) {
     ? getArchetypeInfo(tasteId.secondaryArchetype)
     : null
 
-  const genreVector = tasteId.genreVector as Record<string, number>
-  const decadePrefs = tasteId.decadePreferences as Record<string, number>
+  const genreVector = (tasteId.genreVector as Record<string, number>) || {}
+  const decadePrefs = (tasteId.decadePreferences as Record<string, number>) || {}
 
   // Polarity 1.2 data
   const listeningSignature = tasteId.listeningSignature as ListeningSignature | null
@@ -353,20 +353,23 @@ export default async function TasteIDPage({ params }: Props) {
         </div>
 
         {/* Defining Artists */}
-        <div className="mb-6 sm:mb-8">
-          <h2 className="text-xs uppercase tracking-widest text-neutral-500 font-bold mb-4">
-            DEFINING ARTISTS
-          </h2>
-          <ArtistDNAStrip artists={tasteId.topArtists} />
-        </div>
+        {tasteId.topArtists && tasteId.topArtists.length > 0 && (
+          <div className="mb-6 sm:mb-8">
+            <h2 className="text-xs uppercase tracking-widest text-neutral-500 font-bold mb-4">
+              DEFINING ARTISTS
+            </h2>
+            <ArtistDNAStrip artists={tasteId.topArtists} />
+          </div>
+        )}
 
         {/* Top Genres */}
-        <div className="mb-6 sm:mb-8">
-          <h2 className="text-xs uppercase tracking-widest text-neutral-500 font-bold mb-4">
-            TOP GENRES
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            {tasteId.topGenres.map((genre, i) => (
+        {tasteId.topGenres && tasteId.topGenres.length > 0 && (
+          <div className="mb-6 sm:mb-8">
+            <h2 className="text-xs uppercase tracking-widest text-neutral-500 font-bold mb-4">
+              TOP GENRES
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {tasteId.topGenres.map((genre, i) => (
               <div
                 key={genre}
                 className="px-3 sm:px-4 py-2.5 sm:py-2 border-2 border-foreground flex items-center gap-2 min-h-[44px]"
@@ -374,9 +377,10 @@ export default async function TasteIDPage({ params }: Props) {
                 <span className="text-neutral-500 text-sm">{i + 1}</span>
                 <span className="font-bold uppercase text-sm sm:text-base">{genre}</span>
               </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Decade Preferences */}
         {Object.keys(decadePrefs).length > 0 && (
