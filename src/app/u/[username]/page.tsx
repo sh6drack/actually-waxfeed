@@ -317,13 +317,28 @@ export default async function ProfilePage({ params }: Props) {
             )}
           </div>
 
-          {/* Avg Rating & Join Date - Mobile */}
+          {/* TasteID Badge & Join Date - Mobile */}
           <div className="sm:hidden text-sm mb-4" style={{ color: 'var(--muted)' }}>
-            {avgRating !== null && (
+            {user.tasteId ? (
+              <Link
+                href={`/u/${user.username}/tasteid`}
+                className="inline-flex items-center gap-2 mr-3 no-underline"
+              >
+                <span
+                  className="px-2 py-1 text-xs font-bold"
+                  style={{ backgroundColor: 'var(--border)', color: 'var(--foreground)' }}
+                >
+                  {getArchetypeInfo(user.tasteId.primaryArchetype).name}
+                </span>
+                <span className="text-xs" style={{ color: 'var(--muted)' }}>
+                  P{user.tasteId.polarityScore?.toFixed(1) || '—'}
+                </span>
+              </Link>
+            ) : avgRating !== null ? (
               <span className="mr-3">
                 Avg: <span className="font-bold" style={{ color: 'var(--foreground)' }}>{avgRating.toFixed(1)}</span>
               </span>
-            )}
+            ) : null}
             <span style={{ color: 'var(--border)' }}>
               Joined {format(new Date(user.createdAt), "MMM yyyy")}
             </span>
@@ -372,12 +387,32 @@ export default async function ProfilePage({ params }: Props) {
 
         {/* Side Stats - Desktop only */}
         <div className="hidden sm:block text-right text-sm flex-shrink-0">
-          {avgRating !== null && (
+          {user.tasteId ? (
+            <Link
+              href={`/u/${user.username}/tasteid`}
+              className="block mb-3 no-underline group"
+            >
+              <div
+                className="inline-block px-3 py-2 text-left transition-all group-hover:opacity-80"
+                style={{ backgroundColor: 'var(--border)', borderRadius: '2px' }}
+              >
+                <p className="text-[10px] tracking-wider uppercase mb-1" style={{ color: 'var(--muted)' }}>
+                  TasteID
+                </p>
+                <p className="font-bold text-base" style={{ color: 'var(--foreground)' }}>
+                  {getArchetypeInfo(user.tasteId.primaryArchetype).name}
+                </p>
+                <p className="text-xs" style={{ color: 'var(--muted)' }}>
+                  Polarity {user.tasteId.polarityScore?.toFixed(1) || '—'}
+                </p>
+              </div>
+            </Link>
+          ) : avgRating !== null ? (
             <div className="mb-2">
               <span style={{ color: 'var(--muted)' }}>Avg rating: </span>
               <span className="font-bold">{avgRating.toFixed(1)}</span>
             </div>
-          )}
+          ) : null}
           <p style={{ color: 'var(--border)' }}>
             Joined {format(new Date(user.createdAt), "MMMM yyyy")}
           </p>
@@ -555,25 +590,57 @@ export default async function ProfilePage({ params }: Props) {
             )}
           </section>
 
-          {/* Social Links */}
+          {/* Social Links - Embed Style */}
           {user.socialLinks && Object.keys(user.socialLinks as object).length > 0 && (
             <section>
               <h3 className="font-bold mb-4">Links</h3>
-              <div className="space-y-2 text-sm">
-                {Object.entries(user.socialLinks as Record<string, string>).map(([key, value]) => (
-                  value && (
+              <div className="space-y-2">
+                {Object.entries(user.socialLinks as Record<string, string>).map(([key, value]) => {
+                  if (!value) return null
+                  const url = value.startsWith("http") ? value : `https://${value}`
+                  const domain = new URL(url).hostname.replace("www.", "")
+
+                  // Platform-specific styling
+                  const platformStyles: Record<string, { bg: string; icon: string }> = {
+                    twitter: { bg: "#1DA1F2", icon: "𝕏" },
+                    x: { bg: "#000000", icon: "𝕏" },
+                    instagram: { bg: "linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)", icon: "◎" },
+                    spotify: { bg: "#1DB954", icon: "♫" },
+                    soundcloud: { bg: "#FF5500", icon: "☁" },
+                    youtube: { bg: "#FF0000", icon: "▶" },
+                    tiktok: { bg: "#000000", icon: "♪" },
+                    website: { bg: "var(--border)", icon: "⌘" },
+                  }
+
+                  const style = platformStyles[key.toLowerCase()] || platformStyles.website
+
+                  return (
                     <a
                       key={key}
-                      href={value.startsWith("http") ? value : `https://${value}`}
+                      href={url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block transition-opacity hover:opacity-70"
-                      style={{ color: 'var(--muted)' }}
+                      className="flex items-center gap-3 p-3 border transition-all hover:translate-x-1 no-underline group"
+                      style={{ borderColor: 'var(--border)' }}
                     >
-                      {key.charAt(0).toUpperCase() + key.slice(1)} →
+                      <span
+                        className="w-8 h-8 flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+                        style={{ background: style.bg }}
+                      >
+                        {style.icon}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium truncate group-hover:underline" style={{ color: 'var(--foreground)' }}>
+                          {key.charAt(0).toUpperCase() + key.slice(1)}
+                        </p>
+                        <p className="text-xs truncate" style={{ color: 'var(--muted)' }}>
+                          {domain}
+                        </p>
+                      </div>
+                      <ArrowRightIcon size={14} style={{ color: 'var(--muted)' }} className="flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
                     </a>
                   )
-                ))}
+                })}
               </div>
             </section>
           )}

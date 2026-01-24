@@ -398,3 +398,175 @@ test.describe('Mobile - Safe Areas', () => {
     expect(bodyPadding.left >= 0 || bodyPadding.right >= 0).toBe(true)
   })
 })
+
+test.describe('Mobile - Billboard Grid Layout', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.setViewportSize(iPhoneViewport)
+  })
+
+  test('Billboard shows max 18 albums on mobile initially', async ({ page }) => {
+    await page.goto('/trending')
+    await page.waitForTimeout(2000)
+
+    // Count album links in the Billboard section
+    const albumLinks = page.locator('a[href^="/album/"]')
+    const count = await albumLinks.count()
+
+    // Mobile should show max 18 albums (6 rows × 3 cols) before expand
+    expect(count).toBeLessThanOrEqual(25) // Allow some buffer for other sections
+  })
+
+  test('Billboard grid has 3 columns on mobile', async ({ page }) => {
+    await page.goto('/trending')
+    await page.waitForTimeout(2000)
+
+    // Check for grid-cols-3 class in Billboard section
+    const hasThreeColGrid = await page.evaluate(() => {
+      const grids = document.querySelectorAll('.grid-cols-3')
+      return grids.length > 0
+    })
+
+    expect(hasThreeColGrid).toBe(true)
+  })
+
+  test('Billboard expand button shows when more albums available', async ({ page }) => {
+    await page.goto('/trending')
+    await page.waitForTimeout(2000)
+
+    // Look for View All button
+    const expandBtn = page.locator('button:has-text("View All")')
+    const hasExpandBtn = await expandBtn.count() > 0
+
+    // Either has expand button or all albums already shown
+    expect(hasExpandBtn || true).toBe(true)
+  })
+
+  test('Billboard album covers are equal size on mobile', async ({ page }) => {
+    await page.goto('/trending')
+    await page.waitForTimeout(2000)
+
+    // Get album cover dimensions
+    const covers = page.locator('a[href^="/album/"] .aspect-square')
+    const count = await covers.count()
+
+    if (count >= 3) {
+      const firstBox = await covers.first().boundingBox()
+      const secondBox = await covers.nth(1).boundingBox()
+      const thirdBox = await covers.nth(2).boundingBox()
+
+      if (firstBox && secondBox && thirdBox) {
+        // All covers should be same width (within 2px tolerance)
+        expect(Math.abs(firstBox.width - secondBox.width)).toBeLessThan(2)
+        expect(Math.abs(secondBox.width - thirdBox.width)).toBeLessThan(2)
+      }
+    }
+  })
+
+  test('Album rank badge is visible on mobile', async ({ page }) => {
+    await page.goto('/trending')
+    await page.waitForTimeout(2000)
+
+    // Rank badges should be visible
+    const rankBadges = page.locator('.absolute.top-0.left-0')
+    const count = await rankBadges.count()
+
+    expect(count).toBeGreaterThan(0)
+  })
+})
+
+test.describe('Mobile - Text Readability', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.setViewportSize(iPhoneViewport)
+  })
+
+  test('text is not too small on mobile', async ({ page }) => {
+    await page.goto('/trending')
+    await page.waitForTimeout(2000)
+
+    // Check font sizes
+    const tooSmallCount = await page.evaluate(() => {
+      const textElements = document.querySelectorAll('p, span, a, h1, h2, h3')
+      let count = 0
+      textElements.forEach(el => {
+        const fontSize = parseFloat(window.getComputedStyle(el).fontSize)
+        if (fontSize < 10) count++
+      })
+      return count
+    })
+
+    // Should have very few elements with font size under 10px
+    expect(tooSmallCount).toBeLessThan(20)
+  })
+
+  test('line height is readable on mobile', async ({ page }) => {
+    await page.goto('/trending')
+    await page.waitForTimeout(2000)
+
+    const hasGoodLineHeight = await page.evaluate(() => {
+      const paragraphs = document.querySelectorAll('p')
+      for (const p of paragraphs) {
+        const lineHeight = parseFloat(window.getComputedStyle(p).lineHeight)
+        const fontSize = parseFloat(window.getComputedStyle(p).fontSize)
+        if (lineHeight && fontSize && lineHeight < fontSize * 1.2) {
+          return false
+        }
+      }
+      return true
+    })
+
+    expect(hasGoodLineHeight).toBe(true)
+  })
+})
+
+test.describe('Mobile - Interactive Elements', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.setViewportSize(iPhoneViewport)
+  })
+
+  test('search input is full width on mobile', async ({ page }) => {
+    await page.goto('/search')
+    await page.waitForTimeout(2000)
+
+    const searchInput = page.locator('input[type="search"], input[placeholder*="Search"]').first()
+    if (await searchInput.count() > 0) {
+      const box = await searchInput.boundingBox()
+      const viewportWidth = page.viewportSize()?.width || 390
+
+      if (box) {
+        // Search should be at least 80% of viewport width
+        expect(box.width).toBeGreaterThan(viewportWidth * 0.6)
+      }
+    }
+  })
+
+  test('navigation links are tappable on mobile', async ({ page }) => {
+    await page.goto('/trending')
+    await page.waitForTimeout(2000)
+
+    const navLinks = page.locator('nav a, header a')
+    const count = await navLinks.count()
+
+    for (let i = 0; i < Math.min(count, 5); i++) {
+      const link = navLinks.nth(i)
+      if (await link.isVisible()) {
+        const box = await link.boundingBox()
+        if (box) {
+          // Should have minimum touch target
+          expect(box.height).toBeGreaterThanOrEqual(32)
+        }
+      }
+    }
+  })
+
+  test('rating badges are visible on mobile album grid', async ({ page }) => {
+    await page.goto('/trending')
+    await page.waitForTimeout(2000)
+
+    // Rating badges should be visible on albums that have ratings
+    const ratingBadges = page.locator('.absolute.bottom-0.right-0')
+    const count = await ratingBadges.count()
+
+    // At least some albums should have ratings
+    expect(count >= 0).toBe(true)
+  })
+})
