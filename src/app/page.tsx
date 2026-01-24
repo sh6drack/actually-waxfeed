@@ -161,102 +161,84 @@ export default async function Home() {
       <section className="border-b border-[--border]">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row">
-            {/* LEFT: Active Users - Compact */}
+            {/* LEFT: Active Users - Horizontal Grid (70%) */}
             {activeUsers.length > 0 && (
-              <div className="lg:w-1/2 px-6 py-10 lg:border-r border-[--border]">
+              <div className="lg:w-[70%] px-6 py-10 lg:border-r border-[--border]">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-[11px] tracking-[0.2em] uppercase text-[--muted]">
-                    Connect
-                  </h2>
+                  <div className="flex items-center gap-4">
+                    <h2 className="text-[11px] tracking-[0.2em] uppercase text-[--muted]">
+                      Connect
+                    </h2>
+                    <div className="h-px w-8 bg-[--border]" />
+                  </div>
                   <Link
                     href="/friends"
-                    className="text-[10px] tracking-[0.15em] uppercase text-[--muted] hover:text-white transition-colors"
+                    className="text-[10px] tracking-[0.15em] uppercase text-[--muted] hover:text-white transition-colors flex items-center gap-2"
                   >
-                    View All →
+                    View All
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
                   </Link>
                 </div>
-                <div className="space-y-2">
-                  {activeUsers.slice(0, 5).map((user, index) => (
+                <div className="grid grid-cols-4 sm:grid-cols-6 gap-4">
+                  {activeUsers.slice(0, 6).map((user, index) => (
                     <Link
                       key={user.id}
                       href={`/u/${user.username}`}
-                      className="flex items-center gap-3 p-2 -mx-2 hover:bg-white/5 transition-colors group"
+                      className="group"
                     >
-                      <div className="w-10 h-10 border border-[--border] overflow-hidden flex-shrink-0 group-hover:border-white transition-colors">
+                      <div className="aspect-square w-full mb-2 border-2 border-[--border] overflow-hidden group-hover:border-white transition-colors relative">
                         {user.image ? (
-                          <img src={user.image} alt="" className="w-full h-full object-cover" />
+                          <img
+                            src={user.image}
+                            alt=""
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
                         ) : (
-                          <DefaultAvatar size="sm" className="w-full h-full" />
+                          <DefaultAvatar size="lg" className="w-full h-full" />
                         )}
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/80 py-1 px-2">
+                          <span className="text-[9px] font-bold tracking-wider">{user._count.reviews}</span>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold truncate">@{user.username}</p>
-                        <p className="text-[10px] text-[--muted] truncate uppercase tracking-wider">
-                          {user.tasteId?.primaryArchetype?.replace(/_/g, ' ') || `${user._count.reviews} reviews`}
-                        </p>
-                      </div>
-                      <div className="text-[10px] text-[--muted] tabular-nums">
-                        {user._count.reviews}
-                      </div>
+                      <p className="text-[11px] font-bold truncate group-hover:text-[--muted] transition-colors">
+                        @{user.username}
+                      </p>
                     </Link>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* RIGHT: TasteID Promo */}
-            <div className="lg:w-1/2 px-6 py-10 border-t lg:border-t-0 border-[--border]">
-              <div className="flex items-center gap-2 mb-6">
+            {/* RIGHT: TasteID Promo (30%) */}
+            <div className="lg:w-[30%] px-6 py-10 border-t lg:border-t-0 border-[--border] flex flex-col">
+              <div className="flex items-center gap-2 mb-4">
                 <h2 className="text-[11px] tracking-[0.2em] uppercase text-[--muted]">
                   TasteID
                 </h2>
-                <span className="text-[9px] px-1.5 py-0.5 bg-white/10 text-[--muted] uppercase tracking-wider">Beta</span>
+                <span className="text-[8px] px-1 py-0.5 bg-white/10 text-[--muted] uppercase tracking-wider">Beta</span>
               </div>
 
-              <div className="border border-[--border] p-6 mb-4">
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="text-3xl">🎵</div>
-                  <div>
-                    <h3 className="font-bold text-lg mb-1">Your Musical DNA</h3>
-                    <p className="text-sm text-[--muted]">
-                      Discover your unique taste archetype and find your musical twins.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Mini stats */}
-                <div className="grid grid-cols-3 gap-4 py-4 border-y border-[--border] mb-4">
-                  <div className="text-center">
-                    <div className="text-xl font-bold">12</div>
-                    <div className="text-[9px] text-[--muted] uppercase tracking-wider">Archetypes</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-xl font-bold">∞</div>
-                    <div className="text-[9px] text-[--muted] uppercase tracking-wider">Combinations</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-xl font-bold">5+</div>
-                    <div className="text-[9px] text-[--muted] uppercase tracking-wider">Reviews Needed</div>
-                  </div>
-                </div>
+              <div className="flex-1 flex flex-col justify-center">
+                <p className="text-sm text-[--muted] mb-4">
+                  Discover your musical archetype and find your taste twins.
+                </p>
 
                 <Link
                   href="/taste-setup"
-                  className="block w-full py-3 bg-white text-black text-center text-[11px] tracking-[0.15em] uppercase font-bold hover:bg-[#e5e5e5] transition-colors"
+                  className="block w-full py-2.5 bg-white text-black text-center text-[10px] tracking-[0.15em] uppercase font-bold hover:bg-[#e5e5e5] transition-colors mb-3"
                 >
-                  Generate Your TasteID
+                  Get Your TasteID
+                </Link>
+
+                <Link
+                  href="/discover/similar-tasters"
+                  className="text-[10px] text-[--muted] hover:text-white transition-colors"
+                >
+                  Find Similar Tasters →
                 </Link>
               </div>
-
-              <Link
-                href="/discover/similar-tasters"
-                className="flex items-center justify-between p-3 border border-[--border] hover:border-white transition-colors group"
-              >
-                <span className="text-sm">Find Similar Tasters</span>
-                <svg className="w-4 h-4 text-[--muted] group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </Link>
             </div>
           </div>
         </div>
