@@ -47,7 +47,7 @@ export default function LoginPage() {
   if (status === "loading") {
     return (
       <div className="min-h-[80vh] flex items-center justify-center">
-        <p className="text-[#888]">Loading...</p>
+        <p className="text-[--muted]">Loading...</p>
       </div>
     )
   }
@@ -56,7 +56,7 @@ export default function LoginPage() {
     <div className="min-h-[80vh] flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         <h1 className="text-4xl font-bold tracking-tighter mb-4">Sign In</h1>
-        <p className="text-[#888] mb-8">
+        <p className="text-[--muted] mb-8">
           Welcome back to Waxfeed.
         </p>
 
@@ -87,10 +87,10 @@ export default function LoginPage() {
 
         <div className="relative mb-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-[#333]"></div>
+            <div className="w-full border-t border-[--border-dim]"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-black text-[#888]">Or continue with email</span>
+            <span className="px-2 bg-black text-[--muted]">Or continue with email</span>
           </div>
         </div>
 
@@ -110,7 +110,7 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-[#111] border border-[#333] px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
+              className="w-full bg-[--surface] border border-[--border-dim] px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
               placeholder="you@example.com"
               required
             />
@@ -125,7 +125,7 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-[#111] border border-[#333] px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
+              className="w-full bg-[--surface] border border-[--border-dim] px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
               placeholder="••••••••"
               required
             />
@@ -140,7 +140,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="text-sm text-[#888] mt-6 text-center">
+        <p className="text-sm text-[--muted] mt-6 text-center">
           Don&apos;t have an account?{" "}
           <Link href="/signup" className="text-white hover:underline">
             Sign up

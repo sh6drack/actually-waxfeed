@@ -33,7 +33,7 @@ export const AlbumCard = memo(function AlbumCard({
   return (
     <Link href={`/album/${spotifyId}`} className="group block">
       <div className={`${sizeClasses[size]}`}>
-        <div className="aspect-square bg-[#181818] relative overflow-hidden group-hover:opacity-80 transition-opacity">
+        <div className="aspect-square bg-[--surface] relative overflow-hidden group-hover:opacity-80 transition-opacity">
           {coverArtUrl ? (
             <img
               src={coverArtUrl}
@@ -41,7 +41,7 @@ export const AlbumCard = memo(function AlbumCard({
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-[#444]">
+            <div className="w-full h-full flex items-center justify-center text-[--muted-faint]">
               <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1" fill="none"/>
                 <circle cx="12" cy="12" r="3" fill="currentColor"/>
@@ -51,7 +51,7 @@ export const AlbumCard = memo(function AlbumCard({
         </div>
         <div className="mt-1.5">
           <p className="text-xs font-medium truncate leading-tight">{title}</p>
-          <p className="text-[#666] text-xs truncate leading-tight">{artistName}</p>
+          <p className="text-[--muted-dim] text-xs truncate leading-tight">{artistName}</p>
         </div>
       </div>
     </Link>

@@ -140,7 +140,7 @@ export default function SettingsPage() {
   if (status === "loading") {
     return (
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <p className="text-[#888]">Loading...</p>
+        <p className="text-[--muted]">Loading...</p>
       </div>
     )
   }
@@ -156,14 +156,14 @@ export default function SettingsPage() {
         <div className="space-y-6">
           {/* Profile Picture */}
           <div>
-            <label className="block text-sm text-[#888] mb-2">Profile Picture</label>
+            <label className="block text-sm text-[--muted] mb-2">Profile Picture</label>
             <div className="flex items-center gap-4">
               <label className="relative w-24 h-24 cursor-pointer group">
                 {image ? (
                   <img
                     src={image}
                     alt=""
-                    className="w-full h-full object-cover border border-[#333]"
+                    className="w-full h-full object-cover border border-[--border-dim]"
                   />
                 ) : (
                   <DefaultAvatar size="lg" className="w-full h-full" />
@@ -196,25 +196,25 @@ export default function SettingsPage() {
                   className="hidden"
                 />
               </label>
-              <div className="text-sm text-[#888]">
+              <div className="text-sm text-[--muted]">
                 <p>Click to upload</p>
-                <p className="text-xs text-[#666]">Max 4MB • JPEG, PNG, GIF, WebP</p>
+                <p className="text-xs text-[--muted-dim]">Max 4MB • JPEG, PNG, GIF, WebP</p>
               </div>
             </div>
           </div>
 
           {/* Username */}
           <div>
-            <label className="block text-sm text-[#888] mb-2">Username</label>
+            <label className="block text-sm text-[--muted] mb-2">Username</label>
             <div className="flex items-center gap-2">
-              <span className="text-[#666]">@</span>
+              <span className="text-[--muted-dim]">@</span>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, ""))}
                 placeholder="username"
                 maxLength={30}
-                className="flex-1 bg-[#111] border border-[#333] px-3 py-2 text-white focus:outline-none focus:border-white transition-colors"
+                className="flex-1 bg-[--surface] border border-[--border-dim] px-3 py-2 text-white focus:outline-none focus:border-white transition-colors"
               />
             </div>
             {usernameChanged && !canChangeUsername && (
@@ -228,7 +228,7 @@ export default function SettingsPage() {
               </p>
             )}
             {!usernameChanged && (
-              <p className="text-xs text-[#666] mt-1">
+              <p className="text-xs text-[--muted-dim] mt-1">
                 {hasPrivilegedRole
                   ? "You can change your username anytime"
                   : usernameChangesUsed === 0
@@ -242,7 +242,7 @@ export default function SettingsPage() {
 
           {/* Bio */}
           <div>
-            <label className="block text-sm text-[#888] mb-2">Bio</label>
+            <label className="block text-sm text-[--muted] mb-2">Bio</label>
             <textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
@@ -251,17 +251,17 @@ export default function SettingsPage() {
               placeholder="Tell people about yourself..."
               className="w-full"
             />
-            <p className="text-xs text-[#666] mt-1">{bio.length}/150</p>
+            <p className="text-xs text-[--muted-dim] mt-1">{bio.length}/150</p>
           </div>
 
           {/* Social Links */}
           <div>
-            <label className="block text-sm text-[#888] mb-2">Social Links</label>
+            <label className="block text-sm text-[--muted] mb-2">Social Links</label>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <span className="text-[#888] w-20">Instagram</span>
+                <span className="text-[--muted] w-20">Instagram</span>
                 <div className="flex-1 flex items-center gap-1">
-                  <span className="text-[#666]">@</span>
+                  <span className="text-[--muted-dim]">@</span>
                   <input
                     type="text"
                     value={socialLinks.instagram}
@@ -272,9 +272,9 @@ export default function SettingsPage() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-[#888] w-20">Twitter/X</span>
+                <span className="text-[--muted] w-20">Twitter/X</span>
                 <div className="flex-1 flex items-center gap-1">
-                  <span className="text-[#666]">@</span>
+                  <span className="text-[--muted-dim]">@</span>
                   <input
                     type="text"
                     value={socialLinks.twitter}
@@ -285,7 +285,7 @@ export default function SettingsPage() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-[#888] w-20">Spotify</span>
+                <span className="text-[--muted] w-20">Spotify</span>
                 <input
                   type="text"
                   value={socialLinks.spotify}
@@ -295,7 +295,7 @@ export default function SettingsPage() {
                 />
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-[#888] w-20">Website</span>
+                <span className="text-[--muted] w-20">Website</span>
                 <input
                   type="text"
                   value={socialLinks.website}
@@ -326,9 +326,9 @@ export default function SettingsPage() {
       </div>
 
       {/* Danger Zone */}
-      <section className="mt-16 pt-8 border-t border-[#222]">
+      <section className="mt-16 pt-8 border-t border-[--border]">
         <h2 className="text-xl font-bold mb-6 text-red-500">Danger Zone</h2>
-        <p className="text-sm text-[#888] mb-4">
+        <p className="text-sm text-[--muted] mb-4">
           Contact scrolling@waxfeed.com to delete your account.
         </p>
       </section>

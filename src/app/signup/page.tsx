@@ -73,7 +73,7 @@ export default function SignupPage() {
   if (status === "loading") {
     return (
       <div className="min-h-[80vh] flex items-center justify-center">
-        <p className="text-[#888]">Loading...</p>
+        <p className="text-[--muted]">Loading...</p>
       </div>
     )
   }
@@ -82,7 +82,7 @@ export default function SignupPage() {
     <div className="min-h-[80vh] flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         <h1 className="text-4xl font-bold tracking-tighter mb-4">Create Account</h1>
-        <p className="text-[#888] mb-8">
+        <p className="text-[--muted] mb-8">
           Join Waxfeed to review albums, create lists, and discover music through friends.
         </p>
 
@@ -113,10 +113,10 @@ export default function SignupPage() {
 
         <div className="relative mb-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-[#333]"></div>
+            <div className="w-full border-t border-[--border-dim]"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-black text-[#888]">Or continue with email</span>
+            <span className="px-2 bg-black text-[--muted]">Or continue with email</span>
           </div>
         </div>
 
@@ -136,7 +136,7 @@ export default function SignupPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-[#111] border border-[#333] px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
+              className="w-full bg-[--surface] border border-[--border-dim] px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
               placeholder="you@example.com"
               required
             />
@@ -151,7 +151,7 @@ export default function SignupPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-[#111] border border-[#333] px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
+              className="w-full bg-[--surface] border border-[--border-dim] px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
               placeholder="••••••••"
               required
               minLength={6}
@@ -167,7 +167,7 @@ export default function SignupPage() {
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full bg-[#111] border border-[#333] px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
+              className="w-full bg-[--surface] border border-[--border-dim] px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
               placeholder="••••••••"
               required
               minLength={6}
@@ -183,14 +183,14 @@ export default function SignupPage() {
           </button>
         </form>
 
-        <p className="text-sm text-[#888] mt-6 text-center">
+        <p className="text-sm text-[--muted] mt-6 text-center">
           Already have an account?{" "}
           <Link href="/login" className="text-white hover:underline">
             Sign in
           </Link>
         </p>
 
-        <p className="text-xs text-[#666] mt-6 text-center">
+        <p className="text-xs text-[--muted-dim] mt-6 text-center">
           By signing up, you agree to our Terms of Service and Privacy Policy.
         </p>
       </div>

@@ -99,29 +99,29 @@ function SearchContent() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-4 mb-8 border-b border-[#222]">
+      <div className="flex gap-4 mb-8 border-b border-[--border]">
         <button
           onClick={() => setActiveTab("all")}
-          className={`pb-2 px-1 text-sm ${activeTab === "all" ? "border-b-2 border-white" : "text-[#888]"}`}
+          className={`pb-2 px-1 text-sm ${activeTab === "all" ? "border-b-2 border-white" : "text-[--muted]"}`}
         >
           All
         </button>
         <button
           onClick={() => setActiveTab("local")}
-          className={`pb-2 px-1 text-sm ${activeTab === "local" ? "border-b-2 border-white" : "text-[#888]"}`}
+          className={`pb-2 px-1 text-sm ${activeTab === "local" ? "border-b-2 border-white" : "text-[--muted]"}`}
         >
           On Waxfeed ({localResults.length})
         </button>
         <button
           onClick={() => setActiveTab("spotify")}
-          className={`pb-2 px-1 text-sm ${activeTab === "spotify" ? "border-b-2 border-white" : "text-[#888]"}`}
+          className={`pb-2 px-1 text-sm ${activeTab === "spotify" ? "border-b-2 border-white" : "text-[--muted]"}`}
         >
           Spotify ({spotifyResults.length})
         </button>
       </div>
 
       {loading ? (
-        <p className="text-[#888]">Searching...</p>
+        <p className="text-[--muted]">Searching...</p>
       ) : (
         <div className="space-y-12">
           {/* Local Results */}
@@ -155,7 +155,7 @@ function SearchContent() {
                   return (
                     <div key={album.id} className="group">
                       <div className="w-40">
-                        <div className="aspect-square bg-[#222] relative overflow-hidden border border-[#333]">
+                        <div className="aspect-square bg-[--border] relative overflow-hidden border border-[--border-dim]">
                           {album.images[0]?.url ? (
                             <img
                               src={album.images[0].url}
@@ -163,7 +163,7 @@ function SearchContent() {
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-[#666]">
+                            <div className="w-full h-full flex items-center justify-center text-[--muted-dim]">
                               No Cover
                             </div>
                           )}
@@ -188,10 +188,10 @@ function SearchContent() {
                           ) : (
                             <p className="font-bold text-sm truncate">{album.name}</p>
                           )}
-                          <p className="text-[#888] text-xs truncate">
+                          <p className="text-[--muted] text-xs truncate">
                             {album.artists.map(a => a.name).join(", ")}
                           </p>
-                          <p className="text-[#666] text-xs">
+                          <p className="text-[--muted-dim] text-xs">
                             {album.album_type} • {album.release_date?.split("-")[0]}
                           </p>
                         </div>
@@ -206,14 +206,14 @@ function SearchContent() {
           {/* Empty State */}
           {query && !loading && filteredLocal.length === 0 && filteredSpotify.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-[#888]">No results found for &ldquo;{query}&rdquo;</p>
+              <p className="text-[--muted]">No results found for &ldquo;{query}&rdquo;</p>
             </div>
           )}
 
           {/* Initial State */}
           {!query && (
             <div className="text-center py-12">
-              <p className="text-[#888]">Start typing to search for albums</p>
+              <p className="text-[--muted]">Start typing to search for albums</p>
             </div>
           )}
         </div>
@@ -226,7 +226,7 @@ export default function SearchPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold tracking-tighter mb-8">Search</h1>
-      <Suspense fallback={<p className="text-[#888]">Loading...</p>}>
+      <Suspense fallback={<p className="text-[--muted]">Loading...</p>}>
         <SearchContent />
       </Suspense>
     </div>

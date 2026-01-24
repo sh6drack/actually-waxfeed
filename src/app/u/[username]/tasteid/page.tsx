@@ -9,6 +9,13 @@ import {
   ArtistDNAStrip,
   TasteCardShare,
 } from "@/components/tasteid"
+import {
+  MusicNetworksVisualization,
+  MusicNetworksLegend,
+  ListeningModeIndicator,
+  MusicNetworkKey,
+  MUSIC_NETWORKS,
+} from "@/components/tasteid"
 import { DefaultAvatar } from "@/components/default-avatar"
 import {
   getArchetypeInfo,
@@ -204,6 +211,21 @@ export default async function TasteIDPage({ params }: Props) {
       aesthetic: "Your attraction to visual presentation and curation",
     }
     return meanings[networkId] || ""
+  }
+
+  // Derive Music Network activations from listening signature
+  // Based on TasteID architecture - 7 Music Networks mapped from Yeo model
+  const deriveMusicNetworks = (sig: ListeningSignature): Partial<Record<MusicNetworkKey, number>> => {
+    // Direct mapping from listening signature to Music Networks
+    return {
+      DISCOVERY: sig.discovery || 0,
+      COMFORT: sig.comfort || 0,
+      DEEP_DIVE: sig.deep_dive || 0,
+      REACTIVE: sig.reactive || 0,
+      EMOTIONAL: sig.emotional || 0,
+      SOCIAL: sig.social || 0,
+      AESTHETIC: sig.aesthetic || 0,
+    }
   }
 
   // Get pattern explanation
@@ -575,6 +597,76 @@ export default async function TasteIDPage({ params }: Props) {
                   <p className="text-xs text-muted-foreground">
                     How distinct from typical
                   </p>
+                </div>
+              </div>
+            </div>
+          )
+        })()}
+
+        {/* 7 Music Networks Visualization */}
+        {listeningSignature && (() => {
+          const musicNetworks = deriveMusicNetworks(listeningSignature)
+
+          return (
+            <div className="mb-6 sm:mb-8 border-2 border-foreground p-4 sm:p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-2 h-2 bg-blue-400" />
+                <h2 className="text-xs uppercase tracking-[0.3em] text-foreground font-bold">
+                  7 MUSIC NETWORKS
+                </h2>
+                <span className="text-[10px] px-2 py-0.5 border border-blue-400/30 text-blue-400 uppercase tracking-wider">
+                  YEO MODEL
+                </span>
+              </div>
+
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Your listening signature mapped to 7 distinct modes of musical engagement, adapted from the Yeo 7-Network cognitive model.
+              </p>
+
+              <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+                {/* Music Networks Visualization */}
+                <div className="flex justify-center lg:justify-start">
+                  <MusicNetworksVisualization
+                    networkActivations={musicNetworks}
+                    size={240}
+                  />
+                </div>
+
+                {/* Listening Mode + Legend */}
+                <div className="flex-1 space-y-4">
+                  <ListeningModeIndicator
+                    networkActivations={musicNetworks}
+                    className="mb-4"
+                  />
+
+                  <div className="pt-4 border-t border-border">
+                    <MusicNetworksLegend showYeoMapping={true} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Network Detection Signals */}
+              <div className="mt-6 pt-4 border-t border-border">
+                <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
+                  Network Detection Signals
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                  <div className="p-3 border border-border">
+                    <span className="text-blue-400 font-bold block mb-2">DISCOVERY MODE</span>
+                    <ul className="text-muted-foreground space-y-1">
+                      <li>• First-time artist reviews</li>
+                      <li>• Genre diversity in recent reviews</li>
+                      <li>• Low artist repeat rate</li>
+                    </ul>
+                  </div>
+                  <div className="p-3 border border-border">
+                    <span className="text-emerald-400 font-bold block mb-2">DEEP DIVE MODE</span>
+                    <ul className="text-muted-foreground space-y-1">
+                      <li>• Multiple albums from same artist</li>
+                      <li>• Chronological exploration</li>
+                      <li>• Complete discography patterns</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>

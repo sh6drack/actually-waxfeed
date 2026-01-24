@@ -142,7 +142,7 @@ export default async function UserStatsPage({ params }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <Link href={`/u/${user.username}`} className="text-[#888] hover:text-white no-underline text-sm">
+          <Link href={`/u/${user.username}`} className="text-[--muted] hover:text-[--foreground] no-underline text-sm">
             ← Back to profile
           </Link>
           <h1 className="text-2xl lg:text-3xl font-bold mt-2">
@@ -151,45 +151,45 @@ export default async function UserStatsPage({ params }: Props) {
         </div>
         <div className="text-right">
           <p className="text-3xl lg:text-4xl font-bold">{stats.currentYear}</p>
-          <p className="text-xs text-[#888]">Year in Review</p>
+          <p className="text-xs text-[--muted]">Year in Review</p>
         </div>
       </div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-        <div className="border border-[#222] p-4 text-center">
+        <div className="border border-[--border] p-4 text-center">
           <p className="text-3xl font-bold">{stats.totalReviews}</p>
-          <p className="text-xs text-[#888]">Total Reviews</p>
+          <p className="text-xs text-[--muted]">Total Reviews</p>
         </div>
-        <div className="border border-[#222] p-4 text-center">
+        <div className="border border-[--border] p-4 text-center">
           <p className="text-3xl font-bold">{stats.thisYearReviews}</p>
-          <p className="text-xs text-[#888]">This Year</p>
+          <p className="text-xs text-[--muted]">This Year</p>
         </div>
-        <div className="border border-[#222] p-4 text-center">
+        <div className="border border-[--border] p-4 text-center">
           <p className="text-3xl font-bold">{stats.avgRating.toFixed(1)}</p>
-          <p className="text-xs text-[#888]">Avg Rating</p>
+          <p className="text-xs text-[--muted]">Avg Rating</p>
         </div>
-        <div className="border border-[#222] p-4 text-center">
+        <div className="border border-[--border] p-4 text-center">
           <p className="text-3xl font-bold">{stats.listsCount}</p>
-          <p className="text-xs text-[#888]">Lists</p>
+          <p className="text-xs text-[--muted]">Lists</p>
         </div>
       </div>
 
       {/* Monthly Activity Chart */}
       <section className="mb-8">
         <h2 className="text-lg font-bold mb-4">{stats.currentYear} Activity</h2>
-        <div className="border border-[#222] p-4">
+        <div className="border border-[--border] p-4">
           <div className="flex items-end gap-1 h-32">
             {months.map((month, i) => (
               <div key={month} className="flex-1 flex flex-col items-center gap-1">
                 <div
-                  className="w-full bg-white transition-all"
+                  className="w-full bg-[--accent] transition-all"
                   style={{
                     height: `${(stats.monthlyActivity[i + 1] / maxMonthlyActivity) * 100}%`,
                     minHeight: stats.monthlyActivity[i + 1] > 0 ? "4px" : "0",
                   }}
                 />
-                <span className="text-[10px] text-[#666]">{month}</span>
+                <span className="text-[10px] text-[--muted-dim]">{month}</span>
               </div>
             ))}
           </div>
@@ -199,18 +199,18 @@ export default async function UserStatsPage({ params }: Props) {
       {/* Rating Distribution */}
       <section className="mb-8">
         <h2 className="text-lg font-bold mb-4">Rating Distribution</h2>
-        <div className="border border-[#222] p-4">
+        <div className="border border-[--border] p-4">
           <div className="flex items-end gap-1 h-24">
             {Array.from({ length: 11 }, (_, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-1">
                 <div
-                  className="w-full bg-white transition-all"
+                  className="w-full bg-[--accent] transition-all"
                   style={{
                     height: `${(stats.ratingDistribution[i] / maxRatingCount) * 100}%`,
                     minHeight: stats.ratingDistribution[i] > 0 ? "4px" : "0",
                   }}
                 />
-                <span className="text-[10px] text-[#666]">{i}</span>
+                <span className="text-[10px] text-[--muted-dim]">{i}</span>
               </div>
             ))}
           </div>
@@ -221,15 +221,15 @@ export default async function UserStatsPage({ params }: Props) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
         <section>
           <h2 className="text-lg font-bold mb-4">Top Artists</h2>
-          <div className="border border-[#222]">
+          <div className="border border-[--border]">
             {stats.topArtists.length === 0 ? (
-              <p className="p-4 text-[#888] text-sm">No reviews yet</p>
+              <p className="p-4 text-[--muted] text-sm">No reviews yet</p>
             ) : (
               stats.topArtists.map((artist, i) => (
-                <div key={artist.name} className="flex items-center gap-3 p-3 border-b border-[#181818] last:border-0">
-                  <span className="text-[#666] text-sm w-5">{i + 1}</span>
+                <div key={artist.name} className="flex items-center gap-3 p-3 border-b border-[--surface] last:border-0">
+                  <span className="text-[--muted-dim] text-sm w-5">{i + 1}</span>
                   <span className="flex-1 truncate text-sm">{artist.name}</span>
-                  <span className="text-[#888] text-xs">{artist.count} reviews</span>
+                  <span className="text-[--muted] text-xs">{artist.count} reviews</span>
                 </div>
               ))
             )}
@@ -238,15 +238,15 @@ export default async function UserStatsPage({ params }: Props) {
 
         <section>
           <h2 className="text-lg font-bold mb-4">Top Genres</h2>
-          <div className="border border-[#222]">
+          <div className="border border-[--border]">
             {stats.topGenres.length === 0 ? (
-              <p className="p-4 text-[#888] text-sm">No genre data</p>
+              <p className="p-4 text-[--muted] text-sm">No genre data</p>
             ) : (
               stats.topGenres.map((genre, i) => (
-                <div key={genre.name} className="flex items-center gap-3 p-3 border-b border-[#181818] last:border-0">
-                  <span className="text-[#666] text-sm w-5">{i + 1}</span>
+                <div key={genre.name} className="flex items-center gap-3 p-3 border-b border-[--surface] last:border-0">
+                  <span className="text-[--muted-dim] text-sm w-5">{i + 1}</span>
                   <span className="flex-1 truncate text-sm capitalize">{genre.name}</span>
-                  <span className="text-[#888] text-xs">{genre.count}</span>
+                  <span className="text-[--muted] text-xs">{genre.count}</span>
                 </div>
               ))
             )}
@@ -265,7 +265,7 @@ export default async function UserStatsPage({ params }: Props) {
                 href={`/album/${review.album.spotifyId}`}
                 className="no-underline group"
               >
-                <div className="aspect-square bg-[#181818] mb-2 overflow-hidden">
+                <div className="aspect-square bg-[--surface] mb-2 overflow-hidden">
                   {review.album.coverArtUrl ? (
                     <img
                       src={review.album.coverArtUrl}
@@ -273,13 +273,13 @@ export default async function UserStatsPage({ params }: Props) {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-[#666] text-xs">
+                    <div className="w-full h-full flex items-center justify-center text-[--muted-dim] text-xs">
                       No Cover
                     </div>
                   )}
                 </div>
                 <p className="text-xs truncate">{review.album.title}</p>
-                <p className="text-xs text-[#888] truncate">{review.album.artistName}</p>
+                <p className="text-xs text-[--muted] truncate">{review.album.artistName}</p>
                 <p className="text-sm font-bold">{review.rating.toFixed(1)}</p>
               </Link>
             ))}
@@ -298,7 +298,7 @@ export default async function UserStatsPage({ params }: Props) {
                 href={`/album/${review.album.spotifyId}`}
                 className="no-underline group"
               >
-                <div className="aspect-square bg-[#181818] mb-2 overflow-hidden">
+                <div className="aspect-square bg-[--surface] mb-2 overflow-hidden">
                   {review.album.coverArtUrl ? (
                     <img
                       src={review.album.coverArtUrl}
@@ -306,13 +306,13 @@ export default async function UserStatsPage({ params }: Props) {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-[#666] text-xs">
+                    <div className="w-full h-full flex items-center justify-center text-[--muted-dim] text-xs">
                       No Cover
                     </div>
                   )}
                 </div>
                 <p className="text-xs truncate">{review.album.title}</p>
-                <p className="text-xs text-[#888] truncate">{review.album.artistName}</p>
+                <p className="text-xs text-[--muted] truncate">{review.album.artistName}</p>
                 <p className="text-sm font-bold">{review.rating.toFixed(1)}</p>
               </Link>
             ))}
