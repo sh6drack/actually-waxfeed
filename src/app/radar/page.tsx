@@ -82,7 +82,7 @@ export default function RadarPage() {
     )
   }
 
-  // Paywall for non-subscribers
+  // Paywall for non subscribers
   if (error === 'Trending Radar requires Wax+ or Pro subscription') {
     return (
       <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
@@ -97,13 +97,13 @@ export default function RadarPage() {
               Trending Radar
             </h1>
             <p className="text-lg text-[--muted] mb-8 max-w-xl mx-auto">
-              See albums approaching 100 reviews. Review them now, 
-              and you'll still qualify for badges when they trend.
+              See albums approaching 100 reviews. Review them now 
+              and you still qualify for badges when they trend.
             </p>
             
             <div className="border border-[--border] p-6 max-w-md mx-auto mb-8">
               <p className="text-sm text-[--muted] mb-4">
-                Right now, there are albums at 70, 80, 90 reviews—one push away from trending.
+                Right now albums are sitting at 70, 80, 90 reviews. One push away from trending.
                 Subscribers see exactly which ones.
               </p>
               <div className="flex items-center justify-center gap-4 text-sm">
@@ -123,7 +123,7 @@ export default function RadarPage() {
               href="/pricing"
               className="inline-block px-8 py-4 bg-white text-black text-[11px] tracking-[0.15em] uppercase font-bold hover:bg-[#e5e5e5] transition"
             >
-              Unlock Trending Radar
+              Unlock Radar
             </Link>
           </div>
         </section>
@@ -172,13 +172,13 @@ export default function RadarPage() {
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row">
         {/* Main Radar */}
         <section className="flex-1 lg:border-r border-[--border]">
-          {/* Critical - About to Trend */}
+          {/* Critical */}
           {criticalAlbums.length > 0 && (
             <div className="px-6 py-8 border-b border-[--border]">
               <div className="flex items-center gap-2 mb-6">
                 <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                 <p className="text-[10px] tracking-[0.3em] uppercase text-red-500 font-bold">
-                  About to Trend (90+)
+                  About to Trend
                 </p>
               </div>
               <div className="space-y-4">
@@ -193,7 +193,7 @@ export default function RadarPage() {
           {highAlbums.length > 0 && (
             <div className="px-6 py-8 border-b border-[--border]">
               <p className="text-[10px] tracking-[0.3em] uppercase text-[#ffd700] mb-6">
-                Hot (75-89)
+                Hot
               </p>
               <div className="space-y-4">
                 {highAlbums.map(album => (
@@ -207,7 +207,7 @@ export default function RadarPage() {
           {otherAlbums.length > 0 && (
             <div className="px-6 py-8 border-b border-[--border]">
               <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-6">
-                Rising (50-74)
+                Rising
               </p>
               <div className="space-y-4">
                 {otherAlbums.map(album => (
@@ -268,19 +268,19 @@ export default function RadarPage() {
           {/* How It Works */}
           <div className="px-6 py-8">
             <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-4">
-              How Radar Works
+              How It Works
             </p>
             <div className="space-y-4 text-sm">
               <div>
                 <p className="font-medium mb-1">Albums appear at 50+ reviews</p>
                 <p className="text-xs text-[--muted]">
-                  They're building momentum toward trending.
+                  Building momentum toward trending.
                 </p>
               </div>
               <div>
                 <p className="font-medium mb-1">Review before 100</p>
                 <p className="text-xs text-[--muted]">
-                  Your position is locked. When it trends, you earn your badge.
+                  Your position is locked. When it trends you earn your badge.
                 </p>
               </div>
               <div>

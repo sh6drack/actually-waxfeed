@@ -119,10 +119,11 @@ export default function WalletPage() {
   }
 
   const totalBadges = stats.goldSpinCount + stats.silverSpinCount + stats.bronzeSpinCount
+  const isSubscriber = stats.tier !== "FREE"
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
-      {/* Header - Tastemaker Score */}
+      {/* Header */}
       <section style={{ borderBottom: '1px solid var(--border)' }}>
         <div className="max-w-7xl mx-auto px-6 py-10">
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
@@ -137,7 +138,7 @@ export default function WalletPage() {
               </div>
               <p className="text-sm text-[--muted] mt-2">
                 {totalBadges === 0 
-                  ? "Review albums early to earn badges and increase your score."
+                  ? "Review albums early to earn badges and build your score."
                   : `Based on ${totalBadges} First Spin badge${totalBadges !== 1 ? 's' : ''}`
                 }
               </p>
@@ -182,12 +183,20 @@ export default function WalletPage() {
               <p className="text-sm tabular-nums text-green-500">+{stats.lifetimeEarned.toLocaleString()}</p>
             </div>
           </div>
-          <Link
-            href="/pricing"
-            className="px-4 py-2 border border-[--border] text-[10px] tracking-[0.15em] uppercase hover:border-white transition"
-          >
-            {stats.tier === "FREE" ? "Upgrade" : "Manage"}
-          </Link>
+          <div className="flex items-center gap-3">
+            {isSubscriber ? (
+              <span className="text-[9px] tracking-wider uppercase px-2 py-1 bg-[#ffd700]/20 text-[#ffd700]">
+                {stats.tier === "WAX_PRO" ? "Pro" : "Wax+"}
+              </span>
+            ) : (
+              <Link
+                href="/pricing"
+                className="px-4 py-2 border border-[--border] text-[10px] tracking-[0.15em] uppercase hover:border-white transition"
+              >
+                Upgrade
+              </Link>
+            )}
+          </div>
         </div>
       </section>
 
@@ -240,7 +249,7 @@ export default function WalletPage() {
               <p className="text-lg font-medium mb-2">No badges yet</p>
               <p className="text-sm text-[--muted] mb-6 max-w-md mx-auto">
                 Review albums before they trend to earn First Spin badges. 
-                Your position is recorded—if it blows up, you get credit.
+                Your position is recorded. If it blows up you get credit.
               </p>
               <Link
                 href="/discover"
@@ -301,28 +310,28 @@ export default function WalletPage() {
       {/* HOW TO EARN Tab */}
       {activeTab === "wax" && (
         <section className="max-w-7xl mx-auto">
-          {/* First Spin - Primary */}
+          {/* First Spin */}
           <div className="px-6 py-8 border-b border-[--border]">
             <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-4">
               Primary Way to Earn
             </p>
             <h2 className="text-2xl font-bold mb-4">First Spin Badges</h2>
             <p className="text-sm text-[--muted] mb-6 max-w-2xl">
-              Review albums before they trend. When an album hits 100+ reviews, 
+              Review albums before they trend. When an album hits 100+ reviews 
               early reviewers automatically receive badges and Wax rewards.
             </p>
             <div className="grid lg:grid-cols-3 gap-4">
               <div className="p-4 border border-[#ffd700]/30">
                 <p className="text-3xl font-bold text-[#ffd700] mb-1">+100</p>
-                <p className="text-sm">Gold Spin (First 10)</p>
+                <p className="text-sm">Gold Spin for first 10</p>
               </div>
               <div className="p-4 border border-gray-400/30">
                 <p className="text-3xl font-bold text-gray-400 mb-1">+50</p>
-                <p className="text-sm">Silver Spin (First 50)</p>
+                <p className="text-sm">Silver Spin for first 50</p>
               </div>
               <div className="p-4 border border-amber-700/30">
                 <p className="text-3xl font-bold text-amber-700 mb-1">+25</p>
-                <p className="text-sm">Bronze Spin (First 100)</p>
+                <p className="text-sm">Bronze Spin for first 100</p>
               </div>
             </div>
           </div>
@@ -344,11 +353,34 @@ export default function WalletPage() {
                 <p className="text-xl font-bold mb-1">+1 to +10 Wax</p>
                 <p className="text-sm font-medium mb-2">Get Tipped</p>
                 <p className="text-xs text-[--muted]">
-                  When others tip your reviews, you earn a portion: Standard (+1), Premium (+3), GOLD (+10).
+                  When others tip your reviews you earn a portion. Standard +1, Premium +3, GOLD +10.
                 </p>
               </div>
             </div>
           </div>
+
+          {/* Trending Radar CTA for non subscribers */}
+          {!isSubscriber && (
+            <div className="px-6 py-8 border-b border-[--border]">
+              <Link
+                href="/radar"
+                className="flex items-center justify-between p-4 border border-[#ffd700]/30 hover:border-[#ffd700] transition group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 border border-[#ffd700] flex items-center justify-center">
+                    <svg className="w-5 h-5 text-[#ffd700]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-medium group-hover:text-[--muted] transition">Trending Radar</p>
+                    <p className="text-xs text-[--muted]">See albums about to trend</p>
+                  </div>
+                </div>
+                <span className="text-xs text-[#ffd700]">Subscriber feature</span>
+              </Link>
+            </div>
+          )}
 
           {/* How to Spend */}
           <div className="px-6 py-8">
@@ -356,7 +388,7 @@ export default function WalletPage() {
               How to Spend
             </p>
             <p className="text-sm text-[--muted] mb-6 max-w-2xl">
-              Tip reviews you appreciate. The reviewer earns Wax, and your tip shows 
+              Tip reviews you appreciate. The reviewer earns Wax and your tip shows 
               community support. Better reviews get more visibility.
             </p>
             <div className="flex flex-wrap gap-4">

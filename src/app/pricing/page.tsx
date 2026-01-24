@@ -91,21 +91,21 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
-      {/* Hero - The Offer */}
+      {/* Hero */}
       <section style={{ borderBottom: '1px solid var(--border)' }}>
         <div className="max-w-4xl mx-auto px-6 py-16 lg:py-24 text-center">
           <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-6">
-            An offer you can't refuse
+            Membership
           </p>
           <h1 className="text-4xl lg:text-6xl font-bold tracking-[-0.02em] mb-6">
             Your taste.<br />Verified forever.
           </h1>
           <p className="text-lg text-[--muted] max-w-2xl mx-auto mb-8">
             Every album you call before it blows up is recorded. Every Gold Spin is proof. 
-            This isn't a subscription—it's your permanent music credibility.
+            This is your permanent music credibility.
           </p>
-          <div className="inline-flex items-center gap-2 px-4 py-2 border border-[#ffd700]/30 text-sm">
-            <span className="text-[#ffd700]">47 Gold Spins</span>
+          <div className="inline-flex items-center gap-3 px-4 py-2 border border-[#ffd700]/30 text-sm">
+            <span className="text-[#ffd700] font-bold">47 Gold Spins</span>
             <span className="text-[--muted]">=</span>
             <span>"I called 47 albums before they trended"</span>
           </div>
@@ -120,24 +120,24 @@ export default function PricingPage() {
         </div>
       )}
 
-      {/* The Deal */}
+      {/* The Value */}
       <section className="border-b border-[--border]">
         <div className="max-w-7xl mx-auto px-6 py-16">
           <div className="max-w-3xl">
             <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-4">
-              Here's the deal
+              How it works
             </p>
             <h2 className="text-2xl lg:text-3xl font-bold mb-6">
               Everyone earns badges fairly.<br />
-              Subscribers maximize their shot.
+              Subscribers see what others miss.
             </h2>
             <p className="text-[--muted] mb-8">
               Free users and subscribers both earn badges when they call albums early. 
-              The difference? Subscribers see what's <span className="text-white">about to trend</span>—so 
-              they can still get in before it's too late.
+              The difference is subscribers see which albums are <span className="text-white">about to trend</span> so 
+              they can still get in before it happens.
             </p>
             
-            {/* The Killer Feature */}
+            {/* Trending Radar */}
             <div className="border-2 border-white/20 p-6 mb-8">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 border border-[#ffd700] flex items-center justify-center flex-shrink-0">
@@ -148,11 +148,11 @@ export default function PricingPage() {
                 <div>
                   <p className="text-lg font-bold mb-2">Trending Radar</p>
                   <p className="text-sm text-[--muted] mb-3">
-                    See albums at 70, 80, 90 reviews—approaching the 100 threshold. 
-                    You can still review and qualify for a badge before it trends.
+                    Albums at 70, 80, 90 reviews. Approaching the 100 threshold. 
+                    Review now and you still qualify for a badge when it trends.
                   </p>
                   <p className="text-xs text-[#ffd700]">
-                    This feature alone has helped subscribers earn 3x more Gold Spins.
+                    Subscribers earn 3x more Gold Spins on average.
                   </p>
                 </div>
               </div>
@@ -165,37 +165,37 @@ export default function PricingPage() {
       <section className="border-b border-[--border]">
         <div className="max-w-7xl mx-auto px-6 py-16">
           <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-8">
-            Do the math
+            The math
           </p>
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="p-6 border border-[--border]">
               <p className="text-5xl font-bold mb-2">1</p>
               <p className="text-lg font-medium mb-2">Gold Spin per month</p>
               <p className="text-sm text-[--muted] mb-4">
-                Just ONE early call on a trending album earns you 100 Wax.
+                One early call on a trending album earns you 100 Wax.
               </p>
               <p className="text-xs text-[--muted]">
-                Worth: ~$1 in Wax value
+                Worth about $1 in Wax
               </p>
             </div>
             <div className="p-6 border border-[--border]">
               <p className="text-5xl font-bold mb-2">$5</p>
-              <p className="text-lg font-medium mb-2">Wax+ subscription</p>
+              <p className="text-lg font-medium mb-2">Monthly subscription</p>
               <p className="text-sm text-[--muted] mb-4">
-                Trending Radar alone helps you catch 2-3 more badges per month.
+                Trending Radar helps you catch 2 to 3 more badges every month.
               </p>
               <p className="text-xs text-[--muted]">
-                ROI: 200-300 Wax = $2-3 value
+                200 to 300 extra Wax
               </p>
             </div>
             <div className="p-6 border border-[#ffd700]/30">
               <p className="text-5xl font-bold text-[#ffd700] mb-2">∞</p>
               <p className="text-lg font-medium mb-2">Permanent record</p>
               <p className="text-sm text-[--muted] mb-4">
-                Your Tastemaker Score lives forever. It's your music resume.
+                Your Tastemaker Score lives forever. Your music resume.
               </p>
               <p className="text-xs text-[#ffd700]">
-                Worth: Priceless credibility
+                Priceless credibility
               </p>
             </div>
           </div>
@@ -235,13 +235,13 @@ export default function PricingPage() {
                   <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
-                  <span className="text-sm">+5 Wax per review</span>
+                  <span className="text-sm">5 Wax per review</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
-                  <span className="text-sm">Tip reviews (50/week limit)</span>
+                  <span className="text-sm">Tip reviews</span>
                 </div>
                 <div className="flex items-center gap-3 text-[--muted]">
                   <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -259,7 +259,7 @@ export default function PricingPage() {
               </button>
             </div>
 
-            {/* Wax+ Tier - THE MAIN OFFER */}
+            {/* Wax+ Tier */}
             <div className="px-6 py-12 lg:border-r border-b lg:border-b-0 border-[--border] relative bg-white/[0.02]">
               <div className="absolute top-0 left-0 right-0 h-1 bg-white" />
               <div className="absolute -top-3 left-6 px-3 py-1 bg-white text-black text-[9px] tracking-wider uppercase font-bold">
@@ -274,7 +274,7 @@ export default function PricingPage() {
                 <span className="text-sm text-[--muted]">/mo</span>
               </div>
               <p className="text-sm text-[--muted] mb-8">
-                See what's about to trend. Never miss a Gold Spin.
+                See what others miss. Never miss a Gold Spin.
               </p>
 
               <div className="space-y-3 mb-8">
@@ -300,7 +300,7 @@ export default function PricingPage() {
                   <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
-                  <span className="text-sm">Premium tips (20 Wax)</span>
+                  <span className="text-sm">Premium tips</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -324,7 +324,7 @@ export default function PricingPage() {
                   disabled={loading === "WAX_PLUS" || currentTier === "WAX_PRO"}
                   className="w-full py-4 bg-white text-black text-[11px] tracking-[0.15em] uppercase font-bold hover:bg-[#e5e5e5] transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading === "WAX_PLUS" ? "Loading..." : currentTier === "WAX_PRO" ? "Current: Pro" : "Start Catching Trends"}
+                  {loading === "WAX_PLUS" ? "Loading..." : currentTier === "WAX_PRO" ? "Current Pro" : "Get Started"}
                 </button>
               )}
             </div>
@@ -355,7 +355,7 @@ export default function PricingPage() {
                   <svg className="w-4 h-4 text-[#ffd700] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
-                  <span className="text-sm font-medium text-[#ffd700]">GOLD tips (100 Wax)</span>
+                  <span className="text-sm font-medium text-[#ffd700]">GOLD tips</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <svg className="w-4 h-4 text-[#ffd700] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -403,32 +403,32 @@ export default function PricingPage() {
       <section className="border-b border-[--border]">
         <div className="max-w-4xl mx-auto px-6 py-16 text-center">
           <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-6">
-            The real value
+            What it means
           </p>
           <h2 className="text-2xl lg:text-3xl font-bold mb-6">
-            This isn't about Wax.<br />It's about proof.
+            This is proof.
           </h2>
           <p className="text-[--muted] mb-8 max-w-2xl mx-auto">
-            Anyone can say "I was listening to them before they blew up." 
-            Only WAXFEED gives you timestamped, verified proof that you called it.
+            Anyone can say they were listening to something before it blew up. 
+            WAXFEED gives you timestamped, verified proof that you called it.
           </p>
           <div className="grid sm:grid-cols-3 gap-6 text-left max-w-3xl mx-auto">
             <div className="p-4 border border-[--border]">
               <p className="text-sm font-medium mb-1">For DJs</p>
               <p className="text-xs text-[--muted]">
-                "My Tastemaker Score is 340. I've called 12 Gold Spins."
+                "My Tastemaker Score is 340. I have 12 Gold Spins."
               </p>
             </div>
             <div className="p-4 border border-[--border]">
               <p className="text-sm font-medium mb-1">For Writers</p>
               <p className="text-xs text-[--muted]">
-                "Check my WAXFEED—I reviewed this album 6 months before Pitchfork."
+                "I reviewed this 6 months before Pitchfork."
               </p>
             </div>
             <div className="p-4 border border-[--border]">
               <p className="text-sm font-medium mb-1">For A&R</p>
               <p className="text-xs text-[--muted]">
-                "I spotted 8 artists before they signed. Here's the proof."
+                "I spotted 8 artists before they signed."
               </p>
             </div>
           </div>
@@ -442,14 +442,13 @@ export default function PricingPage() {
             Albums are trending every day.
           </p>
           <p className="text-sm text-[--muted] mb-6">
-            Every day you're not reviewing is a potential Gold Spin you're missing.
-            The algorithm doesn't wait.
+            Every day without reviewing is a potential Gold Spin you might miss.
           </p>
           <Link
             href="/discover"
             className="inline-block px-8 py-4 bg-white text-black text-[11px] tracking-[0.15em] uppercase font-bold hover:bg-[#e5e5e5] transition"
           >
-            Start Calling Albums
+            Start Reviewing
           </Link>
         </div>
       </section>
@@ -471,15 +470,15 @@ export default function PricingPage() {
             <div>
               <p className="text-sm font-medium mb-2">Is badge earning fair?</p>
               <p className="text-sm text-[--muted]">
-                100% fair. Free users and subscribers earn badges the same way. 
+                Yes. Free users and subscribers earn badges the same way. 
                 Subscribers just have better tools to find opportunities.
               </p>
             </div>
             <div>
-              <p className="text-sm font-medium mb-2">What's Trending Radar?</p>
+              <p className="text-sm font-medium mb-2">What is Trending Radar?</p>
               <p className="text-sm text-[--muted]">
-                A feed showing albums approaching 100 reviews. Review them now, 
-                and you'll still qualify for badges when they trend.
+                A feed showing albums approaching 100 reviews. Review them now 
+                and you still qualify for badges when they trend.
               </p>
             </div>
             <div>
@@ -493,7 +492,7 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Final CTA */}
+      {/* Footer */}
       <footer className="border-t border-[--border]">
         <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-[--muted]">

@@ -52,7 +52,7 @@ export function FirstSpinWidget() {
         {/* Header */}
         <div className="p-4 border-b border-[--border]">
           <h3 className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-2">
-            Your Taste, Verified
+            Your Taste Verified
           </h3>
           <p className="text-xl font-bold">Called It First?</p>
           <p className="text-xl font-bold text-[--muted]">Prove It.</p>
@@ -61,26 +61,26 @@ export function FirstSpinWidget() {
         {/* The Hook */}
         <div className="p-4 border-b border-[--border]">
           <p className="text-sm text-[--muted] mb-4">
-            Every album you review records your position. If it trends later, you get credited.
+            Every album you review records your position. If it trends later you get credited.
           </p>
           <div className="p-3 border border-[#ffd700]/30 mb-4">
             <p className="text-sm">
               <span className="text-[#ffd700] font-bold">47 Gold Spins</span>
-              <span className="text-[--muted]"> = "I called 47 albums before anyone"</span>
+              <span className="text-[--muted]"> means you called 47 albums first</span>
             </p>
           </div>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-[#ffd700]">Gold Spin</span>
-              <span className="text-[--muted]">First 10 → +100 Wax</span>
+              <span className="text-[--muted]">First 10 reviewers</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Silver Spin</span>
-              <span className="text-[--muted]">First 50 → +50 Wax</span>
+              <span className="text-[--muted]">First 50 reviewers</span>
             </div>
             <div className="flex justify-between">
               <span className="text-amber-700">Bronze Spin</span>
-              <span className="text-[--muted]">First 100 → +25 Wax</span>
+              <span className="text-[--muted]">First 100 reviewers</span>
             </div>
           </div>
         </div>
@@ -158,7 +158,6 @@ export function FirstSpinWidget() {
       {/* Actions */}
       <div className="p-4">
         {isSubscriber ? (
-          // Subscriber: Show Radar link prominently
           <div>
             <Link
               href="/radar"
@@ -170,7 +169,7 @@ export function FirstSpinWidget() {
                 </svg>
                 <span className="text-sm font-medium">Trending Radar</span>
               </div>
-              <span className="text-xs text-[--muted]">See what's close →</span>
+              <span className="text-xs text-[--muted]">View</span>
             </Link>
             <Link
               href="/discover"
@@ -180,11 +179,10 @@ export function FirstSpinWidget() {
             </Link>
           </div>
         ) : (
-          // Free user: Upsell Radar
           <div>
             {hasAnySpins ? (
               <p className="text-xs text-[--muted] mb-3">
-                {totalSpins} badge{totalSpins !== 1 ? 's' : ''} earned. Keep building your record.
+                {totalSpins} badge{totalSpins !== 1 ? 's' : ''} earned. Keep building.
               </p>
             ) : (
               <p className="text-xs text-[--muted] mb-3">
@@ -198,7 +196,7 @@ export function FirstSpinWidget() {
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
-              Unlock Trending Radar
+              Trending Radar
             </Link>
             <Link
               href="/discover"

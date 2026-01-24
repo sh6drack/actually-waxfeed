@@ -165,7 +165,7 @@ export default function ShopPage() {
             <div>
               <p className="text-lg font-medium mb-2">Tip Reviews</p>
               <p className="text-sm text-[--muted]">
-                Award Wax to reviews you love. Standard (5), Premium (20), or GOLD (100).
+                Award Wax to reviews you love. Standard, Premium, or GOLD.
                 The reviewer earns a portion.
               </p>
             </div>
@@ -179,8 +179,8 @@ export default function ShopPage() {
             <div>
               <p className="text-lg font-medium mb-2">Social Currency</p>
               <p className="text-sm text-[--muted]">
-                Wax represents community appreciation. More Wax received = 
-                respected voice in the community.
+                Wax represents community appreciation. More Wax received means 
+                a respected voice in the community.
               </p>
             </div>
           </div>
@@ -196,10 +196,10 @@ export default function ShopPage() {
                 Prefer to Earn?
               </p>
               <p className="text-lg font-medium mb-2">
-                Review albums early. Earn badges + Wax.
+                Review albums early. Earn badges and Wax.
               </p>
               <p className="text-sm text-[--muted]">
-                First Spin badges can earn you 25-100 Wax each when albums trend.
+                First Spin badges can earn you 25 to 100 Wax each when albums trend.
               </p>
             </div>
             <Link

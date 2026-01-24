@@ -58,7 +58,7 @@ export default async function LeaderboardPage() {
             Tastemaker Leaderboard
           </h1>
           <p className="text-base text-[--muted] max-w-xl">
-            The users who've proven their taste by calling albums before they trended.
+            The users who have proven their taste by calling albums before they trended.
           </p>
         </div>
       </section>
@@ -76,7 +76,7 @@ export default async function LeaderboardPage() {
                 <div className="py-16 text-center border border-[--border]">
                   <p className="text-[--muted] mb-2">No tastemakers yet.</p>
                   <p className="text-sm text-[--muted]">
-                    Be the first to earn a First Spin badge!
+                    Be the first to earn a First Spin badge.
                   </p>
                 </div>
               ) : (
@@ -112,7 +112,7 @@ export default async function LeaderboardPage() {
                         )}
                       </div>
 
-                      {/* Name + Badges */}
+                      {/* Name and Badges */}
                       <div className="flex-1 min-w-0">
                         <p className="font-medium truncate">
                           @{user.username || 'anonymous'}
@@ -142,9 +142,10 @@ export default async function LeaderboardPage() {
             </div>
           </section>
 
-          {/* Sidebar - Recent Trending */}
+          {/* Sidebar */}
           <aside className="lg:w-80 border-t lg:border-t-0 border-[--border]">
-            <div className="px-6 py-8">
+            {/* Recently Trended */}
+            <div className="px-6 py-8 border-b border-[--border]">
               <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-6">
                 Recently Trended
               </p>
@@ -192,7 +193,7 @@ export default async function LeaderboardPage() {
             </div>
 
             {/* How Scoring Works */}
-            <div className="px-6 py-8 border-t border-[--border]">
+            <div className="px-6 py-8">
               <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-4">
                 How Scoring Works
               </p>
@@ -211,7 +212,7 @@ export default async function LeaderboardPage() {
                 </div>
               </div>
               <p className="text-xs text-[--muted] mt-4">
-                Earn badges by reviewing albums before they trend (100+ reviews).
+                Earn badges by reviewing albums before they trend.
               </p>
             </div>
           </aside>
@@ -224,7 +225,7 @@ export default async function LeaderboardPage() {
           <div>
             <p className="text-lg font-medium">Want to climb the leaderboard?</p>
             <p className="text-sm text-[--muted]">
-              Review albums early. If they trend, you get credit.
+              Review albums early. If they trend you get credit.
             </p>
           </div>
           <Link
