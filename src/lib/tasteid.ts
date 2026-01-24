@@ -1835,3 +1835,527 @@ export function compareSignatures(
     interpretation,
   }
 }
+
+// ============================================
+// POLARITY 1.2 - ENHANCED TASTE MATCHING
+// Dating-app style connection discovery
+// ============================================
+
+export type ConnectionMatchType =
+  | 'taste_twin'        // Very similar overall taste (>80% match)
+  | 'opposite_attracts' // Complementary different tastes
+  | 'network_resonance' // Strong alignment in specific networks
+  | 'explorer_guide'    // One can introduce the other to new music
+  | 'complementary'     // Different but complementary tastes
+  | 'genre_buddy'       // Shared genre preferences
+
+export interface EnhancedTasteMatch {
+  userId: string
+  username: string
+  image: string | null
+  overallScore: number           // 0-100 compatibility
+  matchType: ConnectionMatchType
+  matchStrength: number          // 0-1 algorithm confidence
+
+  // Signature comparison
+  signatureSimilarity: number    // 0-1 cosine similarity
+  networkResonance: Record<string, number>   // Which networks align
+  networkContrast: Record<string, number>    // Complementary differences
+
+  // Traditional metrics
+  genreOverlap: number
+  artistOverlap: number
+  ratingAlignment: number
+
+  // Shared elements
+  sharedGenres: string[]
+  sharedArtists: string[]
+  sharedAlbums: string[]
+
+  // Discovery potential
+  potentialIntroductions: string[]  // Genres/artists they could introduce you to
+
+  // Archetype info
+  archetype: string
+  archetypeIcon: string
+
+  // Connection context
+  connectionReason: string       // Human-readable explanation
+  compatibilityHighlights: string[]
+}
+
+/**
+ * Compute cosine similarity between two listening signatures
+ */
+export function computeSignatureSimilarity(sig1: ListeningSignature, sig2: ListeningSignature): number {
+  const networks = ['discovery', 'comfort', 'deep_dive', 'reactive', 'emotional', 'social', 'aesthetic'] as const
+
+  let dotProduct = 0
+  let norm1 = 0
+  let norm2 = 0
+
+  for (const network of networks) {
+    const v1 = sig1[network] || 0
+    const v2 = sig2[network] || 0
+    dotProduct += v1 * v2
+    norm1 += v1 * v1
+    norm2 += v2 * v2
+  }
+
+  if (norm1 === 0 || norm2 === 0) return 0
+  return dotProduct / (Math.sqrt(norm1) * Math.sqrt(norm2))
+}
+
+/**
+ * Compute network resonance - how much each network aligns between two users
+ */
+export function computeNetworkResonance(
+  sig1: ListeningSignature,
+  sig2: ListeningSignature
+): Record<string, number> {
+  const networks = ['discovery', 'comfort', 'deep_dive', 'reactive', 'emotional', 'social', 'aesthetic'] as const
+  const resonance: Record<string, number> = {}
+
+  for (const network of networks) {
+    const v1 = sig1[network] || 0
+    const v2 = sig2[network] || 0
+    // Resonance is high when both are high, low when either is low
+    resonance[network] = Math.min(v1, v2) * (1 - Math.abs(v1 - v2))
+  }
+
+  return resonance
+}
+
+/**
+ * Compute network contrast - where two users differ most
+ */
+export function computeNetworkContrast(
+  sig1: ListeningSignature,
+  sig2: ListeningSignature
+): Record<string, number> {
+  const networks = ['discovery', 'comfort', 'deep_dive', 'reactive', 'emotional', 'social', 'aesthetic'] as const
+  const contrast: Record<string, number> = {}
+
+  for (const network of networks) {
+    const v1 = sig1[network] || 0
+    const v2 = sig2[network] || 0
+    contrast[network] = v2 - v1  // Positive means user2 is higher
+  }
+
+  return contrast
+}
+
+/**
+ * Determine match type based on comprehensive analysis
+ */
+export function determineMatchType(
+  overallScore: number,
+  signatureSimilarity: number,
+  genreOverlap: number,
+  networkResonance: Record<string, number>,
+  networkContrast: Record<string, number>,
+  adventureness1: number,
+  adventureness2: number
+): ConnectionMatchType {
+  // Taste Twin: Very similar overall (>80%)
+  if (overallScore > 80 && signatureSimilarity > 0.8) {
+    return 'taste_twin'
+  }
+
+  // Check for strong network resonance in specific networks
+  const resonanceValues = Object.values(networkResonance)
+  const maxResonance = Math.max(...resonanceValues)
+  if (maxResonance > 0.15 && signatureSimilarity > 0.5) {
+    return 'network_resonance'
+  }
+
+  // Explorer Guide: One is adventurous, other is not
+  const adventurenessDiff = Math.abs(adventureness1 - adventureness2)
+  if (adventurenessDiff > 0.3) {
+    return 'explorer_guide'
+  }
+
+  // Opposite Attracts: Low similarity but potential for expansion
+  if (signatureSimilarity < 0.4 && genreOverlap < 0.3) {
+    const contrastValues = Object.values(networkContrast).map(Math.abs)
+    const maxContrast = Math.max(...contrastValues)
+    if (maxContrast > 0.2) {
+      return 'opposite_attracts'
+    }
+  }
+
+  // Complementary: Moderate differences that balance each other
+  if (signatureSimilarity >= 0.4 && signatureSimilarity < 0.7) {
+    return 'complementary'
+  }
+
+  // Genre Buddy: Shared genre preferences
+  if (genreOverlap > 0.5) {
+    return 'genre_buddy'
+  }
+
+  return 'complementary'
+}
+
+/**
+ * Generate connection reason based on match analysis
+ */
+export function generateConnectionReason(
+  matchType: ConnectionMatchType,
+  sharedGenres: string[],
+  networkResonance: Record<string, number>,
+  networkContrast: Record<string, number>
+): string {
+  const topResonanceNetwork = Object.entries(networkResonance)
+    .sort((a, b) => b[1] - a[1])[0]?.[0]
+
+  const topContrastNetwork = Object.entries(networkContrast)
+    .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0]
+
+  switch (matchType) {
+    case 'taste_twin':
+      return `You're musical twins! ${sharedGenres.length > 0 ? `Both deeply into ${sharedGenres.slice(0, 2).join(' and ')}.` : 'Remarkably similar listening patterns.'}`
+
+    case 'network_resonance':
+      return `Strong ${topResonanceNetwork?.replace('_', ' ')} energy alignment. You both engage with music in similar ways.`
+
+    case 'explorer_guide':
+      return 'One of you is a musical explorer who could introduce the other to new sounds.'
+
+    case 'opposite_attracts':
+      if (topContrastNetwork) {
+        const direction = topContrastNetwork[1] > 0 ? 'more' : 'less'
+        return `Different but fascinating. They're ${direction} ${topContrastNetwork[0].replace('_', ' ')}-driven than you.`
+      }
+      return 'Different tastes that could expand your horizons.'
+
+    case 'complementary':
+      return `Your tastes complement each other well${sharedGenres.length > 0 ? `, especially in ${sharedGenres[0]}` : ''}.`
+
+    case 'genre_buddy':
+      return `Fellow ${sharedGenres[0] || 'music'} enthusiast! Great for deep conversations about the genre.`
+
+    default:
+      return 'Interesting musical connection potential.'
+  }
+}
+
+/**
+ * Generate compatibility highlights
+ */
+export function generateCompatibilityHighlights(
+  matchType: ConnectionMatchType,
+  sharedGenres: string[],
+  sharedArtists: string[],
+  networkResonance: Record<string, number>,
+  signatureSimilarity: number
+): string[] {
+  const highlights: string[] = []
+
+  // Add shared genre highlight
+  if (sharedGenres.length > 0) {
+    highlights.push(`Both love ${sharedGenres[0]}`)
+  }
+
+  // Add shared artist highlight
+  if (sharedArtists.length > 0) {
+    highlights.push(`Shared appreciation for ${sharedArtists[0]}`)
+  }
+
+  // Add signature similarity highlight
+  if (signatureSimilarity > 0.7) {
+    highlights.push('Very similar listening patterns')
+  } else if (signatureSimilarity < 0.3) {
+    highlights.push('Fresh perspectives to share')
+  }
+
+  // Add top resonance network
+  const topResonance = Object.entries(networkResonance)
+    .sort((a, b) => b[1] - a[1])[0]
+  if (topResonance && topResonance[1] > 0.1) {
+    const networkName = topResonance[0].replace('_', ' ')
+    highlights.push(`Strong ${networkName} connection`)
+  }
+
+  // Match type specific
+  switch (matchType) {
+    case 'taste_twin':
+      highlights.push('Potential best music friend')
+      break
+    case 'opposite_attracts':
+      highlights.push('Great for discovering new music')
+      break
+    case 'explorer_guide':
+      highlights.push('Musical mentor/mentee potential')
+      break
+    case 'network_resonance':
+      highlights.push('Deep musical understanding')
+      break
+  }
+
+  return highlights.slice(0, 4)
+}
+
+/**
+ * Find potential genre/artist introductions one user could make to another
+ */
+export function findPotentialIntroductions(
+  taste1TopGenres: string[],
+  taste2TopGenres: string[],
+  taste1TopArtists: string[],
+  taste2TopArtists: string[]
+): string[] {
+  const introductions: string[] = []
+
+  // Genres taste2 has that taste1 doesn't
+  const newGenres = taste2TopGenres.filter(g => !taste1TopGenres.includes(g))
+  introductions.push(...newGenres.slice(0, 2).map(g => `${g} music`))
+
+  // Artists taste2 has that taste1 doesn't
+  const newArtists = taste2TopArtists.filter(a => !taste1TopArtists.includes(a))
+  introductions.push(...newArtists.slice(0, 2))
+
+  return introductions.slice(0, 4)
+}
+
+/**
+ * Enhanced taste match discovery - Polarity 1.2 powered
+ * Find potential connections with rich comparison data
+ */
+export async function discoverTasteConnections(
+  userId: string,
+  options: {
+    limit?: number
+    matchTypes?: ConnectionMatchType[]
+    minReviews?: number
+  } = {}
+): Promise<EnhancedTasteMatch[]> {
+  const { limit = 20, matchTypes, minReviews = 20 } = options
+
+  // Get user's TasteID
+  const userTaste = await prisma.tasteID.findUnique({
+    where: { userId },
+    include: { user: { select: { id: true } } },
+  })
+
+  if (!userTaste) return []
+
+  const userSignature = userTaste.listeningSignature as ListeningSignature | null
+  const userGenres = userTaste.genreVector as GenreVector
+
+  // Get potential matches (users with enough reviews and TasteIDs)
+  const candidates = await prisma.tasteID.findMany({
+    where: {
+      userId: { not: userId },
+      reviewCount: { gte: minReviews },
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          image: true,
+        },
+      },
+    },
+    take: 100, // Sample for performance
+  })
+
+  // Score and analyze each candidate
+  const matches: EnhancedTasteMatch[] = []
+
+  for (const candidate of candidates) {
+    if (!candidate.user.username) continue
+
+    const candSignature = candidate.listeningSignature as ListeningSignature | null
+    const candGenres = candidate.genreVector as GenreVector
+
+    // 1. Compute genre overlap
+    const genreOverlap = computeCosineSimilarity(userGenres, candGenres)
+
+    // 2. Compute artist overlap
+    const userArtists = new Set(userTaste.topArtists)
+    const candArtists = new Set(candidate.topArtists)
+    const sharedArtists = [...userArtists].filter(a => candArtists.has(a))
+    const artistOverlap = sharedArtists.length / Math.max(userArtists.size, candArtists.size, 1)
+
+    // 3. Rating alignment
+    const ratingDiff = Math.abs(userTaste.averageRating - candidate.averageRating)
+    const ratingAlignment = Math.max(0, 1 - ratingDiff / 5)
+
+    // 4. Signature-based analysis (Polarity 1.2)
+    let signatureSimilarity = 0.5  // Default if no signatures
+    let networkResonance: Record<string, number> = {}
+    let networkContrast: Record<string, number> = {}
+
+    if (userSignature && candSignature) {
+      signatureSimilarity = computeSignatureSimilarity(userSignature, candSignature)
+      networkResonance = computeNetworkResonance(userSignature, candSignature)
+      networkContrast = computeNetworkContrast(userSignature, candSignature)
+    }
+
+    // 5. Determine match type
+    const matchType = determineMatchType(
+      genreOverlap * 40 + artistOverlap * 30 + ratingAlignment * 20 + signatureSimilarity * 10,
+      signatureSimilarity,
+      genreOverlap,
+      networkResonance,
+      networkContrast,
+      userTaste.adventurenessScore,
+      candidate.adventurenessScore
+    )
+
+    // Filter by requested match types if specified
+    if (matchTypes && !matchTypes.includes(matchType)) continue
+
+    // 6. Compute overall score
+    const overallScore = Math.round(
+      genreOverlap * 35 +
+      artistOverlap * 25 +
+      ratingAlignment * 15 +
+      signatureSimilarity * 25
+    )
+
+    // 7. Match strength (algorithm confidence)
+    const matchStrength = userSignature && candSignature
+      ? 0.8 + Math.min(userTaste.reviewCount, candidate.reviewCount) / 500 * 0.2
+      : 0.5
+
+    // 8. Shared genres
+    const sharedGenres = userTaste.topGenres.filter(g => candidate.topGenres.includes(g))
+
+    // 9. Connection reason and highlights
+    const connectionReason = generateConnectionReason(matchType, sharedGenres, networkResonance, networkContrast)
+    const compatibilityHighlights = generateCompatibilityHighlights(
+      matchType, sharedGenres, sharedArtists, networkResonance, signatureSimilarity
+    )
+
+    // 10. Potential introductions
+    const potentialIntroductions = findPotentialIntroductions(
+      userTaste.topGenres, candidate.topGenres,
+      userTaste.topArtists, candidate.topArtists
+    )
+
+    // Get archetype info
+    const archetypeInfo = getArchetypeInfo(candidate.primaryArchetype)
+
+    matches.push({
+      userId: candidate.userId,
+      username: candidate.user.username,
+      image: candidate.user.image,
+      overallScore,
+      matchType,
+      matchStrength,
+      signatureSimilarity: Math.round(signatureSimilarity * 100) / 100,
+      networkResonance,
+      networkContrast,
+      genreOverlap: Math.round(genreOverlap * 100),
+      artistOverlap: Math.round(artistOverlap * 100),
+      ratingAlignment: Math.round(ratingAlignment * 100),
+      sharedGenres,
+      sharedArtists,
+      sharedAlbums: [], // Populated separately if needed
+      potentialIntroductions,
+      archetype: archetypeInfo.name,
+      archetypeIcon: archetypeInfo.icon,
+      connectionReason,
+      compatibilityHighlights,
+    })
+  }
+
+  // Sort by overall score and return top matches
+  return matches
+    .sort((a, b) => b.overallScore - a.overallScore)
+    .slice(0, limit)
+}
+
+/**
+ * Find "Opposite Attracts" connections - people with complementary different tastes
+ */
+export async function findOppositeAttracts(
+  userId: string,
+  limit: number = 10
+): Promise<EnhancedTasteMatch[]> {
+  return discoverTasteConnections(userId, {
+    limit,
+    matchTypes: ['opposite_attracts', 'complementary', 'explorer_guide'],
+  })
+}
+
+/**
+ * Find "Taste Twins" - people with very similar taste
+ */
+export async function findTasteTwins(
+  userId: string,
+  limit: number = 10
+): Promise<EnhancedTasteMatch[]> {
+  return discoverTasteConnections(userId, {
+    limit,
+    matchTypes: ['taste_twin', 'network_resonance', 'genre_buddy'],
+  })
+}
+
+/**
+ * Find "Explorer Guides" - people who can introduce you to new music
+ */
+export async function findExplorerGuides(
+  userId: string,
+  limit: number = 10
+): Promise<EnhancedTasteMatch[]> {
+  return discoverTasteConnections(userId, {
+    limit,
+    matchTypes: ['explorer_guide', 'opposite_attracts'],
+  })
+}
+
+/**
+ * Save taste match to database
+ */
+export async function saveTasteMatch(
+  user1Id: string,
+  user2Id: string,
+  match: EnhancedTasteMatch
+): Promise<void> {
+  // Sort IDs to maintain consistency (lower ID first)
+  const [sortedUser1, sortedUser2] = [user1Id, user2Id].sort()
+
+  await prisma.tasteMatch.upsert({
+    where: {
+      user1Id_user2Id: {
+        user1Id: sortedUser1,
+        user2Id: sortedUser2,
+      },
+    },
+    update: {
+      overallScore: match.overallScore,
+      genreOverlap: match.genreOverlap,
+      artistOverlap: match.artistOverlap,
+      ratingAlignment: match.ratingAlignment,
+      signatureSimilarity: match.signatureSimilarity,
+      networkResonance: match.networkResonance,
+      networkContrast: match.networkContrast,
+      matchStrength: match.matchStrength,
+      sharedGenres: match.sharedGenres,
+      sharedArtists: match.sharedArtists,
+      sharedAlbums: match.sharedAlbums,
+      matchType: match.matchType,
+      updatedAt: new Date(),
+    },
+    create: {
+      user1Id: sortedUser1,
+      user2Id: sortedUser2,
+      overallScore: match.overallScore,
+      genreOverlap: match.genreOverlap,
+      artistOverlap: match.artistOverlap,
+      ratingAlignment: match.ratingAlignment,
+      signatureSimilarity: match.signatureSimilarity,
+      networkResonance: match.networkResonance,
+      networkContrast: match.networkContrast,
+      matchStrength: match.matchStrength,
+      sharedGenres: match.sharedGenres,
+      sharedArtists: match.sharedArtists,
+      sharedAlbums: match.sharedAlbums,
+      matchType: match.matchType,
+    },
+  })
+}

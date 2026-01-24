@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { SpinWheel } from "@/components/spin-wheel"
+import { ConnectionsSection } from "@/components/connections"
 import Link from "next/link"
 
 export const dynamic = "force-dynamic"
@@ -202,6 +203,38 @@ export default async function DiscoverPage() {
             </div>
             <div className="col-span-12 lg:col-span-11 py-12 lg:py-20 px-6 lg:px-12">
               <SpinWheel userId={session?.user?.id} userReviewCount={userReviewCount} />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Taste Connections - Polarity 1.2 Powered */}
+      <section className="border-b border-[--border]">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-12 border-l border-r border-[--border]">
+            <div className="col-span-12 lg:col-span-1 border-r border-[--border] py-8 flex lg:flex-col items-center lg:items-start justify-between lg:justify-start gap-4">
+              <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted] lg:writing-mode-vertical lg:rotate-180" style={{ writingMode: 'vertical-rl' as const }}>
+                Connect
+              </span>
+              <span className="text-4xl lg:text-6xl font-bold text-[--border]">{getSectionNum()}</span>
+            </div>
+            <div className="col-span-12 lg:col-span-11 py-10 lg:py-14 px-6 lg:px-12">
+              <div className="flex items-baseline justify-between mb-8">
+                <div>
+                  <h2 className="text-2xl lg:text-3xl font-bold tracking-tight mb-2">Taste Connections</h2>
+                  <p className="text-[11px] tracking-[0.15em] uppercase text-[--muted]">
+                    Polarity-powered music community
+                  </p>
+                </div>
+                <Link
+                  href="/discover/connections"
+                  className="text-[10px] tracking-[0.15em] uppercase text-[--muted] hover:text-white transition-colors hidden sm:block"
+                >
+                  View All →
+                </Link>
+              </div>
+
+              <ConnectionsSection userId={session?.user?.id} />
             </div>
           </div>
         </div>

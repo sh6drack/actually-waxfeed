@@ -804,13 +804,24 @@ model TasteMatch {
   artistOverlap   Float    // Shared artist preferences
   ratingAlignment Float    // How similarly they rate albums
 
+  // Polarity 1.2 - Network-based matching
+  signatureSimilarity Float?    // Listening signature cosine similarity (0-1)
+  networkResonance    Json?     // { network: strength } - which networks align
+  networkContrast     Json?     // { network: diff } - complementary differences
+  matchStrength       Float?    // Combined algorithm confidence (0-1)
+
   // Shared elements for display
   sharedGenres    String[]
   sharedArtists   String[]
   sharedAlbums    String[] // Album IDs both rated highly
 
-  // Relationship descriptor
-  matchType       String   // "taste_twin" | "complementary" | "explorer_guide" | "genre_buddy"
+  // Relationship descriptor - enhanced with Polarity types
+  matchType       String   // "taste_twin" | "opposite_attracts" | "network_resonance" | "explorer_guide" | "complementary" | "genre_buddy"
+
+  // Connection status
+  status          String   @default("potential") // "potential" | "connected" | "dismissed"
+  connectedAt     DateTime?
+  lastInteraction DateTime?
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -823,4 +834,142 @@ model TasteMatch {
   @@index([user2Id])
   @@index([overallScore])
   @@index([matchType])
+  @@index([status])
+  @@index([matchStrength])
+}
+
+// ============================================
+// TASTE CHALLENGES - Gamified taste exploration
+// ============================================
+
+model TasteChallenge {
+  id              String   @id @default(cuid())
+  creatorId       String
+  partnerId       String
+
+  // Challenge details
+  challengeType   String   // "discover_together" | "rate_same_album" | "genre_swap" | "decade_dive"
+  targetAlbumId   String?  // For rate_same_album challenges
+  targetGenre     String?  // For genre_swap challenges
+  targetDecade    String?  // For decade_dive challenges
+  title           String?  // Custom challenge title
+
+  // Progress tracking
+  status          String   @default("pending") // "pending" | "active" | "completed" | "expired"
+  creatorProgress Json?    // { albumsRated: [], score: number }
+  partnerProgress Json?    // { albumsRated: [], score: number }
+
+  // Results
+  winnerId        String?
+  completedAt     DateTime?
+  expiresAt       DateTime
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([creatorId])
+  @@index([partnerId])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+// ============================================
+// SHARED LISTENING - Real-time music sessions
+// ============================================
+
+model SharedListeningSession {
+  id              String   @id @default(cuid())
+  hostId          String
+  guestId         String?  // null if open invite
+
+  // Session details
+  title           String?
+  currentAlbumId  String?  // Album currently being listened to
+  currentTrackIndex Int    @default(0)
+  isPlaying       Boolean  @default(false)
+  playbackPosition Int     @default(0) // in seconds
+
+  // Session state
+  status          String   @default("waiting") // "waiting" | "active" | "paused" | "ended"
+  inviteCode      String   @unique // For sharing invite links
+
+  // Chat within session
+  messages        SharedListeningMessage[]
+
+  // Timestamps
+  startedAt       DateTime?
+  endedAt         DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([hostId])
+  @@index([guestId])
+  @@index([status])
+  @@index([inviteCode])
+}
+
+model SharedListeningMessage {
+  id        String   @id @default(cuid())
+  sessionId String
+  userId    String
+  content   String   @db.VarChar(500)
+  type      String   @default("text") // "text" | "reaction" | "album_suggestion"
+  metadata  Json?    // For album suggestions: { albumId, albumTitle, etc }
+
+  createdAt DateTime @default(now())
+
+  session   SharedListeningSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ============================================
+// DIRECT MESSAGES - Connection chat
+// ============================================
+
+model Conversation {
+  id           String   @id @default(cuid())
+  participant1Id String
+  participant2Id String
+
+  // Last message preview
+  lastMessageAt   DateTime?
+  lastMessageText String?  @db.VarChar(100)
+
+  // Unread counts
+  participant1Unread Int @default(0)
+  participant2Unread Int @default(0)
+
+  messages     DirectMessage[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([participant1Id, participant2Id])
+  @@index([participant1Id])
+  @@index([participant2Id])
+  @@index([lastMessageAt])
+}
+
+model DirectMessage {
+  id             String   @id @default(cuid())
+  conversationId String
+  senderId       String
+  content        String   @db.Text
+  type           String   @default("text") // "text" | "album_share" | "challenge_invite" | "session_invite"
+  metadata       Json?    // For shared content: { albumId, challengeId, sessionId, etc }
+
+  isRead         Boolean  @default(false)
+  readAt         DateTime?
+
+  createdAt      DateTime @default(now())
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt])
+  @@index([isRead])
 }
