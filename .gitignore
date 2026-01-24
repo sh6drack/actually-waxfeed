@@ -49,3 +49,4 @@ note.md
 client_secret*.json
 *.pem
 credentials*.json
+.env*.local

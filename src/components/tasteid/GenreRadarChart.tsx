@@ -27,7 +27,7 @@ export function GenreRadarChart({
   if (numPoints < 3) {
     return (
       <div
-        className={`flex items-center justify-center text-neutral-500 ${className}`}
+        className={`flex items-center justify-center text-muted-foreground ${className}`}
         style={{ width: size, height: size }}
       >
         Not enough data
@@ -80,7 +80,7 @@ export function GenreRadarChart({
             key={i}
             points={points}
             fill="none"
-            stroke="#333"
+            className="stroke-border"
             strokeWidth="1"
             strokeDasharray={i < 3 ? "2,2" : "none"}
           />
@@ -88,7 +88,7 @@ export function GenreRadarChart({
 
         {/* Axis lines */}
         {axisLines.map((d, i) => (
-          <path key={i} d={d} stroke="#333" strokeWidth="1" />
+          <path key={i} d={d} className="stroke-border" strokeWidth="1" />
         ))}
 
         {/* Data polygon */}
@@ -120,7 +120,7 @@ export function GenreRadarChart({
                 y={p.labelY}
                 textAnchor={textAnchor}
                 dominantBaseline="middle"
-                className="text-[10px] fill-neutral-400 uppercase tracking-wider"
+                className="text-[10px] fill-foreground uppercase tracking-wider"
               >
                 {formatGenreLabel(p.genre)}
               </text>
@@ -147,7 +147,7 @@ function formatGenreLabel(genre: string): string {
 export function GenreRadarChartSkeleton({ size = 200 }: { size?: number }) {
   return (
     <div
-      className="bg-neutral-900 animate-pulse"
+      className="bg-muted animate-pulse"
       style={{ width: size, height: size }}
     />
   )

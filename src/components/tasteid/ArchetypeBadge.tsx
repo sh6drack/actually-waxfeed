@@ -46,13 +46,13 @@ export function ArchetypeBadge({
         <span className={iconSizes[size]}>{icon}</span>
         <span>{name}</span>
         {confidence !== undefined && confidence > 0 && (
-          <span className="text-neutral-400 font-normal text-[0.7em]">
+          <span className="text-white/60 font-normal text-[0.7em]">
             {Math.round(confidence * 100)}%
           </span>
         )}
       </div>
       {showDescription && description && (
-        <span className="text-xs text-neutral-500 mt-1">{description}</span>
+        <span className="text-xs text-muted-foreground mt-1">{description}</span>
       )}
     </div>
   )
@@ -69,8 +69,8 @@ export function ArchetypeBadgeSkeleton({ size = "md" }: { size?: "sm" | "md" | "
     <div
       className={`
         ${sizeClasses[size]}
-        bg-neutral-800 animate-pulse
-        border-2 border-neutral-700
+        bg-muted animate-pulse
+        border-2 border-border
       `}
     />
   )

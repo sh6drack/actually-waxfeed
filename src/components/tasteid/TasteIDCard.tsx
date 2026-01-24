@@ -47,11 +47,11 @@ export function TasteIDCard({
   linkToFull = true,
 }: TasteIDCardProps) {
   const content = (
-    <div className="border-2 border-white bg-black p-4 space-y-4">
+    <div className="border-2 border-foreground bg-background p-4 space-y-4">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-2">
-          <div className="text-[10px] uppercase tracking-widest text-neutral-500 font-bold">
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
             TASTEID
           </div>
           <ArchetypeBadge {...archetype} size="md" />
@@ -68,14 +68,14 @@ export function TasteIDCard({
 
       {/* Top Genres */}
       <div className="space-y-1">
-        <div className="text-[10px] uppercase tracking-widest text-neutral-500 font-bold">
+        <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
           TOP GENRES
         </div>
         <div className="flex flex-wrap gap-1">
           {topGenres.slice(0, 5).map((genre) => (
             <span
               key={genre}
-              className="px-2 py-0.5 text-xs border border-neutral-700 text-neutral-300 uppercase"
+              className="px-2 py-0.5 text-xs border border-border text-foreground/80 uppercase"
             >
               {genre}
             </span>
@@ -86,17 +86,17 @@ export function TasteIDCard({
       {/* Top Artists */}
       {!compact && (
         <div className="space-y-1">
-          <div className="text-[10px] uppercase tracking-widest text-neutral-500 font-bold">
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
             DEFINING ARTISTS
           </div>
-          <div className="text-sm text-neutral-400">
+          <div className="text-sm text-muted-foreground">
             {topArtists.slice(0, 5).join(" · ")}
           </div>
         </div>
       )}
 
       {/* Metrics */}
-      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-neutral-800">
+      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border">
         <MetricBlock label="ADVENTURENESS" value={`${Math.round(adventurenessScore * 100)}%`} />
         <MetricBlock label="POLARITY" value={polarityScore.toFixed(2)} />
         <MetricBlock label="RATING STYLE" value={ratingSkew.toUpperCase()} />
@@ -104,12 +104,12 @@ export function TasteIDCard({
       </div>
 
       {/* Footer */}
-      <div className="pt-2 border-t border-neutral-800 flex justify-between items-center">
-        <span className="text-[10px] text-neutral-500 uppercase tracking-wider">
+      <div className="pt-2 border-t border-border flex justify-between items-center">
+        <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
           {reviewCount} reviews analyzed
         </span>
         {linkToFull && (
-          <span className="text-xs text-white font-bold uppercase tracking-wider hover:underline">
+          <span className="text-xs text-foreground font-bold uppercase tracking-wider hover:underline">
             VIEW FULL →
           </span>
         )}
@@ -131,29 +131,29 @@ export function TasteIDCard({
 function MetricBlock({ label, value }: { label: string; value: string }) {
   return (
     <div className="space-y-0.5">
-      <div className="text-[9px] uppercase tracking-widest text-neutral-600 font-bold">
+      <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-bold">
         {label}
       </div>
-      <div className="text-sm font-bold text-white">{value}</div>
+      <div className="text-sm font-bold text-foreground">{value}</div>
     </div>
   )
 }
 
 export function TasteIDCardSkeleton({ compact = false }: { compact?: boolean }) {
   return (
-    <div className="border-2 border-neutral-800 bg-black p-4 space-y-4 animate-pulse">
-      <div className="h-8 w-32 bg-neutral-800" />
+    <div className="border-2 border-border bg-background p-4 space-y-4 animate-pulse">
+      <div className="h-8 w-32 bg-muted" />
       <div className="flex gap-1">
-        <div className="h-6 w-16 bg-neutral-800" />
-        <div className="h-6 w-16 bg-neutral-800" />
-        <div className="h-6 w-16 bg-neutral-800" />
+        <div className="h-6 w-16 bg-muted" />
+        <div className="h-6 w-16 bg-muted" />
+        <div className="h-6 w-16 bg-muted" />
       </div>
-      {!compact && <div className="h-4 w-full bg-neutral-800" />}
-      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-neutral-800">
-        <div className="h-8 bg-neutral-800" />
-        <div className="h-8 bg-neutral-800" />
-        <div className="h-8 bg-neutral-800" />
-        <div className="h-8 bg-neutral-800" />
+      {!compact && <div className="h-4 w-full bg-muted" />}
+      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border">
+        <div className="h-8 bg-muted" />
+        <div className="h-8 bg-muted" />
+        <div className="h-8 bg-muted" />
+        <div className="h-8 bg-muted" />
       </div>
     </div>
   )

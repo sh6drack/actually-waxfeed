@@ -28,13 +28,13 @@ export function ArtistDNAStrip({
                          transition-colors hover:bg-white hover:text-black
                          min-h-[44px] flex items-center"
             >
-              <span className="text-neutral-500 mr-2 text-xs">{i + 1}</span>
+              <span className="text-white/50 mr-2 text-xs">{i + 1}</span>
               {artist}
             </div>
           </div>
         ))}
         {remaining > 0 && (
-          <div className="flex-shrink-0 px-3 py-2.5 sm:py-2 text-sm text-neutral-500 min-h-[44px] flex items-center">
+          <div className="flex-shrink-0 px-3 py-2.5 sm:py-2 text-sm text-muted-foreground min-h-[44px] flex items-center">
             +{remaining} more
           </div>
         )}
@@ -47,7 +47,7 @@ export function ArtistDNAStripSkeleton() {
   return (
     <div className="flex gap-3 overflow-hidden animate-pulse">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="h-10 w-32 bg-neutral-800 flex-shrink-0" />
+        <div key={i} className="h-10 w-32 bg-muted flex-shrink-0" />
       ))}
     </div>
   )
