@@ -1,0 +1,26 @@
+project:
+  name: "waxfeed"
+  language: "TypeScript"
+  framework: "Next.js 15"
+
+commands:
+  test: "npm test"
+  lint: "npm run lint"
+  build: "npm run build"
+  dev: "npm run dev"
+
+rules:
+  - "Use server actions and API routes in /app/api"
+  - "Use Prisma for all database operations"
+  - "Follow existing patterns in the codebase"
+  - "Use the successResponse and errorResponse helpers from @/lib/api-utils"
+  - "Use Tailwind CSS with inline styles for CSS variables"
+  - "Avoid adding unnecessary dependencies"
+  - "Keep components in /components, pages in /app"
+
+boundaries:
+  never_touch:
+    - "prisma/migrations/**"
+    - "*.lock"
+    - ".env*"
+    - "node_modules/**"

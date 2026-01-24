@@ -742,6 +742,14 @@ model TasteID {
   // Polarity Points - Bayesian edge strength from CCX
   polarityScore       Float    @default(0) // Overall taste distinctiveness
 
+  // Polarity 1.2 - Cognitive modeling for music
+  listeningSignature  Json?    // { "discovery": 0.35, "comfort": 0.22, ... } - Music network activation baseline
+  signaturePatterns   String[] // Detected patterns: ["Discovery↔Comfort Oscillation", "Deep Dive Sprints"]
+  memorableMoments    Json?    // Episodic memory: notable rating moments (first 10, first 0, etc.)
+  futureSelvesMusic   Json?    // Prospective musical trajectories and skill trees
+  consolidationHistory Json?   // How taste has consolidated over time
+  polarityScore2      Float?   // Enhanced Polarity 1.2 score with cognitive factors
+
   // Timestamps
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt

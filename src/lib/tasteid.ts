@@ -1,12 +1,119 @@
 /**
  * TASTEID - Music Taste Fingerprint System
+ * POLARITY 1.2 - Cognitive Modeling for Music
  *
  * Core algorithm for computing persistent taste profiles.
  * Connects WaxFeed to Polarity's CCX (Conversational Connectomics) research.
  * Taste graphs ARE knowledge graphs.
+ *
+ * Polarity 1.2 adds:
+ * - Music Networks (like Yeo 7-Networks) - HOW you engage with music
+ * - Listening Signature (like BrainID) - Your characteristic patterns
+ * - Memory Architecture - Consolidation of taste over time
+ * - Future Selves - Where your musical taste is heading
  */
 
 import { prisma } from '@/lib/prisma'
+
+// ============================================
+// POLARITY 1.2 - MUSIC NETWORKS
+// ============================================
+
+/**
+ * Music Networks - Analogous to Yeo 7-Network cognitive model
+ * Each network represents a different mode of musical engagement
+ */
+export const MUSIC_NETWORKS = {
+  DISCOVERY: {
+    id: 'discovery',
+    name: 'Discovery Mode',
+    description: 'Active exploration, seeking new music',
+    yeoAnalog: 'FP (Frontoparietal)',
+    icon: '🔍',
+  },
+  COMFORT: {
+    id: 'comfort',
+    name: 'Comfort Mode',
+    description: 'Returning to favorites, nostalgia',
+    yeoAnalog: 'DMN (Default Mode)',
+    icon: '🏠',
+  },
+  DEEP_DIVE: {
+    id: 'deep_dive',
+    name: 'Deep Dive Mode',
+    description: 'Focused artist/genre exploration',
+    yeoAnalog: 'DA (Dorsal Attention)',
+    icon: '🎯',
+  },
+  REACTIVE: {
+    id: 'reactive',
+    name: 'Reactive Mode',
+    description: 'Responding to trends, recommendations',
+    yeoAnalog: 'VA (Ventral Attention)',
+    icon: '📡',
+  },
+  EMOTIONAL: {
+    id: 'emotional',
+    name: 'Emotional Mode',
+    description: 'Strong ratings, visceral reactions',
+    yeoAnalog: 'LIM (Limbic)',
+    icon: '💜',
+  },
+  SOCIAL: {
+    id: 'social',
+    name: 'Social Mode',
+    description: 'Friend activity, community engagement',
+    yeoAnalog: 'SMN (Somatomotor)',
+    icon: '👥',
+  },
+  AESTHETIC: {
+    id: 'aesthetic',
+    name: 'Aesthetic Mode',
+    description: 'Album art attraction, visual discovery',
+    yeoAnalog: 'VIS (Visual)',
+    icon: '🎨',
+  },
+} as const
+
+export type MusicNetworkId = keyof typeof MUSIC_NETWORKS
+
+export interface ListeningSignature {
+  discovery: number    // 0-1 activation
+  comfort: number
+  deep_dive: number
+  reactive: number
+  emotional: number
+  social: number
+  aesthetic: number
+}
+
+export interface SignaturePattern {
+  id: string
+  name: string
+  description: string
+  networks: string[]  // Networks involved in the pattern
+  strength: number    // 0-1 how strongly detected
+}
+
+export interface MemorableMoment {
+  type: 'first_10' | 'first_0' | 'genre_discovery' | 'artist_revelation' | 'emotional_review'
+  albumId: string
+  albumTitle: string
+  artistName: string
+  rating?: number
+  date: Date
+  description?: string
+}
+
+export interface MusicalFutureSelf {
+  id: string
+  name: string
+  description: string
+  progress: number    // 0-1 how far along the path
+  nextSteps: string[]
+  relatedGenres: string[]
+  relatedArtists: string[]
+}
 
 // ============================================
 // ARCHETYPES
@@ -207,6 +314,13 @@ export interface TasteIDComputation {
   topArtists: string[]
   signatureAlbums: string[]
   polarityScore: number
+
+  // Polarity 1.2 fields
+  listeningSignature: ListeningSignature
+  signaturePatterns: string[]
+  memorableMoments: MemorableMoment[]
+  futureSelvesMusic: MusicalFutureSelf[]
+  polarityScore2: number
 }
 
 interface ReviewWithAlbum {
@@ -310,6 +424,25 @@ export async function computeTasteID(userId: string): Promise<TasteIDComputation
   // 10. Compute Polarity Score (Bayesian edge strength)
   const polarityScore = computePolarityScore(reviews, genreVector, adventurenessScore)
 
+  // ============================================
+  // POLARITY 1.2 COMPUTATIONS
+  // ============================================
+
+  // 11. Compute Listening Signature (like BrainID)
+  const listeningSignature = computeListeningSignature(reviews)
+
+  // 12. Detect Signature Patterns
+  const signaturePatterns = detectSignaturePatterns(reviews, listeningSignature)
+
+  // 13. Extract Memorable Moments (Episodic Memory)
+  const memorableMoments = extractMemorableMoments(reviews)
+
+  // 14. Detect Musical Future Selves (Prospective Memory)
+  const futureSelvesMusic = detectMusicalFutureSselves(reviews, genreVector)
+
+  // 15. Compute Polarity Score 2.0 (Enhanced with cognitive factors)
+  const polarityScore2 = computePolarityScore2(reviews, listeningSignature, signaturePatterns, polarityScore)
+
   return {
     genreVector,
     artistDNA,
@@ -328,6 +461,13 @@ export async function computeTasteID(userId: string): Promise<TasteIDComputation
     topArtists,
     signatureAlbums,
     polarityScore,
+
+    // Polarity 1.2
+    listeningSignature,
+    signaturePatterns,
+    memorableMoments,
+    futureSelvesMusic,
+    polarityScore2,
   }
 }
 
@@ -602,6 +742,309 @@ function computePolarityScore(
 }
 
 // ============================================
+// POLARITY 1.2 - LISTENING SIGNATURE COMPUTATION
+// ============================================
+
+/**
+ * Compute Listening Signature - Music network activation baseline
+ * Analogous to BrainID cognitive fingerprint
+ */
+function computeListeningSignature(reviews: ReviewWithAlbum[]): ListeningSignature {
+  const now = new Date()
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+  const recentReviews = reviews.filter(r => r.createdAt > thirtyDaysAgo)
+
+  // Discovery Mode: New artists, diverse genres
+  const uniqueArtists = new Set(reviews.map(r => r.album.artistName))
+  const uniqueGenres = new Set(reviews.flatMap(r => r.album.genres))
+  const discoveryScore = Math.min(
+    (uniqueArtists.size / Math.max(reviews.length, 1)) * 0.5 +
+    (uniqueGenres.size / Math.max(reviews.length * 2, 1)) * 0.5,
+    1
+  )
+
+  // Comfort Mode: Re-ratings, same-artist clusters, older music
+  const artistCounts: Record<string, number> = {}
+  reviews.forEach(r => {
+    artistCounts[r.album.artistName] = (artistCounts[r.album.artistName] || 0) + 1
+  })
+  const repeatArtistRatio = Object.values(artistCounts).filter(c => c > 1).length / Math.max(uniqueArtists.size, 1)
+  const comfortScore = Math.min(repeatArtistRatio * 1.5 + 0.1, 1)
+
+  // Deep Dive Mode: Multiple albums from same artist in sequence
+  let deepDiveScore = 0
+  const sortedByDate = [...reviews].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+  for (let i = 1; i < sortedByDate.length; i++) {
+    if (sortedByDate[i].album.artistName === sortedByDate[i-1].album.artistName) {
+      deepDiveScore += 0.1
+    }
+  }
+  deepDiveScore = Math.min(deepDiveScore / Math.max(reviews.length / 10, 1), 1)
+
+  // Reactive Mode: Recent release engagement, quick ratings
+  const currentYear = now.getFullYear()
+  const recentReleases = reviews.filter(r => {
+    const releaseYear = new Date(r.album.releaseDate).getFullYear()
+    return releaseYear >= currentYear - 1
+  })
+  const reactiveScore = Math.min(recentReleases.length / Math.max(reviews.length, 1) * 2, 1)
+
+  // Emotional Mode: Rating extremes (0-2, 8-10), long emotional reviews
+  const extremeRatings = reviews.filter(r => r.rating <= 2 || r.rating >= 8)
+  const emotionalReviews = reviews.filter(r => r.text && r.text.length > 100 && /[!?]{2,}|love|hate|amazing|terrible/i.test(r.text))
+  const emotionalScore = Math.min(
+    (extremeRatings.length / Math.max(reviews.length, 1)) * 0.6 +
+    (emotionalReviews.length / Math.max(reviews.length, 1)) * 0.4,
+    1
+  )
+
+  // Social Mode: This would require friend activity data, estimate from recent activity patterns
+  // For now, base on engagement frequency
+  const socialScore = Math.min(recentReviews.length / 10, 1) * 0.3
+
+  // Aesthetic Mode: Would require vinyl/physical media tracking, estimate from genre diversity
+  const aestheticScore = Math.min(uniqueGenres.size / 20, 1) * 0.3
+
+  // Normalize to ensure they sum to ~1 for relative comparison
+  const total = discoveryScore + comfortScore + deepDiveScore + reactiveScore + emotionalScore + socialScore + aestheticScore
+  const normalizer = total > 0 ? 1 / total : 1
+
+  return {
+    discovery: Math.round(discoveryScore * normalizer * 100) / 100,
+    comfort: Math.round(comfortScore * normalizer * 100) / 100,
+    deep_dive: Math.round(deepDiveScore * normalizer * 100) / 100,
+    reactive: Math.round(reactiveScore * normalizer * 100) / 100,
+    emotional: Math.round(emotionalScore * normalizer * 100) / 100,
+    social: Math.round(socialScore * normalizer * 100) / 100,
+    aesthetic: Math.round(aestheticScore * normalizer * 100) / 100,
+  }
+}
+
+/**
+ * Detect signature patterns from listening behavior
+ */
+function detectSignaturePatterns(
+  reviews: ReviewWithAlbum[],
+  signature: ListeningSignature
+): string[] {
+  const patterns: string[] = []
+
+  // Discovery↔Comfort Oscillation
+  if (signature.discovery > 0.2 && signature.comfort > 0.15) {
+    patterns.push('Discovery↔Comfort Oscillation')
+  }
+
+  // Deep Dive Sprints
+  if (signature.deep_dive > 0.15) {
+    patterns.push('Deep Dive Sprints')
+  }
+
+  // Reactive Spikes (engages heavily with new releases)
+  if (signature.reactive > 0.2) {
+    patterns.push('New Release Hunter')
+  }
+
+  // Emotional Clusters
+  if (signature.emotional > 0.25) {
+    patterns.push('Emotional Listener')
+  }
+
+  // Harsh Critic pattern
+  const ratings = reviews.map(r => r.rating)
+  const avgRating = ratings.reduce((a, b) => a + b, 0) / Math.max(ratings.length, 1)
+  if (avgRating < 5.5) {
+    patterns.push('Critical Ear')
+  } else if (avgRating > 7.5) {
+    patterns.push('Music Optimist')
+  }
+
+  // Completionist (deep dives into discographies)
+  const artistCounts: Record<string, number> = {}
+  reviews.forEach(r => {
+    artistCounts[r.album.artistName] = (artistCounts[r.album.artistName] || 0) + 1
+  })
+  const maxArtistAlbums = Math.max(...Object.values(artistCounts), 0)
+  if (maxArtistAlbums >= 5) {
+    patterns.push('Discography Completionist')
+  }
+
+  // Genre Explorer
+  const uniqueGenres = new Set(reviews.flatMap(r => r.album.genres))
+  if (uniqueGenres.size > 15) {
+    patterns.push('Genre Explorer')
+  }
+
+  return patterns
+}
+
+/**
+ * Extract memorable moments from review history
+ */
+function extractMemorableMoments(reviews: ReviewWithAlbum[]): MemorableMoment[] {
+  const moments: MemorableMoment[] = []
+  const sortedByDate = [...reviews].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+
+  // First 10 rating
+  const first10 = sortedByDate.find(r => r.rating === 10)
+  if (first10) {
+    moments.push({
+      type: 'first_10',
+      albumId: first10.album.id,
+      albumTitle: first10.album.title,
+      artistName: first10.album.artistName,
+      rating: 10,
+      date: first10.createdAt,
+      description: 'First perfect score',
+    })
+  }
+
+  // First 0 rating
+  const first0 = sortedByDate.find(r => r.rating === 0)
+  if (first0) {
+    moments.push({
+      type: 'first_0',
+      albumId: first0.album.id,
+      albumTitle: first0.album.title,
+      artistName: first0.album.artistName,
+      rating: 0,
+      date: first0.createdAt,
+      description: 'First zero - memorable for a reason',
+    })
+  }
+
+  // Emotional reviews (long, passionate reviews)
+  const emotionalReviews = reviews
+    .filter(r => r.text && r.text.length > 200)
+    .sort((a, b) => (b.text?.length || 0) - (a.text?.length || 0))
+    .slice(0, 3)
+
+  emotionalReviews.forEach(r => {
+    moments.push({
+      type: 'emotional_review',
+      albumId: r.album.id,
+      albumTitle: r.album.title,
+      artistName: r.album.artistName,
+      rating: r.rating,
+      date: r.createdAt,
+      description: 'Deeply felt review',
+    })
+  })
+
+  return moments.slice(0, 10) // Limit to 10 memorable moments
+}
+
+/**
+ * Detect potential musical future selves
+ */
+function detectMusicalFutureSselves(
+  reviews: ReviewWithAlbum[],
+  genreVector: GenreVector
+): MusicalFutureSelf[] {
+  const futures: MusicalFutureSelf[] = []
+
+  // Get genre trends (what genres are they exploring?)
+  const genreEntries = Object.entries(genreVector).sort((a, b) => b[1] - a[1])
+  const topGenres = genreEntries.slice(0, 5).map(([g]) => g)
+  const emergingGenres = genreEntries.slice(5, 10).filter(([, v]) => v > 0.2).map(([g]) => g)
+
+  // Jazz Connoisseur path
+  const jazzGenres = ['jazz', 'jazz fusion', 'bebop', 'modal jazz', 'free jazz']
+  const jazzScore = jazzGenres.reduce((sum, g) => sum + (genreVector[g] || 0), 0)
+  if (jazzScore > 0.3) {
+    futures.push({
+      id: 'jazz-connoisseur',
+      name: 'Jazz Connoisseur',
+      description: 'Deep appreciation for improvisation and complexity',
+      progress: Math.min(jazzScore / 2, 1),
+      nextSteps: ['Explore bebop classics', 'Discover modal jazz', 'Try free jazz'],
+      relatedGenres: jazzGenres,
+      relatedArtists: ['Miles Davis', 'John Coltrane', 'Thelonious Monk'],
+    })
+  }
+
+  // Hip-Hop Historian
+  const hiphopGenres = ['hip-hop', 'rap', 'southern hip hop', 'east coast hip hop', 'west coast hip hop']
+  const hiphopScore = hiphopGenres.reduce((sum, g) => sum + (genreVector[g] || 0), 0)
+  if (hiphopScore > 0.3) {
+    futures.push({
+      id: 'hip-hop-historian',
+      name: 'Hip-Hop Historian',
+      description: 'Master of hip-hop\'s evolution and subgenres',
+      progress: Math.min(hiphopScore / 2, 1),
+      nextSteps: ['Trace regional styles', 'Explore underground scenes', 'Study production evolution'],
+      relatedGenres: hiphopGenres,
+      relatedArtists: ['Kendrick Lamar', 'OutKast', 'Wu-Tang Clan'],
+    })
+  }
+
+  // Electronic Explorer
+  const electronicGenres = ['electronic', 'house', 'techno', 'ambient', 'drum and bass']
+  const electronicScore = electronicGenres.reduce((sum, g) => sum + (genreVector[g] || 0), 0)
+  if (electronicScore > 0.3) {
+    futures.push({
+      id: 'electronic-explorer',
+      name: 'Electronic Explorer',
+      description: 'Navigator of electronic music\'s vast landscape',
+      progress: Math.min(electronicScore / 2, 1),
+      nextSteps: ['Discover classic house', 'Explore Detroit techno', 'Try ambient'],
+      relatedGenres: electronicGenres,
+      relatedArtists: ['Aphex Twin', 'Boards of Canada', 'Daft Punk'],
+    })
+  }
+
+  // Genre Bridge Builder (high adventureness)
+  const uniqueGenreCount = Object.keys(genreVector).length
+  if (uniqueGenreCount > 10) {
+    futures.push({
+      id: 'genre-bridge-builder',
+      name: 'Genre Bridge Builder',
+      description: 'Connecting disparate sounds into a unified taste map',
+      progress: Math.min(uniqueGenreCount / 30, 1),
+      nextSteps: ['Find cross-genre artists', 'Create genre playlists', 'Map your taste universe'],
+      relatedGenres: emergingGenres,
+      relatedArtists: [],
+    })
+  }
+
+  return futures.slice(0, 4) // Limit to 4 future selves
+}
+
+/**
+ * Compute Polarity Score 2.0 - Enhanced with cognitive factors
+ */
+function computePolarityScore2(
+  reviews: ReviewWithAlbum[],
+  signature: ListeningSignature,
+  patterns: string[],
+  polarityScore1: number
+): number {
+  // Original factors (from polarityScore1)
+  const baseFactor = polarityScore1 * 0.4
+
+  // Signature strength - how clear/distinct is the listening signature?
+  const signatureValues = Object.values(signature)
+  const maxSignature = Math.max(...signatureValues)
+  const signatureStrength = maxSignature > 0.3 ? 0.8 : maxSignature > 0.2 ? 0.6 : 0.4
+  const signatureFactor = signatureStrength * 0.2
+
+  // Pattern consistency - how many detectable patterns?
+  const patternFactor = Math.min(patterns.length / 5, 1) * 0.15
+
+  // Engagement consistency - regular activity over time
+  const reviewDates = reviews.map(r => r.createdAt.getTime())
+  const timeSpan = Math.max(...reviewDates) - Math.min(...reviewDates)
+  const daysCovered = timeSpan / (1000 * 60 * 60 * 24)
+  const activityDensity = reviews.length / Math.max(daysCovered / 7, 1) // Reviews per week
+  const consistencyFactor = Math.min(activityDensity / 5, 1) * 0.15
+
+  // Future clarity - how clear are musical trajectories?
+  const futureFactor = 0.1 // Base value, adjusted by future selves detection
+
+  const score = baseFactor + signatureFactor + patternFactor + consistencyFactor + futureFactor
+  return Math.round(score * 100) / 100
+}
+
+// ============================================
 // MATCHING ENGINE
 // ============================================
 
@@ -801,6 +1244,12 @@ export async function saveTasteID(userId: string, computation: TasteIDComputatio
       topArtists: computation.topArtists,
       signatureAlbums: computation.signatureAlbums,
       polarityScore: computation.polarityScore,
+      // Polarity 1.2 fields
+      listeningSignature: computation.listeningSignature as object,
+      signaturePatterns: computation.signaturePatterns,
+      memorableMoments: computation.memorableMoments as unknown as object,
+      futureSelvesMusic: computation.futureSelvesMusic as unknown as object,
+      polarityScore2: computation.polarityScore2,
     },
     update: {
       genreVector: computation.genreVector as object,
@@ -820,6 +1269,12 @@ export async function saveTasteID(userId: string, computation: TasteIDComputatio
       topArtists: computation.topArtists,
       signatureAlbums: computation.signatureAlbums,
       polarityScore: computation.polarityScore,
+      // Polarity 1.2 fields
+      listeningSignature: computation.listeningSignature as object,
+      signaturePatterns: computation.signaturePatterns,
+      memorableMoments: computation.memorableMoments as unknown as object,
+      futureSelvesMusic: computation.futureSelvesMusic as unknown as object,
+      polarityScore2: computation.polarityScore2,
       lastComputedAt: new Date(),
     },
   })
@@ -874,4 +1329,75 @@ export function getArchetypeInfo(archetypeId: string) {
     genres: [],
     icon: '🎵',
   }
+}
+
+/**
+ * Get music network display info
+ */
+export function getMusicNetworkInfo(networkId: string) {
+  const network = Object.values(MUSIC_NETWORKS).find(n => n.id === networkId)
+  return network || {
+    id: networkId,
+    name: networkId.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') + ' Mode',
+    description: 'Listening behavior pattern',
+    yeoAnalog: 'Unknown',
+    icon: '🎵',
+  }
+}
+
+/**
+ * Get dominant music networks from listening signature
+ */
+export function getDominantNetworks(signature: ListeningSignature, topN: number = 3): Array<{
+  id: string
+  name: string
+  description: string
+  icon: string
+  activation: number
+}> {
+  const entries = Object.entries(signature) as [keyof ListeningSignature, number][]
+  return entries
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, topN)
+    .map(([id, activation]) => {
+      const info = getMusicNetworkInfo(id)
+      return {
+        id: info.id,
+        name: info.name,
+        description: info.description,
+        icon: info.icon,
+        activation: Math.round(activation * 100),
+      }
+    })
+}
+
+/**
+ * Format listening signature for display
+ */
+export function formatListeningSignature(signature: ListeningSignature): Array<{
+  network: string
+  name: string
+  icon: string
+  percentage: number
+  bar: string
+}> {
+  const entries = Object.entries(signature) as [keyof ListeningSignature, number][]
+  const maxActivation = Math.max(...entries.map(([, v]) => v))
+
+  return entries
+    .sort((a, b) => b[1] - a[1])
+    .map(([id, activation]) => {
+      const info = getMusicNetworkInfo(id)
+      const percentage = Math.round(activation * 100)
+      const barLength = Math.round((activation / maxActivation) * 20)
+      const bar = '█'.repeat(barLength) + '░'.repeat(20 - barLength)
+
+      return {
+        network: id,
+        name: info.name,
+        icon: info.icon,
+        percentage,
+        bar,
+      }
+    })
 }

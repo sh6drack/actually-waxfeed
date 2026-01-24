@@ -14,7 +14,11 @@
     "postinstall": "prisma generate",
     "remotion:studio": "remotion studio",
     "remotion:render": "remotion render WaxFeedPromo out/promo.mp4",
-    "remotion:render:square": "remotion render WaxFeedPromoSquare out/promo-square.mp4"
+    "remotion:render:square": "remotion render WaxFeedPromoSquare out/promo-square.mp4",
+    "remotion:render:frequency": "remotion render WaxFeedFrequency out/frequency.mp4",
+    "remotion:render:frequency:square": "remotion render WaxFeedFrequencySquare out/frequency-square.mp4",
+    "remotion:render:showcase": "remotion render WaxFeedShowcase out/showcase.mp4",
+    "remotion:render:showcase:square": "remotion render WaxFeedShowcaseSquare out/showcase-square.mp4"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
