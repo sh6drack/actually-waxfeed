@@ -58,8 +58,11 @@ export function CTAScene({ width = 1920, height = 1080 }: CTASceneProps) {
     });
   });
 
-  // Holographic disc rotation
-  const discRotation = frame * 0.5;
+  // Disc rotation - smooth and continuous
+  const discRotation = frame * 0.8;
+
+  // Light streak position shifts with rotation
+  const streakOffset = (frame * 2) % 360;
 
   // Final fade to black
   const fadeOut = interpolate(frame, [200, 240], [0, 1], {
@@ -122,7 +125,7 @@ export function CTAScene({ width = 1920, height = 1080 }: CTASceneProps) {
           gap: 32,
         }}
       >
-        {/* Holographic disc logo */}
+        {/* Iridescent MiniDisc Logo */}
         <div
           style={{
             opacity: logoOpacity,
@@ -131,66 +134,162 @@ export function CTAScene({ width = 1920, height = 1080 }: CTASceneProps) {
         >
           <svg width={160} height={160} viewBox="0 0 200 200">
             <defs>
+              {/* Holographic base gradient - shifts with rotation */}
               <linearGradient
-                id="ctaHoloGradient"
-                gradientTransform={`rotate(${discRotation})`}
+                id="ctaHoloBase"
+                x1="20%"
+                y1="80%"
+                x2="80%"
+                y2="20%"
+                gradientTransform={`rotate(${discRotation}, 0.5, 0.5)`}
               >
-                <stop offset="0%" stopColor={COLORS.holographic.pink} />
-                <stop offset="25%" stopColor={COLORS.holographic.sky} />
-                <stop offset="50%" stopColor={COLORS.holographic.lavender} />
-                <stop offset="75%" stopColor={COLORS.holographic.mint} />
-                <stop offset="100%" stopColor={COLORS.holographic.pink} />
+                <stop offset="0%" stopColor="#e4a8c8" />
+                <stop offset="12%" stopColor="#f0b8d8" />
+                <stop offset="24%" stopColor="#d898c8" />
+                <stop offset="36%" stopColor="#98d8b8" />
+                <stop offset="48%" stopColor="#88c8d8" />
+                <stop offset="60%" stopColor="#b898d8" />
+                <stop offset="72%" stopColor="#d8a8c8" />
+                <stop offset="84%" stopColor="#c8e8a8" />
+                <stop offset="100%" stopColor="#e8c8d8" />
               </linearGradient>
-              <radialGradient id="ctaDiscGradient" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="transparent" />
-                <stop offset="30%" stopColor="url(#ctaHoloGradient)" stopOpacity="0.3" />
-                <stop offset="70%" stopColor="url(#ctaHoloGradient)" stopOpacity="0.6" />
-                <stop offset="100%" stopColor="url(#ctaHoloGradient)" />
+
+              {/* Iridescent sweep 1 */}
+              <radialGradient id="ctaIridescentSweep" cx="30%" cy="30%" r="80%">
+                <stop offset="0%" stopColor="#ffffff" stopOpacity="0.5" />
+                <stop offset="15%" stopColor="#ffb8e0" stopOpacity="0.6" />
+                <stop offset="30%" stopColor="#b8ffb8" stopOpacity="0.4" />
+                <stop offset="45%" stopColor="#b8d8ff" stopOpacity="0.35" />
+                <stop offset="60%" stopColor="#e8b8ff" stopOpacity="0.4" />
+                <stop offset="75%" stopColor="#ffe8b8" stopOpacity="0.3" />
+                <stop offset="100%" stopColor="#ffb8c8" stopOpacity="0.2" />
+              </radialGradient>
+
+              {/* Iridescent sweep 2 */}
+              <radialGradient id="ctaIridescentSweep2" cx="70%" cy="70%" r="60%">
+                <stop offset="0%" stopColor="#c8ffe8" stopOpacity="0.3" />
+                <stop offset="30%" stopColor="#ffc8e8" stopOpacity="0.25" />
+                <stop offset="60%" stopColor="#c8c8ff" stopOpacity="0.2" />
+                <stop offset="100%" stopColor="#ffe8c8" stopOpacity="0.15" />
+              </radialGradient>
+
+              {/* Dynamic light streak */}
+              <linearGradient
+                id="ctaLightStreak"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+                gradientTransform={`rotate(${streakOffset}, 0.5, 0.5)`}
+              >
+                <stop offset="0%" stopColor="#ffffff" stopOpacity="0" />
+                <stop offset="35%" stopColor="#ffffff" stopOpacity="0" />
+                <stop offset="45%" stopColor="#ffffff" stopOpacity="0.7" />
+                <stop offset="50%" stopColor="#ffffff" stopOpacity="0.9" />
+                <stop offset="55%" stopColor="#ffffff" stopOpacity="0.7" />
+                <stop offset="65%" stopColor="#ffffff" stopOpacity="0" />
+                <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+              </linearGradient>
+
+              {/* Edge depth */}
+              <radialGradient id="ctaDiscEdge" cx="50%" cy="50%" r="50%">
+                <stop offset="88%" stopColor="#000000" stopOpacity="0" />
+                <stop offset="94%" stopColor="#000000" stopOpacity="0.1" />
+                <stop offset="97%" stopColor="#000000" stopOpacity="0.2" />
+                <stop offset="100%" stopColor="#000000" stopOpacity="0.35" />
+              </radialGradient>
+
+              {/* Hub metal gradient */}
+              <radialGradient id="ctaHubMetal" cx="35%" cy="30%" r="70%">
+                <stop offset="0%" stopColor="#f8f8f8" />
+                <stop offset="35%" stopColor="#d0d0d0" />
+                <stop offset="70%" stopColor="#888888" />
+                <stop offset="100%" stopColor="#686868" />
               </radialGradient>
             </defs>
 
-            {/* Outer disc */}
-            <circle
-              cx="100"
-              cy="100"
-              r="95"
-              fill="none"
-              stroke={COLORS.white}
-              strokeWidth="2"
-            />
+            {/* Spinning disc group */}
+            <g transform={`rotate(${discRotation}, 100, 100)`}>
+              {/* Disc base with holographic surface */}
+              <circle cx="100" cy="100" r="90" fill="url(#ctaHoloBase)" />
 
-            {/* Holographic fill */}
-            <circle
-              cx="100"
-              cy="100"
-              r="90"
-              fill="url(#ctaDiscGradient)"
-              opacity="0.8"
-            />
+              {/* Iridescent color sweeps */}
+              <circle cx="100" cy="100" r="90" fill="url(#ctaIridescentSweep)" />
+              <circle cx="100" cy="100" r="90" fill="url(#ctaIridescentSweep2)" />
 
-            {/* Inner groove rings */}
-            {[70, 55, 40].map((r, i) => (
+              {/* Data track rings */}
+              <g fill="none" strokeOpacity="0.08">
+                <circle cx="100" cy="100" r="85" stroke="#000" strokeWidth="6" />
+                <circle cx="100" cy="100" r="75" stroke="#fff" strokeWidth="0.5" />
+                <circle cx="100" cy="100" r="70" stroke="#000" strokeWidth="4" />
+                <circle cx="100" cy="100" r="62" stroke="#fff" strokeWidth="0.5" />
+                <circle cx="100" cy="100" r="55" stroke="#000" strokeWidth="3" />
+                <circle cx="100" cy="100" r="48" stroke="#fff" strokeWidth="0.5" />
+                <circle cx="100" cy="100" r="42" stroke="#000" strokeWidth="2" />
+                <circle cx="100" cy="100" r="36" stroke="#fff" strokeWidth="0.5" />
+              </g>
+
+              {/* Light streak reflection */}
+              <circle cx="100" cy="100" r="90" fill="url(#ctaLightStreak)" />
+
+              {/* Edge depth/shadow */}
+              <circle cx="100" cy="100" r="90" fill="url(#ctaDiscEdge)" />
+
+              {/* Disc rim highlight */}
               <circle
-                key={r}
                 cx="100"
                 cy="100"
-                r={r}
+                r="89"
                 fill="none"
-                stroke={COLORS.white}
-                strokeWidth="0.5"
-                opacity={0.3 + i * 0.1}
+                stroke="#ffffff"
+                strokeWidth="1"
+                opacity="0.5"
+                strokeDasharray="150 120"
+                strokeDashoffset="25"
               />
-            ))}
+            </g>
 
-            {/* Center hole */}
-            <circle cx="100" cy="100" r="15" fill={COLORS.black} />
+            {/* Outer ring border (doesn't spin) */}
             <circle
               cx="100"
               cy="100"
-              r="15"
+              r="92"
               fill="none"
               stroke={COLORS.white}
               strokeWidth="2"
+            />
+
+            {/* Center hub (spins with disc) */}
+            <g transform={`rotate(${discRotation}, 100, 100)`}>
+              <circle cx="100" cy="100" r="22" fill="url(#ctaHubMetal)" />
+              <circle cx="100" cy="100" r="22" fill="none" stroke="#888" strokeWidth="0.5" />
+              <circle cx="100" cy="100" r="18" fill="#a8a8a8" />
+              <circle cx="100" cy="100" r="14" fill="#909090" />
+              <circle cx="100" cy="100" r="10" fill="#787878" />
+
+              {/* Center hole */}
+              <circle cx="100" cy="100" r="6" fill={COLORS.black} />
+
+              {/* Hub highlight */}
+              <ellipse
+                cx="94"
+                cy="94"
+                rx="8"
+                ry="4"
+                fill="#ffffff"
+                opacity="0.6"
+                transform="rotate(-45, 94, 94)"
+              />
+            </g>
+
+            {/* Static center ring */}
+            <circle
+              cx="100"
+              cy="100"
+              r="6"
+              fill="none"
+              stroke={COLORS.white}
+              strokeWidth="1.5"
             />
           </svg>
         </div>
@@ -244,7 +343,7 @@ export function CTAScene({ width = 1920, height = 1080 }: CTASceneProps) {
               letterSpacing: "0.05em",
             }}
           >
-            waxfeed.com
+            wax-feed.com
           </span>
         </div>
       </div>

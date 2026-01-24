@@ -9,7 +9,14 @@ import {
   TasteCardShare,
 } from "@/components/tasteid"
 import { DefaultAvatar } from "@/components/default-avatar"
-import { getArchetypeInfo } from "@/lib/tasteid"
+import {
+  getArchetypeInfo,
+  formatListeningSignature,
+  getDominantNetworks,
+  ListeningSignature,
+  MemorableMoment,
+  MusicalFutureSelf,
+} from "@/lib/tasteid"
 import { ArrowRightIcon } from "@/components/icons"
 import { GenerateTasteIDButton, RecomputeButton } from "./tasteid-actions"
 
@@ -88,6 +95,13 @@ export default async function TasteIDPage({ params }: Props) {
 
   const genreVector = tasteId.genreVector as Record<string, number>
   const decadePrefs = tasteId.decadePreferences as Record<string, number>
+
+  // Polarity 1.2 data
+  const listeningSignature = tasteId.listeningSignature as ListeningSignature | null
+  const signaturePatterns = tasteId.signaturePatterns || []
+  const memorableMoments = (tasteId.memorableMoments as unknown as MemorableMoment[]) || []
+  const futureSelvesMusic = (tasteId.futureSelvesMusic as unknown as MusicalFutureSelf[]) || []
+  const polarityScore2 = tasteId.polarityScore2
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -276,6 +290,152 @@ export default async function TasteIDPage({ params }: Props) {
             <div className="text-lg font-bold">{tasteId.avgReviewLength} words</div>
           </div>
         </div>
+
+        {/* POLARITY 1.2 - Listening Signature */}
+        {listeningSignature && (
+          <div className="mb-8 border-2 border-white p-6 relative overflow-hidden">
+            {/* Background accent */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-white/5 to-transparent" />
+
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-2 h-2 bg-white animate-pulse" />
+              <h2 className="text-xs uppercase tracking-[0.3em] text-white font-bold">
+                LISTENING SIGNATURE
+              </h2>
+              <span className="text-[10px] px-2 py-0.5 border border-neutral-700 text-neutral-500 uppercase tracking-wider">
+                POLARITY 1.2
+              </span>
+            </div>
+
+            <div className="space-y-3">
+              {formatListeningSignature(listeningSignature).map((network, i) => (
+                <div key={network.network} className="group">
+                  <div className="flex items-center gap-4">
+                    <span className="text-xl w-8">{network.icon}</span>
+                    <div className="flex-1">
+                      <div className="flex justify-between items-baseline mb-1">
+                        <span className="text-sm font-bold uppercase tracking-wide">
+                          {network.name}
+                        </span>
+                        <span className="text-sm text-neutral-400 font-mono">
+                          {network.percentage}%
+                        </span>
+                      </div>
+                      <div className="h-2 bg-neutral-900 overflow-hidden">
+                        <div
+                          className="h-full bg-white transition-all duration-700 ease-out"
+                          style={{
+                            width: `${network.percentage}%`,
+                            animationDelay: `${i * 100}ms`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {polarityScore2 && (
+              <div className="mt-6 pt-4 border-t border-neutral-800 flex items-center justify-between">
+                <span className="text-xs uppercase tracking-widest text-neutral-500">
+                  POLARITY SCORE 2.0
+                </span>
+                <span className="text-2xl font-bold font-mono">
+                  {polarityScore2.toFixed(2)}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Signature Patterns */}
+        {signaturePatterns.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xs uppercase tracking-widest text-neutral-500 font-bold mb-4">
+              YOUR PATTERNS
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {signaturePatterns.map((pattern) => (
+                <div
+                  key={pattern}
+                  className="px-4 py-2 bg-white text-black font-bold text-sm uppercase tracking-wide"
+                >
+                  {pattern}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Memorable Moments */}
+        {memorableMoments.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xs uppercase tracking-widest text-neutral-500 font-bold mb-4">
+              MEMORABLE MOMENTS
+            </h2>
+            <div className="space-y-3">
+              {memorableMoments.slice(0, 5).map((moment, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-4 p-3 border border-neutral-800 hover:border-neutral-600 transition-colors"
+                >
+                  <div className="w-10 h-10 border border-white flex items-center justify-center text-lg">
+                    {moment.type === 'first_10' ? '10' : moment.type === 'first_0' ? '0' : '💜'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold truncate">{moment.albumTitle}</div>
+                    <div className="text-sm text-neutral-500">{moment.artistName}</div>
+                  </div>
+                  <div className="text-xs text-neutral-600 uppercase tracking-wider">
+                    {moment.description}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Musical Future Selves */}
+        {futureSelvesMusic.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xs uppercase tracking-widest text-neutral-500 font-bold mb-4">
+              YOUR MUSICAL FUTURES
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {futureSelvesMusic.map((future) => (
+                <div
+                  key={future.id}
+                  className="border-2 border-neutral-800 hover:border-white p-4 transition-colors group"
+                >
+                  <div className="flex justify-between items-start mb-3">
+                    <h3 className="font-bold uppercase tracking-wide">
+                      {future.name}
+                    </h3>
+                    <span className="text-xs font-mono text-neutral-500">
+                      {Math.round(future.progress * 100)}%
+                    </span>
+                  </div>
+                  <p className="text-sm text-neutral-400 mb-3">
+                    {future.description}
+                  </p>
+                  {/* Progress bar */}
+                  <div className="h-1 bg-neutral-900 mb-3">
+                    <div
+                      className="h-full bg-white transition-all duration-500"
+                      style={{ width: `${future.progress * 100}%` }}
+                    />
+                  </div>
+                  {/* Next steps */}
+                  <div className="text-xs text-neutral-600">
+                    <span className="uppercase tracking-wider">Next: </span>
+                    {future.nextSteps[0]}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Share */}
         {isOwnProfile && (
