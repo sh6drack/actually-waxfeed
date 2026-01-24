@@ -8,6 +8,7 @@ import {
   updateAlbumStats,
   createNotification
 } from '@/lib/api-utils'
+import { claimFirstReviewOfDay, claimFirstAlbumReview } from '@/lib/wax-engine'
 import { z } from 'zod'
 
 const createReviewSchema = z.object({
@@ -201,6 +202,25 @@ export async function POST(request: NextRequest) {
       where: { userId: user.id, albumId }
     })
 
+    // Grant Wax bonuses for reviews
+    let waxEarned = 0
+    try {
+      // First review of the day bonus
+      const dailyReviewBonus = await claimFirstReviewOfDay(user.id)
+      if (dailyReviewBonus) {
+        waxEarned += dailyReviewBonus.earned
+      }
+
+      // First review on this album bonus
+      const firstAlbumBonus = await claimFirstAlbumReview(user.id, albumId)
+      if (firstAlbumBonus) {
+        waxEarned += firstAlbumBonus.earned
+      }
+    } catch (error) {
+      // Don't fail the review creation if wax granting fails
+      console.error('Error granting wax bonuses:', error)
+    }
+
     // Notify friends about new review
     const friendships = await prisma.friendship.findMany({
       where: {
@@ -222,7 +242,7 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    return successResponse(review, 201)
+    return successResponse({ ...review, waxEarned }, 201)
   } catch (error) {
     if (error instanceof Error && error.message === 'UNAUTHORIZED') {
       return errorResponse('Authentication required', 401)
