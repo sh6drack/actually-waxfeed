@@ -294,10 +294,147 @@
     }
 
     @media print {
+      :root {
+        --background: #ffffff;
+        --foreground: #000000;
+        --muted: #444444;
+        --border: #cccccc;
+        --accent: #000000;
+        --purple: #6b4c9a;
+      }
+
       body {
-        background: white;
-        color: black;
+        background: white !important;
+        color: black !important;
         padding: 40px;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      h1, h2, h3, h4, h5, h6 {
+        color: black !important;
+      }
+
+      h3 {
+        color: #6b4c9a !important;
+      }
+
+      p, li, td, th {
+        color: #000000 !important;
+      }
+
+      .subtitle {
+        color: #444444 !important;
+      }
+
+      .meta-label {
+        color: #666666 !important;
+      }
+
+      .meta-value {
+        color: #000000 !important;
+      }
+
+      .highlight-box {
+        background: #f5f5f5 !important;
+        border-left: 4px solid #6b4c9a !important;
+      }
+
+      .highlight-box p {
+        color: #000000 !important;
+      }
+
+      table {
+        border: 1px solid #cccccc !important;
+      }
+
+      th {
+        background: #f0f0f0 !important;
+        color: #333333 !important;
+        border: 1px solid #cccccc !important;
+      }
+
+      td {
+        border: 1px solid #cccccc !important;
+        color: #000000 !important;
+      }
+
+      .code-block {
+        background: #f5f5f5 !important;
+        border: 1px solid #cccccc !important;
+        color: #000000 !important;
+      }
+
+      .flywheel {
+        background: #f9f9f9 !important;
+        border: 1px solid #cccccc !important;
+      }
+
+      .flywheel-box {
+        background: #f0f0f0 !important;
+      }
+
+      .flywheel-box strong {
+        color: #6b4c9a !important;
+      }
+
+      .flywheel-arrow {
+        color: #6b4c9a !important;
+      }
+
+      .network-card {
+        background: #f5f5f5 !important;
+      }
+
+      .network-label {
+        color: #666666 !important;
+      }
+
+      .network-name {
+        color: #000000 !important;
+      }
+
+      .network-desc {
+        color: #444444 !important;
+      }
+
+      .arrow {
+        color: #6b4c9a !important;
+      }
+
+      .phase {
+        background: #fafafa !important;
+        border: 1px solid #cccccc !important;
+      }
+
+      .phase-number {
+        background: #6b4c9a !important;
+        color: white !important;
+      }
+
+      .phase-title {
+        color: #000000 !important;
+      }
+
+      .phase-timing {
+        color: #666666 !important;
+      }
+
+      li::before {
+        color: #6b4c9a !important;
+      }
+
+      .footer {
+        border-top: 2px solid #cccccc !important;
+        color: #666666 !important;
+      }
+
+      .logo-text {
+        color: #000000 !important;
+      }
+
+      .logo-divider {
+        color: #6b4c9a !important;
       }
 
       h2, h3 {
