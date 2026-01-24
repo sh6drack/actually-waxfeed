@@ -9,6 +9,7 @@ interface Album {
   title: string
   artistName: string
   coverArtUrl: string | null
+  isSpotifyOnly?: boolean // true if not yet in database
 }
 
 interface HotTakeFormProps {
@@ -53,7 +54,23 @@ export function HotTakeForm({ album, onSubmit, onCancel }: HotTakeFormProps) {
       const res = await fetch(`/api/albums/search?q=${encodeURIComponent(query)}&limit=5`)
       if (res.ok) {
         const data = await res.json()
-        setSearchResults(data.data?.albums || [])
+        // Combine local and spotify results, prioritizing local (already in DB)
+        const local: Album[] = data.data?.local || []
+        const spotify = data.data?.spotify || []
+        // Get spotifyIds already in local results to avoid duplicates
+        const localSpotifyIds = new Set(local.map((a: Album) => a.spotifyId))
+        // Map spotify results to match Album interface, excluding duplicates
+        const spotifyMapped = spotify
+          .filter((s: { id: string }) => !localSpotifyIds.has(s.id))
+          .map((s: { id: string; name: string; artists: { name: string }[]; images: { url: string }[] }) => ({
+            id: s.id,
+            spotifyId: s.id,
+            title: s.name,
+            artistName: s.artists?.[0]?.name || 'Unknown Artist',
+            coverArtUrl: s.images?.[0]?.url || null,
+            isSpotifyOnly: true,
+          }))
+        setSearchResults([...local, ...spotifyMapped])
       }
     } catch {
       // Silently fail search
@@ -95,8 +112,37 @@ export function HotTakeForm({ album, onSubmit, onCancel }: HotTakeFormProps) {
     setError(null)
 
     try {
+      let albumId = selectedAlbum.id
+
+      // If album is from Spotify and not yet in DB, import it first
+      if (selectedAlbum.isSpotifyOnly) {
+        const importRes = await fetch("/api/albums/import", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ spotifyIds: [selectedAlbum.spotifyId] }),
+        })
+
+        if (!importRes.ok) {
+          throw new Error("Failed to import album")
+        }
+
+        // Fetch the album from DB to get the database ID
+        const lookupRes = await fetch(`/api/albums/search?q=${encodeURIComponent(selectedAlbum.title)}&source=local&limit=10`)
+        if (lookupRes.ok) {
+          const lookupData = await lookupRes.json()
+          const imported = lookupData.data?.local?.find((a: Album) => a.spotifyId === selectedAlbum.spotifyId)
+          if (imported) {
+            albumId = imported.id
+          } else {
+            throw new Error("Album import failed")
+          }
+        } else {
+          throw new Error("Failed to find imported album")
+        }
+      }
+
       await onSubmit({
-        albumId: selectedAlbum.id,
+        albumId,
         stance,
         content,
       })
