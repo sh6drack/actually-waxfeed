@@ -40,10 +40,19 @@ async function getRecentTrending() {
   })
 }
 
+async function getFoundingSpotsLeft() {
+  const FOUNDING_STATION_LIMIT = 50
+  const foundingCount = await prisma.station.count({
+    where: { isFoundingStation: true }
+  })
+  return FOUNDING_STATION_LIMIT - foundingCount
+}
+
 export default async function LeaderboardPage() {
-  const [tastemakers, trendingAlbums] = await Promise.all([
+  const [tastemakers, trendingAlbums, foundingSpotsLeft] = await Promise.all([
     getTastemakerLeaderboard(),
     getRecentTrending(),
+    getFoundingSpotsLeft(),
   ])
 
   return (
@@ -193,7 +202,7 @@ export default async function LeaderboardPage() {
             </div>
 
             {/* How Scoring Works */}
-            <div className="px-6 py-8">
+            <div className="px-6 py-8 border-b border-[--border]">
               <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-4">
                 How Scoring Works
               </p>
@@ -214,6 +223,25 @@ export default async function LeaderboardPage() {
               <p className="text-xs text-[--muted] mt-4">
                 Earn badges by reviewing albums before they trend.
               </p>
+            </div>
+
+            {/* Station Rankings */}
+            <div className="px-6 py-8">
+              <p className="text-[10px] tracking-[0.3em] uppercase text-[#ffd700] mb-4">
+                College Radio
+              </p>
+              <p className="text-sm mb-4">
+                Station rankings coming soon. Which college radio station has the best taste?
+              </p>
+              <Link
+                href="/stations"
+                className="block px-4 py-3 border border-[#ffd700]/30 text-sm text-center hover:border-[#ffd700] transition"
+              >
+                Apply for Founding Status
+              </Link>
+            <p className="text-[10px] text-[--muted] mt-3 text-center">
+              {foundingSpotsLeft > 0 ? `${foundingSpotsLeft} of 50 founding spots left` : 'All founding spots claimed'}
+            </p>
             </div>
           </aside>
         </div>

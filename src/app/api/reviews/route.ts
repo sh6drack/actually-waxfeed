@@ -135,6 +135,21 @@ export async function POST(request: NextRequest) {
     })
     const reviewPosition = currentReviewCount + 1
 
+    // ANTI-GAMING: First 100 reviews MUST have written text
+    // This prevents people from spamming empty reviews just to get Gold/Silver/Bronze Spins
+    const MIN_REVIEW_LENGTH = 20 // At least 20 characters
+    const FIRST_SPIN_THRESHOLD = 100
+
+    if (reviewPosition <= FIRST_SPIN_THRESHOLD) {
+      if (!text || text.trim().length < MIN_REVIEW_LENGTH) {
+        return errorResponse(
+          `The first ${FIRST_SPIN_THRESHOLD} reviews must include a written review (at least ${MIN_REVIEW_LENGTH} characters). ` +
+          `You're position #${reviewPosition} - share your thoughts to earn your spot!`,
+          400
+        )
+      }
+    }
+
     // Create review with position
     const review = await prisma.review.create({
       data: {

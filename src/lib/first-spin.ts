@@ -137,7 +137,7 @@ export async function awardFirstSpinBadge(
   // Create badge and update user stats in transaction
   await prisma.$transaction(async (tx) => {
     // Create the badge
-    await tx.firstSpinBadge.create({
+    const badge = await tx.firstSpinBadge.create({
       data: {
         userId,
         albumId,
@@ -175,12 +175,13 @@ export async function awardFirstSpinBadge(
       }
     })
 
-    // Create notification
+    // Create notification with badge ID for direct link
     await tx.notification.create({
       data: {
         userId,
         type: 'first_spin_badge',
         content: {
+          badgeId: badge.id,
           badgeType,
           position,
           waxReward,
@@ -231,10 +232,6 @@ export async function getUserBadges(userId: string, limit = 20) {
     where: { userId },
     orderBy: { createdAt: 'desc' },
     take: limit,
-    include: {
-      // Note: Can't include album relation since it's not defined
-      // We'll fetch album data separately if needed
-    }
   })
 }
 

@@ -134,6 +134,7 @@ model User {
 
   // Content relations
   reviews      Review[]
+  trackReviews TrackReview[]
   replies      Reply[]
   lists        List[]
   reviewDrafts ReviewDraft[]
@@ -177,6 +178,16 @@ model User {
   waxTransactions WaxTransaction[]
   purchases       Purchase[]
   userItems       UserItem[]
+
+  // College Radio Station membership
+  stationMemberships StationMember[]
+
+  // Social Messaging relations
+  conversationsAsUser1 Conversation[]  @relation("convUser1")
+  conversationsAsUser2 Conversation[]  @relation("convUser2")
+  messagesSent         Message[]       @relation("messageSender")
+  roomMessagesSent     RoomMessage[]   @relation("roomMessageSender")
+  circleMessagesSent   CircleMessage[] @relation("circleMessageSender")
 
   @@index([username])
   @@index([email])
@@ -272,11 +283,13 @@ model Album {
   lastSyncedAt DateTime @default(now())
 
   // Relations
-  reviews   Review[]
-  listItems ListItem[]
-  tracks    Track[]
-  userTags  AlbumTag[]
-  hotTakes  HotTake[]
+  reviews        Review[]
+  listItems      ListItem[]
+  tracks         Track[]
+  userTags       AlbumTag[]
+  hotTakes       HotTake[]
+  albumRoom      AlbumRoom?
+  messageContext Message[] @relation("messageAlbumContext")
 
   @@index([spotifyId])
   @@index([artistName])
@@ -297,10 +310,40 @@ model Track {
   previewUrl  String? // 30-second Spotify preview
   spotifyUrl  String?
 
-  album  Album   @relation(fields: [albumId], references: [id], onDelete: Cascade)
-  lyrics Lyrics?
+  // Aggregate stats
+  averageRating Float? // Computed average from reviews
+  totalReviews  Int    @default(0)
+
+  album   Album         @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  lyrics  Lyrics?
+  reviews TrackReview[]
 
   @@index([albumId])
+  @@index([averageRating])
+}
+
+// ============================================
+// TRACK REVIEWS - Individual song ratings
+// ============================================
+
+model TrackReview {
+  id        String   @id @default(cuid())
+  userId    String
+  trackId   String
+  rating    Float    // 0-10 scale (half-point precision)
+  text      String?  @db.VarChar(1000) // Optional short note (shorter than album reviews)
+  isFavorite Boolean @default(false) // Mark as standout track
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track Track @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, trackId])
+  @@index([userId])
+  @@index([trackId])
+  @@index([rating])
+  @@index([createdAt])
 }
 
 model Artist {
@@ -1094,6 +1137,10 @@ model Station {
   conference   String? // e.g. "SEC", "Big Ten"
   logoUrl      String?
   websiteUrl   String?
+  email        String? // Contact email for the station
+  
+  // Founding Station Program
+  isFoundingStation Boolean @default(false) // First 50 stations get permanent premium
   
   // Aggregate stats
   totalReviews    Int @default(0)
@@ -1113,6 +1160,7 @@ model Station {
 
   @@index([conference])
   @@index([tastemakeScore])
+  @@index([isFoundingStation])
 }
 
 model StationMember {
@@ -1123,8 +1171,111 @@ model StationMember {
   joinedAt  DateTime @default(now())
 
   station Station @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([stationId, userId])
   @@index([stationId])
+  @@index([userId])
+}
+
+// ============================================
+// SOCIAL MESSAGING - Zero to One Features
+// ============================================
+
+// Direct Messages - Taste-Gated (60%+ match required)
+model Conversation {
+  id              String    @id @default(cuid())
+  user1Id         String    // Sorted: always lower ID first
+  user2Id         String
+  tasteMatchScore Float     // Cached at creation (must be >= 60)
+  lastMessageAt   DateTime?
+  createdAt       DateTime  @default(now())
+
+  user1    User      @relation("convUser1", fields: [user1Id], references: [id], onDelete: Cascade)
+  user2    User      @relation("convUser2", fields: [user2Id], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@unique([user1Id, user2Id])
+  @@index([user1Id, lastMessageAt])
+  @@index([user2Id, lastMessageAt])
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  senderId       String
+  content        String   @db.Text
+  albumContextId String?  // Optional: "Let's talk about this album"
+  isRead         Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation("messageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  albumContext Album?       @relation("messageAlbumContext", fields: [albumContextId], references: [id])
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+  @@index([isRead])
+}
+
+// Album Rooms - Must have reviewed the album to participate
+model AlbumRoom {
+  id           String    @id @default(cuid())
+  albumId      String    @unique
+  messageCount Int       @default(0)
+  lastActivity DateTime?
+  createdAt    DateTime  @default(now())
+
+  album    Album         @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  messages RoomMessage[]
+
+  @@index([lastActivity])
+}
+
+model RoomMessage {
+  id                 String   @id @default(cuid())
+  roomId             String
+  userId             String
+  content            String   @db.Text
+  userFirstSpinBadge String?  // "gold" | "silver" | "bronze" | null (denormalized)
+  userReviewPosition Int?     // Denormalized for display
+  createdAt          DateTime @default(now())
+
+  room AlbumRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User      @relation("roomMessageSender", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([roomId, createdAt])
+  @@index([userId])
+}
+
+// Taste Circles - Archetype-based communities
+model TasteCircle {
+  id          String   @id @default(cuid())
+  archetype   String   @unique // Matches TasteID.primaryArchetype slug
+  displayName String   // "Hip-Hop Heads"
+  description String?  @db.Text
+  memberCount Int      @default(0) // Cached count of users with this archetype
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  messages CircleMessage[]
+
+  @@index([archetype])
+  @@index([memberCount])
+}
+
+model CircleMessage {
+  id             String   @id @default(cuid())
+  circleId       String
+  userId         String
+  content        String   @db.Text
+  userArchetype  String   // Primary archetype at time of posting
+  userTasteScore Int      // Tastemaker score at time of posting
+  createdAt      DateTime @default(now())
+
+  circle TasteCircle @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  user   User        @relation("circleMessageSender", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([circleId, createdAt])
   @@index([userId])
 }

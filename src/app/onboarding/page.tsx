@@ -113,7 +113,8 @@ export default function OnboardingPage() {
 
   const handleComplete = async () => {
     await update()
-    router.push("/")
+    // Redirect to TasteID setup - hook them with their first reviews
+    router.push("/taste-setup")
   }
 
   if (status === "loading") {
@@ -135,9 +136,13 @@ export default function OnboardingPage() {
 
         {step === 1 && (
           <>
-            <h1 className="text-4xl font-bold tracking-tighter mb-4">Welcome to Waxfeed</h1>
+            <p className="text-[10px] tracking-[0.3em] uppercase text-[#ffd700] mb-4">
+              Step 1 of 2
+            </p>
+            <h1 className="text-4xl font-bold tracking-tighter mb-4">Claim Your Identity</h1>
             <p className="text-[#888] mb-8">
-              First, choose your username. This is how you&apos;ll be known on Waxfeed.
+              Your username is your handle for earning badges and climbing the leaderboard. 
+              Choose wisely—this is how people will remember you.
             </p>
 
             <form onSubmit={handleUsernameSubmit} className="space-y-6">
@@ -187,9 +192,13 @@ export default function OnboardingPage() {
 
         {step === 2 && (
           <>
-            <h1 className="text-4xl font-bold tracking-tighter mb-4">Add a Profile Picture</h1>
+            <p className="text-[10px] tracking-[0.3em] uppercase text-[#ffd700] mb-4">
+              Step 2 of 2
+            </p>
+            <h1 className="text-4xl font-bold tracking-tighter mb-4">Show Your Face</h1>
             <p className="text-[#888] mb-8">
-              Help your friends recognize you. You can always change this later.
+              When you earn badges and climb the leaderboard, people will see this. 
+              Make it memorable.
             </p>
 
             <div className="flex flex-col items-center gap-6 mb-8">

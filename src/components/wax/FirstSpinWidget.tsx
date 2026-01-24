@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
+import { Tooltip } from "@/components/ui/tooltip"
 
 type UserStats = {
   tastemakeScore: number
@@ -117,9 +118,16 @@ export function FirstSpinWidget() {
       {/* Header with Tastemaker Score */}
       <div className="p-4 border-b border-[--border]">
         <div className="flex items-center justify-between mb-1">
-          <h3 className="text-[10px] tracking-[0.3em] uppercase text-[--muted]">
-            Tastemaker Score
-          </h3>
+          <div className="flex items-center gap-1">
+            <h3 className="text-[10px] tracking-[0.3em] uppercase text-[--muted]">
+              Tastemaker Score
+            </h3>
+            <Tooltip content="Your discovery reputation. Earn points by reviewing albums before they trend: Gold = 10pts, Silver = 5pts, Bronze = 2pts.">
+              <svg className="w-3 h-3 text-[#666] cursor-help" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </Tooltip>
+          </div>
           {isSubscriber && (
             <span className="text-[9px] tracking-wider uppercase px-1.5 py-0.5 bg-[#ffd700]/20 text-[#ffd700]">
               {stats?.tier === "WAX_PRO" ? "Pro" : "Wax+"}
@@ -128,30 +136,38 @@ export function FirstSpinWidget() {
         </div>
         <div className="flex items-baseline justify-between">
           <p className="text-4xl font-bold tabular-nums">{stats?.tastemakeScore || 0}</p>
-          <div className="text-right">
-            <p className="text-lg font-bold tabular-nums">{stats?.waxBalance?.toLocaleString() || 0}</p>
-            <p className="text-[9px] text-[--muted] uppercase">Wax</p>
-          </div>
+          <Tooltip content="Wax is WaxFeed's currency. Earn it by reviewing albums, getting badges, and engaging with the community. Spend it in the shop.">
+            <div className="text-right cursor-help">
+              <p className="text-lg font-bold tabular-nums">{stats?.waxBalance?.toLocaleString() || 0}</p>
+              <p className="text-[9px] text-[--muted] uppercase">Wax</p>
+            </div>
+          </Tooltip>
         </div>
       </div>
 
       {/* Spin Badges */}
       <div className="p-4 border-b border-[--border]">
         <div className="flex items-center justify-between gap-2">
-          <div className="flex-1 text-center p-2">
-            <p className="text-2xl font-bold tabular-nums text-[#ffd700]">{stats?.goldSpinCount || 0}</p>
-            <p className="text-[9px] text-[--muted] uppercase tracking-wider">Gold</p>
-          </div>
+          <Tooltip content="Gold Spin: You were one of the FIRST 10 people to review this album before it trended. Earns +100 Wax.">
+            <div className="flex-1 text-center p-2 cursor-help hover:bg-[#ffd700]/5 transition-colors rounded">
+              <p className="text-2xl font-bold tabular-nums text-[#ffd700]">{stats?.goldSpinCount || 0}</p>
+              <p className="text-[9px] text-[--muted] uppercase tracking-wider">Gold</p>
+            </div>
+          </Tooltip>
           <div className="w-px h-8 bg-[--border]" />
-          <div className="flex-1 text-center p-2">
-            <p className="text-2xl font-bold tabular-nums text-gray-400">{stats?.silverSpinCount || 0}</p>
-            <p className="text-[9px] text-[--muted] uppercase tracking-wider">Silver</p>
-          </div>
+          <Tooltip content="Silver Spin: You were one of the first 50 reviewers before the album trended. Earns +50 Wax.">
+            <div className="flex-1 text-center p-2 cursor-help hover:bg-gray-400/5 transition-colors rounded">
+              <p className="text-2xl font-bold tabular-nums text-gray-400">{stats?.silverSpinCount || 0}</p>
+              <p className="text-[9px] text-[--muted] uppercase tracking-wider">Silver</p>
+            </div>
+          </Tooltip>
           <div className="w-px h-8 bg-[--border]" />
-          <div className="flex-1 text-center p-2">
-            <p className="text-2xl font-bold tabular-nums text-amber-700">{stats?.bronzeSpinCount || 0}</p>
-            <p className="text-[9px] text-[--muted] uppercase tracking-wider">Bronze</p>
-          </div>
+          <Tooltip content="Bronze Spin: You were one of the first 100 reviewers before the album trended. Earns +25 Wax.">
+            <div className="flex-1 text-center p-2 cursor-help hover:bg-amber-700/5 transition-colors rounded">
+              <p className="text-2xl font-bold tabular-nums text-amber-700">{stats?.bronzeSpinCount || 0}</p>
+              <p className="text-[9px] text-[--muted] uppercase tracking-wider">Bronze</p>
+            </div>
+          </Tooltip>
         </div>
       </div>
 

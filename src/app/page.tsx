@@ -68,6 +68,47 @@ async function getStats() {
   return { albumCount, reviewCount, userCount }
 }
 
+// Get recently trended albums (for subtle FOMO)
+async function getRecentlyTrended() {
+  return prisma.album.findMany({
+    where: { 
+      isTrending: true,
+      trendedAt: { not: null }
+    },
+    orderBy: { trendedAt: 'desc' },
+    take: 5,
+    select: {
+      id: true,
+      spotifyId: true,
+      title: true,
+      artistName: true,
+      coverArtUrl: true,
+      totalReviews: true,
+      trendedAt: true,
+    }
+  })
+}
+
+// Get albums about to trend (approaching 100 reviews)
+async function getApproachingTrend() {
+  return prisma.album.findMany({
+    where: {
+      totalReviews: { gte: 70, lt: 100 },
+      isTrending: false,
+    },
+    orderBy: { totalReviews: 'desc' },
+    take: 3,
+    select: {
+      id: true,
+      spotifyId: true,
+      title: true,
+      artistName: true,
+      coverArtUrl: true,
+      totalReviews: true,
+    }
+  })
+}
+
 // Get active users to connect with (for logged out users or new users)
 async function getActiveUsers(excludeUserId?: string) {
   return prisma.user.findMany({
@@ -99,44 +140,123 @@ async function getActiveUsers(excludeUserId?: string) {
 
 export default async function Home() {
   const session = await auth()
-  const [billboardAlbums, recentReviews, stats, activeUsers] = await Promise.all([
+  const [billboardAlbums, recentReviews, stats, activeUsers, recentlyTrended, approachingTrend] = await Promise.all([
     getBillboardAlbums(),
     getRecentReviews(),
     getStats(),
     getActiveUsers(session?.user?.id),
+    getRecentlyTrended(),
+    getApproachingTrend(),
   ])
   const weekOf = format(new Date(), "MMM d, yyyy")
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
-      {/* Header section */}
+      {/* Hero - The Contrarian Truth */}
       <section style={{ borderBottom: '1px solid var(--border)' }}>
-        <div className="max-w-7xl mx-auto px-6 py-12 lg:py-16">
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8">
-            <p className="text-base md:text-lg lg:text-xl font-medium leading-relaxed max-w-2xl">
-              Discover music & friends tailored to you. Rate albums, reveal your TasteID, connect with your musical twins.
+        <div className="max-w-7xl mx-auto px-6 py-16 lg:py-24">
+          <div className="max-w-3xl">
+            <p className="text-[10px] tracking-[0.3em] uppercase text-[#ffd700] mb-4 font-bold">
+              The only music platform that proves your taste
             </p>
-            <div className="flex-shrink-0 lg:text-right">
-              <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-1 font-medium">
-                Week Of
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-[-0.02em] leading-tight mb-6">
+              Everyone says "I liked them before they blew up."
+              <br />
+              <span className="text-[--muted]">WaxFeed lets you prove it.</span>
+            </h1>
+            <p className="text-base lg:text-lg text-[--muted] mb-8 max-w-xl">
+              Review albums. Get timestamped. When they trend, you get credit.
+              Your position is recorded forever: "#7 to review this album."
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 mb-8">
+              {!session ? (
+                <>
+                  <Link
+                    href="/signup"
+                    className="px-6 py-4 bg-white text-black text-[12px] uppercase tracking-[0.15em] font-bold hover:bg-[#e5e5e5] transition-colors text-center"
+                  >
+                    Start Proving Your Taste
+                  </Link>
+                  <Link
+                    href="/discover"
+                    className="px-6 py-4 border border-[--border] text-[12px] uppercase tracking-[0.15em] hover:border-white transition-colors text-center"
+                  >
+                    Browse Albums
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/discover"
+                    className="px-6 py-4 bg-white text-black text-[12px] uppercase tracking-[0.15em] font-bold hover:bg-[#e5e5e5] transition-colors text-center"
+                  >
+                    Review an Album
+                  </Link>
+                  <Link
+                    href="/wallet"
+                    className="px-6 py-4 border border-[--border] text-[12px] uppercase tracking-[0.15em] hover:border-white transition-colors text-center"
+                  >
+                    View Your Badges
+                  </Link>
+                </>
+              )}
+            </div>
+
+            {/* The subtle offer - shown to everyone */}
+            <div className="flex items-center gap-6 text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-[#ffd700] rounded-full" />
+                <span className="text-[--muted]">
+                  <span className="text-white font-medium">{stats.reviewCount.toLocaleString()}</span> reviews recorded
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                <span className="text-[--muted]">
+                  <span className="text-white font-medium">{approachingTrend.length}</span> albums about to trend
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works - 3 Steps */}
+      <section className="border-b border-[--border] bg-white/[0.02]">
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-8">
+            How It Works
+          </p>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div>
+              <div className="w-10 h-10 border border-white flex items-center justify-center mb-4">
+                <span className="text-lg font-bold">1</span>
+              </div>
+              <p className="font-bold mb-2">Review an album</p>
+              <p className="text-sm text-[--muted]">
+                Your review position is recorded. "You were #23 to review this album."
               </p>
-              <p className="text-2xl lg:text-3xl font-medium tracking-wide">
-                {weekOf}
+            </div>
+            <div>
+              <div className="w-10 h-10 border border-white flex items-center justify-center mb-4">
+                <span className="text-lg font-bold">2</span>
+              </div>
+              <p className="font-bold mb-2">Album trends</p>
+              <p className="text-sm text-[--muted]">
+                When it hits 100+ reviews, charts, or blows up—the system checks who called it early.
+              </p>
+            </div>
+            <div>
+              <div className="w-10 h-10 border border-[#ffd700] flex items-center justify-center mb-4 text-[#ffd700]">
+                <span className="text-lg font-bold">3</span>
+              </div>
+              <p className="font-bold mb-2">You get credit</p>
+              <p className="text-sm text-[--muted]">
+                Gold Spin (first 10), Silver Spin (first 50), or Bronze Spin (first 100). Proof forever.
               </p>
             </div>
           </div>
-
-          {!session && (
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-2 mt-8 px-5 py-3 bg-white text-black text-[12px] uppercase tracking-[0.1em] font-medium hover:bg-[#e5e5e5] transition-colors"
-            >
-              Get Started
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </Link>
-          )}
         </div>
       </section>
 
@@ -212,9 +332,84 @@ export default async function Home() {
               </div>
             )}
 
-            {/* RIGHT: First Spin Widget (30%) */}
+            {/* RIGHT: First Spin Widget + Subtle FOMO (30%) */}
             <div className="lg:w-[30%] px-6 py-10 border-t lg:border-t-0 border-[--border]">
               <FirstSpinWidget />
+              
+              {/* Subtle FOMO: Recently Trended */}
+              {recentlyTrended.length > 0 && (
+                <div className="mt-6 pt-6 border-t border-[--border]">
+                  <p className="text-[9px] tracking-[0.2em] uppercase text-[--muted] mb-3">
+                    Just Trended
+                  </p>
+                  <div className="space-y-2">
+                    {recentlyTrended.slice(0, 3).map((album) => (
+                      <Link
+                        key={album.id}
+                        href={`/album/${album.spotifyId}`}
+                        className="flex items-center gap-2 group"
+                      >
+                        <div className="w-8 h-8 flex-shrink-0 bg-[#181818]">
+                          {album.coverArtUrl && (
+                            <img src={album.coverArtUrl} alt="" className="w-full h-full object-cover" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs truncate group-hover:text-[--muted] transition">
+                            {album.title}
+                          </p>
+                          <p className="text-[10px] text-[--muted]">
+                            {album.totalReviews} reviews
+                          </p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Subtle urgency: About to Trend */}
+              {approachingTrend.length > 0 && (
+                <div className="mt-6 pt-6 border-t border-[--border]">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-1.5 h-1.5 bg-[#ffd700] rounded-full animate-pulse" />
+                    <p className="text-[9px] tracking-[0.2em] uppercase text-[--muted]">
+                      Approaching
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    {approachingTrend.map((album) => (
+                      <Link
+                        key={album.id}
+                        href={`/album/${album.spotifyId}`}
+                        className="flex items-center gap-2 group"
+                      >
+                        <div className="w-8 h-8 flex-shrink-0 bg-[#181818]">
+                          {album.coverArtUrl && (
+                            <img src={album.coverArtUrl} alt="" className="w-full h-full object-cover" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs truncate group-hover:text-[--muted] transition">
+                            {album.title}
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-1 bg-[--border]">
+                              <div 
+                                className="h-full bg-[#ffd700]" 
+                                style={{ width: `${album.totalReviews}%` }}
+                              />
+                            </div>
+                            <span className="text-[10px] text-[--muted] tabular-nums">
+                              {album.totalReviews}/100
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -373,22 +568,86 @@ export default async function Home() {
         </div>
       </div>
 
+      {/* College Radio CTA - The Godfather Offer */}
+      <section className="border-t border-[--border] bg-gradient-to-b from-transparent to-[#ffd700]/5">
+        <div className="max-w-7xl mx-auto px-6 py-16">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+            <div className="max-w-xl">
+              <p className="text-[10px] tracking-[0.3em] uppercase text-[#ffd700] mb-3 font-bold">
+                College Radio Partnership
+              </p>
+              <h2 className="text-2xl lg:text-3xl font-bold mb-4">
+                Your station breaks artists.<br />
+                Now you can prove it.
+              </h2>
+              <p className="text-[--muted] mb-6">
+                First 50 stations get Founding Status—free premium features forever. 
+                Station leaderboards. Verified DJ badges. Conference rankings.
+              </p>
+              <div className="flex items-center gap-4">
+                <Link
+                  href="/stations"
+                  className="px-6 py-3 bg-[#ffd700] text-black text-[11px] tracking-[0.15em] uppercase font-bold hover:bg-[#ffed4a] transition"
+                >
+                  Apply Now
+                </Link>
+                <span className="text-sm text-[--muted]">
+                  <span className="text-[#ffd700] font-bold">23</span> spots remaining
+                </span>
+              </div>
+            </div>
+            <div className="hidden lg:block">
+              <div className="border border-[#ffd700]/30 p-6 min-w-[280px]">
+                <p className="text-[9px] tracking-[0.2em] uppercase text-[--muted] mb-4">
+                  Station Preview
+                </p>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[#ffd700]">#1</span>
+                    <span>WRVU Nashville</span>
+                    <span className="font-bold">847</span>
+                  </div>
+                  <div className="flex justify-between text-sm opacity-70">
+                    <span>#2</span>
+                    <span>WJPZ Syracuse</span>
+                    <span className="font-bold">712</span>
+                  </div>
+                  <div className="flex justify-between text-sm opacity-50">
+                    <span>#3</span>
+                    <span>Your Station?</span>
+                    <span className="font-bold">—</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
-      <footer className="border-t border-[--border] mt-8">
+      <footer className="border-t border-[--border]">
         <div className="max-w-7xl mx-auto px-6 py-10">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-            <p className="text-[11px] tracking-[0.15em] uppercase text-[--border]">
-              WAXFEED · Polarity Lab LLC · 2025
-            </p>
-            <nav className="flex gap-8">
+            <div>
+              <p className="text-[11px] tracking-[0.15em] uppercase text-[--muted] mb-2">
+                WAXFEED · Polarity Lab LLC · 2025
+              </p>
+              <p className="text-xs text-[--border]">
+                The only platform that proves your music taste.
+              </p>
+            </div>
+            <nav className="flex flex-wrap gap-6 lg:gap-8">
               <Link href="/discover" className="text-[11px] tracking-[0.15em] text-[--muted] hover:text-white transition-colors">
                 DISCOVER
               </Link>
-              <Link href="/friends" className="text-[11px] tracking-[0.15em] text-[--muted] hover:text-white transition-colors">
-                FRIENDS
+              <Link href="/pricing" className="text-[11px] tracking-[0.15em] text-[--muted] hover:text-white transition-colors">
+                PRICING
               </Link>
-              <Link href="/hot-takes" className="text-[11px] tracking-[0.15em] text-[--muted] hover:text-white transition-colors">
-                HOT TAKES
+              <Link href="/shop" className="text-[11px] tracking-[0.15em] text-[--muted] hover:text-white transition-colors">
+                SHOP
+              </Link>
+              <Link href="/stations" className="text-[11px] tracking-[0.15em] text-[#ffd700] hover:text-[#ffed4a] transition-colors">
+                COLLEGE RADIO
               </Link>
             </nav>
           </div>

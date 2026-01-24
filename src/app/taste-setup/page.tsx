@@ -58,26 +58,24 @@ export default async function TasteSetupPage() {
         </p>
 
         {/* What you'll get */}
-        <div className="border-2 border-white p-6 text-left space-y-4">
-          <h3 className="text-xs uppercase tracking-widest text-neutral-500 font-bold">
-            WHAT YOU'LL GET
+        <div className="border-2 border-[#ffd700] p-6 text-left space-y-4">
+          <h3 className="text-xs uppercase tracking-widest text-[#ffd700] font-bold">
+            TWO THINGS HAPPEN WHEN YOU RATE
           </h3>
           <ul className="space-y-3">
-            <li className="flex items-center gap-3">
-              <span className="text-xl">🎵</span>
-              <span>Your unique TasteID archetype</span>
+            <li className="flex items-start gap-3">
+              <span className="text-xl">🏆</span>
+              <div>
+                <span className="font-bold">Each rating is a timestamped review</span>
+                <p className="text-sm text-neutral-500">Your position is recorded. When albums trend, you earn badges.</p>
+              </div>
             </li>
-            <li className="flex items-center gap-3">
-              <span className="text-xl">👥</span>
-              <span>Match with similar music lovers</span>
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="text-xl">💿</span>
-              <span>Personalized album recommendations</span>
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="text-xl">📊</span>
-              <span>Shareable taste card for social</span>
+            <li className="flex items-start gap-3">
+              <span className="text-xl">🎯</span>
+              <div>
+                <span className="font-bold">You unlock your TasteID</span>
+                <p className="text-sm text-neutral-500">A unique fingerprint of your taste. Match with similar music lovers.</p>
+              </div>
             </li>
           </ul>
         </div>

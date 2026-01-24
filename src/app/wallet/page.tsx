@@ -242,21 +242,37 @@ export default function WalletPage() {
       {activeTab === "badges" && (
         <section className="max-w-7xl mx-auto px-6 py-8">
           {totalBadges === 0 ? (
-            <div className="py-16 border border-[--border] text-center">
-              <div className="w-16 h-16 border-2 border-[--border] flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl text-[--muted]">?</span>
+            <div className="py-16 border border-[#ffd700]/20 text-center bg-[#ffd700]/5">
+              <div className="w-16 h-16 border-2 border-[#ffd700] flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl text-[#ffd700]">🏆</span>
               </div>
-              <p className="text-lg font-medium mb-2">No badges yet</p>
-              <p className="text-sm text-[--muted] mb-6 max-w-md mx-auto">
-                Review albums before they trend to earn First Spin badges. 
-                Your position is recorded. If it blows up you get credit.
+              <p className="text-lg font-bold mb-2">Your badge collection starts here</p>
+              <p className="text-sm text-[--muted] mb-4 max-w-md mx-auto">
+                Every album you review records your position. When it trends, you earn:
               </p>
+              <div className="flex justify-center gap-6 mb-8">
+                <div className="text-center">
+                  <p className="text-[#ffd700] font-bold">Gold</p>
+                  <p className="text-xs text-[--muted]">Top 10</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-gray-300 font-bold">Silver</p>
+                  <p className="text-xs text-[--muted]">Top 50</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-amber-600 font-bold">Bronze</p>
+                  <p className="text-xs text-[--muted]">Top 100</p>
+                </div>
+              </div>
               <Link
                 href="/discover"
-                className="inline-block px-6 py-3 bg-white text-black text-[11px] tracking-[0.15em] uppercase font-medium hover:bg-[#e5e5e5] transition"
+                className="inline-block px-6 py-3 bg-[#ffd700] text-black text-[11px] tracking-[0.15em] uppercase font-bold hover:bg-[#ffed4a] transition"
               >
-                Discover Albums
+                Review Your First Album
               </Link>
+              <p className="text-xs text-[--muted] mt-4">
+                New releases have the best odds for Gold Spins
+              </p>
             </div>
           ) : (
             <div>
@@ -296,9 +312,24 @@ export default function WalletPage() {
                       </span>
                     </div>
                     <p className="text-sm font-medium mb-1">{badge.badgeType} Spin</p>
-                    <p className="text-xs text-[--muted]">
+                    <p className="text-xs text-[--muted] mb-3">
                       {formatDistanceToNow(new Date(badge.createdAt), { addSuffix: true })}
                     </p>
+                    <Link
+                      href={`/badge/${badge.id}`}
+                      className={`inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider ${
+                        badge.badgeType === 'GOLD' 
+                          ? 'text-[#ffd700] hover:text-[#ffd700]/80' 
+                          : badge.badgeType === 'SILVER'
+                            ? 'text-gray-400 hover:text-gray-300'
+                            : 'text-amber-700 hover:text-amber-600'
+                      } transition-colors`}
+                    >
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                      </svg>
+                      Share
+                    </Link>
                   </div>
                 ))}
               </div>

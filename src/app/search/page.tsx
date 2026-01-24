@@ -24,6 +24,24 @@ interface LocalAlbum {
   totalReviews: number
 }
 
+interface Track {
+  id: string
+  spotifyId: string
+  name: string
+  trackNumber: number
+  durationMs: number
+  averageRating: number | null
+  totalReviews: number
+  album: {
+    id: string
+    spotifyId: string
+    title: string
+    artistName: string
+    coverArtUrl: string | null
+    coverArtUrlMedium: string | null
+  }
+}
+
 function SearchContent() {
   const searchParams = useSearchParams()
   const initialQuery = searchParams.get("q") || ""
@@ -31,25 +49,37 @@ function SearchContent() {
   const [query, setQuery] = useState(initialQuery)
   const [spotifyResults, setSpotifyResults] = useState<SpotifyAlbum[]>([])
   const [localResults, setLocalResults] = useState<LocalAlbum[]>([])
+  const [trackResults, setTrackResults] = useState<Track[]>([])
   const [loading, setLoading] = useState(false)
   const [importing, setImporting] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<"all" | "local" | "spotify">("all")
+  const [activeTab, setActiveTab] = useState<"all" | "albums" | "tracks" | "spotify">("all")
 
   const search = useCallback(async (q: string) => {
     if (!q || q.length < 2) {
       setSpotifyResults([])
       setLocalResults([])
+      setTrackResults([])
       return
     }
 
     setLoading(true)
     try {
-      const res = await fetch(`/api/albums/search?q=${encodeURIComponent(q)}&source=both`)
-      const data = await res.json()
+      // Search albums and tracks in parallel
+      const [albumRes, trackRes] = await Promise.all([
+        fetch(`/api/albums/search?q=${encodeURIComponent(q)}&source=both`),
+        fetch(`/api/tracks/search?q=${encodeURIComponent(q)}&limit=20`)
+      ])
+      
+      const albumData = await albumRes.json()
+      const trackData = await trackRes.json()
 
-      if (data.success) {
-        setSpotifyResults(data.data.spotify || [])
-        setLocalResults(data.data.local || [])
+      if (albumData.success) {
+        setSpotifyResults(albumData.data.spotify || [])
+        setLocalResults(albumData.data.local || [])
+      }
+      
+      if (trackData.success) {
+        setTrackResults(trackData.data.tracks || [])
       }
     } catch (error) {
       console.error("Search error:", error)
@@ -81,8 +111,13 @@ function SearchContent() {
     setImporting(null)
   }
 
-  const filteredSpotify = activeTab === "local" ? [] : spotifyResults
-  const filteredLocal = activeTab === "spotify" ? [] : localResults
+  const showAlbums = activeTab === "all" || activeTab === "albums"
+  const showTracks = activeTab === "all" || activeTab === "tracks"
+  const showSpotify = activeTab === "all" || activeTab === "spotify"
+
+  const filteredSpotify = showSpotify ? spotifyResults : []
+  const filteredLocal = showAlbums ? localResults : []
+  const filteredTracks = showTracks ? trackResults : []
 
   return (
     <>
@@ -92,29 +127,35 @@ function SearchContent() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search for albums, artists..."
+          placeholder="Search for albums, songs, artists..."
           className="w-full max-w-xl text-lg"
           autoFocus
         />
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-4 mb-8 border-b border-[#222]">
+      <div className="flex gap-4 mb-8 border-b border-[--border]">
         <button
           onClick={() => setActiveTab("all")}
-          className={`pb-2 px-1 text-sm ${activeTab === "all" ? "border-b-2 border-white" : "text-[#888]"}`}
+          className={`pb-2 px-1 text-sm transition-colors ${activeTab === "all" ? "border-b-2 border-[--foreground]" : "text-[--muted]"}`}
         >
           All
         </button>
         <button
-          onClick={() => setActiveTab("local")}
-          className={`pb-2 px-1 text-sm ${activeTab === "local" ? "border-b-2 border-white" : "text-[#888]"}`}
+          onClick={() => setActiveTab("albums")}
+          className={`pb-2 px-1 text-sm transition-colors ${activeTab === "albums" ? "border-b-2 border-[--foreground]" : "text-[--muted]"}`}
         >
-          On Waxfeed ({localResults.length})
+          Albums ({localResults.length})
+        </button>
+        <button
+          onClick={() => setActiveTab("tracks")}
+          className={`pb-2 px-1 text-sm transition-colors ${activeTab === "tracks" ? "border-b-2 border-[--foreground]" : "text-[--muted]"}`}
+        >
+          Songs ({trackResults.length})
         </button>
         <button
           onClick={() => setActiveTab("spotify")}
-          className={`pb-2 px-1 text-sm ${activeTab === "spotify" ? "border-b-2 border-white" : "text-[#888]"}`}
+          className={`pb-2 px-1 text-sm transition-colors ${activeTab === "spotify" ? "border-b-2 border-[--foreground]" : "text-[--muted]"}`}
         >
           Spotify ({spotifyResults.length})
         </button>
@@ -124,10 +165,10 @@ function SearchContent() {
         <p className="text-[#888]">Searching...</p>
       ) : (
         <div className="space-y-12">
-          {/* Local Results */}
+          {/* Local Album Results */}
           {filteredLocal.length > 0 && (
             <section>
-              <h2 className="text-lg font-bold mb-4">On Waxfeed</h2>
+              <h2 className="text-lg font-bold mb-4">Albums on Waxfeed</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
                 {filteredLocal.map((album) => (
                   <AlbumCard
@@ -140,6 +181,18 @@ function SearchContent() {
                     averageRating={album.averageRating}
                     totalReviews={album.totalReviews}
                   />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Track Results */}
+          {filteredTracks.length > 0 && (
+            <section>
+              <h2 className="text-lg font-bold mb-4">Songs</h2>
+              <div className="space-y-2">
+                {filteredTracks.map((track) => (
+                  <TrackResult key={track.id} track={track} />
                 ))}
               </div>
             </section>
@@ -204,16 +257,16 @@ function SearchContent() {
           )}
 
           {/* Empty State */}
-          {query && !loading && filteredLocal.length === 0 && filteredSpotify.length === 0 && (
+          {query && !loading && filteredLocal.length === 0 && filteredSpotify.length === 0 && filteredTracks.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-[#888]">No results found for &ldquo;{query}&rdquo;</p>
+              <p className="text-[--muted]">No results found for &ldquo;{query}&rdquo;</p>
             </div>
           )}
 
           {/* Initial State */}
           {!query && (
             <div className="text-center py-12">
-              <p className="text-[#888]">Start typing to search for albums</p>
+              <p className="text-[--muted]">Start typing to search for albums and songs</p>
             </div>
           )}
         </div>
@@ -222,11 +275,69 @@ function SearchContent() {
   )
 }
 
+// Track search result row
+function TrackResult({ track }: { track: Track }) {
+  const formatDuration = (ms: number) => {
+    const minutes = Math.floor(ms / 60000)
+    const seconds = Math.floor((ms % 60000) / 1000)
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`
+  }
+
+  return (
+    <Link
+      href={`/album/${track.album.id}`}
+      className="flex items-center gap-4 p-3 border border-[--border] hover:bg-[--border]/20 transition-colors no-underline group"
+    >
+      {/* Album art */}
+      <div className="w-12 h-12 flex-shrink-0 bg-[--border]">
+        {track.album.coverArtUrlMedium || track.album.coverArtUrl ? (
+          <img
+            src={track.album.coverArtUrlMedium || track.album.coverArtUrl || ""}
+            alt=""
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-[--muted] text-xs">
+            No Cover
+          </div>
+        )}
+      </div>
+
+      {/* Track info */}
+      <div className="flex-1 min-w-0">
+        <p className="font-medium truncate group-hover:text-[#ffd700] transition-colors">
+          {track.name}
+        </p>
+        <p className="text-sm text-[--muted] truncate">
+          {track.album.artistName} · {track.album.title}
+        </p>
+      </div>
+
+      {/* Duration */}
+      <div className="text-sm text-[--muted] tabular-nums">
+        {formatDuration(track.durationMs)}
+      </div>
+
+      {/* Rating */}
+      {track.averageRating !== null && (
+        <div className="text-sm font-bold text-[#ffd700] tabular-nums">
+          {track.averageRating.toFixed(1)}
+        </div>
+      )}
+      {track.totalReviews > 0 && (
+        <div className="text-xs text-[--muted]">
+          {track.totalReviews} {track.totalReviews === 1 ? "rating" : "ratings"}
+        </div>
+      )}
+    </Link>
+  )
+}
+
 export default function SearchPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold tracking-tighter mb-8">Search</h1>
-      <Suspense fallback={<p className="text-[#888]">Loading...</p>}>
+      <Suspense fallback={<p className="text-[--muted]">Loading...</p>}>
         <SearchContent />
       </Suspense>
     </div>

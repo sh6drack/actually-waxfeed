@@ -348,27 +348,54 @@ interface ReviewWithAlbum {
  */
 export async function computeTasteID(userId: string): Promise<TasteIDComputation | null> {
   // Fetch all user reviews with album data
-  const reviews = await prisma.review.findMany({
-    where: { userId },
-    include: {
-      album: {
-        select: {
-          id: true,
-          genres: true,
-          artistName: true,
-          releaseDate: true,
-          title: true,
-          averageRating: true,
-          totalReviews: true,
+  const [reviews, trackReviews] = await Promise.all([
+    prisma.review.findMany({
+      where: { userId },
+      include: {
+        album: {
+          select: {
+            id: true,
+            genres: true,
+            artistName: true,
+            releaseDate: true,
+            title: true,
+            averageRating: true,
+            totalReviews: true,
+            _count: { select: { tracks: true } },
+          },
         },
       },
-    },
-    orderBy: { createdAt: 'desc' },
-  })
+      orderBy: { createdAt: 'desc' },
+    }),
+    // Fetch track reviews for deeper analysis
+    prisma.trackReview.findMany({
+      where: { userId },
+      include: {
+        track: {
+          select: {
+            id: true,
+            name: true,
+            albumId: true,
+            album: {
+              select: {
+                id: true,
+                genres: true,
+                artistName: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    }),
+  ])
 
   if (reviews.length === 0) {
     return null
   }
+
+  // Compute track depth (how thoroughly users explore albums)
+  const trackDepthData = computeTrackDepth(reviews, trackReviews)
 
   // Apply recency weighting - more recent reviews matter more
   const weightedReviews = applyRecencyWeighting(reviews)
@@ -468,6 +495,9 @@ export async function computeTasteID(userId: string): Promise<TasteIDComputation
     memorableMoments,
     futureSelvesMusic,
     polarityScore2,
+
+    // Track-level data
+    trackDepthData,
   }
 }
 
@@ -486,6 +516,120 @@ function applyRecencyWeighting(reviews: ReviewWithAlbum[]): Array<ReviewWithAlbu
     const textBonus = review.text && review.text.length > 50 ? 1.3 : 1
     return { ...review, weight: weight * textBonus }
   })
+}
+
+/**
+ * Compute track depth - how thoroughly users explore albums they review
+ * This reveals engagement style: surface listener vs deep diver
+ */
+interface TrackDepthData {
+  totalTracksRated: number
+  albumsWithTracks: number
+  averageTrackCompletion: number // 0-1, avg % of tracks rated per album
+  completedAlbums: number // Albums with 100% tracks rated
+  deepDiveScore: number // 0-1, overall track engagement
+  favoriteTracksCount: number
+  trackRatingVariance: number // How much track ratings vary within albums
+  highlightGenres: string[] // Genres where user rates most tracks
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function computeTrackDepth(reviews: any[], trackReviews: any[]): TrackDepthData {
+  if (trackReviews.length === 0) {
+    return {
+      totalTracksRated: 0,
+      albumsWithTracks: 0,
+      averageTrackCompletion: 0,
+      completedAlbums: 0,
+      deepDiveScore: 0,
+      favoriteTracksCount: 0,
+      trackRatingVariance: 0,
+      highlightGenres: [],
+    }
+  }
+
+  // Group track reviews by album
+  const tracksByAlbum = new Map<string, typeof trackReviews>()
+  for (const tr of trackReviews) {
+    const albumId = tr.track.albumId
+    if (!tracksByAlbum.has(albumId)) {
+      tracksByAlbum.set(albumId, [])
+    }
+    tracksByAlbum.get(albumId)!.push(tr)
+  }
+
+  // Calculate completion per album
+  const albumCompletions: number[] = []
+  let completedAlbums = 0
+  const genreTrackCounts = new Map<string, number>()
+
+  for (const review of reviews) {
+    const albumId = review.album.id
+    const albumTracks = tracksByAlbum.get(albumId) || []
+    const totalTracks = review.album._count?.tracks || 0
+    
+    if (totalTracks > 0) {
+      const completion = albumTracks.length / totalTracks
+      albumCompletions.push(completion)
+      
+      if (completion >= 1) {
+        completedAlbums++
+      }
+
+      // Track which genres get deep dives
+      if (completion > 0.5) {
+        for (const genre of review.album.genres || []) {
+          genreTrackCounts.set(genre, (genreTrackCounts.get(genre) || 0) + albumTracks.length)
+        }
+      }
+    }
+  }
+
+  const averageTrackCompletion = albumCompletions.length > 0
+    ? albumCompletions.reduce((a, b) => a + b, 0) / albumCompletions.length
+    : 0
+
+  // Calculate rating variance within albums (shows discernment)
+  let totalVariance = 0
+  let varianceCount = 0
+  for (const [, tracks] of tracksByAlbum) {
+    if (tracks.length >= 3) {
+      const ratings = tracks.map(t => t.rating)
+      const mean = ratings.reduce((a, b) => a + b, 0) / ratings.length
+      const variance = ratings.reduce((sum, r) => sum + Math.pow(r - mean, 2), 0) / ratings.length
+      totalVariance += Math.sqrt(variance)
+      varianceCount++
+    }
+  }
+  const trackRatingVariance = varianceCount > 0 ? totalVariance / varianceCount : 0
+
+  // Favorite tracks
+  const favoriteTracksCount = trackReviews.filter(tr => tr.isFavorite).length
+
+  // Highlight genres (top 3 genres by track count)
+  const highlightGenres = [...genreTrackCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([genre]) => genre)
+
+  // Deep dive score (composite)
+  const deepDiveScore = Math.min(1, (
+    (averageTrackCompletion * 0.4) +
+    (Math.min(completedAlbums / Math.max(reviews.length, 1), 1) * 0.3) +
+    (Math.min(trackRatingVariance / 3, 1) * 0.15) + // Higher variance = more discerning
+    (Math.min(trackReviews.length / (reviews.length * 8), 1) * 0.15) // Track reviews vs album reviews
+  ))
+
+  return {
+    totalTracksRated: trackReviews.length,
+    albumsWithTracks: tracksByAlbum.size,
+    averageTrackCompletion,
+    completedAlbums,
+    deepDiveScore,
+    favoriteTracksCount,
+    trackRatingVariance,
+    highlightGenres,
+  }
 }
 
 /**

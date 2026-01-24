@@ -47,6 +47,15 @@ body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
+/* Exceptions for elements that need rounded corners */
+.tooltip-content {
+  border-radius: 6px !important;
+}
+
+.tooltip-trigger-icon {
+  border-radius: 50% !important;
+}
+
 /* Custom scrollbar - desktop only */
 @media (hover: hover) and (pointer: fine) {
   ::-webkit-scrollbar {
@@ -370,4 +379,16 @@ img[src=""] {
 .animate-scale-in {
   animation: scale-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   opacity: 0;
+}
+
+/* Tooltip animation */
+@keyframes tooltip-fade {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

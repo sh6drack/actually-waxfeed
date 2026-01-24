@@ -5,6 +5,15 @@ import Link from "next/link"
 
 export const dynamic = "force-dynamic"
 
+// Position badge helper - the subtle offer
+function getPositionBadge(totalReviews: number): { text: string; color: string } | null {
+  const nextPosition = totalReviews + 1
+  if (nextPosition <= 10) return { text: `#${nextPosition} Gold`, color: "text-[#ffd700]" }
+  if (nextPosition <= 50) return { text: `#${nextPosition} Silver`, color: "text-gray-300" }
+  if (nextPosition <= 100) return { text: `#${nextPosition} Bronze`, color: "text-amber-600" }
+  return null
+}
+
 async function getRecommendations(userId: string | undefined) {
   if (!userId) {
     return {
@@ -167,24 +176,36 @@ export default async function DiscoverPage() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
-      {/* Editorial masthead */}
+      {/* Editorial masthead - Action-oriented */}
       <header style={{ borderBottom: '1px solid var(--border)' }}>
         <div className="max-w-7xl mx-auto px-6 py-12 lg:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
             <div className="lg:col-span-8">
-              <p className="text-[10px] tracking-[0.4em] uppercase mb-4" style={{ color: 'var(--muted)' }}>
-                Vol. {new Date().getFullYear()} · Issue {new Date().getMonth() + 1}
+              <p className="text-[10px] tracking-[0.4em] uppercase mb-4 text-[#ffd700]">
+                Review Now · Prove Later
               </p>
               <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-[-0.04em] leading-[0.85]">
                 Discover
               </h1>
+              <p className="mt-4 text-lg text-[--muted] max-w-xl">
+                Every album you review is timestamped. When it trends, you get credit.
+              </p>
             </div>
             <div className="lg:col-span-4 lg:text-right">
-              <p className="text-[11px] tracking-[0.15em] uppercase leading-relaxed" style={{ color: 'var(--muted)' }}>
-                Curated selections<br />
-                Algorithmic taste<br />
-                Cultural discourse
-              </p>
+              {session ? (
+                <div className="inline-block border border-[--border] p-4">
+                  <p className="text-[10px] tracking-[0.2em] uppercase text-[--muted] mb-2">Your Stats</p>
+                  <p className="text-2xl font-bold tabular-nums">{userReviewCount}</p>
+                  <p className="text-xs text-[--muted]">reviews logged</p>
+                </div>
+              ) : (
+                <Link 
+                  href="/signup"
+                  className="inline-block px-6 py-3 bg-white text-black text-[11px] tracking-[0.15em] uppercase font-bold hover:bg-[#e5e5e5] transition"
+                >
+                  Start Reviewing
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -360,32 +381,44 @@ export default async function DiscoverPage() {
               <span className="text-4xl lg:text-6xl font-bold text-[--border]">{getSectionNum()}</span>
             </div>
 
-            {/* New Releases */}
+            {/* New Releases - Prime opportunity for early reviews */}
             <div className="col-span-12 lg:col-span-5 border-r border-[--border] py-10 lg:py-14 px-6 lg:px-8">
-              <h2 className="text-xl font-bold tracking-tight mb-6">New Releases</h2>
+              <div className="flex items-baseline justify-between mb-6">
+                <h2 className="text-xl font-bold tracking-tight">New Releases</h2>
+                <span className="text-[9px] tracking-[0.2em] uppercase text-[#ffd700]">Early review opportunity</span>
+              </div>
               {recommendations.newReleases.length > 0 ? (
                 <div className="grid grid-cols-2 gap-4">
-                  {recommendations.newReleases.map((album) => (
-                    <Link
-                      key={album.id}
-                      href={`/album/${album.spotifyId}`}
-                      className="group"
-                    >
-                      <div className="aspect-square bg-[--border] overflow-hidden mb-2">
-                        {album.coverArtUrl && (
-                          <img
-                            src={album.coverArtUrl}
-                            alt={album.title}
-                            className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
-                          />
-                        )}
-                      </div>
-                      <p className="text-[12px] font-semibold truncate group-hover:text-[--muted] transition-colors">
-                        {album.title}
-                      </p>
-                      <p className="text-[10px] text-[--muted] truncate">{album.artistName}</p>
-                    </Link>
-                  ))}
+                  {recommendations.newReleases.map((album) => {
+                    const badge = getPositionBadge(album.totalReviews)
+                    return (
+                      <Link
+                        key={album.id}
+                        href={`/album/${album.spotifyId}`}
+                        className="group"
+                      >
+                        <div className="aspect-square bg-[--border] overflow-hidden mb-2 relative">
+                          {album.coverArtUrl && (
+                            <img
+                              src={album.coverArtUrl}
+                              alt={album.title}
+                              className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                            />
+                          )}
+                          {/* Position badge - the subtle offer */}
+                          {badge && (
+                            <div className="absolute bottom-0 left-0 right-0 bg-black/80 px-2 py-1">
+                              <span className={`text-[9px] font-bold ${badge.color}`}>{badge.text}</span>
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-[12px] font-semibold truncate group-hover:text-[--muted] transition-colors">
+                          {album.title}
+                        </p>
+                        <p className="text-[10px] text-[--muted] truncate">{album.artistName}</p>
+                      </Link>
+                    )
+                  })}
                 </div>
               ) : (
                 <p className="text-[--muted] text-sm">No new releases this month</p>
@@ -436,24 +469,26 @@ export default async function DiscoverPage() {
         </div>
       </section>
 
-      {/* CTA for non-logged in or no reviews */}
+      {/* CTA for non-logged in or no reviews - Zero to One: clear value prop */}
       {(!session || recommendations.forYou.length === 0) && (
-        <section className="py-20 lg:py-28">
+        <section className="py-20 lg:py-28 bg-white/[0.02]">
           <div className="max-w-7xl mx-auto px-6 text-center">
-            <p className="text-[10px] tracking-[0.4em] uppercase text-[--muted] mb-6">
-              {session ? 'Start Your Journey' : 'Join the Discourse'}
+            <p className="text-[10px] tracking-[0.4em] uppercase text-[#ffd700] mb-6">
+              {session ? 'Start Proving Your Taste' : 'The Music Credibility Platform'}
             </p>
             <h2 className="text-3xl lg:text-5xl font-bold tracking-tight mb-4">
-              {session ? 'Review albums to unlock personalized discovery' : 'Join the community'}
+              {session 
+                ? 'Every review you log is timestamped forever' 
+                : 'Prove you had taste before the trend'}
             </h2>
-            <p className="text-[--muted] mb-8 max-w-md mx-auto">
+            <p className="text-[--muted] mb-8 max-w-lg mx-auto">
               {session
-                ? 'Your taste shapes your feed. The more you review, the better we understand what you want to hear next.'
-                : 'Rate albums, build lists, discover new music through friends.'
+                ? 'Review an album today. When it blows up next month, you\'ll have proof you called it. Gold Spin for top 10, Silver for top 50, Bronze for top 100.'
+                : 'Review albums, get timestamped positions, earn badges when your picks trend. Your taste has real, provable value.'
               }
             </p>
             <Link
-              href={session ? "/search" : "/login"}
+              href={session ? "/search" : "/signup"}
               className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 font-semibold text-sm tracking-wide hover:bg-[#e5e5e5] transition-colors"
             >
               {session ? 'Find Albums' : 'Sign In'}

@@ -4,13 +4,19 @@ import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import { WAX_PAX as WAX_PAX_CONFIG, formatPrice } from "@/lib/stripe"
 
-const WAX_PAX = [
-  { id: "wax_100", name: "100 Wax", wax: 100, price: 99, priceDisplay: "$0.99" },
-  { id: "wax_500", name: "500 Wax", wax: 500, price: 399, priceDisplay: "$3.99", popular: true },
-  { id: "wax_1500", name: "1,500 Wax", wax: 1500, price: 999, priceDisplay: "$9.99" },
-  { id: "wax_5000", name: "5,000 Wax", wax: 5000, price: 2499, priceDisplay: "$24.99", best: true },
-]
+// Transform the WAX_PAX config object into an array for display
+const WAX_PAX = Object.values(WAX_PAX_CONFIG).map(pax => ({
+  id: pax.id,
+  name: `${pax.waxAmount.toLocaleString()} Wax`,
+  wax: pax.waxAmount,
+  price: pax.priceCents,
+  priceDisplay: formatPrice(pax.priceCents),
+  popular: pax.popular,
+  bonusPercent: pax.bonusPercent,
+  best: pax.id === 'mega', // Mega is best value (50% bonus)
+}))
 
 export default function ShopPage() {
   const { data: session, status } = useSession()
@@ -70,20 +76,20 @@ export default function ShopPage() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
-      {/* Header */}
+      {/* Header - Clear value prop */}
       <section style={{ borderBottom: '1px solid var(--border)' }}>
         <div className="max-w-7xl mx-auto px-6 py-12 lg:py-16">
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
             <div>
-              <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-3">
-                Shop
+              <p className="text-[10px] tracking-[0.3em] uppercase text-[#ffd700] mb-3">
+                Wax Economy
               </p>
               <h1 className="text-4xl lg:text-5xl font-bold tracking-[-0.02em] mb-4">
-                Get Wax
+                Reward Great Taste
               </h1>
               <p className="text-base text-[--muted] max-w-xl">
-                Buy Wax to tip reviews you love. Your tips support great reviewers 
-                and help surface quality content.
+                Tip reviews that helped you discover something new. 
+                Tipped reviews rise in visibility—good taste gets rewarded.
               </p>
             </div>
             {session && (
@@ -94,6 +100,41 @@ export default function ShopPage() {
                 <p className="text-3xl font-bold tabular-nums">{balance.toLocaleString()}</p>
               </div>
             )}
+          </div>
+        </div>
+      </section>
+
+      {/* What is Wax - For new users */}
+      <section className="border-b border-[--border] bg-white/[0.02]">
+        <div className="max-w-7xl mx-auto px-6 py-10">
+          <div className="grid md:grid-cols-3 gap-8">
+            <div>
+              <div className="w-8 h-8 border border-[--border] flex items-center justify-center mb-3">
+                <span className="text-[#ffd700]">💰</span>
+              </div>
+              <p className="font-bold mb-1">Tip Great Reviews</p>
+              <p className="text-sm text-[--muted]">
+                Found a review that introduced you to a new favorite? Tip it to say thanks.
+              </p>
+            </div>
+            <div>
+              <div className="w-8 h-8 border border-[--border] flex items-center justify-center mb-3">
+                <span className="text-[#ffd700]">📈</span>
+              </div>
+              <p className="font-bold mb-1">Boost Visibility</p>
+              <p className="text-sm text-[--muted]">
+                Tipped reviews surface higher. Help quality content get discovered.
+              </p>
+            </div>
+            <div>
+              <div className="w-8 h-8 border border-[--border] flex items-center justify-center mb-3">
+                <span className="text-[#ffd700]">🏆</span>
+              </div>
+              <p className="font-bold mb-1">Build Reputation</p>
+              <p className="text-sm text-[--muted]">
+                Total tips received factor into your Tastemaker Score and leaderboard rank.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -111,7 +152,7 @@ export default function ShopPage() {
         <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-8">
           Wax Pax
         </p>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {WAX_PAX.map((pax) => (
             <div 
               key={pax.id} 
@@ -134,10 +175,19 @@ export default function ShopPage() {
                 </div>
               )}
               
-              <p className="text-3xl font-bold mb-2 tabular-nums">
+              <p className="text-3xl font-bold mb-1 tabular-nums">
                 {pax.wax.toLocaleString()}
               </p>
-              <p className="text-sm text-[--muted] mb-6">Wax</p>
+              <div className="flex items-center gap-2 mb-6">
+                <p className="text-sm text-[--muted]">Wax</p>
+                {pax.bonusPercent > 0 && (
+                  <span className={`text-[10px] px-1.5 py-0.5 ${
+                    pax.best ? 'bg-[#ffd700]/20 text-[#ffd700]' : 'bg-green-500/20 text-green-500'
+                  }`}>
+                    +{pax.bonusPercent}% bonus
+                  </span>
+                )}
+              </div>
               
               <button
                 onClick={() => handlePurchase(pax.id)}
@@ -165,8 +215,8 @@ export default function ShopPage() {
             <div>
               <p className="text-lg font-medium mb-2">Tip Reviews</p>
               <p className="text-sm text-[--muted]">
-                Award Wax to reviews you love. Standard, Premium, or GOLD.
-                The reviewer earns a portion.
+                Award Wax to reviews you love. The reviewer earns Wax back:
+                Standard (1), Premium (3), or GOLD (10).
               </p>
             </div>
             <div>

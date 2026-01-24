@@ -34,12 +34,19 @@ async function getUser(identifier: string) {
       bio: true,
       socialLinks: true,
       waxScore: true,
+      waxBalance: true,
+      lifetimeWaxEarned: true,
       premiumWaxScore: true,
       isPremium: true,
       isVerified: true,
       createdAt: true,
       currentStreak: true,
       longestStreak: true,
+      // First Spin stats
+      tastemakeScore: true,
+      goldSpinCount: true,
+      silverSpinCount: true,
+      bronzeSpinCount: true,
       tasteId: {
         select: {
           primaryArchetype: true,
@@ -78,12 +85,19 @@ async function getUser(identifier: string) {
         bio: true,
         socialLinks: true,
         waxScore: true,
+        waxBalance: true,
+        lifetimeWaxEarned: true,
         premiumWaxScore: true,
         isPremium: true,
         isVerified: true,
         createdAt: true,
         currentStreak: true,
         longestStreak: true,
+        // First Spin stats
+        tastemakeScore: true,
+        goldSpinCount: true,
+        silverSpinCount: true,
+        bronzeSpinCount: true,
         tasteId: {
           select: {
             primaryArchetype: true,
@@ -303,10 +317,10 @@ export default async function ProfilePage({ params }: Props) {
                 {user.currentStreak} day streak
               </span>
             )}
-            {user.waxScore > 0 && (
-              <span className="flex items-center gap-1.5">
+            {(user.lifetimeWaxEarned || 0) > 0 && (
+              <span className="flex items-center gap-1.5" title={`Balance: ${user.waxBalance || 0} Wax`}>
                 <VinylIcon size={16} />
-                {user.waxScore} wax
+                {user.lifetimeWaxEarned?.toLocaleString()} wax earned
               </span>
             )}
             {user.premiumWaxScore > 0 && (
@@ -316,6 +330,40 @@ export default async function ProfilePage({ params }: Props) {
               </span>
             )}
           </div>
+
+          {/* First Spin Badges */}
+          {((user.goldSpinCount || 0) + (user.silverSpinCount || 0) + (user.bronzeSpinCount || 0)) > 0 && (
+            <div className="flex flex-wrap justify-center sm:justify-start gap-3 text-sm mb-4">
+              {(user.goldSpinCount || 0) > 0 && (
+                <span className="flex items-center gap-1.5 px-2 py-1 border border-[#ffd700]/30 bg-[#ffd700]/10" title="Gold Spin - First 10 reviewers on trending albums">
+                  <span className="text-[#ffd700]">🥇</span>
+                  <span className="text-[#ffd700] font-bold">{user.goldSpinCount}</span>
+                  <span className="text-[#ffd700]/70">Gold</span>
+                </span>
+              )}
+              {(user.silverSpinCount || 0) > 0 && (
+                <span className="flex items-center gap-1.5 px-2 py-1 border border-gray-400/30 bg-gray-400/10" title="Silver Spin - First 50 reviewers on trending albums">
+                  <span className="text-gray-300">🥈</span>
+                  <span className="text-gray-300 font-bold">{user.silverSpinCount}</span>
+                  <span className="text-gray-400">Silver</span>
+                </span>
+              )}
+              {(user.bronzeSpinCount || 0) > 0 && (
+                <span className="flex items-center gap-1.5 px-2 py-1 border border-amber-700/30 bg-amber-700/10" title="Bronze Spin - First 100 reviewers on trending albums">
+                  <span className="text-amber-600">🥉</span>
+                  <span className="text-amber-600 font-bold">{user.bronzeSpinCount}</span>
+                  <span className="text-amber-700">Bronze</span>
+                </span>
+              )}
+              {(user.tastemakeScore || 0) > 0 && (
+                <span className="flex items-center gap-1.5 text-[--muted]" title="Tastemaker Score: Gold×10 + Silver×5 + Bronze×2">
+                  <ChartIcon size={14} />
+                  <span className="font-bold">{user.tastemakeScore}</span>
+                  <span className="text-xs">tastemaker</span>
+                </span>
+              )}
+            </div>
+          )}
 
           {/* Avg Rating & Join Date - Mobile */}
           <div className="sm:hidden text-sm mb-4" style={{ color: 'var(--muted)' }}>

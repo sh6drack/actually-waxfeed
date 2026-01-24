@@ -88,6 +88,11 @@ export default function NotificationsPage() {
         return `${actorName} reviewed "${content.albumTitle}"`
       case "review_trending":
         return `Your review of "${content.albumTitle}" is trending!`
+      case "first_spin_badge":
+        const badge = content as { badgeType?: string; position?: number; albumTitle?: string; artistName?: string; waxReward?: number }
+        return `🎖️ You earned a ${badge.badgeType} Spin badge! You were #${badge.position} to rate "${badge.albumTitle}" (+${badge.waxReward} Wax)`
+      case "album_trending":
+        return `🔥 "${content.albumTitle}" is now trending! Check if you earned a badge.`
       default:
         return "New notification"
     }
@@ -95,6 +100,7 @@ export default function NotificationsPage() {
 
   const getNotificationLink = (notification: Notification) => {
     const { type, content } = notification
+    const anyContent = content as Record<string, unknown>
 
     switch (type) {
       case "reply":
@@ -105,6 +111,10 @@ export default function NotificationsPage() {
       case "friend_accept":
       case "friend_review":
         return content.actorId ? `/u/${content.actorName}` : "/"
+      case "first_spin_badge":
+        return anyContent.badgeId ? `/badge/${anyContent.badgeId}` : "/wallet"
+      case "album_trending":
+        return anyContent.albumId ? `/album/${anyContent.albumId}` : "/trending"
       default:
         return "/"
     }

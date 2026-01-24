@@ -110,6 +110,7 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
   if (!finalTier) return
 
   // Update user subscription
+  const periodEnd = (subscription as { current_period_end?: number }).current_period_end
   await prisma.user.update({
     where: { id: finalUserId },
     data: {
@@ -117,7 +118,7 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
       stripeSubscriptionId: subscription.id,
       isPremium: true,
       role: 'PREMIUM',
-      premiumExpiresAt: new Date(subscription.current_period_end * 1000),
+      premiumExpiresAt: periodEnd ? new Date(periodEnd * 1000) : null,
     }
   })
 
@@ -146,11 +147,12 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 
   // Only update if tier changed
   if (currentUser.subscriptionTier !== newTier) {
+    const periodEnd = (subscription as { current_period_end?: number }).current_period_end
     await prisma.user.update({
       where: { id: userId },
       data: {
         subscriptionTier: newTier,
-        premiumExpiresAt: new Date(subscription.current_period_end * 1000),
+        premiumExpiresAt: periodEnd ? new Date(periodEnd * 1000) : null,
       }
     })
   }
@@ -195,7 +197,7 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
   // Grant monthly Wax on subscription renewal
   if (invoice.billing_reason !== 'subscription_cycle') return
 
-  const subscription = invoice.subscription
+  const subscription = (invoice as { subscription?: string | null }).subscription
   if (!subscription) return
 
   const sub = await stripe.subscriptions.retrieve(subscription as string)

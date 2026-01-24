@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
+import { useSession } from "next-auth/react"
+import { Tooltip } from "./ui/tooltip"
 
 interface Track {
   id: string
@@ -10,10 +12,19 @@ interface Track {
   durationMs: number
   previewUrl: string | null
   spotifyUrl: string | null
+  averageRating?: number | null
+  totalReviews?: number
+}
+
+interface TrackRating {
+  trackId: string
+  rating: number
+  isFavorite: boolean
 }
 
 interface TrackPlayerProps {
   tracks: Track[]
+  albumId: string
   albumTitle: string
   artistName: string
   coverArtUrl: string | null
@@ -25,11 +36,76 @@ function formatDuration(ms: number): string {
   return `${minutes}:${seconds.toString().padStart(2, "0")}`
 }
 
-export function TrackPlayer({ tracks, albumTitle, artistName, coverArtUrl }: TrackPlayerProps) {
+export function TrackPlayer({ tracks, albumId, albumTitle, artistName, coverArtUrl }: TrackPlayerProps) {
+  const { data: session } = useSession()
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [progress, setProgress] = useState(0)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  
+  // Track ratings state
+  const [userRatings, setUserRatings] = useState<Record<string, TrackRating>>({})
+  const [loadingRatings, setLoadingRatings] = useState(false)
+  const [ratingTrackId, setRatingTrackId] = useState<string | null>(null)
+  const [showRatings, setShowRatings] = useState(false)
+
+  // Fetch user's track ratings for this album
+  useEffect(() => {
+    if (session?.user && albumId) {
+      fetchUserRatings()
+    }
+  }, [session, albumId])
+
+  const fetchUserRatings = async () => {
+    setLoadingRatings(true)
+    try {
+      const res = await fetch(`/api/albums/${albumId}/tracks`)
+      const data = await res.json()
+      if (data.success) {
+        const ratings: Record<string, TrackRating> = {}
+        data.data.tracks.forEach((t: { id: string; userRating: number | null; userIsFavorite: boolean }) => {
+          if (t.userRating !== null) {
+            ratings[t.id] = { trackId: t.id, rating: t.userRating, isFavorite: t.userIsFavorite }
+          }
+        })
+        setUserRatings(ratings)
+      }
+    } catch (error) {
+      console.error("Failed to fetch track ratings:", error)
+    } finally {
+      setLoadingRatings(false)
+    }
+  }
+
+  const handleRateTrack = async (trackId: string, rating: number) => {
+    if (!session) return
+    setRatingTrackId(trackId)
+    try {
+      const res = await fetch(`/api/tracks/${trackId}/review`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rating }),
+      })
+      if (res.ok) {
+        setUserRatings(prev => ({
+          ...prev,
+          [trackId]: { trackId, rating, isFavorite: prev[trackId]?.isFavorite || false }
+        }))
+      }
+    } catch (error) {
+      console.error("Failed to rate track:", error)
+    } finally {
+      setRatingTrackId(null)
+    }
+  }
+
+  // Calculate progress
+  const ratedCount = Object.keys(userRatings).length
+  const totalCount = tracks.length
+  const progressPercent = totalCount > 0 ? Math.round((ratedCount / totalCount) * 100) : 0
+  const avgUserRating = ratedCount > 0
+    ? Object.values(userRatings).reduce((sum, r) => sum + r.rating, 0) / ratedCount
+    : null
 
   useEffect(() => {
     const audio = audioRef.current
@@ -92,14 +168,46 @@ export function TrackPlayer({ tracks, albumTitle, artistName, coverArtUrl }: Tra
   const tracksWithPreviews = tracks.filter(t => t.previewUrl)
 
   return (
-    <div className="border border-[#222] bg-[#0a0a0a]">
+    <div className="border border-[--border] bg-[--background]">
       <audio ref={audioRef} className="hidden" />
 
-      {/* Header */}
-      <div className="flex items-center gap-3 p-3 border-b border-[#222]">
-        <div className="text-xs text-[#888]">
-          {tracksWithPreviews.length} / {tracks.length} tracks with previews
+      {/* Header with Progress */}
+      <div className="flex items-center justify-between gap-3 p-3 border-b border-[--border]">
+        <div className="flex items-center gap-3">
+          <div className="text-xs text-[--muted]">
+            {tracksWithPreviews.length}/{tracks.length} previews
+          </div>
+          {session && (
+            <button
+              onClick={() => setShowRatings(!showRatings)}
+              className={`text-xs px-2 py-1 border transition-colors ${
+                showRatings 
+                  ? "border-[#ffd700] text-[#ffd700]" 
+                  : "border-[--border] text-[--muted] hover:border-[#ffd700] hover:text-[#ffd700]"
+              }`}
+            >
+              {showRatings ? "Hide Ratings" : "Rate Tracks"}
+            </button>
+          )}
         </div>
+        
+        {/* Progress indicator */}
+        {session && ratedCount > 0 && (
+          <Tooltip content={`You've rated ${ratedCount}/${totalCount} tracks${avgUserRating ? ` (avg: ${avgUserRating.toFixed(1)})` : ""}`}>
+            <div className="flex items-center gap-2 cursor-help">
+              <div className="w-16 h-1.5 bg-[--border] rounded-full overflow-hidden">
+                <div 
+                  className={`h-full transition-all ${progressPercent === 100 ? "bg-green-500" : "bg-[#ffd700]"}`}
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+              <span className="text-xs text-[--muted] tabular-nums">
+                {ratedCount}/{totalCount}
+              </span>
+              {progressPercent === 100 && <span className="text-green-500 text-xs">✓</span>}
+            </div>
+          </Tooltip>
+        )}
       </div>
 
       {/* Track List */}
@@ -107,57 +215,78 @@ export function TrackPlayer({ tracks, albumTitle, artistName, coverArtUrl }: Tra
         {tracks.map((track) => {
           const isActive = currentTrack?.id === track.id
           const hasPreview = !!track.previewUrl
+          const userRating = userRatings[track.id]?.rating ?? null
+          const isRating = ratingTrackId === track.id
 
           return (
             <div
               key={track.id}
-              className={`flex items-center gap-3 px-3 py-2 border-b border-[#181818] last:border-0 ${
-                hasPreview ? "cursor-pointer hover:bg-[#181818]" : "opacity-50"
-              } ${isActive ? "bg-[#181818]" : ""}`}
-              onClick={() => hasPreview && playTrack(track)}
+              className={`flex items-center gap-2 px-3 py-2 border-b border-[--border]/50 last:border-0 group ${
+                hasPreview ? "cursor-pointer hover:bg-[--border]/20" : "opacity-60"
+              } ${isActive ? "bg-[--border]/30" : ""}`}
             >
               {/* Track Number / Play Button */}
-              <div className="w-8 text-center">
+              <div 
+                className="w-6 text-center flex-shrink-0"
+                onClick={() => hasPreview && playTrack(track)}
+              >
                 {hasPreview ? (
                   isActive && isPlaying ? (
-                    <svg className="w-4 h-4 mx-auto text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 mx-auto text-[--foreground]" fill="currentColor" viewBox="0 0 24 24">
                       <rect x="6" y="4" width="4" height="16" />
                       <rect x="14" y="4" width="4" height="16" />
                     </svg>
                   ) : (
-                    <svg className="w-4 h-4 mx-auto text-[#888] group-hover:text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 mx-auto text-[--muted] group-hover:text-[--foreground]" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M8 5v14l11-7z" />
                     </svg>
                   )
                 ) : (
-                  <span className="text-xs text-[#666]">{track.trackNumber}</span>
+                  <span className="text-xs text-[--muted]">{track.trackNumber}</span>
                 )}
               </div>
 
               {/* Track Info */}
-              <div className="flex-1 min-w-0">
-                <p className={`text-sm truncate ${isActive ? "text-white" : "text-[#ccc]"}`}>
+              <div className="flex-1 min-w-0" onClick={() => hasPreview && playTrack(track)}>
+                <p className={`text-sm truncate ${isActive ? "text-[--foreground]" : "text-[--foreground]/80"}`}>
                   {track.name}
                 </p>
                 {isActive && (
-                  <div className="mt-1 h-1 bg-[#333] rounded-full overflow-hidden">
+                  <div className="mt-1 h-1 bg-[--border] rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-white transition-all duration-100"
+                      className="h-full bg-[--foreground] transition-all duration-100"
                       style={{ width: `${progress}%` }}
                     />
                   </div>
                 )}
               </div>
 
+              {/* User Rating (when showRatings is on) */}
+              {showRatings && session && (
+                <TrackRatingWidget
+                  trackId={track.id}
+                  currentRating={userRating}
+                  isLoading={isRating}
+                  onRate={(rating) => handleRateTrack(track.id, rating)}
+                />
+              )}
+
+              {/* User Rating Badge (when ratings hidden but user has rated) */}
+              {!showRatings && userRating !== null && (
+                <span className="text-xs font-bold text-[#ffd700] tabular-nums w-5 text-center">
+                  {userRating}
+                </span>
+              )}
+
               {/* Duration */}
-              <div className="text-xs text-[#666]">
+              <div className="text-xs text-[--muted] tabular-nums w-10 text-right">
                 {formatDuration(track.durationMs)}
               </div>
 
               {/* Lyrics Link */}
               <Link
                 href={`/lyrics/${track.id}`}
-                className="text-[#666] hover:text-white p-1"
+                className="text-[--muted] hover:text-[--foreground] p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                 onClick={(e) => e.stopPropagation()}
                 title="View lyrics"
               >
@@ -172,7 +301,7 @@ export function TrackPlayer({ tracks, albumTitle, artistName, coverArtUrl }: Tra
                   href={track.spotifyUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#1DB954] hover:text-[#1ed760] p-1"
+                  className="text-[#1DB954] hover:text-[#1ed760] p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                   onClick={(e) => e.stopPropagation()}
                   title="Open in Spotify"
                 >
@@ -188,30 +317,79 @@ export function TrackPlayer({ tracks, albumTitle, artistName, coverArtUrl }: Tra
 
       {/* Now Playing Bar */}
       {currentTrack && (
-        <div className="flex items-center gap-3 p-3 border-t border-[#222] bg-[#111]">
+        <div className="flex items-center gap-3 p-3 border-t border-[--border] bg-[--border]/20">
           {coverArtUrl && (
             <img src={coverArtUrl} alt="" className="w-10 h-10 object-cover" />
           )}
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">{currentTrack.name}</p>
-            <p className="text-xs text-[#888] truncate">{artistName}</p>
+            <p className="text-xs text-[--muted] truncate">{artistName}</p>
           </div>
           <button
             onClick={() => playTrack(currentTrack)}
-            className="w-8 h-8 flex items-center justify-center bg-white rounded-full hover:scale-105 transition-transform"
+            className="w-8 h-8 flex items-center justify-center bg-[--foreground] rounded-full hover:scale-105 transition-transform"
           >
             {isPlaying ? (
-              <svg className="w-4 h-4 text-black" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-[--background]" fill="currentColor" viewBox="0 0 24 24">
                 <rect x="6" y="4" width="4" height="16" />
                 <rect x="14" y="4" width="4" height="16" />
               </svg>
             ) : (
-              <svg className="w-4 h-4 text-black ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-[--background] ml-0.5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M8 5v14l11-7z" />
               </svg>
             )}
           </button>
         </div>
+      )}
+    </div>
+  )
+}
+
+// Inline track rating widget
+function TrackRatingWidget({ 
+  trackId, 
+  currentRating, 
+  isLoading, 
+  onRate 
+}: { 
+  trackId: string
+  currentRating: number | null
+  isLoading: boolean
+  onRate: (rating: number) => void
+}) {
+  const [hoverRating, setHoverRating] = useState<number | null>(null)
+  const displayRating = hoverRating ?? currentRating
+
+  // Quick rating: 5 buttons for 2, 4, 6, 8, 10
+  return (
+    <div 
+      className="flex items-center gap-0.5"
+      onMouseLeave={() => setHoverRating(null)}
+    >
+      {[2, 4, 6, 8, 10].map((rating) => (
+        <button
+          key={rating}
+          disabled={isLoading}
+          onClick={(e) => {
+            e.stopPropagation()
+            onRate(rating)
+          }}
+          onMouseEnter={() => setHoverRating(rating)}
+          className={`w-4 h-4 text-[8px] font-bold transition-all disabled:opacity-50 ${
+            displayRating !== null && rating <= displayRating
+              ? "bg-[#ffd700] text-black"
+              : "bg-[--border] text-[--muted] hover:bg-[#ffd700]/30"
+          }`}
+          title={`Rate ${rating}/10`}
+        >
+          {rating === 10 ? "★" : ""}
+        </button>
+      ))}
+      {displayRating !== null && (
+        <span className="ml-1 text-[10px] font-bold tabular-nums text-[#ffd700]">
+          {displayRating}
+        </span>
       )}
     </div>
   )

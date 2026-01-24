@@ -245,10 +245,10 @@ export default function TasteSetupRatePage() {
 
             {currentIndex < albums.length - 1 && (
               <button
-                onClick={() => {}}
+                onClick={() => setCurrentIndex(currentIndex + 1)}
                 className="text-neutral-500 hover:text-white transition-colors"
               >
-                Rate more albums →
+                Keep rating for better accuracy →
               </button>
             )}
           </div>

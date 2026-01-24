@@ -287,20 +287,26 @@ export default async function FriendsPage() {
 
           {friends.length === 0 ? (
             <div className="border-2 border-dashed border-[--border] p-12 text-center">
-              <div className="text-4xl mb-4">👥</div>
-              <h3 className="text-xl font-bold mb-2">No friends yet</h3>
+              <div className="text-4xl mb-4">🎵</div>
+              <h3 className="text-xl font-bold mb-2">Build your taste network</h3>
               <p className="text-[--muted] mb-6 max-w-md mx-auto">
-                Connect with other music lovers to share reviews, compare tastes, and discover new albums together.
+                Connect with people who share your taste. See what they're reviewing, compare your TasteIDs, and discover albums through trusted sources.
               </p>
-              <Link
-                href="/discover"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black text-[11px] tracking-[0.15em] uppercase font-medium hover:bg-[#e5e5e5] transition-colors"
-              >
-                Discover People
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </Link>
+              {suggestedUsers.length === 0 ? (
+                <p className="text-sm text-[--muted]">
+                  As more people join, you'll see suggestions based on similar taste here.
+                </p>
+              ) : (
+                <Link
+                  href="/leaderboard"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black text-[11px] tracking-[0.15em] uppercase font-medium hover:bg-[#e5e5e5] transition-colors"
+                >
+                  View Top Tastemakers
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </Link>
+              )}
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 gap-4">

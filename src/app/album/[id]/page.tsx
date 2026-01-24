@@ -7,6 +7,7 @@ import Link from "next/link"
 import { format } from "date-fns"
 import { StreamingLinks } from "@/components/streaming-links"
 import { TrackPlayer } from "@/components/track-player"
+import { FirstFans } from "@/components/first-fans"
 
 interface Props {
   params: Promise<{ id: string }>
@@ -51,6 +52,53 @@ async function getUserReview(userId: string, albumId: string) {
   })
 }
 
+// Get early reviewers (First Fans)
+async function getFirstFans(albumId: string) {
+  const reviews = await prisma.review.findMany({
+    where: {
+      albumId,
+      reviewPosition: { lte: 100 }
+    },
+    orderBy: { reviewPosition: 'asc' },
+    take: 100,
+    select: {
+      reviewPosition: true,
+      rating: true,
+      createdAt: true,
+      user: {
+        select: {
+          id: true,
+          username: true,
+          image: true,
+        }
+      }
+    }
+  })
+
+  // Check if users have badges for this album
+  const userIds = reviews.map(r => r.user.id)
+  const badges = await prisma.firstSpinBadge.findMany({
+    where: {
+      albumId,
+      userId: { in: userIds }
+    },
+    select: {
+      userId: true,
+      badgeType: true,
+    }
+  })
+
+  const badgeMap = new Map(badges.map(b => [b.userId, b.badgeType]))
+
+  return reviews.map(r => ({
+    position: r.reviewPosition!,
+    rating: r.rating,
+    createdAt: r.createdAt,
+    user: r.user,
+    badgeType: badgeMap.get(r.user.id) || null,
+  }))
+}
+
 export default async function AlbumPage({ params }: Props) {
   const { id } = await params
   const session = await auth()
@@ -60,9 +108,10 @@ export default async function AlbumPage({ params }: Props) {
     notFound()
   }
 
-  const userReview = session?.user?.id
-    ? await getUserReview(session.user.id, album.id)
-    : null
+  const [userReview, firstFans] = await Promise.all([
+    session?.user?.id ? getUserReview(session.user.id, album.id) : null,
+    getFirstFans(album.id),
+  ])
 
   const formatDuration = (ms: number) => {
     const minutes = Math.floor(ms / 60000)
@@ -173,12 +222,13 @@ export default async function AlbumPage({ params }: Props) {
           </div>
         </div>
 
-        {/* Tracklist with Player */}
+        {/* Tracklist with Player & Ratings */}
         {album.tracks.length > 0 && (
           <div className="lg:w-80 xl:w-96 flex-shrink-0">
             <h2 className="text-lg font-bold mb-3">Tracklist</h2>
             <TrackPlayer
               tracks={album.tracks}
+              albumId={album.id}
               albumTitle={album.title}
               artistName={album.artistName}
               coverArtUrl={album.coverArtUrlSmall || album.coverArtUrl}
@@ -186,6 +236,17 @@ export default async function AlbumPage({ params }: Props) {
           </div>
         )}
       </div>
+
+      {/* First Fans Section */}
+      {firstFans.length > 0 && (
+        <section className="mb-6 md:mb-8">
+          <FirstFans
+            fans={firstFans}
+            albumTrending={album.isTrending}
+            totalReviews={album._count.reviews}
+          />
+        </section>
+      )}
 
       {/* Write a Review */}
       <section className="mb-6 md:mb-8 border p-4 sm:p-6" style={{ borderColor: 'var(--border)' }}>
@@ -195,6 +256,7 @@ export default async function AlbumPage({ params }: Props) {
         {session ? (
           <AlbumReviewForm
             albumId={album.id}
+            currentReviewCount={album._count.reviews}
             existingReview={userReview}
           />
         ) : (
