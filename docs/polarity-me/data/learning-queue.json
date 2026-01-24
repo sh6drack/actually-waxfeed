@@ -1,0 +1,67 @@
+{
+  "systemPrinciple": "Skill trees to your future selves. Each tree shows where you are, where you're going, and the next conversation to get there.",
+  "howToUse": "Find a tree that pulls you. Say the activation phrase. We continue from where you are.",
+  "browsableView": "skill-trees.md — Open this file to browse all trees",
+  
+  "skillTrees": [],
+  
+  "conversationStarters": {
+    "description": "Just say one of these to continue learning",
+    "byFutureSelf": {}
+  },
+  
+  "lastUpdated": null,
+  "updateProtocol": "Add new trees when new domains are captured. Update position when knowledge is demonstrated. Advance nodes when conversations happen.",
+  
+  "verificationProtocol": {
+    "principle": "No advancement without demonstrated knowledge. The tree reflects what you KNOW, not what you were exposed to.",
+    "transitions": {
+      "unknown_to_curious": {
+        "requirement": "User asks about it or expresses interest",
+        "verification": "automatic — the question itself is proof"
+      },
+      "curious_to_understood": {
+        "requirement": "User can explain it back correctly",
+        "verification": "teach-back prompt: 'In your own words, what's the key idea?'"
+      },
+      "understood_to_strong": {
+        "requirement": "User can apply, connect, or teach it",
+        "verification": "application prompt: 'How would this apply to [scenario]?' or 'How does this connect to [domain]?'"
+      }
+    },
+    "nodeSchema": {
+      "skill": "string",
+      "status": "unknown | curious | understood | strong",
+      "verified": "boolean",
+      "verificationMethod": "teach-back | application | connection | null",
+      "verifiedDate": "YYYY-MM-DD | null",
+      "activationPhrase": "string"
+    }
+  },
+  
+  "autonomousUpdates": {
+    "reality": "Updates happen as part of conversation flow",
+    "dataFlow": {
+      "source": "Conversations with user",
+      "filter": "future-selves.md (which future self is this building toward?)",
+      "dataStore": "learning-queue.json (single source of truth)",
+      "view": "skill-trees.md (generated from learning-queue.json)"
+    },
+    "updateRule": "When learning-queue.json changes, skill-trees.md MUST be updated to match. They are not independent files."
+  },
+  
+  "learningDecay": {
+    "principle": "Understanding can degrade. Nodes can move BACKWARD, not just forward.",
+    "reVerificationTriggers": [
+      "User says 'I don't remember how X works'",
+      "User gets application question wrong",
+      "User contradicts previous understanding",
+      "30+ days since last verification on a node"
+    ],
+    "decayTransitions": {
+      "strong_to_understood": "Can't apply anymore, but can still explain",
+      "understood_to_curious": "Can't explain clearly anymore",
+      "curious_to_unknown": "Forgot about it entirely"
+    }
+  }
+}

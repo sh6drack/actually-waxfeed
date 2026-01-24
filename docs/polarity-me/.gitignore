@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+vendor/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build outputs
+dist/
+build/
+*.log
+*.tmp
+
+# Mobile app build
+mobile-app/node_modules/
+mobile-app/.next/
+mobile-app/out/
+
+# Personal data archives (exclude from distribution)
+archive/personal-backup/
+
+# Uncomment these if you want to keep session history out of git:
+# archive/sessions/
+
+# Temporary files
+*.bak
+*.backup

@@ -1,0 +1,10 @@
+# Sessions Archive
+
+This folder stores historical session data from yeo-network-live-tracking.md.
+
+At session end:
+1. Current session's classifications are archived here
+2. yeo-network-live-tracking.md is reset for next session
+3. Patterns are consolidated into brainid.md
+
+Format: YYYY-MM-DD-session.md
