@@ -25,7 +25,7 @@ export default async function TasteSetupPage() {
     where: { userId: session.user.id },
   })
 
-  if (reviewCount >= 5) {
+  if (reviewCount >= 20) {
     // Has enough reviews, just compute and redirect
     redirect("/taste-setup/result")
   }

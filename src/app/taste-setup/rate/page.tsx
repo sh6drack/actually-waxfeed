@@ -25,7 +25,7 @@ export default function TasteSetupRatePage() {
   useEffect(() => {
     async function fetchAlbums() {
       try {
-        const res = await fetch("/api/albums/popular?limit=15")
+        const res = await fetch("/api/albums/popular?limit=30")
         const data = await res.json()
         if (data.success && data.albums) {
           setAlbums(data.albums)
@@ -41,7 +41,7 @@ export default function TasteSetupRatePage() {
 
   const currentAlbum = albums[currentIndex]
   const ratedCount = Object.keys(ratings).length
-  const canProceed = ratedCount >= 5
+  const canProceed = ratedCount >= 20
 
   const handleRate = async (rating: number) => {
     if (!currentAlbum) return
@@ -131,21 +131,21 @@ export default function TasteSetupRatePage() {
             RATE ALBUMS
           </h1>
           <p className="text-neutral-400">
-            Rate at least 5 albums to generate your TasteID
+            Rate at least 20 albums to generate your TasteID
           </p>
         </div>
 
         {/* Rating progress */}
-        <div className="flex justify-center gap-2">
-          {Array.from({ length: 5 }).map((_, i) => (
+        <div className="flex justify-center gap-1">
+          {Array.from({ length: 20 }).map((_, i) => (
             <div
               key={i}
-              className={`w-8 h-2 ${i < ratedCount ? "bg-white" : "bg-neutral-800"}`}
+              className={`w-2 h-2 ${i < ratedCount ? "bg-white" : "bg-neutral-800"}`}
             />
           ))}
         </div>
         <p className="text-center text-sm text-neutral-500">
-          {ratedCount} / 5 minimum
+          {ratedCount} / 20 minimum
         </p>
 
         {/* Current album */}
