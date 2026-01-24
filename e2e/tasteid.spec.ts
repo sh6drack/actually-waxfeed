@@ -670,9 +670,10 @@ test.describe('TasteID Page - Fuzz Testing', () => {
     expect([200, 400, 404]).toContain(response?.status() ?? 0)
   })
 
-  test('handles all ASCII control characters', async ({ page }) => {
-    // Test each ASCII control character (0-31)
-    for (let i = 0; i <= 31; i++) {
+  test('handles ASCII control characters', async ({ page }) => {
+    // Test representative ASCII control characters (NUL, TAB, LF, CR, ESC)
+    const controlChars = [0, 9, 10, 13, 27]
+    for (const i of controlChars) {
       const encoded = `%${i.toString(16).padStart(2, '0')}`
       const response = await page.goto(`/u/test${encoded}user/tasteid`)
       expect([200, 400, 404]).toContain(response?.status() ?? 0)

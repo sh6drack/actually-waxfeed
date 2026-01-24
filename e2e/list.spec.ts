@@ -381,12 +381,18 @@ test.describe('List Page - Color Scheme', () => {
 
 test.describe('List Page - Security', () => {
   test('no XSS in list URL parameter', async ({ page }) => {
-    await page.goto('/list/<img src=x onerror=alert(1)>')
-
-    const hasXSS = await page.evaluate(() => {
-      return document.body.innerHTML.includes('onerror=alert(1)')
+    // Track if any alert dialog is triggered (would indicate XSS)
+    let alertTriggered = false
+    page.on('dialog', async dialog => {
+      alertTriggered = true
+      await dialog.dismiss()
     })
-    expect(hasXSS).toBe(false)
+
+    await page.goto('/list/<img src=x onerror=alert(1)>')
+    await page.waitForTimeout(500)
+
+    // The critical test: no JavaScript was executed
+    expect(alertTriggered).toBe(false)
   })
 
   test('SQL injection in list ID is safe', async ({ page }) => {
