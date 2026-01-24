@@ -314,7 +314,42 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Wax Explanation */}
+      {/* Why Upgrade - Value Breakdown */}
+      <section className="border-t border-[--border]">
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-8">
+            Why Upgrade?
+          </p>
+          <div className="grid lg:grid-cols-4 gap-8">
+            <div>
+              <p className="text-3xl font-bold mb-2">300+</p>
+              <p className="text-sm text-[--muted]">
+                Free Wax every month with Wax+. 750 with Pro. That's worth $3-$7.50 in the shop.
+              </p>
+            </div>
+            <div>
+              <p className="text-3xl font-bold mb-2">2x</p>
+              <p className="text-sm text-[--muted]">
+                Earn Wax twice as fast with Pro. Every review, every daily, every bonus — doubled.
+              </p>
+            </div>
+            <div>
+              <p className="text-3xl font-bold mb-2 text-[#ffd700]">GOLD</p>
+              <p className="text-sm text-[--muted]">
+                Award GOLD Wax to reviews that blow your mind. Pro exclusive. Reviews get noticed.
+              </p>
+            </div>
+            <div>
+              <p className="text-3xl font-bold mb-2">∞</p>
+              <p className="text-sm text-[--muted]">
+                No weekly earning cap. Free users max out at 100/week. Subscribers keep earning.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Wax Types */}
       <section className="border-t border-[--border]">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2">
@@ -323,9 +358,8 @@ export default function PricingPage() {
                 What is Wax?
               </p>
               <p className="text-sm text-[--muted] leading-relaxed mb-6">
-                Wax is the currency of Waxfeed. Earn it by being active — daily logins, 
-                writing reviews, receiving Wax from others. Spend it to award Wax to 
-                reviews you appreciate, boost your content, and unlock exclusive items.
+                Wax is how you show appreciation on Waxfeed. Award it to reviews you love,
+                and the author earns Wax too. Great reviewers build up Wax from the community.
               </p>
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
@@ -333,8 +367,8 @@ export default function PricingPage() {
                     <span className="text-[10px] font-bold">S</span>
                   </div>
                   <div>
-                    <p className="text-sm font-medium">Standard Wax</p>
-                    <p className="text-xs text-[--muted]">Available to everyone</p>
+                    <p className="text-sm font-medium">Standard — 5 Wax</p>
+                    <p className="text-xs text-[--muted]">Everyone can award</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -342,8 +376,8 @@ export default function PricingPage() {
                     <span className="text-[10px] font-bold text-purple-400">P</span>
                   </div>
                   <div>
-                    <p className="text-sm font-medium">Premium Wax</p>
-                    <p className="text-xs text-[--muted]">Wax+ and Pro only</p>
+                    <p className="text-sm font-medium">Premium — 20 Wax</p>
+                    <p className="text-xs text-[--muted]">Wax+ and Pro members</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -351,8 +385,8 @@ export default function PricingPage() {
                     <span className="text-[10px] font-bold text-[#ffd700]">G</span>
                   </div>
                   <div>
-                    <p className="text-sm font-medium">GOLD Wax</p>
-                    <p className="text-xs text-[--muted]">Pro exclusive</p>
+                    <p className="text-sm font-medium">GOLD — 100 Wax</p>
+                    <p className="text-xs text-[--muted]">Pro exclusive, highest honor</p>
                   </div>
                 </div>
               </div>
