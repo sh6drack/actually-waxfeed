@@ -329,7 +329,7 @@ export default function SettingsPage() {
       <section className="mt-16 pt-8 border-t border-[--border]">
         <h2 className="text-xl font-bold mb-6 text-red-500">Danger Zone</h2>
         <p className="text-sm text-[--muted] mb-4">
-          Contact scrolling@waxfeed.com to delete your account.
+          Contact polarity@polarity-lab.com to delete your account.
         </p>
       </section>
     </div>
