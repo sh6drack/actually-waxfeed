@@ -187,9 +187,10 @@ export default async function UserStatsPage({ params }: Props) {
                 <div key={month} className="flex-1 flex flex-col items-center h-full">
                   <div className="flex-1 flex items-end w-full">
                     <div
-                      className="w-full bg-[--accent] transition-all"
+                      className="w-full transition-all"
                       style={{
                         height: count > 0 ? `${Math.max(heightPercent, 3)}%` : "0",
+                        backgroundColor: "var(--accent)",
                       }}
                     />
                   </div>
@@ -213,9 +214,10 @@ export default async function UserStatsPage({ params }: Props) {
                 <div key={i} className="flex-1 flex flex-col items-center h-full">
                   <div className="flex-1 flex items-end w-full">
                     <div
-                      className="w-full bg-[--accent] transition-all"
+                      className="w-full transition-all"
                       style={{
                         height: count > 0 ? `${Math.max(heightPercent, 4)}%` : "0",
+                        backgroundColor: "var(--accent)",
                       }}
                     />
                   </div>
