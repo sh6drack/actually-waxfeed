@@ -2,11 +2,30 @@ import { Composition, Folder } from "remotion";
 import { WaxFeedPromo } from "./WaxFeedPromo";
 import { WaxFeedPromoSquare } from "./WaxFeedPromoSquare";
 import { WaxFeedFrequency, WaxFeedFrequencySquare } from "./WaxFeedFrequency";
+import { WaxFeedFrequency2, WaxFeedFrequency2Vertical } from "./WaxFeedFrequency2";
 import { WaxFeedShowcase, WaxFeedShowcaseSquare } from "./WaxFeedShowcase";
 
 export const RemotionRoot = () => {
   return (
     <Folder name="WaxFeed">
+      {/* FREQUENCY 2.0 - Gen Z Cut: 30 seconds of pure dopamine */}
+      <Composition
+        id="WaxFeedFrequency2"
+        component={WaxFeedFrequency2}
+        durationInFrames={900}
+        fps={30}
+        width={1920}
+        height={1080}
+      />
+      <Composition
+        id="WaxFeedFrequency2Vertical"
+        component={WaxFeedFrequency2Vertical}
+        durationInFrames={900}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+
       {/* FREQUENCY - Cinematic 90s promo with data visualization */}
       <Composition
         id="WaxFeedFrequency"
