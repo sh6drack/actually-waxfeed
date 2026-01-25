@@ -1,332 +1,362 @@
-"use client"
-
-import { useState, useEffect } from "react"
+import { auth } from "@/lib/auth"
+import { redirect } from "next/navigation"
+import { prisma } from "@/lib/prisma"
 import Link from "next/link"
-import { useSession } from "next-auth/react"
-import { ConnectionCard } from "@/components/connections"
-import { SignatureComparison } from "@/components/connections/SignatureComparison"
-import type { EnhancedTasteMatch, ListeningSignature } from "@/lib/tasteid"
+import { getArchetypeInfo, computeTasteMatch } from "@/lib/tasteid"
+import { DefaultAvatar } from "@/components/default-avatar"
+import { ConnectionFilters } from "./connection-filters"
 
-type ConnectionMode = "all" | "twins" | "opposites" | "guides"
+export const dynamic = "force-dynamic"
 
-const MODE_CONFIG: Record<ConnectionMode, { label: string; description: string; icon: string }> = {
-  all: { label: "All Connections", description: "Everyone with potential musical chemistry", icon: "🎵" },
-  twins: { label: "Taste Twins", description: "Your musical soulmates with nearly identical taste", icon: "👯" },
-  opposites: { label: "Opposite Attracts", description: "Different tastes that could expand your horizons", icon: "🔄" },
-  guides: { label: "Explorer Guides", description: "People who can introduce you to new music", icon: "🧭" },
+// Match type metadata
+const MATCH_TYPES = {
+  taste_twin: {
+    name: "Taste Twin",
+    icon: "👯",
+    color: "text-[#ffd700]",
+    borderColor: "border-[#ffd700]/30",
+    description: "80%+ compatibility - your musical soulmate",
+  },
+  genre_buddy: {
+    name: "Genre Buddy",
+    icon: "🎵",
+    color: "text-blue-400",
+    borderColor: "border-blue-400/30",
+    description: "Strong genre overlap",
+  },
+  complementary: {
+    name: "Opposite Attracts",
+    icon: "🌀",
+    color: "text-purple-400",
+    borderColor: "border-purple-400/30",
+    description: "Different tastes that could expand your horizons",
+  },
+  explorer_guide: {
+    name: "Explorer Guide",
+    icon: "🧭",
+    color: "text-emerald-400",
+    borderColor: "border-emerald-400/30",
+    description: "One explores, one guides - learn from each other",
+  },
 }
 
-interface ConnectionsResponse {
-  connections: EnhancedTasteMatch[]
-  grouped: {
-    tasteTwins: EnhancedTasteMatch[]
-    networkResonance: EnhancedTasteMatch[]
-    oppositeAttracts: EnhancedTasteMatch[]
-    explorerGuides: EnhancedTasteMatch[]
-    genreBuddies: EnhancedTasteMatch[]
-    complementary: EnhancedTasteMatch[]
-  }
-  total: number
-  userTasteId: {
-    archetype: string
-    reviewCount: number
-    polarityScore: number
-  }
+interface TasteConnection {
+  userId: string
+  username: string
+  image: string | null
+  compatibility: number
+  sharedGenres: string[]
+  sharedArtists: string[]
+  archetype: string
+  matchType: keyof typeof MATCH_TYPES
+  genreOverlap: number
+  ratingAlignment: number
 }
 
-export default function ConnectionsPage() {
-  const { data: session, status } = useSession()
-  const [mode, setMode] = useState<ConnectionMode>("all")
-  const [connections, setConnections] = useState<EnhancedTasteMatch[]>([])
-  const [userSignature, setUserSignature] = useState<ListeningSignature | null>(null)
-  const [userTasteId, setUserTasteId] = useState<{ archetype: string; reviewCount: number; polarityScore: number } | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [selectedConnection, setSelectedConnection] = useState<EnhancedTasteMatch | null>(null)
+async function findTasteConnections(userId: string): Promise<TasteConnection[]> {
+  const userTaste = await prisma.tasteID.findUnique({
+    where: { userId },
+  })
 
-  useEffect(() => {
-    if (status === "loading") return
-    if (!session?.user?.id) {
-      setLoading(false)
-      return
-    }
+  if (!userTaste) return []
 
-    async function fetchData() {
-      try {
-        setLoading(true)
-        setError(null)
+  // Get all other TasteIDs with their users
+  const otherTastes = await prisma.tasteID.findMany({
+    where: { userId: { not: userId } },
+    include: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          image: true,
+        },
+      },
+    },
+    take: 50, // Get top 50 for performance
+  })
 
-        const [connectionsRes, tasteRes] = await Promise.all([
-          fetch(`/api/connections/discover?mode=${mode}&limit=50`),
-          fetch("/api/tasteid/me"),
-        ])
+  // Compute detailed matches for each
+  const connections: TasteConnection[] = []
 
-        if (!connectionsRes.ok) {
-          const data = await connectionsRes.json()
-          setError(data.message || data.error)
-          setConnections([])
-          return
-        }
+  for (const taste of otherTastes) {
+    if (!taste.user.username) continue
 
-        const connectionsData: ConnectionsResponse = await connectionsRes.json()
-        setConnections(connectionsData.connections)
-        setUserTasteId(connectionsData.userTasteId)
+    const match = await computeTasteMatch(userId, taste.userId)
+    if (!match) continue
 
-        if (tasteRes.ok) {
-          const tasteData = await tasteRes.json()
-          setUserSignature(tasteData.tasteId?.polarity12?.listeningSignature || null)
-        }
-      } catch (err) {
-        setError("Failed to load connections")
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchData()
-  }, [session?.user?.id, mode, status])
-
-  const handleConnect = async (targetUserId: string) => {
-    try {
-      await fetch(`/api/connections/${targetUserId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "connect" }),
-      })
-    } catch (err) {
-      console.error("Failed to connect:", err)
-    }
+    connections.push({
+      userId: taste.userId,
+      username: taste.user.username,
+      image: taste.user.image,
+      compatibility: match.overallScore,
+      sharedGenres: match.sharedGenres,
+      sharedArtists: match.sharedArtists,
+      archetype: taste.primaryArchetype,
+      matchType: match.matchType as keyof typeof MATCH_TYPES,
+      genreOverlap: match.genreOverlap,
+      ratingAlignment: match.ratingAlignment,
+    })
   }
 
-  const handleDismiss = async (targetUserId: string) => {
-    try {
-      await fetch(`/api/connections/${targetUserId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "dismiss" }),
-      })
-      setConnections(prev => prev.filter(c => c.userId !== targetUserId))
-      if (selectedConnection?.userId === targetUserId) {
-        setSelectedConnection(null)
-      }
-    } catch (err) {
-      console.error("Failed to dismiss:", err)
-    }
+  // Sort by compatibility
+  return connections.sort((a, b) => b.compatibility - a.compatibility)
+}
+
+export default async function ConnectionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string }>
+}) {
+  const session = await auth()
+  const params = await searchParams
+
+  if (!session?.user?.id) {
+    redirect("/login?callbackUrl=/discover/connections")
   }
 
-  if (status === "loading") {
+  // Get user's TasteID
+  const tasteId = await prisma.tasteID.findUnique({
+    where: { userId: session.user.id },
+  })
+
+  if (!tasteId) {
+    redirect("/taste-setup")
+  }
+
+  // Get user's review count
+  const reviewCount = await prisma.review.count({
+    where: { userId: session.user.id },
+  })
+
+  // Need 20 reviews for taste matching
+  if (reviewCount < 20) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-[--muted]">Loading...</div>
-      </div>
-    )
-  }
-
-  if (!session) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-6">
-        <div className="text-center max-w-md">
-          <div className="text-6xl mb-6">🎵</div>
-          <h1 className="text-3xl font-bold mb-4">Taste Connections</h1>
-          <p className="text-[--muted] mb-6">
-            Sign in to discover people who share your musical taste—or can expand your horizons.
-          </p>
-          <Link
-            href="/login?callbackUrl=/discover/connections"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-bold text-sm hover:bg-white/90 transition-colors"
-          >
-            Sign In to Connect
-          </Link>
+      <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
+        <div className="max-w-4xl mx-auto px-6 py-12">
+          <div className="border-2 border-dashed border-[--border] p-12 text-center">
+            <div className="text-6xl mb-6">🎵</div>
+            <h1 className="text-3xl font-bold mb-4">Need More Reviews</h1>
+            <p className="text-[--muted] mb-6 max-w-md mx-auto">
+              You need at least 20 reviews to find taste connections. You currently have{" "}
+              <span className="font-bold text-white">{reviewCount}</span> reviews.
+            </p>
+            <div className="mb-8">
+              <div className="w-full max-w-xs mx-auto h-2 bg-[--border] rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-[#ffd700] transition-all duration-500"
+                  style={{ width: `${Math.min((reviewCount / 20) * 100, 100)}%` }}
+                />
+              </div>
+              <p className="text-[11px] text-[--muted] mt-2 tabular-nums">
+                {reviewCount} / 20 reviews
+              </p>
+            </div>
+            <Link
+              href="/search"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black text-[11px] tracking-[0.15em] uppercase font-medium hover:bg-[#e5e5e5] transition-colors"
+            >
+              Find Albums to Review
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </Link>
+          </div>
         </div>
       </div>
     )
+  }
+
+  const allConnections = await findTasteConnections(session.user.id)
+  const userArchetype = getArchetypeInfo(tasteId.primaryArchetype)
+
+  // Filter connections based on URL param
+  const filter = params.filter || "all"
+  const connections =
+    filter === "all"
+      ? allConnections
+      : allConnections.filter((c) => c.matchType === filter)
+
+  // Count by type for filter badges
+  const typeCounts = {
+    all: allConnections.length,
+    taste_twin: allConnections.filter((c) => c.matchType === "taste_twin").length,
+    complementary: allConnections.filter((c) => c.matchType === "complementary").length,
+    explorer_guide: allConnections.filter((c) => c.matchType === "explorer_guide").length,
+    genre_buddy: allConnections.filter((c) => c.matchType === "genre_buddy").length,
   }
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
-      {/* Header */}
-      <header className="border-b border-[--border]">
-        <div className="max-w-7xl mx-auto px-6 py-8 lg:py-12">
-          <Link
-            href="/discover"
-            className="inline-flex items-center gap-2 text-xs text-[--muted] hover:text-white transition-colors mb-6"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Discover
-          </Link>
-
-          <div className="flex items-start justify-between">
+      <div className="max-w-5xl mx-auto px-6 py-12">
+        {/* Header */}
+        <div className="mb-12 pb-6 border-b border-[--border]">
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-4xl lg:text-5xl font-bold tracking-tight mb-3">Taste Connections</h1>
-              <p className="text-[--muted] max-w-xl">
-                Find your musical tribe. Polarity-powered matching connects you with people based on how you listen, not just what you listen to.
+              <p className="text-[10px] tracking-[0.4em] uppercase text-[#ffd700] mb-2">
+                Polarity Match Engine
               </p>
+              <h1 className="text-4xl font-bold tracking-tight">Taste Connections</h1>
             </div>
-            {userTasteId && (
-              <div className="hidden lg:block text-right">
-                <p className="text-xs text-[--muted] uppercase tracking-wider mb-1">Your Profile</p>
-                <p className="font-bold">{userTasteId.archetype}</p>
-                <p className="text-sm text-[--muted]">{userTasteId.reviewCount} reviews</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
-
-      {/* Mode tabs */}
-      <div className="border-b border-[--border] sticky top-0 bg-[--background] z-10">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex gap-1 py-3 overflow-x-auto">
-            {(Object.entries(MODE_CONFIG) as [ConnectionMode, typeof MODE_CONFIG.all][]).map(([key, config]) => (
-              <button
-                key={key}
-                onClick={() => setMode(key)}
-                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors ${
-                  mode === key
-                    ? "bg-white text-black"
-                    : "text-[--muted] hover:text-white"
-                }`}
-              >
-                <span>{config.icon}</span>
-                <span>{config.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <p className="text-sm text-[--muted] mb-8">{MODE_CONFIG[mode].description}</p>
-
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} className="border border-[--border] p-4 animate-pulse">
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="w-16 h-16 bg-[--border]" />
-                  <div className="flex-1">
-                    <div className="h-5 bg-[--border] w-2/3 mb-2" />
-                    <div className="h-3 bg-[--border] w-1/2" />
-                  </div>
-                </div>
-                <div className="h-20 bg-[--border]" />
-              </div>
-            ))}
-          </div>
-        ) : error ? (
-          <div className="border-2 border-dashed border-[--border] p-12 text-center">
-            <div className="text-4xl mb-4">📊</div>
-            <h3 className="text-xl font-bold mb-2">More reviews needed</h3>
-            <p className="text-[--muted] mb-6 max-w-md mx-auto">{error}</p>
             <Link
-              href="/search"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-bold text-sm hover:bg-white/90 transition-colors"
+              href="/discover"
+              className="px-4 py-2 border-2 border-[--border] text-[11px] tracking-[0.15em] uppercase font-medium hover:border-white hover:bg-white hover:text-black transition-colors"
             >
-              Find Albums to Review
+              Back
             </Link>
           </div>
-        ) : connections.length === 0 ? (
-          <div className="border-2 border-dashed border-[--border] p-12 text-center">
-            <div className="text-4xl mb-4">🔍</div>
-            <h3 className="text-xl font-bold mb-2">No connections found</h3>
-            <p className="text-[--muted] max-w-md mx-auto">
-              No matches found for this category. Try a different filter or check back as more users join.
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Connection list */}
-            <div className="lg:col-span-2 space-y-4">
-              {connections.map((connection, i) => (
-                <div
-                  key={connection.userId}
-                  onClick={() => setSelectedConnection(connection)}
-                  className={`cursor-pointer transition-all ${
-                    selectedConnection?.userId === connection.userId
-                      ? "ring-2 ring-white"
-                      : ""
-                  }`}
-                  style={{ animationDelay: `${i * 0.05}s` }}
-                >
-                  <ConnectionCard
-                    connection={connection}
-                    userSignature={userSignature}
-                    onConnect={handleConnect}
-                    onDismiss={handleDismiss}
-                    showActions
-                  />
-                </div>
-              ))}
+          <p className="text-[--muted] max-w-2xl">
+            Find people who share your musical DNA. Connections are computed using genre overlap,
+            artist preferences, and rating patterns.
+          </p>
+        </div>
+
+        {/* Your TasteID */}
+        <div className="mb-8 p-5 border border-[--border] flex items-center gap-4">
+          <div className="text-4xl">{userArchetype.icon}</div>
+          <div className="flex-1">
+            <div className="text-[10px] tracking-[0.2em] uppercase text-[--muted] mb-1">
+              Your Archetype
             </div>
+            <div className="text-xl font-bold">{userArchetype.name}</div>
+          </div>
+          <Link
+            href={`/u/${session.user.username || session.user.id}/tasteid`}
+            className="text-[10px] tracking-[0.15em] uppercase text-[--muted] hover:text-white transition-colors"
+          >
+            View Full TasteID →
+          </Link>
+        </div>
 
-            {/* Detailed comparison panel */}
-            <div className="hidden lg:block">
-              <div className="sticky top-24">
-                {selectedConnection && userSignature ? (
-                  <div className="border border-[--border] p-6">
-                    <h3 className="text-lg font-bold mb-4">Signature Comparison</h3>
-                    <p className="text-xs text-[--muted] mb-6">
-                      How your listening patterns compare with @{selectedConnection.username}
-                    </p>
+        {/* Filter Tabs */}
+        <ConnectionFilters currentFilter={filter} counts={typeCounts} />
 
-                    <div className="flex justify-center mb-6">
-                      <SignatureComparison
-                        userSignature={userSignature}
-                        otherSignature={selectedConnection.networkResonance as unknown as ListeningSignature}
-                        userName="You"
-                        otherName={selectedConnection.username}
-                        size={220}
-                        animated
-                      />
+        {/* Connections Grid */}
+        {connections.length > 0 ? (
+          <div className="grid gap-4 md:grid-cols-2">
+            {connections.map((connection) => {
+              const matchMeta = MATCH_TYPES[connection.matchType] || MATCH_TYPES.genre_buddy
+              const archetypeInfo = getArchetypeInfo(connection.archetype)
+
+              return (
+                <Link
+                  key={connection.userId}
+                  href={`/u/${connection.username}`}
+                  className={`group border ${matchMeta.borderColor} hover:border-white p-5 transition-colors`}
+                >
+                  <div className="flex items-start gap-4">
+                    {/* Avatar */}
+                    <div className="w-14 h-14 border border-[--border] flex-shrink-0 overflow-hidden group-hover:border-white transition-colors">
+                      {connection.image ? (
+                        <img
+                          src={connection.image}
+                          alt={connection.username}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <DefaultAvatar size="md" className="w-full h-full" />
+                      )}
                     </div>
 
-                    <div className="space-y-4 text-sm">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[--muted]">Signature Similarity</span>
-                        <span className="font-bold">{Math.round(selectedConnection.signatureSimilarity * 100)}%</span>
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-bold text-lg truncate">@{connection.username}</span>
+                        <span className={`text-sm ${matchMeta.color}`}>{matchMeta.icon}</span>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-[--muted]">Genre Overlap</span>
-                        <span className="font-bold">{selectedConnection.genreOverlap}%</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-[--muted]">Rating Alignment</span>
-                        <span className="font-bold">{selectedConnection.ratingAlignment}%</span>
-                      </div>
-                    </div>
 
-                    {selectedConnection.potentialIntroductions.length > 0 && (
-                      <div className="mt-6 pt-4 border-t border-[--border]">
-                        <p className="text-xs text-[--muted] uppercase tracking-wider mb-2">
-                          Could introduce you to
-                        </p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {selectedConnection.potentialIntroductions.map((intro, i) => (
+                      {/* Archetype */}
+                      <div className="text-sm text-[--muted] mb-3 flex items-center gap-2">
+                        <span>{archetypeInfo.icon}</span>
+                        <span className="uppercase text-[10px] tracking-wider">{archetypeInfo.name}</span>
+                      </div>
+
+                      {/* Match Type Badge */}
+                      <div className={`inline-flex items-center gap-1.5 text-[10px] px-2 py-1 border ${matchMeta.borderColor} ${matchMeta.color} uppercase tracking-wider mb-3`}>
+                        {matchMeta.name}
+                      </div>
+
+                      {/* Shared Genres */}
+                      {connection.sharedGenres.length > 0 && (
+                        <div className="flex gap-1.5 flex-wrap">
+                          {connection.sharedGenres.slice(0, 3).map((genre) => (
                             <span
-                              key={i}
-                              className="text-xs px-2 py-0.5 border border-[--border]"
+                              key={genre}
+                              className="text-[9px] px-2 py-0.5 border border-[--border] text-[--muted] uppercase tracking-wider"
                             >
-                              {intro}
+                              {genre}
                             </span>
                           ))}
+                          {connection.sharedGenres.length > 3 && (
+                            <span className="text-[9px] px-2 py-0.5 text-[--muted]">
+                              +{connection.sharedGenres.length - 3}
+                            </span>
+                          )}
                         </div>
+                      )}
+                    </div>
+
+                    {/* Compatibility Score */}
+                    <div className="flex-shrink-0 text-center">
+                      <div className="text-3xl font-bold tabular-nums">{connection.compatibility}%</div>
+                      <div className="text-[9px] text-[--muted] uppercase tracking-wider">Match</div>
+                    </div>
+                  </div>
+
+                  {/* Stats Row */}
+                  <div className="mt-4 pt-4 border-t border-[--border] flex items-center gap-6 text-[10px] text-[--muted]">
+                    <div>
+                      <span className="font-semibold text-white">{connection.genreOverlap}%</span> genre overlap
+                    </div>
+                    <div>
+                      <span className="font-semibold text-white">{connection.ratingAlignment}%</span> rating alignment
+                    </div>
+                    {connection.sharedArtists.length > 0 && (
+                      <div>
+                        <span className="font-semibold text-white">{connection.sharedArtists.length}</span> shared artists
                       </div>
                     )}
                   </div>
-                ) : (
-                  <div className="border border-dashed border-[--border] p-6 text-center">
-                    <p className="text-[--muted] text-sm">
-                      Click on a connection to see detailed comparison
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
+                </Link>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="border-2 border-dashed border-[--border] p-12 text-center">
+            <div className="text-4xl mb-4">🔍</div>
+            <h3 className="text-xl font-bold mb-2">
+              {filter === "all" ? "No connections found" : `No ${MATCH_TYPES[filter as keyof typeof MATCH_TYPES]?.name || filter} matches`}
+            </h3>
+            <p className="text-[--muted] mb-6 max-w-md mx-auto">
+              {filter === "all"
+                ? "Not enough users with TasteIDs to find matches. Check back soon!"
+                : "Try a different filter or check back as more users join."}
+            </p>
+            {filter !== "all" && (
+              <Link
+                href="/discover/connections"
+                className="text-[11px] tracking-[0.15em] uppercase text-[--muted] hover:text-white transition-colors"
+              >
+                View All Connections →
+              </Link>
+            )}
           </div>
         )}
+
+        {/* Tips Section */}
+        <div className="mt-12 pt-8 border-t border-[--border]">
+          <h3 className="text-[11px] tracking-[0.2em] uppercase text-[--muted] mb-4">
+            Understanding Match Types
+          </h3>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {Object.entries(MATCH_TYPES).map(([key, meta]) => (
+              <div key={key} className={`p-4 border ${meta.borderColor}`}>
+                <div className="text-2xl mb-2">{meta.icon}</div>
+                <div className={`font-bold mb-1 ${meta.color}`}>{meta.name}</div>
+                <p className="text-[11px] text-[--muted]">{meta.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   )
