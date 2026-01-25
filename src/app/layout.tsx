@@ -40,6 +40,11 @@ export default function RootLayout({
             <main className="pt-16">
               {children}
             </main>
+            <footer className="fixed bottom-3 right-4 z-40">
+              <span className="text-[10px] tracking-[0.2em] uppercase text-foreground/30 font-medium">
+                powered by polarity 1.2
+              </span>
+            </footer>
             <Analytics />
           </ThemeProvider>
         </SessionProvider>
