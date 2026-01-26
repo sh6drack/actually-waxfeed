@@ -8,6 +8,47 @@ export async function GET(request: NextRequest) {
     const user = await requireAuth()
     const { searchParams } = new URL(request.url)
     const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 50)
+    const isOnboarding = searchParams.get('onboarding') === 'true'
+
+    // Get IDs of albums the user has already reviewed
+    const reviewedAlbumIds = await prisma.review.findMany({
+      where: { userId: user.id },
+      select: { albumId: true },
+    })
+    const reviewedIds = reviewedAlbumIds.map(r => r.albumId)
+
+    // For onboarding, return popular/well-reviewed albums for broader appeal
+    if (isOnboarding) {
+      const popularAlbums = await prisma.album.findMany({
+        where: {
+          id: { notIn: reviewedIds },
+          coverArtUrl: { not: null },
+          totalReviews: { gte: 3 },
+          averageRating: { gte: 6 },
+        },
+        select: {
+          id: true,
+          title: true,
+          artistName: true,
+          coverArtUrl: true,
+          coverArtUrlLarge: true,
+          releaseDate: true,
+          genres: true,
+        },
+        take: limit * 2, // Get extra for shuffling
+        orderBy: [
+          { totalReviews: 'desc' },
+          { averageRating: 'desc' },
+        ],
+      })
+
+      // Shuffle and return
+      const shuffled = popularAlbums
+        .sort(() => Math.random() - 0.5)
+        .slice(0, limit)
+
+      return successResponse(shuffled)
+    }
 
     // Get user's TasteID for personalization
     const tasteId = await prisma.tasteID.findUnique({
@@ -19,13 +60,6 @@ export async function GET(request: NextRequest) {
         adventurenessScore: true,
       },
     })
-
-    // Get IDs of albums the user has already reviewed
-    const reviewedAlbumIds = await prisma.review.findMany({
-      where: { userId: user.id },
-      select: { albumId: true },
-    })
-    const reviewedIds = reviewedAlbumIds.map(r => r.albumId)
 
     // Get user's highly-rated albums for artist inference
     const likedReviews = await prisma.review.findMany({

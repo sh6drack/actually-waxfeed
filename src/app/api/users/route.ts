@@ -6,6 +6,7 @@ import { z } from 'zod'
 const updateUserSchema = z.object({
   username: z.string().min(3).max(30).regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores').optional(),
   bio: z.string().max(150).optional(),
+  country: z.string().length(2).optional(), // ISO 3166-1 alpha-2 code
   socialLinks: z.object({
     instagram: z.string().optional(),
     twitter: z.string().optional(),
@@ -63,7 +64,7 @@ export async function PATCH(request: NextRequest) {
       return errorResponse(validation.error.errors[0].message, 400)
     }
 
-    const { username, bio, socialLinks, image } = validation.data
+    const { username, bio, country, socialLinks, image } = validation.data
 
     // Handle username change
     if (username) {
@@ -96,6 +97,7 @@ export async function PATCH(request: NextRequest) {
       data: {
         username,
         bio,
+        country,
         socialLinks: socialLinks as object,
         image,
         usernameChangesUsed: username ? { increment: 1 } : undefined,
