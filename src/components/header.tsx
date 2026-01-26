@@ -130,13 +130,22 @@ export function Header() {
         {/* Desktop Navigation - only show on large screens */}
         <nav className="hidden lg:flex items-center gap-5 text-[11px] tracking-[0.1em]">
           {/* Primary CTA - Review */}
-          <Link 
-            href="/discover" 
+          <Link
+            href="/discover"
             className="px-3 py-1.5 no-underline transition-colors"
             style={{ backgroundColor: 'var(--header-text)', color: 'var(--header-bg)' }}
           >
             REVIEW
           </Link>
+          {/* TasteID CTA - only for logged in users without username (incomplete onboarding) */}
+          {session && !session.user?.username && (
+            <Link
+              href="/onboarding"
+              className="px-3 py-1.5 no-underline transition-all border-2 border-[#ffd700] text-[#ffd700] hover:bg-[#ffd700] hover:text-black"
+            >
+              CREATE TASTEID
+            </Link>
+          )}
           <Link href="/trending" className="no-underline hover:opacity-60 transition-opacity">
             TRENDING
           </Link>
@@ -440,6 +449,19 @@ export function Header() {
               </button>
             </div>
           </form>
+
+          {/* TasteID CTA in mobile - prominent if user doesn't have username */}
+          {session && !session.user?.username && (
+            <div className="px-4 pt-4 pb-2">
+              <Link
+                href="/onboarding"
+                className="block w-full px-4 py-4 text-center text-sm font-bold no-underline border-2 border-[#ffd700] text-[#ffd700] hover:bg-[#ffd700] hover:text-black transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                🎮 CREATE YOUR TASTEID
+              </Link>
+            </div>
+          )}
 
           {/* Nav Links */}
           <nav>
