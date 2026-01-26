@@ -252,11 +252,11 @@ export default async function Home() {
         />
       )}
 
-      {/* The 3 Pillars - What Makes WaxFeed Different */}
+      {/* The 3 Pillars - What Makes WAXFEED Different */}
       <section className="border-b border-[--border] bg-white/[0.02]">
         <div className="max-w-7xl mx-auto px-6 py-12">
           <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-8">
-            What Makes WaxFeed Different
+            What Makes WAXFEED Different
           </p>
           <div className="grid md:grid-cols-3 gap-8">
             {/* Pillar 1: Gamification - You Were First */}
