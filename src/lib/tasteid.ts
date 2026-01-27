@@ -607,6 +607,20 @@ export interface TasteIDComputation {
 
   // Track-level data
   trackDepthData: TrackDepthData
+
+  // Vocabulary Analysis (NEW)
+  vocabularyProfile: VocabularyProfile
+}
+
+// Vocabulary analysis from review text
+export interface VocabularyProfile {
+  writingStyle: 'technical' | 'emotional' | 'casual' | 'poetic' | 'analytical'
+  dominantMood: 'positive' | 'negative' | 'neutral' | 'mixed'
+  keyDescriptors: string[]      // Most used descriptive words
+  musicVocabulary: number       // 0-1: how much music-specific vocabulary
+  emotionalIntensity: number    // 0-1: how emotionally charged reviews are
+  criticalDepth: number         // 0-1: how analytical/critical
+  personalConnection: number    // 0-1: how personally they relate to music
 }
 
 interface TrackDepthData {
@@ -719,6 +733,9 @@ export async function computeTasteID(userId: string): Promise<TasteIDComputation
   const avgReviewLength = reviewLengths.reduce((a, b) => a + b, 0) / reviewLengths.length
   const reviewDepth = getReviewDepth(avgReviewLength)
 
+  // 5.5. Vocabulary/Word Analysis (NEW - Nathan's request)
+  const vocabularyProfile = computeVocabularyProfile(reviews)
+
   // 6. Adventureness score (genre diversity)
   const adventurenessScore = computeAdventurenessScore(genreVector)
 
@@ -795,6 +812,9 @@ export async function computeTasteID(userId: string): Promise<TasteIDComputation
 
     // Track-level data
     trackDepthData,
+
+    // Vocabulary Analysis
+    vocabularyProfile,
   }
 }
 
@@ -813,6 +833,106 @@ function applyRecencyWeighting(reviews: ReviewWithAlbum[]): Array<ReviewWithAlbu
     const textBonus = review.text && review.text.length > 50 ? 1.3 : 1
     return { ...review, weight: weight * textBonus }
   })
+}
+
+/**
+ * Analyze vocabulary and writing style from review text
+ * This reveals how users think about and describe music
+ */
+function computeVocabularyProfile(reviews: ReviewWithAlbum[]): VocabularyProfile {
+  // Collect all review text
+  const allText = reviews
+    .filter(r => r.text && r.text.length > 10)
+    .map(r => r.text!.toLowerCase())
+    .join(' ')
+
+  if (allText.length < 50) {
+    return {
+      writingStyle: 'casual',
+      dominantMood: 'neutral',
+      keyDescriptors: [],
+      musicVocabulary: 0,
+      emotionalIntensity: 0,
+      criticalDepth: 0,
+      personalConnection: 0,
+    }
+  }
+
+  const words = allText.split(/\s+/)
+  const wordCount = words.length
+
+  // Music vocabulary detection
+  const technicalTerms = ['production', 'mixing', 'mastering', 'arrangement', 'composition',
+    'instrumentation', 'tempo', 'rhythm', 'harmony', 'melody', 'vocals', 'bass', 'drums',
+    'synth', 'sample', 'beat', 'flow', 'cadence', 'crescendo', 'hook', 'bridge', 'verse',
+    'chorus', 'layered', 'texture', 'sonic', 'frequencies', 'dynamics']
+
+  const emotionalTerms = ['feel', 'feeling', 'emotion', 'emotional', 'vibe', 'vibes', 'mood',
+    'soul', 'heart', 'love', 'hate', 'beautiful', 'amazing', 'incredible', 'powerful',
+    'haunting', 'moving', 'touching', 'raw', 'intense', 'passionate', 'deeply']
+
+  const analyticalTerms = ['because', 'however', 'although', 'therefore', 'compared',
+    'contrast', 'similar', 'different', 'better', 'worse', 'influence', 'influenced',
+    'reminds', 'reference', 'callback', 'evolution', 'progression', 'growth']
+
+  const personalTerms = ['i', 'me', 'my', 'personally', 'reminds me', 'makes me',
+    'i feel', 'i think', 'i love', 'i hate', 'for me', 'to me']
+
+  const positiveTerms = ['great', 'good', 'amazing', 'incredible', 'beautiful', 'perfect',
+    'masterpiece', 'classic', 'brilliant', 'genius', 'love', 'excellent', 'fantastic', 'fire', 'goat']
+
+  const negativeTerms = ['bad', 'terrible', 'awful', 'boring', 'mid', 'mediocre', 'disappointing',
+    'weak', 'forgettable', 'generic', 'trash', 'skip', 'overrated', 'underwhelming']
+
+  // Count occurrences
+  const countMatches = (terms: string[]) =>
+    terms.reduce((count, term) => count + (allText.match(new RegExp(`\\b${term}\\b`, 'gi'))?.length || 0), 0)
+
+  const technicalCount = countMatches(technicalTerms)
+  const emotionalCount = countMatches(emotionalTerms)
+  const analyticalCount = countMatches(analyticalTerms)
+  const personalCount = countMatches(personalTerms)
+  const positiveCount = countMatches(positiveTerms)
+  const negativeCount = countMatches(negativeTerms)
+
+  // Calculate metrics (normalized 0-1)
+  const musicVocabulary = Math.min(1, technicalCount / (wordCount * 0.02))
+  const emotionalIntensity = Math.min(1, emotionalCount / (wordCount * 0.015))
+  const criticalDepth = Math.min(1, analyticalCount / (wordCount * 0.01))
+  const personalConnection = Math.min(1, personalCount / (wordCount * 0.03))
+
+  // Determine writing style
+  let writingStyle: VocabularyProfile['writingStyle'] = 'casual'
+  const maxScore = Math.max(technicalCount, emotionalCount, analyticalCount)
+  if (maxScore === technicalCount && technicalCount > 5) writingStyle = 'technical'
+  else if (maxScore === emotionalCount && emotionalCount > 5) writingStyle = 'emotional'
+  else if (maxScore === analyticalCount && analyticalCount > 5) writingStyle = 'analytical'
+  else if (emotionalIntensity > 0.5 && musicVocabulary > 0.3) writingStyle = 'poetic'
+
+  // Determine dominant mood
+  let dominantMood: VocabularyProfile['dominantMood'] = 'neutral'
+  if (positiveCount > negativeCount * 2) dominantMood = 'positive'
+  else if (negativeCount > positiveCount * 2) dominantMood = 'negative'
+  else if (positiveCount > 3 && negativeCount > 3) dominantMood = 'mixed'
+
+  // Extract key descriptors (most used adjectives/descriptors)
+  const descriptorCandidates = [...technicalTerms, ...emotionalTerms, 'fire', 'classic', 'mid', 'solid', 'smooth', 'hard', 'soft', 'dark', 'bright', 'heavy', 'light', 'chill', 'hype']
+  const keyDescriptors = descriptorCandidates
+    .map(term => ({ term, count: (allText.match(new RegExp(`\\b${term}\\b`, 'gi'))?.length || 0) }))
+    .filter(d => d.count >= 2)
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 8)
+    .map(d => d.term)
+
+  return {
+    writingStyle,
+    dominantMood,
+    keyDescriptors,
+    musicVocabulary,
+    emotionalIntensity,
+    criticalDepth,
+    personalConnection,
+  }
 }
 
 /**
@@ -2253,6 +2373,8 @@ export async function saveTasteID(userId: string, computation: TasteIDComputatio
       memorableMoments: computation.memorableMoments as unknown as object,
       futureSelvesMusic: computation.futureSelvesMusic as unknown as object,
       polarityScore2: computation.polarityScore2,
+      // Vocabulary Analysis
+      vocabularyProfile: computation.vocabularyProfile as object,
     },
     update: {
       genreVector: computation.genreVector as object,
@@ -2278,6 +2400,8 @@ export async function saveTasteID(userId: string, computation: TasteIDComputatio
       memorableMoments: computation.memorableMoments as unknown as object,
       futureSelvesMusic: computation.futureSelvesMusic as unknown as object,
       polarityScore2: computation.polarityScore2,
+      // Vocabulary Analysis
+      vocabularyProfile: computation.vocabularyProfile as object,
       lastComputedAt: new Date(),
     },
   })

@@ -904,6 +904,9 @@ model TasteID {
   consolidationHistory Json? // How taste has consolidated over time
   polarityScore2       Float? // Enhanced Polarity 1.2 score with cognitive factors
 
+  // Vocabulary Analysis - Word/sentiment analysis from review text (Nathan's request)
+  vocabularyProfile    Json? // { writingStyle, dominantMood, keyDescriptors, musicVocabulary, etc. }
+
   // Timestamps
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
