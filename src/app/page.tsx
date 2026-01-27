@@ -173,7 +173,7 @@ export default async function Home() {
   const weekOf = format(new Date(), "MMM d, yyyy")
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }} suppressHydrationWarning>
       {/* Hero - The Contrarian Truth */}
       <section style={{ borderBottom: '1px solid var(--border)' }}>
         <div className="max-w-7xl mx-auto px-6 py-16 lg:py-24">
@@ -619,7 +619,7 @@ export default async function Home() {
                         {review.user.username}
                       </span>
                       <span className="text-[10px] text-[--border]">·</span>
-                      <span className="text-[10px] text-[--border]">
+                      <span className="text-[10px] text-[--border]" suppressHydrationWarning>
                         {formatDistanceToNow(new Date(review.createdAt), { addSuffix: true })}
                       </span>
                     </div>
