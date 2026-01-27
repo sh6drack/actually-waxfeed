@@ -233,22 +233,22 @@ export async function POST(request: NextRequest) {
       where: { userId: user.id, albumId }
     })
 
-    // First Spin: Simple +5 Wax for any review (no complex rules)
+    // Award 1 WAX for every rating/review
     try {
       await prisma.user.update({
         where: { id: user.id },
         data: {
-          waxBalance: { increment: 5 },
-          lifetimeWaxEarned: { increment: 5 },
+          waxBalance: { increment: 1 },
+          lifetimeWaxEarned: { increment: 1 },
         }
       })
       
       await prisma.waxTransaction.create({
         data: {
           userId: user.id,
-          amount: 5,
+          amount: 1,
           type: 'REVIEW_REWARD',
-          description: `Review: ${album.title}`,
+          description: `Rated: ${album.title}`,
           metadata: { albumId, reviewId: review.id, position: reviewPosition }
         }
       })
@@ -291,7 +291,7 @@ export async function POST(request: NextRequest) {
     return successResponse({
       ...review,
       reviewPosition,
-      waxEarned: 5,
+      waxEarned: 1,
       isQuickRate: !!isQuickRate,
       firstSpinMessage,
     }, 201)

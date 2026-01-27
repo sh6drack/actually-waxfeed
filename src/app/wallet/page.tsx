@@ -359,28 +359,52 @@ function WalletContent() {
       {/* HOW TO EARN Tab */}
       {activeTab === "wax" && (
         <section className="max-w-7xl mx-auto">
-          {/* First Spin */}
+          {/* MAIN WAY: Rate Albums */}
+          <div className="px-6 py-8 border-b border-[--border] bg-[#ffd700]/5">
+            <p className="text-[10px] tracking-[0.3em] uppercase text-[#ffd700] mb-4">
+              Easiest Way to Earn
+            </p>
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+              <div>
+                <h2 className="text-3xl font-bold mb-2">
+                  <span className="text-[#ffd700]">+1 WAX</span> Per Rating
+                </h2>
+                <p className="text-sm text-[--muted] max-w-xl">
+                  Every album you rate earns you 1 WAX. Build your TasteID and earn rewards at the same time. 
+                  Rate 20 albums to unlock your TasteID and keep earning!
+                </p>
+              </div>
+              <Link
+                href="/quick-rate"
+                className="px-8 py-4 bg-[#ffd700] text-black text-sm font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors text-center flex-shrink-0"
+              >
+                Start Rating
+              </Link>
+            </div>
+          </div>
+
+          {/* First Spin Bonuses */}
           <div className="px-6 py-8 border-b border-[--border]">
             <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-4">
-              Primary Way to Earn
+              Bonus: First Spin Badges
             </p>
-            <h2 className="text-2xl font-bold mb-4">First Spin Badges</h2>
+            <h3 className="text-xl font-bold mb-4">Review Early, Earn Extra</h3>
             <p className="text-sm text-[--muted] mb-6 max-w-2xl">
-              Review albums before they trend. When an album hits 100+ reviews 
-              early reviewers automatically receive badges and Wax rewards.
+              Review albums before they trend. When an album hits 100+ reviews, 
+              early reviewers automatically receive badges and bonus Wax rewards.
             </p>
             <div className="grid lg:grid-cols-3 gap-4">
               <div className="p-4 border border-[#ffd700]/30">
                 <p className="text-3xl font-bold text-[#ffd700] mb-1">+100</p>
-                <p className="text-sm">Gold Spin for first 10</p>
+                <p className="text-sm">Gold Spin (top 10)</p>
               </div>
               <div className="p-4 border border-gray-400/30">
                 <p className="text-3xl font-bold text-gray-400 mb-1">+50</p>
-                <p className="text-sm">Silver Spin for first 50</p>
+                <p className="text-sm">Silver Spin (top 50)</p>
               </div>
               <div className="p-4 border border-amber-700/30">
                 <p className="text-3xl font-bold text-amber-700 mb-1">+25</p>
-                <p className="text-sm">Bronze Spin for first 100</p>
+                <p className="text-sm">Bronze Spin (top 100)</p>
               </div>
             </div>
           </div>
@@ -388,21 +412,21 @@ function WalletContent() {
           {/* Other Ways */}
           <div className="px-6 py-8 border-b border-[--border]">
             <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-6">
-              Other Ways
+              Other Ways to Earn
             </p>
             <div className="grid lg:grid-cols-2 gap-6">
-              <Link href="/search" className="p-4 border border-[--border] hover:border-white transition group">
-                <p className="text-xl font-bold mb-1 group-hover:text-[--muted] transition">+5 Wax</p>
-                <p className="text-sm font-medium mb-2">Write a Review</p>
-                <p className="text-xs text-[--muted]">
-                  Every review earns you 5 Wax. Plus tracks your position for First Spin.
-                </p>
-              </Link>
               <div className="p-4 border border-[--border]">
                 <p className="text-xl font-bold mb-1">+1 to +10 Wax</p>
                 <p className="text-sm font-medium mb-2">Get Tipped</p>
                 <p className="text-xs text-[--muted]">
-                  When others tip your reviews you earn a portion. Standard +1, Premium +3, GOLD +10.
+                  When others tip your reviews you earn Wax. Standard +1, Premium +3, GOLD +10.
+                </p>
+              </div>
+              <div className="p-4 border border-[--border]">
+                <p className="text-xl font-bold mb-1">+5 Wax</p>
+                <p className="text-sm font-medium mb-2">Write a Full Review</p>
+                <p className="text-xs text-[--muted]">
+                  Add a written review (not just a rating) to earn bonus Wax.
                 </p>
               </div>
             </div>
