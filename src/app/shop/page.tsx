@@ -78,7 +78,7 @@ export default function ShopPage() {
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
       {/* Header - Clear value prop */}
       <section style={{ borderBottom: '1px solid var(--border)' }}>
-        <div className="max-w-7xl mx-auto px-6 py-12 lg:py-16">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-12 lg:py-16">
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
             <div>
               <p className="text-[10px] tracking-[0.3em] uppercase text-[#ffd700] mb-3">
@@ -106,7 +106,7 @@ export default function ShopPage() {
 
       {/* What is Wax - For new users */}
       <section className="border-b border-[--border] bg-white/[0.02]">
-        <div className="max-w-7xl mx-auto px-6 py-10">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-10">
           <div className="grid md:grid-cols-3 gap-8">
             <div>
               <div className="w-8 h-8 border border-[--border] flex items-center justify-center mb-3">
@@ -140,7 +140,7 @@ export default function ShopPage() {
       </section>
 
       {message && (
-        <div className="max-w-7xl mx-auto px-6 pt-6">
+        <div className="w-full px-6 lg:px-12 xl:px-20 pt-6">
           <div className="p-4 border border-[--border]">
             <p className="text-sm">{message}</p>
           </div>
@@ -148,7 +148,7 @@ export default function ShopPage() {
       )}
 
       {/* Wax Pax Grid */}
-      <section className="max-w-7xl mx-auto px-6 py-12">
+      <section className="w-full px-6 lg:px-12 xl:px-20 py-12">
         <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-8">
           Wax Pax
         </p>
@@ -207,7 +207,7 @@ export default function ShopPage() {
 
       {/* What Wax Is For */}
       <section className="border-t border-[--border]">
-        <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-12">
           <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-8">
             What Wax Is For
           </p>
@@ -239,7 +239,7 @@ export default function ShopPage() {
 
       {/* Earn Instead */}
       <section className="border-t border-[--border]">
-        <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-12">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div>
               <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-2">
@@ -264,7 +264,7 @@ export default function ShopPage() {
 
       {/* Footer nav */}
       <footer className="border-t border-[--border]">
-        <div className="max-w-7xl mx-auto px-6 py-8 flex justify-between items-center">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-8 flex justify-between items-center">
           <Link
             href="/wallet"
             className="text-[11px] tracking-[0.15em] uppercase text-[--muted] hover:text-white transition-colors flex items-center gap-2"

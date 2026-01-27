@@ -37,7 +37,7 @@ type Transaction = {
 function WalletLoading() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="max-w-6xl mx-auto px-6 py-12">
+      <div className="w-full px-6 lg:px-12 xl:px-20 py-12">
         <p className="text-[var(--muted)]">Loading...</p>
       </div>
     </div>
@@ -118,7 +118,7 @@ function WalletContent() {
   if (!stats) {
     return (
       <div className="min-h-screen bg-background text-foreground">
-        <div className="max-w-6xl mx-auto px-6 py-12">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-12">
           <p className="text-[var(--muted)]">Failed to load wallet.</p>
         </div>
       </div>
@@ -131,7 +131,7 @@ function WalletContent() {
     <div className="min-h-screen bg-background text-foreground">
       {/* Header Section */}
       <section className="border-b border-[var(--border)]">
-        <div className="max-w-6xl mx-auto px-6 py-12">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-12">
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
             {/* WAX Balance */}
             <div>
@@ -177,7 +177,7 @@ function WalletContent() {
 
       {/* Dual CTA Banner - Earn OR Buy */}
       <section className="border-b border-[var(--border)] bg-[var(--surface)]">
-        <div className="max-w-6xl mx-auto px-6 py-6">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-6">
           <div className="grid md:grid-cols-2 gap-6">
             {/* Earn WAX */}
             <div className="flex items-center justify-between gap-4 p-4 border border-[var(--border)]">
@@ -215,7 +215,7 @@ function WalletContent() {
 
       {/* Tabs */}
       <section className="border-b border-[var(--border)]">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="w-full px-6 lg:px-12 xl:px-20">
           <div className="flex gap-8">
             <button
               onClick={() => setActiveTab("earn")}
@@ -253,7 +253,7 @@ function WalletContent() {
 
       {/* HOW TO EARN Tab */}
       {activeTab === "earn" && (
-        <section className="max-w-6xl mx-auto px-6 py-10">
+        <section className="w-full px-6 lg:px-12 xl:px-20 py-10">
           {/* Main Ways */}
           <div className="grid md:grid-cols-2 gap-6 mb-12">
             {/* Rate Albums */}
@@ -385,7 +385,7 @@ function WalletContent() {
 
       {/* BADGES Tab */}
       {activeTab === "badges" && (
-        <section className="max-w-6xl mx-auto px-6 py-10">
+        <section className="w-full px-6 lg:px-12 xl:px-20 py-10">
           {totalBadges === 0 ? (
             <div className="py-16 border border-[var(--border)] text-center">
               <div className="w-14 h-14 border border-[#ffd700] flex items-center justify-center mx-auto mb-4 text-[#ffd700]">
@@ -461,7 +461,7 @@ function WalletContent() {
 
       {/* HISTORY Tab */}
       {activeTab === "history" && (
-        <section className="max-w-6xl mx-auto px-6 py-10">
+        <section className="w-full px-6 lg:px-12 xl:px-20 py-10">
           <p className="text-[10px] tracking-[0.3em] uppercase text-[var(--muted)] mb-6">
             Recent Transactions
           </p>
@@ -505,7 +505,7 @@ function WalletContent() {
 
       {/* Bottom CTAs */}
       <section className="border-t border-[var(--border)]">
-        <div className="max-w-6xl mx-auto px-6 py-8">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-8">
           <div className="grid md:grid-cols-2 gap-4">
             <Link 
               href="/discover"

@@ -95,7 +95,7 @@ function PricingContent() {
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
       {/* Hero */}
       <section style={{ borderBottom: '1px solid var(--border)' }}>
-        <div className="max-w-4xl mx-auto px-6 py-16 lg:py-24 text-center">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-16 lg:py-24 text-center">
           <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-6">
             Membership
           </p>
@@ -115,7 +115,7 @@ function PricingContent() {
       </section>
 
       {message && (
-        <div className="max-w-7xl mx-auto px-6 pt-6">
+        <div className="w-full px-6 lg:px-12 xl:px-20 pt-6">
           <div className="p-4 border border-[--border]">
             <p className="text-sm">{message}</p>
           </div>
@@ -124,7 +124,7 @@ function PricingContent() {
 
       {/* The Value */}
       <section className="border-b border-[--border]">
-        <div className="max-w-7xl mx-auto px-6 py-16">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-16">
           <div className="max-w-3xl">
             <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-4">
               How it works
@@ -165,7 +165,7 @@ function PricingContent() {
 
       {/* Simple Math */}
       <section className="border-b border-[--border]">
-        <div className="max-w-7xl mx-auto px-6 py-16">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-16">
           <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-8">
             The math
           </p>
@@ -403,7 +403,7 @@ function PricingContent() {
 
       {/* The Real Value */}
       <section className="border-b border-[--border]">
-        <div className="max-w-4xl mx-auto px-6 py-16 text-center">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-16 text-center">
           <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-6">
             What it means
           </p>
@@ -439,7 +439,7 @@ function PricingContent() {
 
       {/* Urgency */}
       <section className="border-b border-[--border] bg-white/[0.02]">
-        <div className="max-w-4xl mx-auto px-6 py-12 text-center">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-12 text-center">
           <p className="text-lg font-medium mb-3">
             Albums are trending every day.
           </p>
@@ -457,7 +457,7 @@ function PricingContent() {
 
       {/* FAQ */}
       <section>
-        <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-12">
           <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-8">
             Questions
           </p>
@@ -496,7 +496,7 @@ function PricingContent() {
 
       {/* Footer */}
       <footer className="border-t border-[--border]">
-        <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-8 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-[--muted]">
             Your taste. Verified forever.
           </p>

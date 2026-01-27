@@ -77,7 +77,7 @@ export default async function Home() {
     <div className="min-h-screen bg-background text-foreground">
       {/* HERO - Clear Value Proposition */}
       <section className="border-b border-[var(--border)]">
-        <div className="max-w-6xl mx-auto px-6 py-20 lg:py-28">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-20 lg:py-28">
           <div className="max-w-3xl">
             {/* Tagline */}
             <p className="text-sm tracking-widest uppercase text-[#ffd700] mb-6 font-medium">
@@ -146,7 +146,7 @@ export default async function Home() {
 
       {/* THE 3 PILLARS - Revolutionary Features */}
       <section className="border-b border-[var(--border)] bg-[var(--surface)]">
-        <div className="max-w-6xl mx-auto px-6 py-16 lg:py-20">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-16 lg:py-20">
           <p className="text-xs tracking-[0.3em] uppercase text-[var(--muted-dim)] mb-12 text-center">
             Three Revolutionary Features
           </p>
@@ -223,7 +223,7 @@ export default async function Home() {
 
       {/* STATS - Social Proof */}
       <section className="border-b border-[var(--border)]">
-        <div className="max-w-6xl mx-auto px-6 py-8">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-8">
           <div className="flex flex-wrap justify-center gap-12 lg:gap-20">
             <div className="text-center">
               <p className="text-3xl lg:text-4xl font-bold tabular-nums">{stats.albumCount.toLocaleString()}</p>
@@ -243,7 +243,7 @@ export default async function Home() {
 
       {/* TRENDING ALBUMS */}
       <section className="border-b border-[var(--border)]">
-        <div className="max-w-6xl mx-auto px-6 py-12 lg:py-16">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-12 lg:py-16">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-lg font-bold">Trending Now</h2>
             <Link href="/trending" className="text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
@@ -286,7 +286,7 @@ export default async function Home() {
 
       {/* RECENT ACTIVITY */}
       <section className="border-b border-[var(--border)]">
-        <div className="max-w-6xl mx-auto px-6 py-12 lg:py-16">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-12 lg:py-16">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-lg font-bold">Recent Ratings</h2>
             <Link href="/reviews" className="text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
@@ -332,7 +332,7 @@ export default async function Home() {
 
       {/* FINAL CTA */}
       <section className="bg-[var(--surface)]">
-        <div className="max-w-6xl mx-auto px-6 py-20 text-center">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-20 text-center">
           <h2 className="text-3xl lg:text-4xl font-bold mb-6">
             Ready to prove your taste?
           </h2>
@@ -361,7 +361,7 @@ export default async function Home() {
 
       {/* FOOTER */}
       <footer className="border-t border-[var(--border)]">
-        <div className="max-w-6xl mx-auto px-6 py-10">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-10">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div>
               <p className="text-sm text-[var(--muted-dim)]">WAXFEED · Polarity Lab LLC · 2025</p>

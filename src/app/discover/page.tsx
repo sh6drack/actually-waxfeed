@@ -179,7 +179,7 @@ export default async function DiscoverPage() {
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
       {/* Editorial masthead - Action-oriented */}
       <header style={{ borderBottom: '1px solid var(--border)' }}>
-        <div className="max-w-7xl mx-auto px-6 py-12 lg:py-16">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-12 lg:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
             <div className="lg:col-span-8">
               <p className="text-[10px] tracking-[0.4em] uppercase mb-4 text-[#ffd700]">
@@ -225,7 +225,7 @@ export default async function DiscoverPage() {
 
       {/* Spin the Wheel - Editorial feature */}
       <section className="border-b border-[--border]">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="w-full px-6 lg:px-12 xl:px-20">
           <div className="grid grid-cols-12 border-l border-r border-[--border]">
             <div className="col-span-12 lg:col-span-1 border-r border-[--border] py-8 lg:py-16 flex lg:flex-col items-center lg:items-start justify-between lg:justify-start gap-4">
               <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted] lg:writing-mode-vertical lg:rotate-180" style={{ writingMode: 'vertical-rl' as const }}>
@@ -242,7 +242,7 @@ export default async function DiscoverPage() {
 
       {/* Taste Connections - Polarity 1.2 Powered */}
       <section className="border-b border-[--border]">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="w-full px-6 lg:px-12 xl:px-20">
           <div className="grid grid-cols-12 border-l border-r border-[--border]">
             <div className="col-span-12 lg:col-span-1 border-r border-[--border] py-8 flex lg:flex-col items-center lg:items-start justify-between lg:justify-start gap-4">
               <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted] lg:writing-mode-vertical lg:rotate-180" style={{ writingMode: 'vertical-rl' as const }}>
@@ -275,7 +275,7 @@ export default async function DiscoverPage() {
       {/* For You - Personalized */}
       {recommendations.forYou.length > 0 && (
         <section className="border-b border-[--border]">
-          <div className="max-w-7xl mx-auto px-6">
+          <div className="w-full px-6 lg:px-12 xl:px-20">
             <div className="grid grid-cols-12 border-l border-r border-[--border]">
               <div className="col-span-12 lg:col-span-1 border-r border-[--border] py-8 flex lg:flex-col items-center lg:items-start justify-between lg:justify-start gap-4">
                 <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted] lg:writing-mode-vertical lg:rotate-180" style={{ writingMode: 'vertical-rl' as const }}>
@@ -335,7 +335,7 @@ export default async function DiscoverPage() {
       {/* Popular in Genre - Full bleed asymmetric */}
       {recommendations.popularInGenre && (
         <section className="border-b border-[--border]">
-          <div className="max-w-7xl mx-auto px-6">
+          <div className="w-full px-6 lg:px-12 xl:px-20">
             <div className="grid grid-cols-12 border-l border-r border-[--border]">
               <div className="col-span-12 lg:col-span-1 border-r border-[--border] py-8 flex lg:flex-col items-center lg:items-start justify-between lg:justify-start gap-4">
                 <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted] lg:writing-mode-vertical lg:rotate-180" style={{ writingMode: 'vertical-rl' as const }}>
@@ -416,7 +416,7 @@ export default async function DiscoverPage() {
 
       {/* New Releases + Trending - Split section */}
       <section className="border-b border-[--border]">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="w-full px-6 lg:px-12 xl:px-20">
           <div className="grid grid-cols-12 border-l border-r border-[--border]">
             <div className="col-span-12 lg:col-span-1 border-r border-[--border] py-8 flex lg:flex-col items-center lg:items-start justify-between lg:justify-start gap-4">
               <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted] lg:writing-mode-vertical lg:rotate-180" style={{ writingMode: 'vertical-rl' as const }}>
@@ -516,7 +516,7 @@ export default async function DiscoverPage() {
       {/* CTA for non-logged in or no reviews - Zero to One: clear value prop */}
       {(!session || recommendations.forYou.length === 0) && (
         <section className="py-20 lg:py-28 bg-white/[0.02]">
-          <div className="max-w-7xl mx-auto px-6 text-center">
+          <div className="w-full px-6 lg:px-12 xl:px-20 text-center">
             <p className="text-[10px] tracking-[0.4em] uppercase text-[#ffd700] mb-6">
               {session ? 'Start Proving Your Taste' : 'The Music Credibility Platform'}
             </p>
@@ -546,7 +546,7 @@ export default async function DiscoverPage() {
 
       {/* Footer colophon */}
       <footer className="border-t border-[--border]">
-        <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-8">
           <p className="text-[10px] tracking-[0.2em] uppercase text-[--border]">
             WAXFEED · Discover · {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
           </p>

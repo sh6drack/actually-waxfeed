@@ -76,7 +76,7 @@ export default async function TrendingPage() {
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
       {/* Editorial masthead */}
       <header style={{ borderBottom: '1px solid var(--border)' }}>
-        <div className="max-w-7xl mx-auto px-6 py-12 lg:py-16">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-12 lg:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
             <div className="lg:col-span-8">
               <p className="text-[10px] tracking-[0.4em] uppercase mb-4" style={{ color: 'var(--muted)' }}>
@@ -99,7 +99,7 @@ export default async function TrendingPage() {
 
       {/* Main content split */}
       <section className="border-b border-[--border]">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="w-full px-6 lg:px-12 xl:px-20">
           <div className="grid grid-cols-12 border-l border-r border-[--border]">
             <div className="col-span-12 lg:col-span-1 border-r border-[--border] py-8 flex lg:flex-col items-center lg:items-start justify-between lg:justify-start gap-4">
               <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted] lg:writing-mode-vertical lg:rotate-180" style={{ writingMode: 'vertical-rl' as const }}>
@@ -197,7 +197,7 @@ export default async function TrendingPage() {
 
       {/* Recent Releases */}
       <section className="border-b border-[--border]">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="w-full px-6 lg:px-12 xl:px-20">
           <div className="grid grid-cols-12 border-l border-r border-[--border]">
             <div className="col-span-12 lg:col-span-1 border-r border-[--border] py-8 flex lg:flex-col items-center lg:items-start justify-between lg:justify-start gap-4">
               <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted] lg:writing-mode-vertical lg:rotate-180" style={{ writingMode: 'vertical-rl' as const }}>
@@ -247,7 +247,7 @@ export default async function TrendingPage() {
 
       {/* Footer colophon */}
       <footer className="border-t border-[--border]">
-        <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-8">
           <p className="text-[10px] tracking-[0.2em] uppercase text-[--border]">
             WAXFEED · Trending · {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
           </p>

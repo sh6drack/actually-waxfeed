@@ -118,7 +118,7 @@ export function Header() {
         borderBottom: '1px solid var(--header-border)' 
       }}
     >
-      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+      <div className="w-full px-4 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 no-underline flex-shrink-0">
           <WaxfeedLogo size="md" />
