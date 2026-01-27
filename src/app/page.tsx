@@ -15,7 +15,7 @@ async function getBillboardAlbums() {
       albumType: { not: 'single' },
     },
     orderBy: { billboardRank: 'asc' },
-    take: 20,
+    take: 50,
     select: {
       id: true,
       spotifyId: true,
@@ -33,7 +33,7 @@ async function getBillboardAlbums() {
 // Get recent reviews - only show reviews with actual text, not quick rates
 async function getRecentReviews() {
   return prisma.review.findMany({
-    take: 15,
+    take: 50,
     where: {
       AND: [
         { text: { not: null } },
@@ -533,9 +533,9 @@ export default async function Home() {
       {/* TRENDING + RECENT REVIEWS - Side by Side Editorial Layout (FIRST VIEW) */}
       <section className="border-b border-[var(--border)]">
         <div className="w-full px-6 lg:px-12 xl:px-20">
-          <div className="grid grid-cols-12 border-l border-r border-[var(--border)]">
-            {/* TRENDING - Left Side */}
-            <div className="col-span-12 lg:col-span-7 border-r border-[var(--border)] py-10 lg:py-14 px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 border-l border-r border-[var(--border)]">
+            {/* TRENDING - Left Side (50%) */}
+            <div className="border-r border-[var(--border)] py-10 lg:py-14 px-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-bold">Trending</h2>
                 <Link href="/trending" className="text-[10px] tracking-[0.15em] uppercase text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
@@ -543,8 +543,8 @@ export default async function Home() {
                 </Link>
               </div>
               
-              <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
-                {billboardAlbums.slice(0, 20).map((album) => (
+              <div className="grid grid-cols-5 sm:grid-cols-5 md:grid-cols-10 gap-2">
+                {billboardAlbums.slice(0, 50).map((album) => (
                   <Link
                     key={album.id}
                     href={`/album/${album.spotifyId}`}
@@ -575,8 +575,8 @@ export default async function Home() {
               </div>
             </div>
 
-            {/* RECENT REVIEWS - Right Side */}
-            <div className="col-span-12 lg:col-span-5 py-10 lg:py-14 px-6">
+            {/* RECENT REVIEWS - Right Side (50%) */}
+            <div className="py-10 lg:py-14 px-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-bold">Recent Reviews</h2>
                 <Link href="/reviews" className="text-[10px] tracking-[0.15em] uppercase text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
@@ -604,7 +604,12 @@ export default async function Home() {
                         <span className="text-[#ffd700] font-bold text-sm tabular-nums">{review.rating.toFixed(1)}</span>
                       </div>
                       <p className="text-xs text-[var(--muted)] truncate">{review.album.artistName}</p>
-                      <div className="flex items-center gap-2 mt-1">
+                      {review.text && (
+                        <p className="text-[11px] text-[var(--muted)] mt-2 line-clamp-2 leading-relaxed">
+                          "{review.text}"
+                        </p>
+                      )}
+                      <div className="flex items-center gap-2 mt-2">
                         {review.user.image ? (
                           <img src={review.user.image} alt="" className="w-4 h-4 rounded-full" />
                         ) : (
