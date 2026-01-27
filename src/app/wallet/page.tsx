@@ -36,9 +36,9 @@ type Transaction = {
 
 function WalletLoading() {
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <p className="text-[--muted]">Loading...</p>
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+      <div className="max-w-6xl mx-auto px-6 py-12">
+        <p className="text-[var(--muted)]">Loading...</p>
       </div>
     </div>
   )
@@ -60,7 +60,7 @@ function WalletContent() {
   const [badges, setBadges] = useState<Badge[]>([])
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<"badges" | "wax" | "history">("badges")
+  const [activeTab, setActiveTab] = useState<"badges" | "wax" | "history">("wax")
 
   const purchaseSuccess = searchParams.get("purchase")
 
@@ -117,20 +117,14 @@ function WalletContent() {
   }, [session])
 
   if (status === "loading" || loading) {
-    return (
-      <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <p className="text-[--muted]">Loading...</p>
-        </div>
-      </div>
-    )
+    return <WalletLoading />
   }
 
   if (!stats) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <p className="text-[--muted]">Failed to load wallet.</p>
+      <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+        <div className="max-w-6xl mx-auto px-6 py-12">
+          <p className="text-[var(--muted)]">Failed to load wallet.</p>
         </div>
       </div>
     )
@@ -140,114 +134,117 @@ function WalletContent() {
   const isSubscriber = stats.tier !== "FREE"
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
-      {/* Header */}
-      <section style={{ borderBottom: '1px solid var(--border)' }}>
-        <div className="max-w-7xl mx-auto px-6 py-10">
-          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+      {/* HERO CTA - Prominent Earn WAX Section */}
+      <section className="bg-[#ffd700]">
+        <div className="max-w-6xl mx-auto px-6 py-12">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
             <div>
-              <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-2">
-                Tastemaker Score
+              <p className="text-sm font-bold text-black/60 uppercase tracking-wider mb-2">
+                Earn WAX Every Time You Rate
               </p>
-              <div className="flex items-baseline gap-4">
-                <span className="text-7xl lg:text-8xl font-bold tracking-tight tabular-nums">
-                  {stats.tastemakeScore}
-                </span>
-              </div>
-              <p className="text-sm text-[--muted] mt-2">
-                {totalBadges === 0 
-                  ? "Review albums early to earn badges and build your score."
-                  : `Based on ${totalBadges} First Spin badge${totalBadges !== 1 ? 's' : ''}`
-                }
+              <h1 className="text-4xl lg:text-5xl font-black text-black mb-4">
+                +1 WAX Per Album
+              </h1>
+              <p className="text-lg text-black/80 max-w-lg">
+                Rate albums to earn WAX and build your TasteID. 
+                The more you rate, the more you earn.
               </p>
             </div>
-
-            {/* Badge Summary */}
-            <div className="flex items-center gap-6">
-              <div className="text-center">
-                <div className="w-14 h-14 border-2 border-[#ffd700] flex items-center justify-center mx-auto mb-2">
-                  <span className="text-2xl font-bold text-[#ffd700]">{stats.goldSpinCount}</span>
-                </div>
-                <p className="text-[9px] tracking-[0.2em] uppercase text-[--muted]">Gold</p>
-              </div>
-              <div className="text-center">
-                <div className="w-14 h-14 border-2 border-gray-400 flex items-center justify-center mx-auto mb-2">
-                  <span className="text-2xl font-bold text-gray-400">{stats.silverSpinCount}</span>
-                </div>
-                <p className="text-[9px] tracking-[0.2em] uppercase text-[--muted]">Silver</p>
-              </div>
-              <div className="text-center">
-                <div className="w-14 h-14 border-2 border-amber-700 flex items-center justify-center mx-auto mb-2">
-                  <span className="text-2xl font-bold text-amber-700">{stats.bronzeSpinCount}</span>
-                </div>
-                <p className="text-[9px] tracking-[0.2em] uppercase text-[--muted]">Bronze</p>
-              </div>
+            <div className="flex flex-col gap-4">
+              <Link
+                href="/quick-rate"
+                className="px-10 py-5 bg-black text-[#ffd700] text-lg font-bold uppercase tracking-wider hover:bg-black/90 transition-colors text-center"
+              >
+                Start Rating Now
+              </Link>
+              <p className="text-sm text-black/60 text-center">
+                20 ratings = Unlock TasteID
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Wax Balance Bar */}
-      <section className="border-b border-[--border]">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <div>
-              <p className="text-[9px] tracking-[0.2em] uppercase text-[--muted]">Wax Balance</p>
-              <p className="text-xl font-bold tabular-nums">{stats.balance.toLocaleString()}</p>
+      {/* WAX Balance + Stats Bar */}
+      <section className="border-b-2 border-[var(--border)]">
+        <div className="max-w-6xl mx-auto px-6 py-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* WAX Balance */}
+            <div className="p-4 border-2 border-[#ffd700] bg-[#ffd700]/10">
+              <p className="text-xs font-bold uppercase tracking-wider text-[var(--muted)] mb-1">
+                WAX Balance
+              </p>
+              <p className="text-4xl font-black text-[#ffd700] tabular-nums">
+                {stats.balance.toLocaleString()}
+              </p>
             </div>
-            <div className="h-8 w-px bg-[--border]" />
-            <div>
-              <p className="text-[9px] tracking-[0.2em] uppercase text-[--muted]">Lifetime Earned</p>
-              <p className="text-sm tabular-nums text-green-500">+{stats.lifetimeEarned.toLocaleString()}</p>
+            
+            {/* Tastemaker Score */}
+            <div className="p-4 border-2 border-[var(--border)]">
+              <p className="text-xs font-bold uppercase tracking-wider text-[var(--muted)] mb-1">
+                Tastemaker Score
+              </p>
+              <p className="text-4xl font-black tabular-nums">
+                {stats.tastemakeScore}
+              </p>
             </div>
-          </div>
-          <div className="flex items-center gap-3">
-            {isSubscriber ? (
-              <span className="text-[9px] tracking-wider uppercase px-2 py-1 bg-[#ffd700]/20 text-[#ffd700]">
-                {stats.tier === "WAX_PRO" ? "Pro" : "Wax+"}
-              </span>
-            ) : (
-              <Link
-                href="/pricing"
-                className="px-4 py-2 border border-[--border] text-[10px] tracking-[0.15em] uppercase hover:border-white transition"
-              >
-                Upgrade
-              </Link>
-            )}
+            
+            {/* Lifetime Earned */}
+            <div className="p-4 border-2 border-[var(--border)]">
+              <p className="text-xs font-bold uppercase tracking-wider text-[var(--muted)] mb-1">
+                Lifetime Earned
+              </p>
+              <p className="text-4xl font-black text-green-600 tabular-nums">
+                +{stats.lifetimeEarned.toLocaleString()}
+              </p>
+            </div>
+            
+            {/* Badges */}
+            <div className="p-4 border-2 border-[var(--border)]">
+              <p className="text-xs font-bold uppercase tracking-wider text-[var(--muted)] mb-1">
+                First Spin Badges
+              </p>
+              <div className="flex items-center gap-3">
+                <span className="text-xl font-black text-[#ffd700]">{stats.goldSpinCount}G</span>
+                <span className="text-xl font-black text-gray-500">{stats.silverSpinCount}S</span>
+                <span className="text-xl font-black text-amber-700">{stats.bronzeSpinCount}B</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Tabs */}
-      <section className="border-b border-[--border]">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex gap-8">
-            <button
-              onClick={() => setActiveTab("badges")}
-              className={`py-4 text-[11px] tracking-[0.15em] uppercase transition border-b-2 -mb-px ${
-                activeTab === "badges"
-                  ? "border-white text-white"
-                  : "border-transparent text-[--muted] hover:text-white"
-              }`}
-            >
-              First Spin Badges
-            </button>
+      <section className="border-b-2 border-[var(--border)]">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex gap-0">
             <button
               onClick={() => setActiveTab("wax")}
-              className={`py-4 text-[11px] tracking-[0.15em] uppercase transition border-b-2 -mb-px ${
+              className={`px-6 py-4 text-sm font-bold uppercase tracking-wider transition-colors ${
                 activeTab === "wax"
-                  ? "border-white text-white"
-                  : "border-transparent text-[--muted] hover:text-white"
+                  ? "bg-[var(--foreground)] text-[var(--background)]"
+                  : "text-[var(--muted)] hover:text-[var(--foreground)]"
               }`}
             >
               How to Earn
             </button>
             <button
+              onClick={() => setActiveTab("badges")}
+              className={`px-6 py-4 text-sm font-bold uppercase tracking-wider transition-colors ${
+                activeTab === "badges"
+                  ? "bg-[var(--foreground)] text-[var(--background)]"
+                  : "text-[var(--muted)] hover:text-[var(--foreground)]"
+              }`}
+            >
+              Badges ({totalBadges})
+            </button>
+            <button
               onClick={() => setActiveTab("history")}
-              className={`py-4 text-[11px] tracking-[0.15em] uppercase transition border-b-2 -mb-px ${
+              className={`px-6 py-4 text-sm font-bold uppercase tracking-wider transition-colors ${
                 activeTab === "history"
-                  ? "border-white text-white"
-                  : "border-transparent text-[--muted] hover:text-white"
+                  ? "bg-[var(--foreground)] text-[var(--background)]"
+                  : "text-[var(--muted)] hover:text-[var(--foreground)]"
               }`}
             >
               History
@@ -256,98 +253,187 @@ function WalletContent() {
         </div>
       </section>
 
-      {/* BADGES Tab */}
-      {activeTab === "badges" && (
-        <section className="max-w-7xl mx-auto px-6 py-8">
-          {totalBadges === 0 ? (
-            <div className="py-16 border border-[#ffd700]/20 text-center bg-[#ffd700]/5">
-              <div className="w-16 h-16 border-2 border-[#ffd700] flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl text-[#ffd700]">🏆</span>
+      {/* HOW TO EARN Tab */}
+      {activeTab === "wax" && (
+        <section className="max-w-6xl mx-auto px-6 py-10">
+          {/* Ways to Earn Grid */}
+          <div className="grid lg:grid-cols-2 gap-6 mb-10">
+            {/* Rate Albums */}
+            <div className="p-6 border-2 border-[#ffd700] bg-[#ffd700]/5">
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-12 h-12 bg-[#ffd700] flex items-center justify-center">
+                  <svg className="w-6 h-6 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                  </svg>
+                </div>
+                <span className="text-3xl font-black text-[#ffd700]">+1</span>
               </div>
-              <p className="text-lg font-bold mb-2">Your badge collection starts here</p>
-              <p className="text-sm text-[--muted] mb-4 max-w-md mx-auto">
-                Every album you review records your position. When it trends, you earn:
+              <h3 className="text-xl font-bold mb-2">Rate Any Album</h3>
+              <p className="text-[var(--muted)] mb-4">
+                Every album you rate earns 1 WAX instantly. Quick and simple.
               </p>
-              <div className="flex justify-center gap-6 mb-8">
-                <div className="text-center">
-                  <p className="text-[#ffd700] font-bold">Gold</p>
-                  <p className="text-xs text-[--muted]">Top 10</p>
+              <Link
+                href="/quick-rate"
+                className="inline-block px-6 py-3 bg-[#ffd700] text-black font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors"
+              >
+                Rate Albums
+              </Link>
+            </div>
+
+            {/* Write Review */}
+            <div className="p-6 border-2 border-[var(--border)]">
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-12 h-12 border-2 border-[var(--foreground)] flex items-center justify-center">
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
                 </div>
-                <div className="text-center">
-                  <p className="text-gray-300 font-bold">Silver</p>
-                  <p className="text-xs text-[--muted]">Top 50</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-amber-600 font-bold">Bronze</p>
-                  <p className="text-xs text-[--muted]">Top 100</p>
-                </div>
+                <span className="text-3xl font-black">+5</span>
               </div>
+              <h3 className="text-xl font-bold mb-2">Write a Full Review</h3>
+              <p className="text-[var(--muted)] mb-4">
+                Add written thoughts to your rating for 5 bonus WAX.
+              </p>
               <Link
                 href="/discover"
-                className="inline-block px-6 py-3 bg-[#ffd700] text-black text-[11px] tracking-[0.15em] uppercase font-bold hover:bg-[#ffed4a] transition"
+                className="inline-block px-6 py-3 border-2 border-[var(--foreground)] font-bold uppercase tracking-wider hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors"
               >
-                Review Your First Album
+                Find Albums
               </Link>
-              <p className="text-xs text-[--muted] mt-4">
-                New releases have the best odds for Gold Spins
+            </div>
+          </div>
+
+          {/* First Spin Bonuses */}
+          <div className="mb-10">
+            <h2 className="text-2xl font-bold mb-6">Bonus: First Spin Badges</h2>
+            <p className="text-[var(--muted)] mb-6 max-w-2xl">
+              Review albums before they trend. When an album hits 100+ reviews, 
+              early reviewers automatically receive badges and bonus WAX.
+            </p>
+            <div className="grid lg:grid-cols-3 gap-4">
+              <div className="p-6 border-2 border-[#ffd700]">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 bg-[#ffd700] flex items-center justify-center">
+                    <span className="text-black font-black">1-10</span>
+                  </div>
+                  <span className="text-4xl font-black text-[#ffd700]">+100</span>
+                </div>
+                <p className="font-bold text-[#ffd700]">GOLD SPIN</p>
+                <p className="text-sm text-[var(--muted)]">First 10 reviewers</p>
+              </div>
+              <div className="p-6 border-2 border-gray-400">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 bg-gray-400 flex items-center justify-center">
+                    <span className="text-white font-black text-sm">11-50</span>
+                  </div>
+                  <span className="text-4xl font-black text-gray-500">+50</span>
+                </div>
+                <p className="font-bold text-gray-500">SILVER SPIN</p>
+                <p className="text-sm text-[var(--muted)]">Positions 11-50</p>
+              </div>
+              <div className="p-6 border-2 border-amber-700">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 bg-amber-700 flex items-center justify-center">
+                    <span className="text-white font-black text-sm">51-100</span>
+                  </div>
+                  <span className="text-4xl font-black text-amber-700">+25</span>
+                </div>
+                <p className="font-bold text-amber-700">BRONZE SPIN</p>
+                <p className="text-sm text-[var(--muted)]">Positions 51-100</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Spending */}
+          <div className="p-6 border-2 border-[var(--border)]">
+            <h3 className="text-xl font-bold mb-4">How to Spend WAX</h3>
+            <p className="text-[var(--muted)] mb-4">
+              Tip reviews you appreciate. Support great tastemakers.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <div className="px-4 py-2 border-2 border-[var(--border)]">
+                <span className="font-bold">5 WAX</span>
+                <span className="ml-2 text-[var(--muted)]">Standard Tip</span>
+              </div>
+              <div className="px-4 py-2 border-2 border-purple-500">
+                <span className="font-bold text-purple-500">20 WAX</span>
+                <span className="ml-2 text-[var(--muted)]">Premium Tip</span>
+              </div>
+              <div className="px-4 py-2 border-2 border-[#ffd700]">
+                <span className="font-bold text-[#ffd700]">100 WAX</span>
+                <span className="ml-2 text-[var(--muted)]">GOLD Tip</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* BADGES Tab */}
+      {activeTab === "badges" && (
+        <section className="max-w-6xl mx-auto px-6 py-10">
+          {totalBadges === 0 ? (
+            <div className="py-16 border-2 border-[#ffd700] text-center bg-[#ffd700]/10">
+              <div className="w-20 h-20 bg-[#ffd700] flex items-center justify-center mx-auto mb-6">
+                <svg className="w-10 h-10 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold mb-4">Your Badge Collection Starts Here</h2>
+              <p className="text-[var(--muted)] mb-8 max-w-md mx-auto">
+                Review albums early. When they trend, you earn badges based on your position.
               </p>
+              <Link
+                href="/discover"
+                className="inline-block px-8 py-4 bg-[#ffd700] text-black text-lg font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors"
+              >
+                Start Reviewing Albums
+              </Link>
             </div>
           ) : (
             <div>
-              <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-6">
-                Your Collection
-              </p>
+              <h2 className="text-xl font-bold mb-6">Your Collection ({totalBadges})</h2>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {badges.map((badge) => (
                   <div 
                     key={badge.id} 
-                    className={`p-4 border ${
+                    className={`p-6 border-2 ${
                       badge.badgeType === 'GOLD' 
-                        ? 'border-[#ffd700]/50' 
+                        ? 'border-[#ffd700] bg-[#ffd700]/10' 
                         : badge.badgeType === 'SILVER'
-                          ? 'border-gray-400/50'
-                          : 'border-amber-700/50'
+                          ? 'border-gray-400 bg-gray-400/10'
+                          : 'border-amber-700 bg-amber-700/10'
                     }`}
                   >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className={`w-10 h-10 border-2 flex items-center justify-center ${
+                    <div className="flex items-start justify-between mb-4">
+                      <div className={`w-12 h-12 flex items-center justify-center ${
                         badge.badgeType === 'GOLD' 
-                          ? 'border-[#ffd700] text-[#ffd700]' 
+                          ? 'bg-[#ffd700] text-black' 
                           : badge.badgeType === 'SILVER'
-                            ? 'border-gray-400 text-gray-400'
-                            : 'border-amber-700 text-amber-700'
+                            ? 'bg-gray-400 text-white'
+                            : 'bg-amber-700 text-white'
                       }`}>
-                        <span className="text-sm font-bold">#{badge.position}</span>
+                        <span className="text-lg font-black">#{badge.position}</span>
                       </div>
-                      <span className={`text-sm font-bold ${
+                      <span className={`text-2xl font-black ${
                         badge.badgeType === 'GOLD' 
                           ? 'text-[#ffd700]' 
                           : badge.badgeType === 'SILVER'
-                            ? 'text-gray-400'
+                            ? 'text-gray-500'
                             : 'text-amber-700'
                       }`}>
                         +{badge.waxAwarded}
                       </span>
                     </div>
-                    <p className="text-sm font-medium mb-1">{badge.badgeType} Spin</p>
-                    <p className="text-xs text-[--muted] mb-3">
+                    <p className={`font-bold mb-1 ${
+                      badge.badgeType === 'GOLD' 
+                        ? 'text-[#ffd700]' 
+                        : badge.badgeType === 'SILVER'
+                          ? 'text-gray-500'
+                          : 'text-amber-700'
+                    }`}>{badge.badgeType} SPIN</p>
+                    <p className="text-sm text-[var(--muted)]">
                       {formatDistanceToNow(new Date(badge.createdAt), { addSuffix: true })}
                     </p>
-                    <Link
-                      href={`/badge/${badge.id}`}
-                      className={`inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider ${
-                        badge.badgeType === 'GOLD' 
-                          ? 'text-[#ffd700] hover:text-[#ffd700]/80' 
-                          : badge.badgeType === 'SILVER'
-                            ? 'text-gray-400 hover:text-gray-300'
-                            : 'text-amber-700 hover:text-amber-600'
-                      } transition-colors`}
-                    >
-                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                      </svg>
-                      Share
-                    </Link>
                   </div>
                 ))}
               </div>
@@ -356,165 +442,38 @@ function WalletContent() {
         </section>
       )}
 
-      {/* HOW TO EARN Tab */}
-      {activeTab === "wax" && (
-        <section className="max-w-7xl mx-auto">
-          {/* MAIN WAY: Rate Albums */}
-          <div className="px-6 py-8 border-b border-[--border] bg-[#ffd700]/5">
-            <p className="text-[10px] tracking-[0.3em] uppercase text-[#ffd700] mb-4">
-              Easiest Way to Earn
-            </p>
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-              <div>
-                <h2 className="text-3xl font-bold mb-2">
-                  <span className="text-[#ffd700]">+1 WAX</span> Per Rating
-                </h2>
-                <p className="text-sm text-[--muted] max-w-xl">
-                  Every album you rate earns you 1 WAX. Build your TasteID and earn rewards at the same time. 
-                  Rate 20 albums to unlock your TasteID and keep earning!
-                </p>
-              </div>
-              <Link
-                href="/quick-rate"
-                className="px-8 py-4 bg-[#ffd700] text-black text-sm font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors text-center flex-shrink-0"
-              >
-                Start Rating
-              </Link>
-            </div>
-          </div>
-
-          {/* First Spin Bonuses */}
-          <div className="px-6 py-8 border-b border-[--border]">
-            <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-4">
-              Bonus: First Spin Badges
-            </p>
-            <h3 className="text-xl font-bold mb-4">Review Early, Earn Extra</h3>
-            <p className="text-sm text-[--muted] mb-6 max-w-2xl">
-              Review albums before they trend. When an album hits 100+ reviews, 
-              early reviewers automatically receive badges and bonus Wax rewards.
-            </p>
-            <div className="grid lg:grid-cols-3 gap-4">
-              <div className="p-4 border border-[#ffd700]/30">
-                <p className="text-3xl font-bold text-[#ffd700] mb-1">+100</p>
-                <p className="text-sm">Gold Spin (top 10)</p>
-              </div>
-              <div className="p-4 border border-gray-400/30">
-                <p className="text-3xl font-bold text-gray-400 mb-1">+50</p>
-                <p className="text-sm">Silver Spin (top 50)</p>
-              </div>
-              <div className="p-4 border border-amber-700/30">
-                <p className="text-3xl font-bold text-amber-700 mb-1">+25</p>
-                <p className="text-sm">Bronze Spin (top 100)</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Other Ways */}
-          <div className="px-6 py-8 border-b border-[--border]">
-            <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-6">
-              Other Ways to Earn
-            </p>
-            <div className="grid lg:grid-cols-2 gap-6">
-              <div className="p-4 border border-[--border]">
-                <p className="text-xl font-bold mb-1">+1 to +10 Wax</p>
-                <p className="text-sm font-medium mb-2">Get Tipped</p>
-                <p className="text-xs text-[--muted]">
-                  When others tip your reviews you earn Wax. Standard +1, Premium +3, GOLD +10.
-                </p>
-              </div>
-              <div className="p-4 border border-[--border]">
-                <p className="text-xl font-bold mb-1">+5 Wax</p>
-                <p className="text-sm font-medium mb-2">Write a Full Review</p>
-                <p className="text-xs text-[--muted]">
-                  Add a written review (not just a rating) to earn bonus Wax.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Trending Radar CTA for non subscribers */}
-          {!isSubscriber && (
-            <div className="px-6 py-8 border-b border-[--border]">
-              <Link
-                href="/radar"
-                className="flex items-center justify-between p-4 border border-[#ffd700]/30 hover:border-[#ffd700] transition group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 border border-[#ffd700] flex items-center justify-center">
-                    <svg className="w-5 h-5 text-[#ffd700]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="font-medium group-hover:text-[--muted] transition">Trending Radar</p>
-                    <p className="text-xs text-[--muted]">See albums about to trend</p>
-                  </div>
-                </div>
-                <span className="text-xs text-[#ffd700]">Subscriber feature</span>
-              </Link>
-            </div>
-          )}
-
-          {/* How to Spend */}
-          <div className="px-6 py-8">
-            <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-6">
-              How to Spend
-            </p>
-            <p className="text-sm text-[--muted] mb-6 max-w-2xl">
-              Tip reviews you appreciate. The reviewer earns Wax and your tip shows 
-              community support. Better reviews get more visibility.
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <div className="px-4 py-2 border border-[--border]">
-                <span className="text-sm">Standard</span>
-                <span className="ml-2 text-[--muted]">5 Wax</span>
-              </div>
-              <div className="px-4 py-2 border border-purple-500/30">
-                <span className="text-sm text-purple-400">Premium</span>
-                <span className="ml-2 text-[--muted]">20 Wax</span>
-              </div>
-              <div className="px-4 py-2 border border-[#ffd700]/30">
-                <span className="text-sm text-[#ffd700]">GOLD</span>
-                <span className="ml-2 text-[--muted]">100 Wax</span>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* HISTORY Tab */}
       {activeTab === "history" && (
-        <section className="max-w-7xl mx-auto px-6 py-8">
-          <div className="flex items-center justify-between mb-6">
-            <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted]">
-              Recent Transactions
-            </p>
-          </div>
+        <section className="max-w-6xl mx-auto px-6 py-10">
+          <h2 className="text-xl font-bold mb-6">Transaction History</h2>
 
           {transactions.length === 0 ? (
-            <div className="py-16 text-center border border-[--border]">
-              <p className="text-[--muted] mb-2">No transactions yet.</p>
-              <p className="text-sm text-[--muted]">
-                Start reviewing albums to earn Wax.
-              </p>
+            <div className="py-16 text-center border-2 border-[var(--border)]">
+              <p className="text-[var(--muted)] mb-4">No transactions yet.</p>
+              <Link
+                href="/quick-rate"
+                className="inline-block px-6 py-3 bg-[#ffd700] text-black font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors"
+              >
+                Start Rating to Earn
+              </Link>
             </div>
           ) : (
-            <div className="border border-[--border]">
+            <div className="border-2 border-[var(--border)]">
               {transactions.map((tx, index) => (
                 <div 
                   key={tx.id} 
-                  className={`flex items-center gap-4 px-4 py-4 ${
-                    index < transactions.length - 1 ? 'border-b border-[--border]' : ''
+                  className={`flex items-center gap-4 px-6 py-4 ${
+                    index < transactions.length - 1 ? 'border-b-2 border-[var(--border)]' : ''
                   }`}
                 >
-                  <div className={`w-12 h-12 flex items-center justify-center font-bold tabular-nums ${
-                    tx.amount > 0 ? 'text-green-500' : 'text-[#ff3b3b]'
+                  <div className={`w-16 h-16 flex items-center justify-center font-black text-2xl tabular-nums ${
+                    tx.amount > 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
                   }`}>
                     {tx.amount > 0 ? '+' : ''}{tx.amount}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm truncate">{tx.description}</p>
-                    <p className="text-[10px] text-[--muted]">
+                    <p className="font-medium truncate">{tx.description}</p>
+                    <p className="text-sm text-[var(--muted)]">
                       {formatDistanceToNow(new Date(tx.createdAt), { addSuffix: true })}
                     </p>
                   </div>
@@ -524,30 +483,6 @@ function WalletContent() {
           )}
         </section>
       )}
-
-      {/* CTA */}
-      <section className="border-t border-[--border]">
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <Link 
-            href="/discover"
-            className="block p-6 border border-[--border] hover:border-white transition group"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-lg font-medium group-hover:text-[--muted] transition">
-                  Find Your Next Call
-                </p>
-                <p className="text-sm text-[--muted]">
-                  Discover new releases and review them before they trend.
-                </p>
-              </div>
-              <svg className="w-5 h-5 text-[--muted] group-hover:text-white transition" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </div>
-          </Link>
-        </div>
-      </section>
     </div>
   )
 }
