@@ -177,34 +177,34 @@ function WalletContent() {
 
       {/* Dual CTA Banner - Earn OR Buy */}
       <section className="border-b border-[var(--border)] bg-[var(--surface)]">
-        <div className="w-full px-6 lg:px-12 xl:px-20 py-6">
-          <div className="grid md:grid-cols-2 gap-6">
+        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 py-4 sm:py-6">
+          <div className="grid sm:grid-cols-2 gap-3 sm:gap-6">
             {/* Earn WAX */}
-            <div className="flex items-center justify-between gap-4 p-4 border border-[var(--border)]">
-              <div>
-                <p className="font-bold">
+            <div className="flex items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 border border-[var(--border)]">
+              <div className="min-w-0">
+                <p className="font-bold text-sm sm:text-base">
                   Earn <span className="text-[#ffd700]">+1 WAX</span> per rating
                 </p>
-                <p className="text-sm text-[var(--muted)]">Free, unlimited</p>
+                <p className="text-xs sm:text-sm text-[var(--muted)]">Free, unlimited</p>
               </div>
               <Link
                 href="/quick-rate"
-                className="px-5 py-2 border border-[var(--foreground)] text-sm font-bold uppercase tracking-wider hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors"
+                className="px-4 sm:px-5 py-2 min-h-[44px] flex items-center border border-[var(--foreground)] text-xs sm:text-sm font-bold uppercase tracking-wider hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors flex-shrink-0"
               >
                 Rate
               </Link>
             </div>
             {/* Buy WAX */}
-            <div className="flex items-center justify-between gap-4 p-4 border border-[#ffd700]">
-              <div>
-                <p className="font-bold text-[#ffd700]">
+            <div className="flex items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 border border-[#ffd700]">
+              <div className="min-w-0">
+                <p className="font-bold text-[#ffd700] text-sm sm:text-base">
                   Get WAX Packs
                 </p>
-                <p className="text-sm text-[var(--muted)]">Starting at $0.99</p>
+                <p className="text-xs sm:text-sm text-[var(--muted)]">Starting at $0.99</p>
               </div>
               <Link
                 href="/shop"
-                className="px-5 py-2 bg-[#ffd700] text-black text-sm font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors"
+                className="px-4 sm:px-5 py-2 min-h-[44px] flex items-center bg-[#ffd700] text-black text-xs sm:text-sm font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors flex-shrink-0"
               >
                 Shop
               </Link>
@@ -215,8 +215,8 @@ function WalletContent() {
 
       {/* Tabs */}
       <section className="border-b border-[var(--border)]">
-        <div className="w-full px-6 lg:px-12 xl:px-20">
-          <div className="flex gap-8">
+        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20">
+          <div className="flex gap-4 sm:gap-8 overflow-x-auto scrollbar-hide">
             <button
               onClick={() => setActiveTab("earn")}
               className={`py-4 min-h-[44px] text-[11px] sm:text-xs tracking-[0.15em] uppercase transition border-b-2 -mb-px ${
