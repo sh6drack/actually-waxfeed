@@ -30,10 +30,13 @@ async function getBillboardAlbums() {
   })
 }
 
-// Get recent reviews
+// Get recent reviews - only show reviews with actual text, not quick rates
 async function getRecentReviews() {
   return prisma.review.findMany({
-    take: 8,
+    take: 15,
+    where: {
+      text: { not: null },  // Filter out rating-only quick rates
+    },
     orderBy: { createdAt: "desc" },
     include: {
       user: { select: { id: true, username: true, image: true } },

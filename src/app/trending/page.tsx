@@ -27,12 +27,15 @@ async function getTrendingAlbums() {
 }
 
 async function getTrendingReviews() {
-  const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 
   return prisma.review.findMany({
-    take: 8,
-    where: { createdAt: { gte: threeDaysAgo } },
-    orderBy: [{ likeCount: "desc" }, { replyCount: "desc" }],
+    take: 15,
+    where: {
+      createdAt: { gte: sevenDaysAgo },
+      text: { not: null },  // Only show reviews with actual text
+    },
+    orderBy: [{ likeCount: "desc" }, { replyCount: "desc" }, { createdAt: "desc" }],
     include: {
       user: {
         select: { id: true, username: true, image: true, isVerified: true },
