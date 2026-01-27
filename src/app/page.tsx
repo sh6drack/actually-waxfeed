@@ -546,7 +546,7 @@ export default async function Home() {
         <div className="w-full px-6 lg:px-12 xl:px-20">
           <div className="grid grid-cols-1 lg:grid-cols-2 border-l border-r border-[var(--border)]">
             {/* TRENDING - Left Side (50%) */}
-            <div className="border-r border-[var(--border)] py-10 lg:py-14 px-6">
+            <div className="border-r border-[var(--border)] py-10 lg:py-14 px-6 flex flex-col">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-bold">Trending</h2>
                 <Link href="/trending" className="text-[10px] tracking-[0.15em] uppercase text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
@@ -554,8 +554,8 @@ export default async function Home() {
                 </Link>
               </div>
 
-              <div className="grid grid-cols-4 gap-3">
-                {billboardAlbums.slice(0, 50).map((album) => (
+              <div className="grid grid-cols-4 gap-2 flex-1 content-start">
+                {billboardAlbums.slice(0, 48).map((album) => (
                   <Link
                     key={album.id}
                     href={`/album/${album.spotifyId}`}
@@ -570,15 +570,15 @@ export default async function Home() {
                         />
                       )}
                       {album.billboardRank && album.billboardRank <= 10 && (
-                        <div className="absolute top-1 left-1 bg-[#ffd700] text-black px-1 py-0.5 text-[9px] font-bold">
+                        <div className="absolute top-0.5 left-0.5 bg-[#ffd700] text-black px-1 py-0.5 text-[8px] font-bold">
                           #{album.billboardRank}
                         </div>
                       )}
                     </div>
-                    <p className="text-[10px] font-medium truncate mt-1.5 group-hover:text-[var(--muted)] transition-colors">
+                    <p className="text-[9px] font-medium truncate mt-1 group-hover:text-[var(--muted)] transition-colors">
                       {album.title}
                     </p>
-                    <p className="text-[9px] text-[var(--muted-dim)] truncate">
+                    <p className="text-[8px] text-[var(--muted-dim)] truncate">
                       {album.artistName}
                     </p>
                   </Link>
@@ -587,16 +587,16 @@ export default async function Home() {
             </div>
 
             {/* RECENT REVIEWS - Right Side (50%) */}
-            <div className="py-10 lg:py-14 px-6">
+            <div className="py-10 lg:py-14 px-6 flex flex-col">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-bold">Recent Reviews</h2>
                 <Link href="/reviews" className="text-[10px] tracking-[0.15em] uppercase text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
                   View All →
                 </Link>
               </div>
-              
-              <div className="space-y-1">
-                {recentReviews.map((review) => (
+
+              <div className="space-y-0 flex-1">
+                {recentReviews.slice(0, 12).map((review) => (
                   <Link
                     key={review.id}
                     href={`/album/${review.album.spotifyId}`}
