@@ -5,10 +5,11 @@ import { auth } from "@/lib/auth"
 import { format, formatDistanceToNow } from "date-fns"
 import { TasteIDCompletionBanner } from "@/components/tasteid-completion-banner"
 import { getCurrentTier, getKeepBuildingMessage } from "@/lib/tasteid-tiers"
+import { TrendingGrid } from "@/components/trending-grid"
 
 export const dynamic = "force-dynamic"
 
-// Get Billboard 200 trending albums
+// Get Billboard 200 trending albums - fetch up to 1000 for 50 pages of pagination
 async function getBillboardAlbums() {
   return prisma.album.findMany({
     where: {
@@ -16,7 +17,7 @@ async function getBillboardAlbums() {
       albumType: { not: 'single' },
     },
     orderBy: { billboardRank: 'asc' },
-    take: 50,
+    take: 1000,
     select: {
       id: true,
       spotifyId: true,
@@ -553,37 +554,8 @@ export default async function Home() {
                   See All Trending →
                 </Link>
               </div>
-              
-              <div className="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 gap-2 sm:gap-3">
-                {billboardAlbums.slice(0, 20).map((album) => (
-                  <Link
-                    key={album.id}
-                    href={`/album/${album.spotifyId}`}
-                    className="group"
-                  >
-                    <div className="aspect-square w-full bg-[var(--surface)] overflow-hidden relative">
-                      {album.coverArtUrl && (
-                        <img
-                          src={album.coverArtUrlLarge || album.coverArtUrl}
-                          alt={album.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      )}
-                      {album.billboardRank && album.billboardRank <= 20 && (
-                        <div className="absolute top-1 left-1 bg-[#ffd700] text-black px-1 py-0.5 text-[9px] font-bold">
-                          #{album.billboardRank}
-                        </div>
-                      )}
-                    </div>
-                    <p className="text-[10px] font-medium truncate mt-1.5 group-hover:text-[var(--muted)] transition-colors">
-                      {album.title}
-                    </p>
-                    <p className="text-[9px] text-[var(--muted-dim)] truncate">
-                      {album.artistName}
-                    </p>
-                  </Link>
-                ))}
-              </div>
+
+              <TrendingGrid albums={billboardAlbums} totalPages={50} itemsPerPage={20} />
             </div>
 
             {/* RECENT REVIEWS - Right Side (50%) */}
