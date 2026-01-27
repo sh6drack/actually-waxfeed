@@ -2,34 +2,29 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
 
 export function FirstTimeWelcome() {
-  const { data: session, status } = useSession()
   const router = useRouter()
   const [isVisible, setIsVisible] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
 
   useEffect(() => {
-    // Only show for authenticated users who haven't seen it
-    if (status === 'authenticated' && session?.user) {
-      const hasSeenWelcome = localStorage.getItem('waxfeed-seen-welcome')
-      const hasUsername = session.user.username
-
-      // Show if user hasn't seen welcome OR doesn't have username (incomplete onboarding)
-      if (!hasSeenWelcome || !hasUsername) {
-        setIsVisible(true)
-        setIsAnimating(true)
-      }
+    // Show for ALL first-time visitors (not just logged in users)
+    const hasSeenWelcome = localStorage.getItem('waxfeed-seen-welcome')
+    
+    if (!hasSeenWelcome) {
+      setIsVisible(true)
+      setIsAnimating(true)
     }
-  }, [session, status])
+  }, [])
 
   const handleCreateTasteID = () => {
     localStorage.setItem('waxfeed-seen-welcome', 'true')
     setIsAnimating(false)
     setTimeout(() => {
       setIsVisible(false)
-      router.push('/onboarding')
+      // Takes them to signup where they'll start the TasteID flow
+      router.push('/signup')
     }, 200)
   }
 
@@ -82,7 +77,7 @@ export function FirstTimeWelcome() {
 
             {/* Headline */}
             <h2 className="text-3xl md:text-4xl font-bold mb-3">
-              Welcome to WAXFEED
+              Welcome to WaxFeed
             </h2>
 
             {/* Subheadline */}

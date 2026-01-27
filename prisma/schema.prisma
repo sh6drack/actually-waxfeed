@@ -390,6 +390,7 @@ model Review {
   albumId     String
   rating      Float // 0-10, supports decimals like 7.5
   text        String?  @db.Text // 5000 char limit enforced in app
+  vibes       String[] // Vibe tags for TasteID Polarity Model (e.g., ["energetic", "hype"])
   isEdited    Boolean  @default(false)
   editHistory Json? // [{ text, rating, editedAt }]
   createdAt   DateTime @default(now())

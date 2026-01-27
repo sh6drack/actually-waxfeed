@@ -15,6 +15,7 @@ const createReviewSchema = z.object({
   rating: z.number().min(0).max(10),
   text: z.string().max(5000).optional(),
   isQuickRate: z.boolean().optional(), // Quick rate mode (swipe) - no text required, no First Spin
+  vibes: z.array(z.string()).max(3).optional(), // Vibe tags for TasteID Polarity Model
 })
 
 // GET /api/reviews - List reviews (trending, recent, etc.)
@@ -113,7 +114,7 @@ export async function POST(request: NextRequest) {
       return errorResponse(validation.error.errors[0].message, 400)
     }
 
-    const { albumId, rating, text, isQuickRate } = validation.data
+    const { albumId, rating, text, isQuickRate, vibes } = validation.data
 
     // Check album exists
     const album = await prisma.album.findUnique({ where: { id: albumId } })
@@ -152,13 +153,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create review with position
+    // Create review with position and vibes
     const review = await prisma.review.create({
       data: {
         userId: user.id,
         albumId,
         rating,
         text,
+        vibes: vibes || [], // Store vibe tags for TasteID Polarity Model
         reviewPosition,
       },
       include: {

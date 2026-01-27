@@ -10,6 +10,19 @@ import { COUNTRIES } from "@/data/countries"
 const TOTAL_STEPS = 4
 const REQUIRED_RATINGS = 20
 
+// Scientific mood/vibe descriptors for TasteID Polarity Model
+// These map to psychological and acoustic dimensions
+const VIBE_TAGS = [
+  { id: 'energetic', label: 'Energetic', emoji: '⚡' },
+  { id: 'chill', label: 'Chill', emoji: '🌊' },
+  { id: 'emotional', label: 'Emotional', emoji: '💔' },
+  { id: 'hype', label: 'Hype', emoji: '🔥' },
+  { id: 'nostalgic', label: 'Nostalgic', emoji: '📼' },
+  { id: 'experimental', label: 'Experimental', emoji: '🔬' },
+  { id: 'timeless', label: 'Timeless', emoji: '💎' },
+  { id: 'dark', label: 'Dark', emoji: '🌑' },
+] as const
+
 interface Album {
   id: string
   title: string
@@ -38,6 +51,7 @@ export default function OnboardingPage() {
   const [albums, setAlbums] = useState<Album[]>([])
   const [currentAlbumIndex, setCurrentAlbumIndex] = useState(0)
   const [rating, setRating] = useState(5)
+  const [selectedVibes, setSelectedVibes] = useState<string[]>([])
   const [ratedCount, setRatedCount] = useState(0)
   const [skippedCount, setSkippedCount] = useState(0)
   const [submitting, setSubmitting] = useState(false)
@@ -220,6 +234,7 @@ export default function OnboardingPage() {
           rating,
           text: '',
           isQuickRate: true,
+          vibes: selectedVibes, // Pass selected vibes for TasteID Polarity Model
         }),
       })
       const data = await res.json()
@@ -250,8 +265,17 @@ export default function OnboardingPage() {
 
   const nextAlbum = () => {
     setRating(5)
+    setSelectedVibes([])
     setError("")
     setCurrentAlbumIndex((prev) => prev + 1)
+  }
+
+  const toggleVibe = (vibeId: string) => {
+    setSelectedVibes(prev => 
+      prev.includes(vibeId) 
+        ? prev.filter(v => v !== vibeId)
+        : prev.length < 3 ? [...prev, vibeId] : prev // Max 3 vibes
+    )
   }
 
   const handleKeyDown = useCallback(
@@ -609,6 +633,32 @@ export default function OnboardingPage() {
                         ))}
                       </div>
                     )}
+                  </div>
+                </div>
+
+                {/* Vibe Tags - for TasteID Polarity Model */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-[#888] uppercase tracking-wider">Describe the vibe (optional)</p>
+                    <p className="text-[10px] text-[#666]">{selectedVibes.length}/3</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {VIBE_TAGS.map((vibe) => (
+                      <button
+                        key={vibe.id}
+                        type="button"
+                        onClick={() => toggleVibe(vibe.id)}
+                        disabled={submitting}
+                        className={`px-3 py-2 text-sm font-medium transition-all ${
+                          selectedVibes.includes(vibe.id)
+                            ? 'bg-[#ffd700] text-black border-[#ffd700]'
+                            : 'bg-transparent text-[#888] border-[#333] hover:border-[#666] hover:text-white'
+                        } border`}
+                      >
+                        <span className="mr-1">{vibe.emoji}</span>
+                        {vibe.label}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
