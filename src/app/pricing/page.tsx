@@ -264,7 +264,7 @@ function PricingContent() {
             {/* Wax+ Tier */}
             <div className="px-6 py-12 lg:border-r border-b lg:border-b-0 border-[--border] relative bg-white/[0.02]">
               <div className="absolute top-0 left-0 right-0 h-1 bg-white" />
-              <div className="absolute -top-3 left-6 px-3 py-1 bg-white text-black text-[9px] tracking-wider uppercase font-bold">
+              <div className="absolute -top-3 left-6 px-3 py-1 bg-white text-black text-[9px] sm:text-[10px] tracking-wider uppercase font-bold">
                 Most Popular
               </div>
               

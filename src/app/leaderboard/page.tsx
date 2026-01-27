@@ -258,7 +258,7 @@ export default async function LeaderboardPage() {
           </div>
           <Link
             href="/discover"
-            className="px-6 py-3 bg-white text-black text-[11px] tracking-[0.15em] uppercase font-medium hover:bg-[#e5e5e5] transition text-center"
+            className="px-6 py-3 min-h-[44px] bg-white text-black text-[11px] sm:text-xs tracking-[0.15em] uppercase font-medium hover:bg-[#e5e5e5] transition text-center flex items-center justify-center"
           >
             Discover Albums
           </Link>

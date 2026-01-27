@@ -170,8 +170,8 @@ export function TierProgress({
                   />
                 </div>
                 {/* Clear tier name */}
-                <div 
-                  className={`text-[7px] text-center uppercase tracking-wider ${isCurrent ? 'font-bold' : ''}`}
+                <div
+                  className={`text-[7px] sm:text-[8px] text-center uppercase tracking-wider ${isCurrent ? 'font-bold' : ''}`}
                   style={{ color: isCompleted || isCurrent ? tier.color : '#444' }}
                 >
                   {tier.name.slice(0, 3)}

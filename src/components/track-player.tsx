@@ -386,7 +386,7 @@ function TrackRatingWidget({
             onRate(rating)
           }}
           onMouseEnter={() => setHoverRating(rating)}
-          className={`w-4 h-4 text-[8px] font-bold transition-all disabled:opacity-50 ${
+          className={`w-7 h-7 sm:w-5 sm:h-5 text-[10px] sm:text-[8px] font-bold transition-all disabled:opacity-50 ${
             displayRating !== null && rating <= displayRating
               ? "bg-[#ffd700] text-black"
               : "bg-[--border] text-[--muted] hover:bg-[#ffd700]/30"

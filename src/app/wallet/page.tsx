@@ -131,43 +131,43 @@ function WalletContent() {
     <div className="min-h-screen bg-background text-foreground">
       {/* Header Section */}
       <section className="border-b border-[var(--border)]">
-        <div className="w-full px-6 lg:px-12 xl:px-20 py-12">
-          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
+        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 py-8 sm:py-12">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 sm:gap-8">
             {/* WAX Balance */}
-            <div>
+            <div className="text-center sm:text-left">
               <p className="text-[10px] tracking-[0.3em] uppercase text-[var(--muted)] mb-2">
                 Your WAX Balance
               </p>
-              <div className="flex items-baseline gap-3">
-                <span className="text-6xl lg:text-7xl font-bold tracking-tight tabular-nums text-[#ffd700]">
+              <div className="flex items-baseline gap-2 sm:gap-3 justify-center sm:justify-start">
+                <span className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight tabular-nums text-[#ffd700]">
                   {stats.balance.toLocaleString()}
                 </span>
-                <span className="text-lg text-[var(--muted)]">WAX</span>
+                <span className="text-base sm:text-lg text-[var(--muted)]">WAX</span>
               </div>
-              <p className="text-sm text-[var(--muted)] mt-2">
-                Lifetime earned: <span className="text-green-500">+{stats.lifetimeEarned.toLocaleString()}</span>
+              <p className="text-xs sm:text-sm text-[var(--muted)] mt-2">
+                Lifetime: <span className="text-green-500">+{stats.lifetimeEarned.toLocaleString()}</span>
               </p>
             </div>
 
             {/* Quick Stats */}
-            <div className="flex items-center gap-8">
+            <div className="flex items-center justify-center sm:justify-start gap-4 sm:gap-8">
               <div className="text-center">
-                <p className="text-3xl font-bold tabular-nums">{stats.tastemakeScore}</p>
-                <p className="text-[10px] tracking-[0.2em] uppercase text-[var(--muted)]">Score</p>
+                <p className="text-2xl sm:text-3xl font-bold tabular-nums">{stats.tastemakeScore}</p>
+                <p className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-[var(--muted)]">Score</p>
               </div>
-              <div className="h-10 w-px bg-[var(--border)]" />
-              <div className="flex items-center gap-4">
+              <div className="h-8 sm:h-10 w-px bg-[var(--border)]" />
+              <div className="flex items-center gap-3 sm:gap-4">
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-[#ffd700] tabular-nums">{stats.goldSpinCount}</p>
-                  <p className="text-[9px] tracking-[0.2em] uppercase text-[var(--muted)]">Gold</p>
+                  <p className="text-xl sm:text-2xl font-bold text-[#ffd700] tabular-nums">{stats.goldSpinCount}</p>
+                  <p className="text-[8px] sm:text-[10px] tracking-[0.2em] uppercase text-[var(--muted)]">Gold</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-[#888] tabular-nums">{stats.silverSpinCount}</p>
-                  <p className="text-[9px] tracking-[0.2em] uppercase text-[var(--muted)]">Silver</p>
+                  <p className="text-xl sm:text-2xl font-bold text-[#888] tabular-nums">{stats.silverSpinCount}</p>
+                  <p className="text-[8px] sm:text-[10px] tracking-[0.2em] uppercase text-[var(--muted)]">Silver</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-amber-600 tabular-nums">{stats.bronzeSpinCount}</p>
-                  <p className="text-[9px] tracking-[0.2em] uppercase text-[var(--muted)]">Bronze</p>
+                  <p className="text-xl sm:text-2xl font-bold text-amber-600 tabular-nums">{stats.bronzeSpinCount}</p>
+                  <p className="text-[8px] sm:text-[10px] tracking-[0.2em] uppercase text-[var(--muted)]">Bronze</p>
                 </div>
               </div>
             </div>
@@ -219,7 +219,7 @@ function WalletContent() {
           <div className="flex gap-8">
             <button
               onClick={() => setActiveTab("earn")}
-              className={`py-4 text-[11px] tracking-[0.15em] uppercase transition border-b-2 -mb-px ${
+              className={`py-4 min-h-[44px] text-[11px] sm:text-xs tracking-[0.15em] uppercase transition border-b-2 -mb-px ${
                 activeTab === "earn"
                   ? "border-[var(--foreground)] text-[var(--foreground)]"
                   : "border-transparent text-[var(--muted)] hover:text-[var(--foreground)]"
@@ -229,7 +229,7 @@ function WalletContent() {
             </button>
             <button
               onClick={() => setActiveTab("badges")}
-              className={`py-4 text-[11px] tracking-[0.15em] uppercase transition border-b-2 -mb-px ${
+              className={`py-4 min-h-[44px] text-[11px] sm:text-xs tracking-[0.15em] uppercase transition border-b-2 -mb-px ${
                 activeTab === "badges"
                   ? "border-[var(--foreground)] text-[var(--foreground)]"
                   : "border-transparent text-[var(--muted)] hover:text-[var(--foreground)]"
@@ -239,7 +239,7 @@ function WalletContent() {
             </button>
             <button
               onClick={() => setActiveTab("history")}
-              className={`py-4 text-[11px] tracking-[0.15em] uppercase transition border-b-2 -mb-px ${
+              className={`py-4 min-h-[44px] text-[11px] sm:text-xs tracking-[0.15em] uppercase transition border-b-2 -mb-px ${
                 activeTab === "history"
                   ? "border-[var(--foreground)] text-[var(--foreground)]"
                   : "border-transparent text-[var(--muted)] hover:text-[var(--foreground)]"
