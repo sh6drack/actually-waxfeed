@@ -314,104 +314,27 @@ export default async function Home() {
         />
       )}
 
-      {/* THE 3 PILLARS - Revolutionary Features */}
+      {/* STATS BAR - Compact Social Proof */}
       <section className="border-b border-[var(--border)] bg-[var(--surface)]">
-        <div className="w-full px-6 lg:px-12 xl:px-20 py-16 lg:py-20">
-          <p className="text-xs tracking-[0.3em] uppercase text-[var(--muted-dim)] mb-12 text-center">
-            Three Revolutionary Features
-          </p>
-          
-          <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
-            {/* PILLAR 1: GAMIFY */}
-            <Link href="/quick-rate" className="group block p-8 border-2 border-[var(--border)] hover:border-[#ffd700] transition-colors bg-[var(--surface-raised)]">
-              <div className="w-14 h-14 border-2 border-[#ffd700] flex items-center justify-center mb-6 text-[#ffd700] group-hover:bg-[#ffd700] group-hover:text-black transition-colors">
-                <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-[#ffd700]">GAMIFY</h3>
-              <p className="text-2xl font-bold mb-4 leading-tight">
-                Prove You Were First
-              </p>
-              <p className="text-[var(--muted)] leading-relaxed mb-6">
-                Review albums early. When they blow up, earn Gold, Silver, or Bronze badges. 
-                Climb leaderboards. Collect WAX rewards.
-              </p>
-              <div className="flex items-center gap-4 text-sm">
-                <span className="text-[#ffd700]">First Spin Badges</span>
-                <span className="text-[var(--muted-dim)]">|</span>
-                <span className="text-[var(--muted)]">WAX Rewards</span>
-              </div>
-            </Link>
-            
-            {/* PILLAR 2: CONNECT */}
-            <Link href="/discover/connections" className="group block p-8 border-2 border-[var(--border)] hover:border-[#00ff88] transition-colors bg-[var(--surface-raised)]">
-              <div className="w-14 h-14 border-2 border-[#00ff88] flex items-center justify-center mb-6 text-[#00ff88] group-hover:bg-[#00ff88] group-hover:text-black transition-colors">
-                <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-[#00ff88]">CONNECT</h3>
-              <p className="text-2xl font-bold mb-4 leading-tight">
-                First Music Social Network
-              </p>
-              <p className="text-[var(--muted)] leading-relaxed mb-6">
-                Find people who truly get your taste. Our algorithm matches you with 
-                listeners based on deep musical compatibility.
-              </p>
-              <div className="flex items-center gap-4 text-sm">
-                <span className="text-[#00ff88]">Taste Matching</span>
-                <span className="text-[var(--muted-dim)]">|</span>
-                <span className="text-[var(--muted)]">Music Circles</span>
-              </div>
-            </Link>
-            
-            {/* PILLAR 3: DISCOVER */}
-            <Link href="/discover" className="group block p-8 border-2 border-[var(--border)] hover:border-[#00bfff] transition-colors bg-[var(--surface-raised)]">
-              <div className="w-14 h-14 border-2 border-[#00bfff] flex items-center justify-center mb-6 text-[#00bfff] group-hover:bg-[#00bfff] group-hover:text-black transition-colors">
-                <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-[#00bfff]">DISCOVER</h3>
-              <p className="text-2xl font-bold mb-4 leading-tight">
-                Best Music Discovery Ever
-              </p>
-              <p className="text-[var(--muted)] leading-relaxed mb-6">
-                TasteID powered by Polarity. The most accurate taste profiling 
-                ever created. Get recommendations that actually fit YOU.
-              </p>
-              <div className="flex items-center gap-4 text-sm">
-                <span className="text-[#00bfff]">Polarity Engine</span>
-                <span className="text-[var(--muted-dim)]">|</span>
-                <span className="text-[var(--muted)]">TasteID</span>
-              </div>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* STATS - Social Proof */}
-      <section className="border-b border-[var(--border)]">
-        <div className="w-full px-6 lg:px-12 xl:px-20 py-8">
-          <div className="flex flex-wrap justify-center gap-12 lg:gap-20">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-4">
+          <div className="flex flex-wrap justify-center gap-8 lg:gap-16">
             <div className="text-center">
-              <p className="text-3xl lg:text-4xl font-bold tabular-nums">{stats.albumCount.toLocaleString()}</p>
-              <p className="text-xs tracking-widest uppercase text-[var(--muted-dim)] mt-1">Albums</p>
+              <span className="text-2xl font-bold tabular-nums">{stats.albumCount.toLocaleString()}</span>
+              <span className="text-xs tracking-widest uppercase text-[var(--muted-dim)] ml-2">Albums</span>
             </div>
             <div className="text-center">
-              <p className="text-3xl lg:text-4xl font-bold tabular-nums">{stats.reviewCount.toLocaleString()}</p>
-              <p className="text-xs tracking-widest uppercase text-[var(--muted-dim)] mt-1">Ratings</p>
+              <span className="text-2xl font-bold tabular-nums">{stats.reviewCount.toLocaleString()}</span>
+              <span className="text-xs tracking-widest uppercase text-[var(--muted-dim)] ml-2">Ratings</span>
             </div>
             <div className="text-center">
-              <p className="text-3xl lg:text-4xl font-bold tabular-nums">{stats.userCount.toLocaleString()}</p>
-              <p className="text-xs tracking-widest uppercase text-[var(--muted-dim)] mt-1">Members</p>
+              <span className="text-2xl font-bold tabular-nums">{stats.userCount.toLocaleString()}</span>
+              <span className="text-xs tracking-widest uppercase text-[var(--muted-dim)] ml-2">Members</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* TRENDING + RECENT REVIEWS - Side by Side Editorial Layout */}
+      {/* TRENDING + RECENT REVIEWS - Side by Side Editorial Layout (FIRST VIEW) */}
       <section className="border-b border-[var(--border)]">
         <div className="w-full px-6 lg:px-12 xl:px-20">
           <div className="grid grid-cols-12 border-l border-r border-[var(--border)]">
@@ -503,6 +426,78 @@ export default async function Home() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* THE 3 PILLARS - Collapsible Dropdown */}
+      <section className="border-b border-[var(--border)]">
+        <details className="group">
+          <summary className="w-full px-6 lg:px-12 xl:px-20 py-6 cursor-pointer list-none flex items-center justify-between hover:bg-[var(--surface)] transition-colors">
+            <div className="flex items-center gap-4">
+              <span className="text-xs tracking-[0.3em] uppercase text-[var(--muted-dim)]">
+                What Makes WAXFEED Different?
+              </span>
+              <span className="text-xs px-2 py-1 bg-[#ffd700] text-black font-bold">3 FEATURES</span>
+            </div>
+            <svg className="w-5 h-5 text-[var(--muted)] transform transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </summary>
+          
+          <div className="w-full px-6 lg:px-12 xl:px-20 pb-12 pt-4 bg-[var(--surface)]">
+            <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+              {/* PILLAR 1: GAMIFY */}
+              <Link href="/quick-rate" className="group/card block p-6 border border-[var(--border)] hover:border-[#ffd700] transition-colors">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 border border-[#ffd700] flex items-center justify-center text-[#ffd700]">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                    </svg>
+                  </div>
+                  <h3 className="font-bold text-[#ffd700]">GAMIFY</h3>
+                </div>
+                <p className="font-bold mb-2">Prove You Were First</p>
+                <p className="text-sm text-[var(--muted)] mb-3">
+                  Review albums early. Earn Gold, Silver, Bronze badges when they trend.
+                </p>
+                <span className="text-xs text-[#ffd700]">First Spin Badges → WAX Rewards</span>
+              </Link>
+              
+              {/* PILLAR 2: CONNECT */}
+              <Link href="/discover/connections" className="group/card block p-6 border border-[var(--border)] hover:border-[#00ff88] transition-colors">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 border border-[#00ff88] flex items-center justify-center text-[#00ff88]">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="font-bold text-[#00ff88]">CONNECT</h3>
+                </div>
+                <p className="font-bold mb-2">First Music Social Network</p>
+                <p className="text-sm text-[var(--muted)] mb-3">
+                  Find people who truly get your taste. Deep musical compatibility matching.
+                </p>
+                <span className="text-xs text-[#00ff88]">Taste Matching → Music Circles</span>
+              </Link>
+              
+              {/* PILLAR 3: DISCOVER */}
+              <Link href="/discover" className="group/card block p-6 border border-[var(--border)] hover:border-[#00bfff] transition-colors">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 border border-[#00bfff] flex items-center justify-center text-[#00bfff]">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="font-bold text-[#00bfff]">DISCOVER</h3>
+                </div>
+                <p className="font-bold mb-2">Best Music Discovery Ever</p>
+                <p className="text-sm text-[var(--muted)] mb-3">
+                  TasteID powered by Polarity. Recommendations that actually fit YOU.
+                </p>
+                <span className="text-xs text-[#00bfff]">Polarity Engine → TasteID</span>
+              </Link>
+            </div>
+          </div>
+        </details>
       </section>
 
       {/* COLLEGE RADIO PARTNERSHIP */}
