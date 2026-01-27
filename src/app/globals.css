@@ -22,22 +22,22 @@ html.light {
   --warning: #eab308;
 }
 
-/* Dark mode - white body, dark header */
+/* Dark mode - soft white body, dark header (easier on eyes) */
 html.dark {
-  --background: #ffffff;
-  --foreground: #0a0a0a;
-  --muted: #666666;
-  --muted-dim: #888888;
-  --muted-faint: #aaaaaa;
-  --border: #dddddd;
-  --border-dim: #cccccc;
-  --surface: #f5f5f5;
-  --surface-raised: #eeeeee;
-  --accent: #000000;
+  --background: #f5f5f0;
+  --foreground: #1a1a1a;
+  --muted: #5a5a5a;
+  --muted-dim: #777777;
+  --muted-faint: #999999;
+  --border: #d5d5d0;
+  --border-dim: #c5c5c0;
+  --surface: #eaeae5;
+  --surface-raised: #e0e0db;
+  --accent: #1a1a1a;
   --accent-muted: #333333;
-  --header-bg: #0a0a0a;
-  --header-text: #ededed;
-  --header-border: #222222;
+  --header-bg: #1a1a1a;
+  --header-text: #f5f5f0;
+  --header-border: #333333;
   --error: #dc2626;
   --success: #16a34a;
   --warning: #ca8a04;
