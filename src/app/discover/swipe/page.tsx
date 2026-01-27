@@ -6,6 +6,56 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { RatingSlider } from '@/components/rating-slider'
 
+// Polarity descriptors for TasteID
+const POLARITY_DESCRIPTORS = [
+  { id: 'explosive', label: 'EXPLOSIVE' },
+  { id: 'driving', label: 'DRIVING' },
+  { id: 'simmering', label: 'SIMMERING' },
+  { id: 'subdued', label: 'SUBDUED' },
+  { id: 'euphoric', label: 'EUPHORIC' },
+  { id: 'triumphant', label: 'TRIUMPHANT' },
+  { id: 'melancholic', label: 'MELANCHOLIC' },
+  { id: 'dark', label: 'DARK' },
+  { id: 'anxious', label: 'ANXIOUS' },
+  { id: 'lush', label: 'LUSH' },
+  { id: 'sparse', label: 'SPARSE' },
+  { id: 'gritty', label: 'GRITTY' },
+  { id: 'crystalline', label: 'CRYSTALLINE' },
+  { id: 'hypnotic', label: 'HYPNOTIC' },
+  { id: 'chaotic', label: 'CHAOTIC' },
+  { id: 'groovy', label: 'GROOVY' },
+  { id: 'floating', label: 'FLOATING' },
+  { id: 'avant_garde', label: 'AVANT-GARDE' },
+  { id: 'nostalgic', label: 'NOSTALGIC' },
+  { id: 'futuristic', label: 'FUTURISTIC' },
+  { id: 'timeless', label: 'TIMELESS' },
+  { id: 'epic', label: 'EPIC' },
+  { id: 'intimate', label: 'INTIMATE' },
+  { id: 'visceral', label: 'VISCERAL' },
+  { id: 'ethereal', label: 'ETHEREAL' },
+  { id: 'raw', label: 'RAW' },
+  { id: 'polished', label: 'POLISHED' },
+  { id: 'soulful', label: 'SOULFUL' },
+  { id: 'cinematic', label: 'CINEMATIC' },
+  { id: 'abstract', label: 'ABSTRACT' },
+  { id: 'confessional', label: 'CONFESSIONAL' },
+] as const
+
+type DescriptorId = typeof POLARITY_DESCRIPTORS[number]['id']
+
+const MIN_DESCRIPTORS = 3
+const MAX_DESCRIPTORS = 5
+
+// Fisher-Yates shuffle
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  return shuffled
+}
+
 interface Album {
   id: string
   title: string
@@ -27,6 +77,22 @@ export default function QuickRatePage() {
   const [ratedCount, setRatedCount] = useState(0)
   const [skippedCount, setSkippedCount] = useState(0)
   const [error, setError] = useState<string | null>(null)
+  const [selectedDescriptors, setSelectedDescriptors] = useState<DescriptorId[]>([])
+  const [shuffledDescriptors, setShuffledDescriptors] = useState(() => shuffleArray([...POLARITY_DESCRIPTORS]))
+
+  const toggleDescriptor = (id: DescriptorId) => {
+    setSelectedDescriptors(prev => {
+      if (prev.includes(id)) {
+        return prev.filter(d => d !== id)
+      }
+      if (prev.length >= MAX_DESCRIPTORS) {
+        return prev
+      }
+      return [...prev, id]
+    })
+  }
+
+  const canSubmit = selectedDescriptors.length >= MIN_DESCRIPTORS
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -76,6 +142,7 @@ export default function QuickRatePage() {
           rating,
           text: '',
           isQuickRate: true,
+          vibes: selectedDescriptors,
         }),
       })
       const data = await res.json()
@@ -101,6 +168,8 @@ export default function QuickRatePage() {
 
   const nextAlbum = () => {
     setRating(5) // Reset rating for next album
+    setSelectedDescriptors([])
+    setShuffledDescriptors(shuffleArray([...POLARITY_DESCRIPTORS]))
     setError(null)
     setCurrentIndex((prev) => prev + 1)
   }
@@ -108,7 +177,7 @@ export default function QuickRatePage() {
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (submitting) return
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' && canSubmit) {
         e.preventDefault()
         submitRating()
       }
@@ -116,7 +185,7 @@ export default function QuickRatePage() {
         skip()
       }
     },
-    [submitRating, skip, submitting]
+    [submitRating, skip, submitting, canSubmit]
   )
 
   useEffect(() => {
@@ -237,6 +306,45 @@ export default function QuickRatePage() {
               </div>
             </div>
 
+            {/* Descriptors Section */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[10px] text-[--muted] uppercase tracking-wider">
+                  Describe this album{' '}
+                  <span className={selectedDescriptors.length >= MIN_DESCRIPTORS ? 'text-[#ffd700]' : 'text-[#ff6b6b]'}>
+                    ({selectedDescriptors.length}/{MIN_DESCRIPTORS} required)
+                  </span>
+                </p>
+                {selectedDescriptors.length < MIN_DESCRIPTORS && (
+                  <span className="text-[10px] text-[#ff6b6b] animate-pulse">
+                    Pick {MIN_DESCRIPTORS - selectedDescriptors.length} more
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {shuffledDescriptors.map((descriptor) => {
+                  const isSelected = selectedDescriptors.includes(descriptor.id)
+                  const atMax = selectedDescriptors.length >= MAX_DESCRIPTORS && !isSelected
+                  return (
+                    <button
+                      key={descriptor.id}
+                      onClick={() => toggleDescriptor(descriptor.id)}
+                      disabled={submitting || atMax}
+                      className={`text-[9px] px-2 py-1.5 min-h-[32px] uppercase tracking-wider transition-all ${
+                        isSelected
+                          ? 'bg-[#ffd700] text-black border border-[#ffd700] font-bold'
+                          : atMax
+                            ? 'border border-[--border] text-[--muted]/40 cursor-not-allowed'
+                            : 'border border-[--border] text-[--muted] hover:border-[#ffd700] hover:text-[#ffd700]'
+                      }`}
+                    >
+                      {descriptor.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
             {/* Rating Section */}
             <div className="space-y-6">
               <RatingSlider value={rating} onChange={setRating} disabled={submitting} />
@@ -249,21 +357,26 @@ export default function QuickRatePage() {
                 <button
                   onClick={skip}
                   disabled={submitting}
-                  className="flex-1 py-4 border border-[--border] text-[--muted] font-medium text-sm tracking-wide uppercase hover:border-white hover:text-white transition-colors disabled:opacity-50"
+                  className="flex-1 py-4 min-h-[48px] border border-[--border] text-[--muted] font-medium text-sm tracking-wide uppercase hover:border-white hover:text-white transition-colors disabled:opacity-50"
                 >
                   Skip
                 </button>
                 <button
                   onClick={submitRating}
-                  disabled={submitting}
-                  className="flex-1 py-4 bg-[#ffd700] text-black font-bold text-sm tracking-wide uppercase hover:bg-[#ffed4a] transition-colors disabled:opacity-50"
+                  disabled={submitting || !canSubmit}
+                  className={`flex-1 py-4 min-h-[48px] font-bold text-sm tracking-wide uppercase transition-colors disabled:opacity-50 ${
+                    canSubmit
+                      ? 'bg-[#ffd700] text-black hover:bg-[#ffed4a]'
+                      : 'bg-[--border] text-[--muted] cursor-not-allowed'
+                  }`}
                 >
-                  {submitting ? 'Saving...' : 'Rate'}
+                  {submitting ? 'Saving...' : !canSubmit ? `+${MIN_DESCRIPTORS - selectedDescriptors.length} vibes` : 'Rate'}
                 </button>
               </div>
 
               <p className="text-center text-xs text-[--muted]">
-                Press <kbd className="px-1.5 py-0.5 border border-[--border] text-[10px]">Enter</kbd> to rate · <kbd className="px-1.5 py-0.5 border border-[--border] text-[10px]">S</kbd> to skip
+                {canSubmit && <><kbd className="px-1.5 py-0.5 border border-[--border] text-[10px]">Enter</kbd> to rate · </>}
+                <kbd className="px-1.5 py-0.5 border border-[--border] text-[10px]">S</kbd> to skip
               </p>
             </div>
 

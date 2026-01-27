@@ -204,8 +204,18 @@ export function ConnectionsSection({ userId }: ConnectionsSectionProps) {
           ))}
         </div>
       ) : error ? (
-        <div className="text-center py-8 text-[--muted]">
-          <p>{error}</p>
+        <div className="border-2 border-dashed border-[--border] p-8 text-center">
+          <div className="text-3xl mb-3">📊</div>
+          <h3 className="text-lg font-bold mb-2">Complete Your Brain ID</h3>
+          <p className="text-sm text-[--muted] mb-4 max-w-md mx-auto">
+            Review more albums to build your Brain ID and unlock taste connections.
+          </p>
+          <Link
+            href="/search"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-black text-xs font-bold tracking-wide hover:bg-white/90 transition-colors"
+          >
+            Find Albums to Review
+          </Link>
         </div>
       ) : connections.length === 0 ? (
         <div className="border-2 border-dashed border-[--border] p-8 text-center">
