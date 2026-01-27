@@ -28,19 +28,6 @@ export function WaxfeedLogo({ className = "", size = "md", spinning = true }: Pr
       viewBox="0 0 500 500"
       className={className}
     >
-      <style>
-        {`
-          @keyframes spin-disc {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-          }
-          .spinning-disc {
-            animation: spin-disc 3s linear infinite;
-            transform-origin: center;
-            transform-box: fill-box;
-          }
-        `}
-      </style>
       <defs>
         {/* DISC SURFACE GRADIENTS */}
         <linearGradient id={`${uniqueId}-holoBase`} x1="20%" y1="80%" x2="80%" y2="20%">
@@ -111,7 +98,17 @@ export function WaxfeedLogo({ className = "", size = "md", spinning = true }: Pr
       <rect x="42" y="42" width="416" height="416" rx="6" fill="#e0e0e0"/>
 
       {/* SPINNING DISC */}
-      <g style={{ transformOrigin: '250px 250px' }} className={spinning ? "spinning-disc" : ""}>
+      <g>
+        {spinning && (
+          <animateTransform
+            attributeName="transform"
+            type="rotate"
+            from="0 250 250"
+            to="360 250 250"
+            dur="3s"
+            repeatCount="indefinite"
+          />
+        )}
 
         {/* Holographic base */}
         <circle cx="250" cy="250" r="175" fill={`url(#${uniqueId}-holoBase)`}/>
