@@ -182,10 +182,10 @@ export default async function DiscoverPage() {
         <div className="w-full px-6 lg:px-12 xl:px-20 py-12 lg:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
             <div className="lg:col-span-8">
-              <p className="text-[10px] tracking-[0.4em] uppercase mb-4 text-[#ffd700]">
+              <p className="text-[10px] sm:text-xs tracking-[0.4em] uppercase mb-4 text-[#ffd700]">
                 Review Now · Prove Later
               </p>
-              <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-[-0.04em] leading-[0.85]">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold tracking-[-0.04em] leading-[0.85]">
                 Discover
               </h1>
               <p className="mt-4 text-lg text-[--muted] max-w-xl">
@@ -202,7 +202,7 @@ export default async function DiscoverPage() {
                   </div>
                   <Link
                     href="/discover/swipe"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#ffd700] text-black text-[10px] tracking-[0.15em] uppercase font-bold hover:bg-[#ffed4a] transition group"
+                    className="inline-flex items-center gap-2 px-4 py-3 min-h-[44px] bg-[#ffd700] text-black text-[10px] sm:text-xs tracking-[0.15em] uppercase font-bold hover:bg-[#ffed4a] transition group"
                   >
                     <span>Quick Rate</span>
                     <svg className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -211,9 +211,9 @@ export default async function DiscoverPage() {
                   </Link>
                 </div>
               ) : (
-                <Link 
+                <Link
                   href="/signup"
-                  className="inline-block px-6 py-3 bg-white text-black text-[11px] tracking-[0.15em] uppercase font-bold hover:bg-[#e5e5e5] transition"
+                  className="inline-block px-6 py-3 min-h-[44px] bg-white text-black text-[11px] sm:text-xs tracking-[0.15em] uppercase font-bold hover:bg-[#e5e5e5] transition"
                 >
                   Start Reviewing
                 </Link>
@@ -225,15 +225,15 @@ export default async function DiscoverPage() {
 
       {/* Spin the Wheel - Editorial feature */}
       <section className="border-b border-[--border]">
-        <div className="w-full px-6 lg:px-12 xl:px-20">
-          <div className="grid grid-cols-12 border-l border-r border-[--border]">
-            <div className="col-span-12 lg:col-span-1 border-r border-[--border] py-8 lg:py-16 flex lg:flex-col items-center lg:items-start justify-between lg:justify-start gap-4">
-              <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted] lg:writing-mode-vertical lg:rotate-180" style={{ writingMode: 'vertical-rl' as const }}>
+        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20">
+          <div className="lg:grid lg:grid-cols-12 border-l border-r border-[--border]">
+            <div className="hidden lg:flex col-span-1 border-r border-[--border] py-8 lg:py-16 flex-col items-start justify-start gap-4">
+              <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted]" style={{ writingMode: 'vertical-rl' as const }}>
                 Feature
               </span>
               <span className="text-4xl lg:text-6xl font-bold text-[--border]">01</span>
             </div>
-            <div className="col-span-12 lg:col-span-11 py-12 lg:py-20 px-6 lg:px-12">
+            <div className="col-span-12 lg:col-span-11 py-8 sm:py-12 lg:py-20 px-4 sm:px-6 lg:px-12">
               <SpinWheel userId={session?.user?.id} userReviewCount={userReviewCount} />
             </div>
           </div>
@@ -242,15 +242,15 @@ export default async function DiscoverPage() {
 
       {/* Taste Connections - Polarity 1.2 Powered */}
       <section className="border-b border-[--border]">
-        <div className="w-full px-6 lg:px-12 xl:px-20">
-          <div className="grid grid-cols-12 border-l border-r border-[--border]">
-            <div className="col-span-12 lg:col-span-1 border-r border-[--border] py-8 flex lg:flex-col items-center lg:items-start justify-between lg:justify-start gap-4">
-              <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted] lg:writing-mode-vertical lg:rotate-180" style={{ writingMode: 'vertical-rl' as const }}>
+        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20">
+          <div className="lg:grid lg:grid-cols-12 border-l border-r border-[--border]">
+            <div className="hidden lg:flex col-span-1 border-r border-[--border] py-8 flex-col items-start justify-start gap-4">
+              <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted]" style={{ writingMode: 'vertical-rl' as const }}>
                 Connect
               </span>
               <span className="text-4xl lg:text-6xl font-bold text-[--border]">{getSectionNum()}</span>
             </div>
-            <div className="col-span-12 lg:col-span-11 py-10 lg:py-14 px-6 lg:px-12">
+            <div className="col-span-12 lg:col-span-11 py-8 sm:py-10 lg:py-14 px-4 sm:px-6 lg:px-12">
               <div className="flex items-baseline justify-between mb-8">
                 <div>
                   <h2 className="text-2xl lg:text-3xl font-bold tracking-tight mb-2">Taste Connections</h2>
@@ -275,15 +275,15 @@ export default async function DiscoverPage() {
       {/* For You - Personalized */}
       {recommendations.forYou.length > 0 && (
         <section className="border-b border-[--border]">
-          <div className="w-full px-6 lg:px-12 xl:px-20">
-            <div className="grid grid-cols-12 border-l border-r border-[--border]">
-              <div className="col-span-12 lg:col-span-1 border-r border-[--border] py-8 flex lg:flex-col items-center lg:items-start justify-between lg:justify-start gap-4">
-                <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted] lg:writing-mode-vertical lg:rotate-180" style={{ writingMode: 'vertical-rl' as const }}>
+          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20">
+            <div className="lg:grid lg:grid-cols-12 border-l border-r border-[--border]">
+              <div className="hidden lg:flex col-span-1 border-r border-[--border] py-8 flex-col items-start justify-start gap-4">
+                <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted]" style={{ writingMode: 'vertical-rl' as const }}>
                   Curated
                 </span>
                 <span className="text-4xl lg:text-6xl font-bold text-[--border]">{getSectionNum()}</span>
               </div>
-              <div className="col-span-12 lg:col-span-11 py-10 lg:py-14 px-6 lg:px-12">
+              <div className="col-span-12 lg:col-span-11 py-8 sm:py-10 lg:py-14 px-4 sm:px-6 lg:px-12">
                 <div className="flex items-baseline justify-between mb-8">
                   <div>
                     <h2 className="text-2xl lg:text-3xl font-bold tracking-tight mb-2">For You</h2>
@@ -335,10 +335,10 @@ export default async function DiscoverPage() {
       {/* Popular in Genre - Full bleed asymmetric */}
       {recommendations.popularInGenre && (
         <section className="border-b border-[--border]">
-          <div className="w-full px-6 lg:px-12 xl:px-20">
-            <div className="grid grid-cols-12 border-l border-r border-[--border]">
-              <div className="col-span-12 lg:col-span-1 border-r border-[--border] py-8 flex lg:flex-col items-center lg:items-start justify-between lg:justify-start gap-4">
-                <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted] lg:writing-mode-vertical lg:rotate-180" style={{ writingMode: 'vertical-rl' as const }}>
+          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20">
+            <div className="lg:grid lg:grid-cols-12 border-l border-r border-[--border]">
+              <div className="hidden lg:flex col-span-1 border-r border-[--border] py-8 flex-col items-start justify-start gap-4">
+                <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted]" style={{ writingMode: 'vertical-rl' as const }}>
                   Genre
                 </span>
                 <span className="text-4xl lg:text-6xl font-bold text-[--border]">{getSectionNum()}</span>
@@ -416,10 +416,10 @@ export default async function DiscoverPage() {
 
       {/* New Releases + Trending - Split section */}
       <section className="border-b border-[--border]">
-        <div className="w-full px-6 lg:px-12 xl:px-20">
-          <div className="grid grid-cols-12 border-l border-r border-[--border]">
-            <div className="col-span-12 lg:col-span-1 border-r border-[--border] py-8 flex lg:flex-col items-center lg:items-start justify-between lg:justify-start gap-4">
-              <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted] lg:writing-mode-vertical lg:rotate-180" style={{ writingMode: 'vertical-rl' as const }}>
+        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20">
+          <div className="lg:grid lg:grid-cols-12 border-l border-r border-[--border]">
+            <div className="hidden lg:flex col-span-1 border-r border-[--border] py-8 flex-col items-start justify-start gap-4">
+              <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted]" style={{ writingMode: 'vertical-rl' as const }}>
                 Index
               </span>
               <span className="text-4xl lg:text-6xl font-bold text-[--border]">{getSectionNum()}</span>
@@ -429,7 +429,7 @@ export default async function DiscoverPage() {
             <div className="col-span-12 lg:col-span-5 border-r border-[--border] py-10 lg:py-14 px-6 lg:px-8">
               <div className="flex items-baseline justify-between mb-6">
                 <h2 className="text-xl font-bold tracking-tight">New Releases</h2>
-                <span className="text-[9px] tracking-[0.2em] uppercase text-[#ffd700]">Early review opportunity</span>
+                <span className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-[#ffd700]">Early review opportunity</span>
               </div>
               {recommendations.newReleases.length > 0 ? (
                 <div className="grid grid-cols-2 gap-4">
@@ -517,7 +517,7 @@ export default async function DiscoverPage() {
       {(!session || recommendations.forYou.length === 0) && (
         <section className="py-20 lg:py-28 bg-white/[0.02]">
           <div className="w-full px-6 lg:px-12 xl:px-20 text-center">
-            <p className="text-[10px] tracking-[0.4em] uppercase text-[#ffd700] mb-6">
+            <p className="text-[10px] sm:text-xs tracking-[0.4em] uppercase text-[#ffd700] mb-6">
               {session ? 'Start Proving Your Taste' : 'The Music Credibility Platform'}
             </p>
             <h2 className="text-3xl lg:text-5xl font-bold tracking-tight mb-4">

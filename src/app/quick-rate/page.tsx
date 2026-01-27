@@ -398,15 +398,15 @@ export default function QuickRatePage() {
       <div className="w-full px-4 lg:px-12 xl:px-20 py-4 flex flex-col flex-1 overflow-hidden">
         {/* Header Row */}
         <div className="flex items-center justify-between mb-3 flex-shrink-0">
-          <div>
-            <h1 className="text-xl font-bold tracking-tighter">Quick Rate</h1>
-            <p className="text-xs text-[#888]">
-              Build your TasteID by rating albums. Skip anything you haven't heard.
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg sm:text-xl font-bold tracking-tighter">Quick Rate</h1>
+            <p className="text-[10px] sm:text-xs text-[#888] truncate">
+              Build your TasteID. Skip what you haven't heard.
             </p>
           </div>
           <button
             onClick={() => router.push('/')}
-            className="text-[#888] hover:text-white transition-colors"
+            className="text-[#888] hover:text-white transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center flex-shrink-0"
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -663,7 +663,7 @@ export default function QuickRatePage() {
                         </span>
                       )}
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2">
                       {shuffledDescriptors.map((descriptor) => {
                         const isSelected = selectedDescriptors.includes(descriptor.id)
                         const atMax = selectedDescriptors.length >= MAX_DESCRIPTORS && !isSelected
@@ -673,7 +673,7 @@ export default function QuickRatePage() {
                             onClick={() => toggleDescriptor(descriptor.id)}
                             disabled={submitting || atMax}
                             title={descriptor.description}
-                            className={`text-[10px] px-3 py-1.5 uppercase tracking-wider transition-all duration-150 ${
+                            className={`text-[9px] sm:text-[10px] px-2 sm:px-3 py-1.5 min-h-[32px] uppercase tracking-wider transition-all duration-150 ${
                               isSelected
                                 ? 'bg-[#ffd700] text-black border border-[#ffd700] font-bold'
                                 : atMax
@@ -697,24 +697,24 @@ export default function QuickRatePage() {
                     <p className="text-red-500 text-sm text-center">{error}</p>
                   )}
 
-                  <div className="flex gap-3">
+                  <div className="flex gap-2 sm:gap-3">
                     <button
                       onClick={skip}
                       disabled={submitting}
-                      className="flex-1 py-3 border border-[#333] text-[#888] font-bold uppercase tracking-wider hover:border-white hover:text-white transition-colors disabled:opacity-50"
+                      className="flex-1 py-3 min-h-[48px] border border-[#333] text-[#888] font-bold uppercase tracking-wider text-xs sm:text-sm hover:border-white hover:text-white transition-colors disabled:opacity-50"
                     >
-                      Haven't Heard
+                      Skip
                     </button>
                     <button
                       onClick={submitRating}
                       disabled={submitting || !canSubmit}
-                      className={`flex-1 py-3 font-bold uppercase tracking-wider transition-colors disabled:opacity-50 ${
+                      className={`flex-1 py-3 min-h-[48px] font-bold uppercase tracking-wider text-xs sm:text-sm transition-colors disabled:opacity-50 ${
                         canSubmit
                           ? 'bg-[#ffd700] text-black hover:bg-[#ffed4a]'
                           : 'bg-[#333] text-[#666] cursor-not-allowed'
                       }`}
                     >
-                      {submitting ? 'Saving...' : !canSubmit ? `Pick ${MIN_DESCRIPTORS - selectedDescriptors.length} More` : 'Rate'}
+                      {submitting ? 'Saving...' : !canSubmit ? `+${MIN_DESCRIPTORS - selectedDescriptors.length} vibes` : 'Rate'}
                     </button>
                   </div>
 
@@ -813,8 +813,8 @@ function TierProgressBar({ ratingCount }: { ratingCount: number }) {
                 />
               </div>
               {/* Tier name label */}
-              <div 
-                className={`text-[8px] text-center uppercase tracking-wider ${isCurrent ? 'font-bold' : ''}`}
+              <div
+                className={`text-[8px] sm:text-[9px] text-center uppercase tracking-wider ${isCurrent ? 'font-bold' : ''}`}
                 style={{ color: isCompleted || isCurrent ? tier.color : '#444' }}
               >
                 {tier.name}
