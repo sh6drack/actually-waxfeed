@@ -4,6 +4,7 @@ import Link from "next/link"
 import { auth } from "@/lib/auth"
 import { format, formatDistanceToNow } from "date-fns"
 import { TasteIDCompletionBanner } from "@/components/tasteid-completion-banner"
+import { getCurrentTier, getKeepBuildingMessage } from "@/lib/tasteid-tiers"
 
 export const dynamic = "force-dynamic"
 
@@ -142,34 +143,44 @@ export default async function Home() {
 
               {/* Progress Stats */}
               <div className="flex items-center gap-6 flex-wrap">
-                {/* TasteID Button + Progress */}
-                <Link 
-                  href={`/u/${userStatus.username}/tasteid`}
-                  className="flex items-center gap-3 hover:opacity-80 transition-opacity"
-                >
-                  <div className="text-right">
-                    <p className="text-xs text-[var(--muted)] uppercase tracking-wider">TasteID</p>
-                    <p className="text-sm font-bold tabular-nums">
-                      {userStatus.hasTasteID ? (
-                        <span className="text-[#ffd700]">Complete</span>
-                      ) : (
-                        <span>{userStatus.tasteIDProgress}%</span>
+                {/* TasteID Button + Progress - NEVER shows "Complete" */}
+                {(() => {
+                  const tier = getCurrentTier(userStatus.reviewCount)
+                  const keepBuildingMsg = getKeepBuildingMessage(userStatus.reviewCount)
+                  return (
+                    <div className="flex items-center gap-3">
+                      <Link
+                        href={`/u/${userStatus.username}/tasteid`}
+                        className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                      >
+                        <div className="text-right">
+                          <p className="text-xs text-[var(--muted)] uppercase tracking-wider">TasteID</p>
+                          <p className="text-sm font-bold" style={{ color: tier.color }}>
+                            {tier.id === 'locked' ? `${userStatus.tasteIDProgress}%` : tier.name}
+                          </p>
+                        </div>
+                        {tier.id === 'locked' ? (
+                          <div className="w-20 h-2 bg-[var(--border)] overflow-hidden">
+                            <div
+                              className="h-full bg-[#ffd700] transition-all duration-500"
+                              style={{ width: `${userStatus.tasteIDProgress}%` }}
+                            />
+                          </div>
+                        ) : (
+                          <span className="text-[10px] text-[var(--muted)]">{keepBuildingMsg}</span>
+                        )}
+                      </Link>
+                      {tier.id !== 'locked' && (
+                        <Link
+                          href="/quick-rate"
+                          className="px-3 py-1.5 bg-[#ffd700] text-black text-[10px] font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors"
+                        >
+                          + Add
+                        </Link>
                       )}
-                    </p>
-                  </div>
-                  {!userStatus.hasTasteID ? (
-                    <div className="w-20 h-2 bg-[var(--border)] overflow-hidden">
-                      <div 
-                        className="h-full bg-[#ffd700] transition-all duration-500"
-                        style={{ width: `${userStatus.tasteIDProgress}%` }}
-                      />
                     </div>
-                  ) : (
-                    <svg className="w-4 h-4 text-[#ffd700]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                  )}
-                </Link>
+                  )
+                })()}
 
                 {/* Ratings */}
                 <div className="text-center border-l border-[var(--border)] pl-6">
