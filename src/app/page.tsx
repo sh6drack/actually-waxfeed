@@ -16,7 +16,7 @@ async function getBillboardAlbums() {
       albumType: { not: 'single' },
     },
     orderBy: { billboardRank: 'asc' },
-    take: 20,
+    take: 50,
     select: {
       id: true,
       spotifyId: true,
