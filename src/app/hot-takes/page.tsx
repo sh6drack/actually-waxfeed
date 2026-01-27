@@ -110,13 +110,13 @@ export default async function HotTakesPage() {
   return (
     <div className="w-full px-4 lg:px-12 xl:px-20 py-6 lg:py-8">
       {/* Header */}
-      <header className="mb-12">
-        <div className="flex items-center justify-between mb-6">
+      <header className="mb-8 sm:mb-12">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 sm:mb-6">
           <div>
             <p className="text-[10px] tracking-[0.3em] uppercase text-[#666] mb-2">
               Community Debates
             </p>
-            <h1 className="text-4xl lg:text-6xl font-bold tracking-tight">
+            <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold tracking-tight">
               Hot Takes
             </h1>
           </div>
@@ -124,28 +124,27 @@ export default async function HotTakesPage() {
           {session && (
             <Link
               href="/hot-takes/new"
-              className="bg-white text-black px-6 py-3 font-bold text-sm tracking-wide hover:bg-[#f0f0f0] transition-colors no-underline"
+              className="bg-white text-black px-5 sm:px-6 py-3 min-h-[48px] flex items-center justify-center font-bold text-xs sm:text-sm tracking-wide hover:bg-[#f0f0f0] transition-colors no-underline w-full sm:w-auto"
             >
               POST A TAKE
             </Link>
           )}
         </div>
 
-        <p className="text-sm text-[#888] max-w-xl">
+        <p className="text-xs sm:text-sm text-[#888] max-w-xl">
           Controversial opinions about albums. Vote, argue, and defend your taste.
-          No fence-sitting allowed.
         </p>
       </header>
 
       {/* Filter tabs */}
-      <nav className="flex gap-6 border-b border-[#222] mb-8">
-        <button className="pb-3 text-sm font-bold tracking-wide border-b-2 border-white -mb-[1px]">
+      <nav className="flex gap-4 sm:gap-6 border-b border-[#222] mb-6 sm:mb-8 overflow-x-auto scrollbar-hide">
+        <button className="pb-3 min-h-[44px] text-xs sm:text-sm font-bold tracking-wide border-b-2 border-white -mb-[1px] whitespace-nowrap">
           TRENDING
         </button>
-        <button className="pb-3 text-sm text-[#666] tracking-wide hover:text-white transition-colors">
+        <button className="pb-3 min-h-[44px] text-xs sm:text-sm text-[#666] tracking-wide hover:text-white transition-colors whitespace-nowrap">
           RECENT
         </button>
-        <button className="pb-3 text-sm text-[#666] tracking-wide hover:text-white transition-colors">
+        <button className="pb-3 min-h-[44px] text-xs sm:text-sm text-[#666] tracking-wide hover:text-white transition-colors whitespace-nowrap">
           MOST HEATED
         </button>
       </nav>

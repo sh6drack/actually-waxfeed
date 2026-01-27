@@ -394,17 +394,17 @@ export default async function ProfilePage({ params }: Props) {
           )}
 
           {isOwnProfile && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 justify-center sm:justify-start">
               <Link
                 href="/settings"
-                className="inline-block border px-4 py-2 text-sm no-underline transition-opacity hover:opacity-70"
+                className="inline-block border px-4 py-2.5 text-sm no-underline transition-opacity hover:opacity-70 min-h-[44px] flex items-center"
                 style={{ borderColor: 'var(--border)' }}
               >
                 Edit Profile
               </Link>
               <Link
                 href={`/u/${user.username}/stats`}
-                className="inline-flex items-center gap-2 border px-4 py-2 text-sm no-underline transition-opacity hover:opacity-70"
+                className="inline-flex items-center gap-2 border px-4 py-2.5 text-sm no-underline transition-opacity hover:opacity-70 min-h-[44px]"
                 style={{ borderColor: 'var(--border)' }}
               >
                 <ChartIcon size={16} />

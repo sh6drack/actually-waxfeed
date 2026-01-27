@@ -146,8 +146,8 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="w-full px-4 lg:px-12 xl:px-20 max-w-4xl py-8">
-      <h1 className="text-4xl font-bold tracking-tighter mb-8">Settings</h1>
+    <div className="w-full px-4 lg:px-12 xl:px-20 max-w-4xl py-6 sm:py-8">
+      <h1 className="text-2xl sm:text-4xl font-bold tracking-tighter mb-6 sm:mb-8">Settings</h1>
 
       {/* Profile Section */}
       <section className="mb-12">
@@ -258,8 +258,8 @@ export default function SettingsPage() {
           <div>
             <label className="block text-sm text-[--muted] mb-2">Social Links</label>
             <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <span className="text-[--muted] w-20">Instagram</span>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                <span className="text-[--muted] text-sm sm:w-20">Instagram</span>
                 <div className="flex-1 flex items-center gap-1">
                   <span className="text-[--muted-dim]">@</span>
                   <input
@@ -267,12 +267,12 @@ export default function SettingsPage() {
                     value={socialLinks.instagram}
                     onChange={(e) => setSocialLinks({ ...socialLinks, instagram: e.target.value.replace(/^@/, '').replace(/[^a-zA-Z0-9._]/g, '') })}
                     placeholder="username"
-                    className="flex-1"
+                    className="flex-1 min-h-[44px]"
                   />
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-[--muted] w-20">Twitter/X</span>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                <span className="text-[--muted] text-sm sm:w-20">Twitter/X</span>
                 <div className="flex-1 flex items-center gap-1">
                   <span className="text-[--muted-dim]">@</span>
                   <input
@@ -280,28 +280,28 @@ export default function SettingsPage() {
                     value={socialLinks.twitter}
                     onChange={(e) => setSocialLinks({ ...socialLinks, twitter: e.target.value.replace(/^@/, '').replace(/[^a-zA-Z0-9_]/g, '') })}
                     placeholder="username"
-                    className="flex-1"
+                    className="flex-1 min-h-[44px]"
                   />
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-[--muted] w-20">Spotify</span>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                <span className="text-[--muted] text-sm sm:w-20">Spotify</span>
                 <input
                   type="text"
                   value={socialLinks.spotify}
                   onChange={(e) => setSocialLinks({ ...socialLinks, spotify: e.target.value })}
                   placeholder="Spotify profile URL"
-                  className="flex-1"
+                  className="flex-1 min-h-[44px]"
                 />
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-[--muted] w-20">Website</span>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                <span className="text-[--muted] text-sm sm:w-20">Website</span>
                 <input
                   type="text"
                   value={socialLinks.website}
                   onChange={(e) => setSocialLinks({ ...socialLinks, website: e.target.value })}
                   placeholder="https://..."
-                  className="flex-1"
+                  className="flex-1 min-h-[44px]"
                 />
               </div>
             </div>
@@ -310,16 +310,16 @@ export default function SettingsPage() {
       </section>
 
       {/* Save Button */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
         <button
           onClick={handleSave}
           disabled={loading || (usernameChanged && !canChangeUsername)}
-          className="bg-white text-black px-6 py-3 font-bold hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full sm:w-auto bg-white text-black px-6 py-3 min-h-[48px] font-bold hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? "Saving..." : "Save Changes"}
         </button>
         {message && (
-          <p className={message.includes("saved") || message.includes("updated") ? "text-green-500" : "text-red-500"}>
+          <p className={`text-sm ${message.includes("saved") || message.includes("updated") ? "text-green-500" : "text-red-500"}`}>
             {message}
           </p>
         )}

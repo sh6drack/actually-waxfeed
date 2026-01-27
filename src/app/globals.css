@@ -531,3 +531,135 @@ img[src=""] {
   letter-spacing: 0.1em;
   opacity: 0.3;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE OPTIMIZATION UTILITIES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Touch-friendly minimum tap targets */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Mobile-friendly horizontal scroll containers */
+.scroll-x-mobile {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.scroll-x-mobile::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll-x-mobile > * {
+  scroll-snap-align: start;
+}
+
+/* Prevent content shift on mobile keyboards */
+.keyboard-safe {
+  position: relative;
+}
+
+@supports (height: 100dvh) {
+  .keyboard-safe {
+    min-height: 100dvh;
+  }
+}
+
+/* Extra small screen breakpoint (320-480px) */
+@media (max-width: 480px) {
+  .xs\:hidden {
+    display: none;
+  }
+
+  .xs\:text-xs {
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+
+  .xs\:text-sm {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+
+  .xs\:px-3 {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .xs\:py-2 {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .xs\:gap-2 {
+    gap: 0.5rem;
+  }
+
+  .xs\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .xs\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Small mobile optimization (480px+) */
+@media (min-width: 480px) {
+  .xs\:grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Better mobile text wrapping */
+.text-balance {
+  text-wrap: balance;
+}
+
+/* Prevent orphans in text */
+.text-pretty {
+  text-wrap: pretty;
+}
+
+/* Mobile-safe fixed positioning */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-left {
+    padding-left: env(safe-area-inset-left);
+  }
+
+  .safe-right {
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Portrait mode specific adjustments */
+@media (orientation: portrait) and (max-width: 480px) {
+  /* Larger touch targets on narrow portrait phones */
+  .portrait-touch-lg {
+    min-height: 48px;
+    min-width: 48px;
+  }
+}

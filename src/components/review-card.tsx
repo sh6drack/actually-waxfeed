@@ -321,7 +321,7 @@ export const ReviewCard = memo(function ReviewCard({
               {showWaxMenu && !hasAwardedWax && session && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowWaxMenu(false)} />
-                  <div className="absolute bottom-full left-0 mb-1 z-50 border border-[--border] p-2 min-w-[140px]" style={{ backgroundColor: 'var(--background)' }}>
+                  <div className="absolute bottom-full left-0 sm:left-0 right-auto mb-1 z-50 border border-[--border] p-2 min-w-[140px] max-w-[calc(100vw-2rem)]" style={{ backgroundColor: 'var(--background)' }}>
                     <p className="text-[9px] tracking-[0.15em] uppercase mb-2 px-1" style={{ color: 'var(--muted)' }}>Award Wax</p>
                     <button
                       onClick={() => handleAwardWax("standard")}
@@ -371,20 +371,23 @@ export const ReviewCard = memo(function ReviewCard({
               </button>
 
               {showReactions && (
-                <div className="absolute bottom-full left-0 mb-1 bg-[#1a1a1a] border border-[#333] p-2 flex gap-0.5 z-10 rounded">
-                  {REACTIONS.map(({ type, Icon, label }) => (
-                    <button
-                      key={type}
-                      onClick={() => handleReaction(type)}
-                      className={`min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-[#333] rounded transition-colors ${
-                        userReactions.includes(type) ? "bg-[#333] text-white" : ""
-                      }`}
-                      title={`${label} (${reactionCounts[type as keyof typeof reactionCounts]})`}
-                    >
-                      <Icon size={18} />
-                    </button>
-                  ))}
-                </div>
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowReactions(false)} />
+                  <div className="absolute bottom-full left-0 mb-1 bg-[#1a1a1a] border border-[#333] p-2 flex gap-0.5 z-50 max-w-[calc(100vw-2rem)]">
+                    {REACTIONS.map(({ type, Icon, label }) => (
+                      <button
+                        key={type}
+                        onClick={() => handleReaction(type)}
+                        className={`min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-[#333] transition-colors ${
+                          userReactions.includes(type) ? "bg-[#333] text-white" : ""
+                        }`}
+                        title={`${label} (${reactionCounts[type as keyof typeof reactionCounts]})`}
+                      >
+                        <Icon size={18} />
+                      </button>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
 

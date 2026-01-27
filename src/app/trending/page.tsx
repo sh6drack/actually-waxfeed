@@ -105,8 +105,8 @@ export default async function TrendingPage() {
 
       {/* Main content split */}
       <section className="border-b border-[--border]">
-        <div className="w-full px-6 lg:px-12 xl:px-20">
-          <div className="grid grid-cols-1 lg:grid-cols-2 border-l border-r border-[--border]">
+        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20">
+          <div className="grid grid-cols-1 lg:grid-cols-2 sm:border-l sm:border-r border-[--border]">
             {/* Billboard Chart - 50% width */}
             <div className="border-r border-[--border]">
               <div className="px-6 lg:px-8 py-6 border-b border-[--border]">
@@ -196,16 +196,16 @@ export default async function TrendingPage() {
 
       {/* Recent Releases */}
       <section className="border-b border-[--border]">
-        <div className="w-full px-6 lg:px-12 xl:px-20">
-          <div className="grid grid-cols-12 border-l border-r border-[--border]">
-            <div className="col-span-12 lg:col-span-1 border-r border-[--border] py-8 flex lg:flex-col items-center lg:items-start justify-between lg:justify-start gap-4">
-              <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted] lg:writing-mode-vertical lg:rotate-180" style={{ writingMode: 'vertical-rl' as const }}>
+        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20">
+          <div className="lg:grid lg:grid-cols-12 sm:border-l sm:border-r border-[--border]">
+            <div className="hidden lg:flex col-span-1 border-r border-[--border] py-8 flex-col items-start justify-start gap-4">
+              <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted]" style={{ writingMode: 'vertical-rl' as const }}>
                 New
               </span>
               <span className="text-4xl lg:text-6xl font-bold text-[--muted]">02</span>
             </div>
 
-            <div className="col-span-12 lg:col-span-11 py-10 lg:py-14 px-6 lg:px-8">
+            <div className="col-span-12 lg:col-span-11 py-8 sm:py-10 lg:py-14 px-0 sm:px-6 lg:px-8">
               <h2 className="text-xl font-bold tracking-tight mb-2">Recent Releases</h2>
               <p className="text-[11px] text-[--muted] mb-8">Albums from the past 30 days</p>
 

@@ -129,15 +129,15 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="w-full px-4 lg:px-12 xl:px-20 max-w-4xl py-8">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-4xl font-bold tracking-tighter">Notifications</h1>
+    <div className="w-full px-4 lg:px-12 xl:px-20 max-w-4xl py-6 sm:py-8">
+      <div className="flex items-center justify-between gap-4 mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-4xl font-bold tracking-tighter">Notifications</h1>
         {unreadCount > 0 && (
           <button
             onClick={markAllAsRead}
-            className="text-sm text-[#888] hover:text-white"
+            className="text-xs sm:text-sm text-[#888] hover:text-white min-h-[44px] px-2"
           >
-            Mark all as read
+            Mark all read
           </button>
         )}
       </div>
@@ -152,7 +152,7 @@ export default function NotificationsPage() {
             <Link
               key={notification.id}
               href={getNotificationLink(notification)}
-              className={`block py-4 no-underline hover:bg-[#111] -mx-4 px-4 transition-colors ${
+              className={`block py-3 sm:py-4 no-underline hover:bg-[#111] -mx-4 px-4 transition-colors min-h-[56px] ${
                 !notification.isRead ? "bg-[#111]/50" : ""
               }`}
             >
