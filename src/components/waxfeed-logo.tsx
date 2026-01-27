@@ -34,6 +34,11 @@ export function WaxfeedLogo({ className = "", size = "md", spinning = true }: Pr
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
           }
+          .spinning-disc {
+            animation: spin-disc 3s linear infinite;
+            transform-origin: center;
+            transform-box: fill-box;
+          }
         `}
       </style>
       <defs>
@@ -106,7 +111,7 @@ export function WaxfeedLogo({ className = "", size = "md", spinning = true }: Pr
       <rect x="42" y="42" width="416" height="416" rx="6" fill="#e0e0e0"/>
 
       {/* SPINNING DISC */}
-      <g className={spinning ? "spinning-disc" : ""}>
+      <g style={{ transformOrigin: '250px 250px' }} className={spinning ? "spinning-disc" : ""}>
 
         {/* Holographic base */}
         <circle cx="250" cy="250" r="175" fill={`url(#${uniqueId}-holoBase)`}/>
