@@ -211,54 +211,51 @@ export default async function Home() {
             {session ? (
               /* Personalized hero for logged in users */
               <>
-                {/* Left - Tagline + Progress */}
+                {/* Left - Impactful Tagline + 3 CTAs */}
                 <div>
-                  <p className="text-xs tracking-[0.3em] uppercase text-[#ffd700] mb-3 font-medium">
-                    {userStatus.archetype ? userStatus.archetype : 'Building Your Profile'}
-                  </p>
-                  <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight mb-4">
+                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-4">
                     {userStatus.hasTasteID ? (
-                      <>Your taste is <span className="text-[#ffd700]">proven</span>. Keep discovering.</>
-                    ) : userStatus.reviewCount < 10 ? (
-                      <>Rate {10 - userStatus.reviewCount} more to unlock insights</>
+                      <>
+                        You've rated <span className="text-[#ffd700]">{userStatus.reviewCount}</span> albums.
+                        <br />
+                        <span className="text-[var(--muted)]">What's next on your radar?</span>
+                      </>
                     ) : (
-                      <>{25 - userStatus.reviewCount} ratings until your TasteID</>
+                      <>
+                        <span className="text-[#ffd700]">{userStatus.reviewCount}</span> down, <span className="text-[#ffd700]">{25 - userStatus.reviewCount}</span> to go.
+                        <br />
+                        <span className="text-[var(--muted)]">Your TasteID awaits.</span>
+                      </>
                     )}
                   </h1>
                   
-                  {/* TasteID Progress Bar */}
-                  {!userStatus.hasTasteID && (
-                    <div className="mb-6">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs text-[var(--muted)] uppercase tracking-wider">TasteID Progress</span>
-                        <span className="text-xs font-bold">{userStatus.reviewCount}/25 ratings</span>
-                      </div>
-                      <div className="h-3 bg-[var(--border)] overflow-hidden">
-                        <div 
-                          className="h-full bg-gradient-to-r from-[#ffd700] to-[#ffed4a] transition-all duration-500"
-                          style={{ width: `${userStatus.tasteIDProgress}%` }}
-                        />
-                      </div>
-                      <p className="text-xs text-[var(--muted)] mt-2">
-                        {userStatus.tasteIDProgress < 40 && "Keep going! Your unique taste profile is forming."}
-                        {userStatus.tasteIDProgress >= 40 && userStatus.tasteIDProgress < 80 && "Great progress! Your musical identity is taking shape."}
-                        {userStatus.tasteIDProgress >= 80 && "Almost there! Your TasteID is nearly complete."}
-                      </p>
-                    </div>
-                  )}
+                  <p className="text-lg text-[var(--muted)] mb-6 max-w-md">
+                    {userStatus.hasTasteID ? (
+                      <>Every rating earns WAX. Every discovery could be your next obsession.</>
+                    ) : (
+                      <>Rate {25 - userStatus.reviewCount} more albums to unlock your unique TasteID and start connecting with people who get your music.</>
+                    )}
+                  </p>
                   
+                  {/* 3 Action Buttons */}
                   <div className="flex flex-wrap gap-3">
                     <Link
                       href="/quick-rate"
-                      className="px-5 py-2.5 bg-[#ffd700] text-black text-xs font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors"
+                      className="px-6 py-3 bg-[#ffd700] text-black text-sm font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors"
                     >
-                      {userStatus.hasTasteID ? 'Rate Albums' : 'Continue Building'}
+                      Rate Now
+                    </Link>
+                    <Link
+                      href={`/u/${userStatus.username}/tasteid`}
+                      className="px-6 py-3 border border-[#ffd700] text-[#ffd700] text-sm font-bold uppercase tracking-wider hover:bg-[#ffd700] hover:text-black transition-colors"
+                    >
+                      View TasteID
                     </Link>
                     <Link
                       href="/discover/connections"
-                      className="px-5 py-2.5 border border-[var(--border)] text-xs font-bold uppercase tracking-wider hover:border-[var(--foreground)] transition-colors"
+                      className="px-6 py-3 border border-[var(--border)] text-sm font-bold uppercase tracking-wider hover:border-[var(--foreground)] transition-colors"
                     >
-                      Find Your People
+                      Find Connections
                     </Link>
                   </div>
                 </div>
