@@ -1,5 +1,7 @@
 "use client"
 
+import { useId } from 'react'
+
 interface Props {
   className?: string
   size?: "sm" | "md" | "lg" | "xl" | "hero"
@@ -16,7 +18,8 @@ export function WaxfeedLogo({ className = "", size = "md", spinning = true }: Pr
   }
 
   const dimension = sizes[size]
-  const uniqueId = `waxfeed-${Math.random().toString(36).slice(2, 9)}`
+  const reactId = useId()
+  const uniqueId = `waxfeed-${reactId.replace(/:/g, '')}`
 
   return (
     <svg
