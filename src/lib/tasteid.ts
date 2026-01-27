@@ -556,6 +556,160 @@ export const ARCHETYPES = {
       narrative: 0.55,
     },
   },
+
+  // ═══════════════════════════════════════════════════════════════
+  // MOOD-BASED ARCHETYPES (Nathan's request)
+  // Derived from vocabulary analysis and rating patterns
+  // ═══════════════════════════════════════════════════════════════
+
+  MOOD_CURATOR: {
+    id: 'mood-curator',
+    name: 'Mood Curator',
+    description: 'Chooses music based on emotional state and vibe',
+    genres: [],
+    behavioral: true,
+    icon: '🎭',
+    detectionCriteria: {
+      emotionalIntensity: 0.7,
+      moodWordsInReviews: true,
+      vibeBasedRatings: true,
+    },
+    polarityProfile: {
+      arousal: 0.5,
+      valence: 0.65,
+      texture: 0.5,
+      temporal: 0.5,
+      novelty: 0.4,
+      scale: 0.5,
+      authenticity: 0.6,
+      narrative: 0.7,
+    },
+  },
+
+  SONIC_ESCAPIST: {
+    id: 'sonic-escapist',
+    name: 'Sonic Escapist',
+    description: 'Uses music to transport to other worlds',
+    genres: ['ambient', 'electronic', 'dream pop', 'shoegaze', 'post-rock'],
+    behavioral: true,
+    icon: '🌌',
+    detectionCriteria: {
+      atmosphericGenreShare: 0.5,
+      transportiveLanguage: true,
+      immersiveListening: true,
+    },
+    polarityProfile: {
+      arousal: 0.35,
+      valence: 0.5,
+      texture: 0.7,
+      temporal: 0.4,
+      novelty: 0.6,
+      scale: 0.8,
+      authenticity: 0.5,
+      narrative: 0.45,
+    },
+  },
+
+  ENERGY_SEEKER: {
+    id: 'energy-seeker',
+    name: 'Energy Seeker',
+    description: 'Gravitates towards high-energy, hype music',
+    genres: ['edm', 'trap', 'metal', 'punk', 'hardcore'],
+    behavioral: true,
+    icon: '⚡',
+    detectionCriteria: {
+      highEnergyGenreShare: 0.6,
+      hypeLanguage: true,
+      highTempoPreference: true,
+    },
+    polarityProfile: {
+      arousal: 0.9,
+      valence: 0.7,
+      texture: 0.6,
+      temporal: 0.8,
+      novelty: 0.5,
+      scale: 0.7,
+      authenticity: 0.5,
+      narrative: 0.4,
+    },
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // WRITING-STYLE ARCHETYPES (Nathan's request)
+  // Derived from vocabulary profile analysis
+  // ═══════════════════════════════════════════════════════════════
+
+  THE_POET: {
+    id: 'the-poet',
+    name: 'The Poet',
+    description: 'Writes beautifully crafted, evocative reviews',
+    genres: [],
+    behavioral: true,
+    icon: '✨',
+    detectionCriteria: {
+      writingStyle: 'poetic',
+      avgReviewLength: 150,
+      emotionalIntensity: 0.7,
+    },
+    polarityProfile: {
+      arousal: 0.5,
+      valence: 0.6,
+      texture: 0.6,
+      temporal: 0.5,
+      novelty: 0.55,
+      scale: 0.5,
+      authenticity: 0.7,
+      narrative: 0.85,
+    },
+  },
+
+  THE_TECHNICIAN: {
+    id: 'the-technician',
+    name: 'The Technician',
+    description: 'Analyzes production, mixing, and sonic details',
+    genres: [],
+    behavioral: true,
+    icon: '🔧',
+    detectionCriteria: {
+      writingStyle: 'technical',
+      musicVocabulary: 0.6,
+      productionLanguage: true,
+    },
+    polarityProfile: {
+      arousal: 0.5,
+      valence: 0.5,
+      texture: 0.7,
+      temporal: 0.5,
+      novelty: 0.5,
+      scale: 0.5,
+      authenticity: 0.6,
+      narrative: 0.4,
+    },
+  },
+
+  THE_STORYTELLER: {
+    id: 'the-storyteller',
+    name: 'The Storyteller',
+    description: 'Connects music to personal experiences and memories',
+    genres: [],
+    behavioral: true,
+    icon: '📖',
+    detectionCriteria: {
+      personalConnection: 0.7,
+      narrativeLanguage: true,
+      memoryReferences: true,
+    },
+    polarityProfile: {
+      arousal: 0.5,
+      valence: 0.6,
+      texture: 0.5,
+      temporal: 0.5,
+      novelty: 0.4,
+      scale: 0.5,
+      authenticity: 0.75,
+      narrative: 0.9,
+    },
+  },
 } as const
 
 export type ArchetypeId = keyof typeof ARCHETYPES
