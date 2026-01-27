@@ -30,7 +30,7 @@ async function getTrendingReviews() {
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 
   return prisma.review.findMany({
-    take: 15,
+    take: 50,
     where: {
       createdAt: { gte: sevenDaysAgo },
       AND: [
@@ -106,16 +106,9 @@ export default async function TrendingPage() {
       {/* Main content split */}
       <section className="border-b border-[--border]">
         <div className="w-full px-6 lg:px-12 xl:px-20">
-          <div className="grid grid-cols-12 border-l border-r border-[--border]">
-            <div className="col-span-12 lg:col-span-1 border-r border-[--border] py-8 flex lg:flex-col items-center lg:items-start justify-between lg:justify-start gap-4">
-              <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted] lg:writing-mode-vertical lg:rotate-180" style={{ writingMode: 'vertical-rl' as const }}>
-                Charts
-              </span>
-              <span className="text-4xl lg:text-6xl font-bold text-[--muted]">01</span>
-            </div>
-
-            {/* Billboard Chart - uses existing BillboardList component */}
-            <div className="col-span-12 lg:col-span-6 border-r border-[--border]">
+          <div className="grid grid-cols-1 lg:grid-cols-2 border-l border-r border-[--border]">
+            {/* Billboard Chart - 50% width */}
+            <div className="border-r border-[--border]">
               <div className="px-6 lg:px-8 py-6 border-b border-[--border]">
                 <h2 className="text-xl font-bold tracking-tight">Billboard 200</h2>
                 <p className="text-[11px] text-[--muted] mt-1">Full chart rankings</p>
@@ -130,8 +123,8 @@ export default async function TrendingPage() {
               </div>
             </div>
 
-            {/* Hot Reviews */}
-            <div className="col-span-12 lg:col-span-5">
+            {/* Hot Reviews - 50% width */}
+            <div>
               <div className="px-6 lg:px-8 py-6 border-b border-[--border]">
                 <h2 className="text-xl font-bold tracking-tight">Hot Reviews</h2>
                 <p className="text-[11px] text-[--muted] mt-1">Most engaged this week</p>
