@@ -52,7 +52,7 @@ export function TasteIDCard({
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-2">
-          <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
+          <div className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground font-bold">
             TASTEID
           </div>
           <ArchetypeBadge {...archetype} size="md" />
@@ -69,7 +69,7 @@ export function TasteIDCard({
 
       {/* Top Genres */}
       <div className="space-y-1">
-        <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
+        <div className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground font-bold">
           TOP GENRES
         </div>
         <div className="flex flex-wrap gap-1">
@@ -87,7 +87,7 @@ export function TasteIDCard({
       {/* Top Artists */}
       {!compact && (
         <div className="space-y-1">
-          <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
+          <div className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground font-bold">
             DEFINING ARTISTS
           </div>
           <div className="text-sm text-muted-foreground">
@@ -109,7 +109,7 @@ export function TasteIDCard({
 
       {/* Footer */}
       <div className="pt-2 border-t border-border flex justify-between items-center">
-        <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+        <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">
           {reviewCount} reviews analyzed
         </span>
         {linkToFull && (
@@ -135,7 +135,7 @@ export function TasteIDCard({
 function MetricBlock({ label, value }: { label: string; value: string }) {
   return (
     <div className="space-y-0.5">
-      <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-bold">
+      <div className="text-[9px] sm:text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
         {label}
       </div>
       <div className="text-sm font-bold text-foreground">{value}</div>
@@ -151,14 +151,14 @@ function TierProgressBar({ reviewCount }: { reviewCount: number }) {
     <div className="pt-3 border-t border-border space-y-2">
       {/* Header with current tier badge */}
       <div className="flex items-center justify-between">
-        <span 
-          className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-black"
+        <span
+          className="px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-black"
           style={{ backgroundColor: currentTier.color }}
         >
           {currentTier.name}
         </span>
         {nextTier && (
-          <span className="text-[9px] text-muted-foreground">
+          <span className="text-[9px] sm:text-[10px] text-muted-foreground">
             {ratingsToNext} to <span style={{ color: nextTier.color }}>{nextTier.name}</span>
           </span>
         )}
@@ -190,8 +190,8 @@ function TierProgressBar({ reviewCount }: { reviewCount: number }) {
                 />
               </div>
               {/* Tier name */}
-              <div 
-                className={`text-[7px] text-center uppercase tracking-wider ${isCurrent ? 'font-bold' : ''}`}
+              <div
+                className={`text-[7px] sm:text-[8px] text-center uppercase tracking-wider ${isCurrent ? 'font-bold' : ''}`}
                 style={{ color: isCompleted || isCurrent ? tier.color : 'var(--muted-foreground)' }}
               >
                 {tier.name.slice(0, 3)}

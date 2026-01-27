@@ -82,17 +82,17 @@ export default async function TrendingPage() {
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
       {/* Editorial masthead */}
       <header style={{ borderBottom: '1px solid var(--border)' }}>
-        <div className="w-full px-6 lg:px-12 xl:px-20 py-12 lg:py-16">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
+        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 py-8 sm:py-12 lg:py-16">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8 items-end">
             <div className="lg:col-span-8">
-              <p className="text-[10px] tracking-[0.4em] uppercase mb-4" style={{ color: 'var(--muted)' }}>
+              <p className="text-[10px] sm:text-xs tracking-[0.4em] uppercase mb-2 sm:mb-4" style={{ color: 'var(--muted)' }}>
                 Week of {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
               </p>
-              <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-[-0.04em] leading-[0.85]">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold tracking-[-0.04em] leading-[0.85]">
                 Trending
               </h1>
             </div>
-            <div className="lg:col-span-4 lg:text-right">
+            <div className="lg:col-span-4 lg:text-right hidden sm:block">
               <p className="text-[11px] tracking-[0.15em] uppercase leading-relaxed" style={{ color: 'var(--muted)' }}>
                 Billboard 200<br />
                 Hot Reviews<br />
@@ -171,15 +171,15 @@ export default async function TrendingPage() {
                             ) : (
                               <DefaultAvatar size="xs" />
                             )}
-                            <span className="text-[10px] text-[--muted]">@{review.user.username}</span>
-                            <span className="text-[10px] text-[--border]">·</span>
-                            <span className="text-[10px] text-[--border]">
+                            <span className="text-[10px] sm:text-xs text-[--muted]">@{review.user.username}</span>
+                            <span className="text-[10px] sm:text-xs text-[--border]">·</span>
+                            <span className="text-[10px] sm:text-xs text-[--border]">
                               {formatDistanceToNow(new Date(review.createdAt), { addSuffix: true })}
                             </span>
                             {review.likeCount > 0 && (
                               <>
-                                <span className="text-[10px] text-[--border]">·</span>
-                                <span className="text-[10px] text-[--muted]">{review.likeCount} likes</span>
+                                <span className="text-[10px] sm:text-xs text-[--border]">·</span>
+                                <span className="text-[10px] sm:text-xs text-[--muted]">{review.likeCount} likes</span>
                               </>
                             )}
                           </div>

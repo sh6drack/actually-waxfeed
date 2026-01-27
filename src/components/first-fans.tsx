@@ -44,11 +44,11 @@ export function FirstFans({ fans, albumTrending, totalReviews, className = "" }:
             <svg className="w-4 h-4 text-[#ffd700]" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clipRule="evenodd" />
             </svg>
-            <h3 className="text-[10px] font-bold uppercase tracking-[0.2em]">
+            <h3 className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em]">
               First Fans
             </h3>
           </div>
-          <p className="text-[10px] text-[--muted] mt-1 leading-relaxed">
+          <p className="text-[10px] sm:text-xs text-[--muted] mt-1 leading-relaxed">
             {albumTrending
               ? "These people believed first"
               : `${100 - totalReviews > 0 ? `${100 - totalReviews} more reviews until badges unlock` : "Approaching trend"}`
@@ -56,7 +56,7 @@ export function FirstFans({ fans, albumTrending, totalReviews, className = "" }:
           </p>
         </div>
         {albumTrending && (
-          <span className="text-[9px] uppercase tracking-[0.15em] px-2.5 py-1.5 bg-[#ffd700]/10 text-[#ffd700] border border-[#ffd700]/30 flex items-center gap-1.5">
+          <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] px-2.5 py-1.5 bg-[#ffd700]/10 text-[#ffd700] border border-[#ffd700]/30 flex items-center gap-1.5">
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
             </svg>
@@ -156,14 +156,14 @@ function FanTier({
             </svg>
           )}
         </div>
-        <span className={`text-[10px] uppercase tracking-[0.15em] font-bold ${colors.text}`}>
+        <span className={`text-[10px] sm:text-xs uppercase tracking-[0.15em] font-bold ${colors.text}`}>
           {title}
         </span>
-        <span className="text-[10px] text-[--muted]/60">
+        <span className="text-[10px] sm:text-xs text-[--muted]/60">
           ({subtitle})
         </span>
         {showBadges && (
-          <span className={`ml-auto text-[9px] tracking-wide uppercase px-2 py-0.5 ${colors.bg} ${colors.text} border ${colors.border} flex items-center gap-1`}>
+          <span className={`ml-auto text-[9px] sm:text-[10px] tracking-wide uppercase px-2 py-0.5 ${colors.bg} ${colors.text} border ${colors.border} flex items-center gap-1`}>
             <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
@@ -190,10 +190,10 @@ function FanTier({
             ) : (
               <DefaultAvatar size="xs" />
             )}
-            <span className="text-[11px] group-hover:text-[#ffd700] transition-colors">
+            <span className="text-[11px] sm:text-xs group-hover:text-[#ffd700] transition-colors">
               @{fan.user.username}
             </span>
-            <span className={`text-[9px] tabular-nums font-medium ${colors.text}`}>
+            <span className={`text-[9px] sm:text-[10px] tabular-nums font-medium ${colors.text}`}>
               #{fan.position}
             </span>
           </Link>

@@ -294,7 +294,7 @@ export const ReviewCard = memo(function ReviewCard({
           )}
 
           {/* Actions */}
-          <div className="flex items-center gap-3 sm:gap-4 text-xs flex-wrap" style={{ color: 'var(--muted)' }}>
+          <div className="flex items-center gap-2 sm:gap-4 text-xs" style={{ color: 'var(--muted)' }}>
             {/* Wax Award - Primary Action */}
             <div className="relative">
               <button
@@ -371,26 +371,26 @@ export const ReviewCard = memo(function ReviewCard({
               </button>
 
               {showReactions && (
-                <div className="absolute bottom-full left-0 mb-1 bg-[#1a1a1a] border border-[#333] p-1.5 flex gap-1 z-10 rounded">
+                <div className="absolute bottom-full left-0 mb-1 bg-[#1a1a1a] border border-[#333] p-2 flex gap-0.5 z-10 rounded">
                   {REACTIONS.map(({ type, Icon, label }) => (
                     <button
                       key={type}
                       onClick={() => handleReaction(type)}
-                      className={`p-2 hover:bg-[#333] rounded transition-colors ${
+                      className={`min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-[#333] rounded transition-colors ${
                         userReactions.includes(type) ? "bg-[#333] text-white" : ""
                       }`}
                       title={`${label} (${reactionCounts[type as keyof typeof reactionCounts]})`}
                     >
-                      <Icon size={16} />
+                      <Icon size={18} />
                     </button>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* Show Wax breakdown if any premium/gold */}
+            {/* Show Wax breakdown if any premium/gold - hide on very small screens */}
             {(waxCounts.premium > 0 || waxCounts.gold > 0) && !compact && (
-              <div className="flex items-center gap-1.5 text-[10px]">
+              <div className="hidden sm:flex items-center gap-1.5 text-[10px]">
                 {waxCounts.gold > 0 && <span className="text-[#ffd700]">G:{waxCounts.gold}</span>}
                 {waxCounts.premium > 0 && <span className="text-purple-400">P:{waxCounts.premium}</span>}
               </div>
@@ -414,9 +414,9 @@ export const ReviewCard = memo(function ReviewCard({
 
             <Link
               href={`/review/${id}`}
-              className="hover:text-white transition-colors no-underline ml-auto flex items-center gap-1"
+              className="hover:text-white transition-colors no-underline ml-auto flex items-center gap-1 min-h-[44px] min-w-[44px] justify-center sm:min-h-0 sm:min-w-0"
             >
-              <span>View</span>
+              <span className="hidden sm:inline">View</span>
               <ArrowRightIcon size={14} />
             </Link>
           </div>
