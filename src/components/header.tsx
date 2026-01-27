@@ -26,6 +26,7 @@ export function Header() {
   const [showDropdown, setShowDropdown] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [waxStats, setWaxStats] = useState<WaxStats | null>(null)
+  const [unreadMessages, setUnreadMessages] = useState(0)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -58,6 +59,25 @@ export function Header() {
     fetchWax()
   }, [session])
 
+  // Fetch unread messages
+  useEffect(() => {
+    const fetchUnread = async () => {
+      if (!session?.user) return
+      try {
+        const res = await fetch("/api/messages/unread")
+        const data = await res.json()
+        if (data.success) {
+          setUnreadMessages(data.data.unreadCount || 0)
+        }
+      } catch (error) {
+        console.error("Failed to fetch unread:", error)
+      }
+    }
+    fetchUnread()
+    const interval = setInterval(fetchUnread, 30000)
+    return () => clearInterval(interval)
+  }, [session])
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
@@ -87,13 +107,22 @@ export function Header() {
     return () => { document.body.style.overflow = '' }
   }, [mobileMenuOpen])
 
+  // Check if user needs to build TasteID
+  const needsTasteID = isMounted && session && waxStats && !waxStats.hasTasteID && (waxStats.reviewCount || 0) < 20
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a] border-b border-[#222]">
+    <header 
+      className="fixed top-0 left-0 right-0 z-50 transition-colors duration-200"
+      style={{ 
+        backgroundColor: 'var(--header-bg)', 
+        borderBottom: '1px solid var(--header-border)' 
+      }}
+    >
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 no-underline flex-shrink-0">
           <WaxfeedLogo size="md" />
-          <span className="font-bold text-xl tracking-tight text-white">WAXFEED</span>
+          <span className="font-bold text-xl tracking-tight" style={{ color: 'var(--header-text)' }}>WAXFEED</span>
         </Link>
 
         {/* Desktop Search */}
@@ -103,27 +132,43 @@ export function Header() {
             placeholder="Search albums, artists..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 text-sm bg-[#111] border border-[#333] text-white placeholder-[#666] focus:outline-none focus:border-[#555] transition-colors"
+            className="w-full px-4 py-2 text-sm transition-colors focus:outline-none"
+            style={{
+              backgroundColor: 'var(--header-bg)',
+              border: '1px solid var(--header-border)',
+              color: 'var(--header-text)',
+            }}
           />
         </form>
 
-        {/* Desktop Navigation - Simplified */}
-        <nav className="hidden lg:flex items-center gap-6">
+        {/* Desktop Navigation - Clean & Complete */}
+        <nav className="hidden lg:flex items-center gap-4">
           {/* Core Navigation */}
-          <Link href="/discover" className="text-sm text-[#888] hover:text-white transition-colors">
+          <Link 
+            href="/discover" 
+            className="text-sm transition-colors hover:opacity-70"
+            style={{ color: 'var(--header-text)' }}
+          >
             Discover
           </Link>
-          <Link href="/trending" className="text-sm text-[#888] hover:text-white transition-colors">
+          <Link 
+            href="/trending" 
+            className="text-sm transition-colors hover:opacity-70"
+            style={{ color: 'var(--header-text)' }}
+          >
             Trending
           </Link>
           
-          {/* Quick Rate CTA - for users building TasteID */}
-          {isMounted && session && waxStats && !waxStats.hasTasteID && (waxStats.reviewCount || 0) < 20 && (
+          {/* KEEP BUILDING - Primary CTA for users building TasteID */}
+          {needsTasteID && (
             <Link
               href="/quick-rate"
-              className="px-4 py-2 bg-[#ffd700] text-black text-xs font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors"
+              className="px-4 py-2 bg-[#ffd700] text-black text-xs font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors flex items-center gap-2"
             >
-              Build TasteID
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              Keep Building
             </Link>
           )}
           
@@ -131,33 +176,70 @@ export function Header() {
           {isMounted && session && waxStats && (
             <Link
               href="/wallet"
-              className="flex items-center gap-2 px-3 py-1.5 border border-[#333] hover:border-[#555] transition-colors"
+              className="flex items-center gap-2 px-3 py-1.5 transition-colors hover:opacity-70"
+              style={{ border: '1px solid var(--header-border)' }}
             >
-              <span className="text-xs text-[#888]">WAX</span>
+              <span className="text-xs" style={{ color: 'var(--header-text)', opacity: 0.6 }}>WAX</span>
               <span className="text-sm font-bold text-[#ffd700]">{waxStats.balance.toLocaleString()}</span>
+            </Link>
+          )}
+
+          {/* Messages Button */}
+          {isMounted && session && (
+            <Link
+              href="/messages"
+              className="relative p-2 transition-colors hover:opacity-70"
+              style={{ color: 'var(--header-text)' }}
+              title="Messages"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              {unreadMessages > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] bg-[#ffd700] text-black text-[10px] font-bold flex items-center justify-center px-1">
+                  {unreadMessages > 9 ? '9+' : unreadMessages}
+                </span>
+              )}
+            </Link>
+          )}
+
+          {/* Settings Button */}
+          {isMounted && session && (
+            <Link
+              href="/settings"
+              className="p-2 transition-colors hover:opacity-70"
+              style={{ color: 'var(--header-text)' }}
+              title="Settings"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
             </Link>
           )}
 
           {/* Theme toggle */}
           <button
             onClick={toggleTheme}
-            className="p-2 text-[#888] hover:text-white transition-colors"
+            className="p-2 transition-colors hover:opacity-70"
+            style={{ color: 'var(--header-text)' }}
             aria-label="Toggle theme"
+            title={theme === "dark" ? "Switch to dark mode" : "Switch to light mode"}
           >
             {theme === "dark" ? (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
               </svg>
             ) : (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
             )}
           </button>
 
           {/* User Menu */}
           {!isMounted || status === "loading" ? (
-            <span className="text-[#555]">...</span>
+            <span style={{ color: 'var(--header-text)', opacity: 0.5 }}>...</span>
           ) : session ? (
             <div className="relative" ref={dropdownRef}>
               <button
@@ -168,7 +250,8 @@ export function Header() {
                   <img
                     src={session.user.image}
                     alt=""
-                    className="w-9 h-9 object-cover border border-[#333]"
+                    className="w-9 h-9 object-cover"
+                    style={{ border: '1px solid var(--header-border)' }}
                   />
                 ) : (
                   <DefaultAvatar size="sm" />
@@ -176,52 +259,68 @@ export function Header() {
               </button>
 
               {showDropdown && (
-                <div className="absolute right-0 top-full mt-2 min-w-52 py-2 bg-[#111] border border-[#333] shadow-xl">
-                  <div className="px-4 py-3 border-b border-[#333]">
-                    <p className="font-bold text-white">{session.user?.username || session.user?.name}</p>
-                    <p className="text-xs text-[#666] mt-0.5">{session.user?.email}</p>
+                <div 
+                  className="absolute right-0 top-full mt-2 min-w-52 py-2 shadow-xl"
+                  style={{ 
+                    backgroundColor: 'var(--header-bg)', 
+                    border: '1px solid var(--header-border)' 
+                  }}
+                >
+                  <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--header-border)' }}>
+                    <p className="font-bold" style={{ color: 'var(--header-text)' }}>{session.user?.username || session.user?.name}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--header-text)', opacity: 0.6 }}>{session.user?.email}</p>
                   </div>
 
                   <Link
                     href={`/u/${session.user?.username || session.user?.id}`}
-                    className="block px-4 py-2.5 text-sm text-[#888] hover:text-white hover:bg-[#1a1a1a] transition-colors"
+                    className="block px-4 py-2.5 text-sm transition-colors hover:opacity-70"
+                    style={{ color: 'var(--header-text)' }}
                     onClick={() => setShowDropdown(false)}
                   >
                     Profile
                   </Link>
                   <Link
                     href="/wallet"
-                    className="block px-4 py-2.5 text-sm text-[#888] hover:text-white hover:bg-[#1a1a1a] transition-colors"
+                    className="block px-4 py-2.5 text-sm transition-colors hover:opacity-70"
+                    style={{ color: 'var(--header-text)' }}
                     onClick={() => setShowDropdown(false)}
                   >
                     Wallet & Badges
                   </Link>
                   <Link
                     href="/friends"
-                    className="block px-4 py-2.5 text-sm text-[#888] hover:text-white hover:bg-[#1a1a1a] transition-colors"
+                    className="block px-4 py-2.5 text-sm transition-colors hover:opacity-70"
+                    style={{ color: 'var(--header-text)' }}
                     onClick={() => setShowDropdown(false)}
                   >
                     Friends
                   </Link>
                   <Link
                     href="/messages"
-                    className="block px-4 py-2.5 text-sm text-[#888] hover:text-white hover:bg-[#1a1a1a] transition-colors"
+                    className="flex items-center justify-between px-4 py-2.5 text-sm transition-colors hover:opacity-70"
+                    style={{ color: 'var(--header-text)' }}
                     onClick={() => setShowDropdown(false)}
                   >
-                    Messages
+                    <span>Messages</span>
+                    {unreadMessages > 0 && (
+                      <span className="px-1.5 py-0.5 bg-[#ffd700] text-black text-[10px] font-bold">
+                        {unreadMessages}
+                      </span>
+                    )}
                   </Link>
                   <Link
                     href="/settings"
-                    className="block px-4 py-2.5 text-sm text-[#888] hover:text-white hover:bg-[#1a1a1a] transition-colors"
+                    className="block px-4 py-2.5 text-sm transition-colors hover:opacity-70"
+                    style={{ color: 'var(--header-text)' }}
                     onClick={() => setShowDropdown(false)}
                   >
                     Settings
                   </Link>
                   
-                  <div className="border-t border-[#333] mt-2 pt-2">
+                  <div style={{ borderTop: '1px solid var(--header-border)', marginTop: '8px', paddingTop: '8px' }}>
                     <button
                       onClick={() => signOut()}
-                      className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-[#1a1a1a] transition-colors"
+                      className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:opacity-70 transition-colors"
                     >
                       Sign Out
                     </button>
@@ -232,7 +331,8 @@ export function Header() {
           ) : (
             <Link
               href="/login"
-              className="px-5 py-2 bg-white text-black text-sm font-bold hover:bg-[#eee] transition-colors"
+              className="px-5 py-2 text-sm font-bold transition-colors hover:opacity-80"
+              style={{ backgroundColor: 'var(--header-text)', color: 'var(--header-bg)' }}
             >
               Sign In
             </Link>
@@ -241,36 +341,65 @@ export function Header() {
 
         {/* Mobile Navigation */}
         <div className="flex lg:hidden items-center gap-2">
+          {/* Keep Building - Mobile */}
+          {needsTasteID && (
+            <Link
+              href="/quick-rate"
+              className="px-3 py-1.5 bg-[#ffd700] text-black text-[10px] font-bold uppercase tracking-wider"
+            >
+              Build
+            </Link>
+          )}
+          
           {/* WAX Balance - Mobile */}
           {isMounted && session && waxStats && (
             <Link
               href="/wallet"
               className="flex items-center gap-1 px-2 py-1 text-[#ffd700]"
             >
-              <span className="text-xs">{waxStats.balance}</span>
+              <span className="text-xs font-bold">{waxStats.balance}</span>
+            </Link>
+          )}
+
+          {/* Messages - Mobile */}
+          {isMounted && session && (
+            <Link 
+              href="/messages" 
+              className="relative p-2" 
+              style={{ color: 'var(--header-text)' }}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              {unreadMessages > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] bg-[#ffd700] text-black text-[9px] font-bold flex items-center justify-center">
+                  {unreadMessages > 9 ? '9+' : unreadMessages}
+                </span>
+              )}
             </Link>
           )}
           
           {/* Search */}
-          <Link href="/search" className="p-2 text-[#888]" aria-label="Search">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          <Link href="/search" className="p-2" style={{ color: 'var(--header-text)' }} aria-label="Search">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </Link>
 
           {/* Menu */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 text-white"
+            className="p-2"
+            style={{ color: 'var(--header-text)' }}
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? (
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             ) : (
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             )}
           </button>
@@ -279,28 +408,39 @@ export function Header() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 top-16 z-40 bg-[#0a0a0a] overflow-y-auto">
+        <div 
+          className="lg:hidden fixed inset-0 top-16 z-40 overflow-y-auto"
+          style={{ backgroundColor: 'var(--header-bg)' }}
+        >
           {/* Search */}
-          <form onSubmit={handleSearch} className="p-4 border-b border-[#222]">
+          <form onSubmit={handleSearch} className="p-4" style={{ borderBottom: '1px solid var(--header-border)' }}>
             <input
               type="text"
               placeholder="Search albums, artists..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-3 text-base bg-[#111] border border-[#333] text-white placeholder-[#666] focus:outline-none"
+              className="w-full px-4 py-3 text-base focus:outline-none"
+              style={{
+                backgroundColor: 'var(--header-bg)',
+                border: '1px solid var(--header-border)',
+                color: 'var(--header-text)',
+              }}
               autoFocus
             />
           </form>
 
-          {/* TasteID CTA */}
-          {isMounted && session && waxStats && !waxStats.hasTasteID && (waxStats.reviewCount || 0) < 20 && (
-            <div className="p-4 border-b border-[#222]">
+          {/* Keep Building CTA */}
+          {needsTasteID && (
+            <div className="p-4" style={{ borderBottom: '1px solid var(--header-border)' }}>
               <Link
                 href="/quick-rate"
-                className="block w-full px-4 py-4 text-center text-sm font-bold bg-[#ffd700] text-black"
+                className="flex items-center justify-center gap-2 w-full px-4 py-4 text-sm font-bold bg-[#ffd700] text-black"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Build Your TasteID ({waxStats?.reviewCount || 0}/20)
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Keep Building TasteID ({waxStats?.reviewCount || 0}/20)
               </Link>
             </div>
           )}
@@ -309,58 +449,63 @@ export function Header() {
           <nav className="py-2">
             <Link
               href="/"
-              className="flex items-center justify-between px-6 py-4 text-base font-medium text-white border-b border-[#222]"
+              className="flex items-center justify-between px-6 py-4 text-base font-medium"
+              style={{ color: 'var(--header-text)', borderBottom: '1px solid var(--header-border)' }}
               onClick={() => setMobileMenuOpen(false)}
             >
               Home
-              <svg className="w-5 h-5 text-[#444]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              <svg className="w-5 h-5 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
               </svg>
             </Link>
             <Link
               href="/discover"
-              className="flex items-center justify-between px-6 py-4 text-base font-medium text-white border-b border-[#222]"
+              className="flex items-center justify-between px-6 py-4 text-base font-medium"
+              style={{ color: 'var(--header-text)', borderBottom: '1px solid var(--header-border)' }}
               onClick={() => setMobileMenuOpen(false)}
             >
               Discover
-              <svg className="w-5 h-5 text-[#444]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              <svg className="w-5 h-5 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
               </svg>
             </Link>
             <Link
               href="/trending"
-              className="flex items-center justify-between px-6 py-4 text-base font-medium text-white border-b border-[#222]"
+              className="flex items-center justify-between px-6 py-4 text-base font-medium"
+              style={{ color: 'var(--header-text)', borderBottom: '1px solid var(--header-border)' }}
               onClick={() => setMobileMenuOpen(false)}
             >
               Trending
-              <svg className="w-5 h-5 text-[#444]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              <svg className="w-5 h-5 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
               </svg>
             </Link>
             <Link
               href="/lists"
-              className="flex items-center justify-between px-6 py-4 text-base font-medium text-white border-b border-[#222]"
+              className="flex items-center justify-between px-6 py-4 text-base font-medium"
+              style={{ color: 'var(--header-text)', borderBottom: '1px solid var(--header-border)' }}
               onClick={() => setMobileMenuOpen(false)}
             >
               Lists
-              <svg className="w-5 h-5 text-[#444]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              <svg className="w-5 h-5 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
               </svg>
             </Link>
 
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="flex items-center justify-between w-full px-6 py-4 text-base font-medium text-white border-b border-[#222]"
+              className="flex items-center justify-between w-full px-6 py-4 text-base font-medium"
+              style={{ color: 'var(--header-text)', borderBottom: '1px solid var(--header-border)' }}
             >
               {theme === "dark" ? "Dark Mode" : "Light Mode"}
               {theme === "dark" ? (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                 </svg>
               ) : (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
               )}
             </button>
@@ -369,31 +514,36 @@ export function Header() {
           {/* User Section */}
           {status !== "loading" && (
             session ? (
-              <div className="border-t border-[#222] mt-4 pt-4">
+              <div style={{ borderTop: '1px solid var(--header-border)', marginTop: '16px', paddingTop: '16px' }}>
                 {/* User Info */}
                 <div className="px-6 py-4 flex items-center gap-4">
                   {session.user?.image ? (
-                    <img src={session.user.image} alt="" className="w-14 h-14 object-cover border border-[#333]" />
+                    <img 
+                      src={session.user.image} 
+                      alt="" 
+                      className="w-14 h-14 object-cover"
+                      style={{ border: '1px solid var(--header-border)' }}
+                    />
                   ) : (
                     <DefaultAvatar size="md" />
                   )}
                   <div>
-                    <p className="font-bold text-white">{session.user?.username || session.user?.name}</p>
-                    <p className="text-sm text-[#666]">{session.user?.email}</p>
+                    <p className="font-bold" style={{ color: 'var(--header-text)' }}>{session.user?.username || session.user?.name}</p>
+                    <p className="text-sm" style={{ color: 'var(--header-text)', opacity: 0.6 }}>{session.user?.email}</p>
                   </div>
                 </div>
 
                 {/* WAX Stats */}
                 {waxStats && (
-                  <div className="mx-6 p-4 bg-[#111] border border-[#333] mb-4">
+                  <div className="mx-6 p-4 mb-4" style={{ backgroundColor: 'var(--header-bg)', border: '1px solid var(--header-border)' }}>
                     <div className="flex justify-between items-center">
                       <div>
-                        <p className="text-xs text-[#666] uppercase">WAX Balance</p>
+                        <p className="text-xs uppercase" style={{ color: 'var(--header-text)', opacity: 0.6 }}>WAX Balance</p>
                         <p className="text-2xl font-bold text-[#ffd700]">{waxStats.balance.toLocaleString()}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-[#666] uppercase">Score</p>
-                        <p className="text-2xl font-bold">{waxStats.tastemakeScore}</p>
+                        <p className="text-xs uppercase" style={{ color: 'var(--header-text)', opacity: 0.6 }}>Score</p>
+                        <p className="text-2xl font-bold" style={{ color: 'var(--header-text)' }}>{waxStats.tastemakeScore}</p>
                       </div>
                     </div>
                   </div>
@@ -401,52 +551,59 @@ export function Header() {
 
                 <Link
                   href={`/u/${session.user?.username || session.user?.id}`}
-                  className="flex items-center justify-between px-6 py-4 text-base text-white border-b border-[#222]"
+                  className="flex items-center justify-between px-6 py-4 text-base"
+                  style={{ color: 'var(--header-text)', borderBottom: '1px solid var(--header-border)' }}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Profile
-                  <svg className="w-5 h-5 text-[#444]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  <svg className="w-5 h-5 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
                 </Link>
                 <Link
                   href="/wallet"
-                  className="flex items-center justify-between px-6 py-4 text-base text-white border-b border-[#222]"
+                  className="flex items-center justify-between px-6 py-4 text-base"
+                  style={{ color: 'var(--header-text)', borderBottom: '1px solid var(--header-border)' }}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Wallet & Badges
-                  <svg className="w-5 h-5 text-[#444]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  <svg className="w-5 h-5 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
                 </Link>
                 <Link
                   href="/friends"
-                  className="flex items-center justify-between px-6 py-4 text-base text-white border-b border-[#222]"
+                  className="flex items-center justify-between px-6 py-4 text-base"
+                  style={{ color: 'var(--header-text)', borderBottom: '1px solid var(--header-border)' }}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Friends
-                  <svg className="w-5 h-5 text-[#444]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  <svg className="w-5 h-5 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
                 </Link>
                 <Link
                   href="/messages"
-                  className="flex items-center justify-between px-6 py-4 text-base text-white border-b border-[#222]"
+                  className="flex items-center justify-between px-6 py-4 text-base"
+                  style={{ color: 'var(--header-text)', borderBottom: '1px solid var(--header-border)' }}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Messages
-                  <svg className="w-5 h-5 text-[#444]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
+                  {unreadMessages > 0 && (
+                    <span className="px-2 py-0.5 bg-[#ffd700] text-black text-xs font-bold">
+                      {unreadMessages}
+                    </span>
+                  )}
                 </Link>
                 <Link
                   href="/settings"
-                  className="flex items-center justify-between px-6 py-4 text-base text-white border-b border-[#222]"
+                  className="flex items-center justify-between px-6 py-4 text-base"
+                  style={{ color: 'var(--header-text)', borderBottom: '1px solid var(--header-border)' }}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Settings
-                  <svg className="w-5 h-5 text-[#444]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  <svg className="w-5 h-5 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
                 </Link>
                 <button
@@ -457,17 +614,19 @@ export function Header() {
                 </button>
               </div>
             ) : (
-              <div className="p-6 mt-4 space-y-3 border-t border-[#222]">
+              <div className="p-6 mt-4 space-y-3" style={{ borderTop: '1px solid var(--header-border)' }}>
                 <Link
                   href="/login"
-                  className="block w-full px-4 py-4 text-sm font-bold text-center bg-white text-black"
+                  className="block w-full px-4 py-4 text-sm font-bold text-center"
+                  style={{ backgroundColor: 'var(--header-text)', color: 'var(--header-bg)' }}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/signup"
-                  className="block w-full px-4 py-4 text-sm font-bold text-center border-2 border-white text-white"
+                  className="block w-full px-4 py-4 text-sm font-bold text-center"
+                  style={{ border: '2px solid var(--header-text)', color: 'var(--header-text)' }}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Create Account
