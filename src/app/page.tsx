@@ -141,39 +141,39 @@ export default async function Home() {
                 </Link>
               </div>
 
-              {/* Progress Stats */}
-              <div className="flex items-center gap-6 flex-wrap">
+              {/* Progress Stats - Responsive grid layout */}
+              <div className="flex items-center gap-3 sm:gap-6 flex-wrap">
                 {/* TasteID Button + Progress - NEVER shows "Complete" */}
                 {(() => {
                   const tier = getCurrentTier(userStatus.reviewCount)
                   const keepBuildingMsg = getKeepBuildingMessage(userStatus.reviewCount)
                   return (
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3">
                       <Link
                         href={`/u/${userStatus.username}/tasteid`}
-                        className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                        className="flex items-center gap-2 sm:gap-3 hover:opacity-80 transition-opacity"
                       >
                         <div className="text-right">
-                          <p className="text-xs text-[var(--muted)] uppercase tracking-wider">TasteID</p>
-                          <p className="text-sm font-bold" style={{ color: tier.color }}>
+                          <p className="text-[10px] sm:text-xs text-[var(--muted)] uppercase tracking-wider">TasteID</p>
+                          <p className="text-xs sm:text-sm font-bold" style={{ color: tier.color }}>
                             {tier.id === 'locked' ? `${userStatus.tasteIDProgress}%` : tier.name}
                           </p>
                         </div>
                         {tier.id === 'locked' ? (
-                          <div className="w-20 h-2 bg-[var(--border)] overflow-hidden">
+                          <div className="w-16 sm:w-20 h-2 bg-[var(--border)] overflow-hidden">
                             <div
                               className="h-full bg-[#ffd700] transition-all duration-500"
                               style={{ width: `${userStatus.tasteIDProgress}%` }}
                             />
                           </div>
                         ) : (
-                          <span className="text-[10px] text-[var(--muted)]">{keepBuildingMsg}</span>
+                          <span className="text-[9px] sm:text-[10px] text-[var(--muted)] hidden sm:inline">{keepBuildingMsg}</span>
                         )}
                       </Link>
                       {tier.id !== 'locked' && (
                         <Link
                           href="/quick-rate"
-                          className="px-3 py-1.5 bg-[#ffd700] text-black text-[10px] font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors"
+                          className="px-2 sm:px-3 py-1.5 bg-[#ffd700] text-black text-[9px] sm:text-[10px] font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors"
                         >
                           + Add
                         </Link>
@@ -183,35 +183,35 @@ export default async function Home() {
                 })()}
 
                 {/* Ratings */}
-                <div className="text-center border-l border-[var(--border)] pl-6">
-                  <p className="text-lg font-bold tabular-nums">{userStatus.reviewCount}</p>
-                  <p className="text-xs text-[var(--muted)] uppercase tracking-wider">Ratings</p>
+                <div className="text-center border-l border-[var(--border)] pl-3 sm:pl-6">
+                  <p className="text-base sm:text-lg font-bold tabular-nums">{userStatus.reviewCount}</p>
+                  <p className="text-[10px] sm:text-xs text-[var(--muted)] uppercase tracking-wider">Ratings</p>
                 </div>
 
                 {/* First Spins */}
-                <div className="text-center border-l border-[var(--border)] pl-6">
-                  <p className="text-lg font-bold tabular-nums text-[#ffd700]">{userStatus.firstSpinCount}</p>
-                  <p className="text-xs text-[var(--muted)] uppercase tracking-wider">First Spins</p>
+                <div className="text-center border-l border-[var(--border)] pl-3 sm:pl-6">
+                  <p className="text-base sm:text-lg font-bold tabular-nums text-[#ffd700]">{userStatus.firstSpinCount}</p>
+                  <p className="text-[10px] sm:text-xs text-[var(--muted)] uppercase tracking-wider">1st Spins</p>
                 </div>
 
-                {/* WAX Balance */}
-                <Link 
-                  href="/wallet" 
-                  className="flex items-center gap-2 border-l border-[var(--border)] pl-6 hover:text-[#ffd700] transition-colors"
+                {/* WAX Balance - Hidden on very small screens, shown in header */}
+                <Link
+                  href="/wallet"
+                  className="hidden sm:flex items-center gap-2 border-l border-[var(--border)] pl-3 sm:pl-6 hover:text-[#ffd700] transition-colors"
                 >
                   <div className="text-center">
-                    <p className="text-lg font-bold tabular-nums">{userStatus.waxBalance}</p>
-                    <p className="text-xs text-[var(--muted)] uppercase tracking-wider">WAX</p>
+                    <p className="text-base sm:text-lg font-bold tabular-nums">{userStatus.waxBalance}</p>
+                    <p className="text-[10px] sm:text-xs text-[var(--muted)] uppercase tracking-wider">WAX</p>
                   </div>
                   <svg className="w-4 h-4 text-[var(--muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
                 </Link>
 
-                {/* Quick Action */}
+                {/* Quick Action - Only on larger screens */}
                 <Link
                   href="/quick-rate"
-                  className="px-4 py-2 bg-[#ffd700] text-black text-xs font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors"
+                  className="hidden md:block px-4 py-2 bg-[#ffd700] text-black text-xs font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors"
                 >
                   + Rate Album
                 </Link>
@@ -554,7 +554,7 @@ export default async function Home() {
                 </Link>
               </div>
               
-              <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
+              <div className="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 gap-2 sm:gap-3">
                 {billboardAlbums.slice(0, 20).map((album) => (
                   <Link
                     key={album.id}

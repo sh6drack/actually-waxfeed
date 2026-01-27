@@ -346,22 +346,22 @@ export function Header() {
         </nav>
 
         {/* Mobile Navigation */}
-        <div className="flex lg:hidden items-center gap-2">
+        <div className="flex lg:hidden items-center gap-1">
           {/* Keep Building - Mobile */}
           {needsTasteID && (
             <Link
               href="/quick-rate"
-              className="px-3 py-1.5 bg-[#ffd700] text-black text-[10px] font-bold uppercase tracking-wider"
+              className="px-2.5 py-2 bg-[#ffd700] text-black text-[10px] font-bold uppercase tracking-wider min-h-[44px] flex items-center"
             >
               Build
             </Link>
           )}
-          
+
           {/* WAX Balance - Mobile */}
           {isMounted && session && waxStats && (
             <Link
               href="/wallet"
-              className="flex items-center gap-1 px-2 py-1 text-[#ffd700]"
+              className="flex items-center gap-1 px-2 min-h-[44px] min-w-[44px] justify-center text-[#ffd700]"
             >
               <span className="text-xs font-bold">{waxStats.balance}</span>
             </Link>
@@ -369,24 +369,29 @@ export function Header() {
 
           {/* Messages - Mobile */}
           {isMounted && session && (
-            <Link 
-              href="/messages" 
-              className="relative p-2" 
+            <Link
+              href="/messages"
+              className="relative min-h-[44px] min-w-[44px] flex items-center justify-center"
               style={{ color: 'var(--header-text)' }}
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
               {unreadMessages > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] bg-[#ffd700] text-black text-[9px] font-bold flex items-center justify-center">
+                <span className="absolute top-1 right-1 min-w-[16px] h-[16px] bg-[#ffd700] text-black text-[9px] font-bold flex items-center justify-center px-0.5">
                   {unreadMessages > 9 ? '9+' : unreadMessages}
                 </span>
               )}
             </Link>
           )}
-          
+
           {/* Search */}
-          <Link href="/search" className="p-2" style={{ color: 'var(--header-text)' }} aria-label="Search">
+          <Link
+            href="/search"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center"
+            style={{ color: 'var(--header-text)' }}
+            aria-label="Search"
+          >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -395,7 +400,7 @@ export function Header() {
           {/* Menu */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center"
             style={{ color: 'var(--header-text)' }}
             aria-label="Toggle menu"
           >
