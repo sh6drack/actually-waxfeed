@@ -78,11 +78,44 @@ export const TASTEID_TIERS: TasteIDTier[] = [
     name: 'MASTER',
     shortName: '5',
     minRatings: 500,
-    maxConfidence: 98,
+    maxConfidence: 94,
     color: '#bf00ff',
     bgColor: '#bf00ff',
     description: 'Elite-level taste authority',
-    perks: ['Full confidence', 'Taste oracle status', 'Community influence'],
+    perks: ['Taste oracle status', 'Community influence', 'Curator potential'],
+  },
+  {
+    id: 'legend',
+    name: 'LEGEND',
+    shortName: '6',
+    minRatings: 1000,
+    maxConfidence: 96,
+    color: '#ff4500',
+    bgColor: '#ff4500',
+    description: 'Legendary depth of musical knowledge',
+    perks: ['Genre expertise', 'Trend prediction', 'Taste historian'],
+  },
+  {
+    id: 'oracle',
+    name: 'ORACLE',
+    shortName: '7',
+    minRatings: 2000,
+    maxConfidence: 98,
+    color: '#00ffff',
+    bgColor: '#00ffff',
+    description: 'Musical oracle with unparalleled insight',
+    perks: ['Prophetic accuracy', 'Deep pattern recognition', 'Cultural influence'],
+  },
+  {
+    id: 'transcendent',
+    name: 'TRANSCENDENT',
+    shortName: '∞',
+    minRatings: 5000,
+    maxConfidence: 99,
+    color: '#ffffff',
+    bgColor: 'linear-gradient(135deg, #ffd700, #ff4500, #bf00ff, #00ffff)',
+    description: 'Beyond measurement. Your taste IS the algorithm.',
+    perks: ['Taste transcendence', 'Algorithm co-author', 'Living archive'],
   },
 ]
 
@@ -186,12 +219,14 @@ export function getConfidenceAccuracy(ratingCount: number): number {
  * Get motivational message based on progress
  */
 export function getMotivationalMessage(ratingCount: number): string {
-  const { ratingsToNext, nextTier, progress } = getProgressToNextTier(ratingCount)
-  
+  const { ratingsToNext, nextTier, progress, currentTier } = getProgressToNextTier(ratingCount)
+
+  // TasteID is NEVER complete - always encourage more
   if (!nextTier) {
-    return "You've reached Master tier! Your taste profile is elite."
+    // At highest tier but still encourage growth
+    return `${currentTier.name} tier achieved! Every rating deepens your profile.`
   }
-  
+
   if (progress < 25) {
     return `Rate ${ratingsToNext} more albums to reach ${nextTier.name} tier`
   } else if (progress < 50) {
@@ -201,4 +236,20 @@ export function getMotivationalMessage(ratingCount: number): string {
   } else {
     return `Almost there! Just ${ratingsToNext} more to unlock ${nextTier.name}!`
   }
+}
+
+/**
+ * TasteID is NEVER complete - always return a "keep building" message
+ */
+export function getKeepBuildingMessage(ratingCount: number): string {
+  const tier = getCurrentTier(ratingCount)
+  const nextTier = getNextTier(ratingCount)
+
+  if (nextTier) {
+    const ratingsToNext = nextTier.minRatings - ratingCount
+    return `${ratingsToNext} to ${nextTier.name}`
+  }
+
+  // Even at max tier, encourage continued engagement
+  return 'Keep evolving'
 }

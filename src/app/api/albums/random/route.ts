@@ -50,6 +50,7 @@ interface ScoredAlbum {
   albumType: string
   averageRating: number | null
   totalReviews: number
+  spotifyUrl: string | null
   score: number
   scoreBreakdown: {
     genre: number
@@ -158,6 +159,7 @@ export async function GET(request: NextRequest) {
         albumType: selectedAlbum.albumType,
         averageRating: selectedAlbum.averageRating,
         totalReviews: selectedAlbum.totalReviews,
+        spotifyUrl: selectedAlbum.spotifyUrl,
       },
       recommendation: {
         reason: recommendationReason,
@@ -331,6 +333,7 @@ async function getCandidateAlbums(
   albumType: string
   averageRating: number | null
   totalReviews: number
+  spotifyUrl: string | null
 }>> {
   const baseWhere = {
     albumType: { not: 'single' },
@@ -405,6 +408,7 @@ async function getCandidateAlbums(
         albumType: true,
         averageRating: true,
         totalReviews: true,
+        spotifyUrl: true,
       },
     })
   }
@@ -429,6 +433,7 @@ async function getCandidateAlbums(
       albumType: true,
       averageRating: true,
       totalReviews: true,
+      spotifyUrl: true,
     },
   })
 }
@@ -447,6 +452,7 @@ async function scoreAlbums(
     albumType: string
     averageRating: number | null
     totalReviews: number
+    spotifyUrl: string | null
   }>,
   tasteProfile: TasteProfile,
   similarUserIds: string[],

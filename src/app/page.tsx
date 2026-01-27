@@ -15,7 +15,7 @@ async function getBillboardAlbums() {
       albumType: { not: 'single' },
     },
     orderBy: { billboardRank: 'asc' },
-    take: 50,
+    take: 20,
     select: {
       id: true,
       spotifyId: true,
@@ -543,8 +543,8 @@ export default async function Home() {
                 </Link>
               </div>
               
-              <div className="grid grid-cols-5 sm:grid-cols-5 md:grid-cols-10 gap-2">
-                {billboardAlbums.slice(0, 50).map((album) => (
+              <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
+                {billboardAlbums.slice(0, 20).map((album) => (
                   <Link
                     key={album.id}
                     href={`/album/${album.spotifyId}`}

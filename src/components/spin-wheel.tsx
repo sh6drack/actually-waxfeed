@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react"
 import Link from "next/link"
+import { StreamingLinks } from "./streaming-links"
 
 interface Album {
   id: string
@@ -12,6 +13,7 @@ interface Album {
   averageRating: number | null
   totalReviews: number
   genres: string[]
+  spotifyUrl: string | null
 }
 
 interface Recommendation {
@@ -491,6 +493,13 @@ export function SpinWheel({ userId, userReviewCount = 0 }: SpinWheelProps) {
                         {genre}
                       </span>
                     ))}
+                  </div>
+                )}
+
+                {/* Listen Links */}
+                {album.spotifyUrl && (
+                  <div className="mb-6">
+                    <StreamingLinks spotifyUrl={album.spotifyUrl} />
                   </div>
                 )}
               </div>
