@@ -156,7 +156,7 @@ export function TasteIDCompletionBanner({ reviewCount, hasTasteID }: TasteIDComp
             </Link>
             <Link
               href="/quick-rate"
-              className="px-4 py-2 border border-[#ffd700] text-[#ffd700] text-xs uppercase tracking-wider font-bold hover:bg-[#ffd700] hover:text-black transition-colors"
+              className="px-4 py-2 bg-[#ffd700] text-black text-xs uppercase tracking-wider font-bold hover:bg-[#ffed4a] transition-colors"
             >
               Keep Building
             </Link>

@@ -36,7 +36,7 @@ export function GenreRadarChart({
   }
 
   const center = size / 2
-  const maxRadius = (size / 2) * 0.75 // Leave room for labels
+  const maxRadius = (size / 2) * 0.55 // More room for labels
 
   // Calculate points for each data value
   const angleStep = (2 * Math.PI) / numPoints
@@ -48,8 +48,8 @@ export function GenreRadarChart({
       value,
       x: center + radius * Math.cos(angle),
       y: center + radius * Math.sin(angle),
-      labelX: center + (maxRadius + 20) * Math.cos(angle),
-      labelY: center + (maxRadius + 20) * Math.sin(angle),
+      labelX: center + (maxRadius + 30) * Math.cos(angle),
+      labelY: center + (maxRadius + 30) * Math.sin(angle),
       axisX: center + maxRadius * Math.cos(angle),
       axisY: center + maxRadius * Math.sin(angle),
     }
@@ -132,16 +132,19 @@ export function GenreRadarChart({
 }
 
 function formatGenreLabel(genre: string): string {
-  // Shorten long genre names
-  const shortened: Record<string, string> = {
-    "hip-hop": "HIP-HOP",
-    "electronic": "ELECTRO",
-    "alternative": "ALT",
-    "experimental": "EXP",
-    "contemporary": "CONTEMP",
-  }
+  // Keep full genre names but handle very long ones
   const lower = genre.toLowerCase()
-  return shortened[lower] || genre.substring(0, 8).toUpperCase()
+  const shortened: Record<string, string> = {
+    "alternative r&b": "ALT R&B",
+    "alternative rock": "ALT ROCK",
+    "electronic": "ELECTRONIC",
+    "experimental": "EXPERIM.",
+    "contemporary": "CONTEMP.",
+    "progressive": "PROG.",
+  }
+  if (shortened[lower]) return shortened[lower]
+  // Show up to 12 characters
+  return genre.length > 12 ? genre.substring(0, 10).toUpperCase() + '.' : genre.toUpperCase()
 }
 
 export function GenreRadarChartSkeleton({ size = 200 }: { size?: number }) {
