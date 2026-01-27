@@ -241,91 +241,156 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* TRENDING ALBUMS */}
+      {/* TRENDING + RECENT REVIEWS - Side by Side Editorial Layout */}
       <section className="border-b border-[var(--border)]">
-        <div className="w-full px-6 lg:px-12 xl:px-20 py-12 lg:py-16">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-lg font-bold">Trending Now</h2>
-            <Link href="/trending" className="text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
-              View All →
-            </Link>
-          </div>
-          
-          <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-10 gap-3">
-            {billboardAlbums.slice(0, 20).map((album) => (
-              <Link
-                key={album.id}
-                href={`/album/${album.spotifyId}`}
-                className="group"
-              >
-                <div className="aspect-square w-full bg-[var(--surface)] overflow-hidden relative">
-                  {album.coverArtUrl && (
-                    <img
-                      src={album.coverArtUrlLarge || album.coverArtUrl}
-                      alt={album.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  )}
-                  {album.billboardRank && album.billboardRank <= 10 && (
-                    <div className="absolute top-1 left-1 bg-[#ffd700] text-black px-1.5 py-0.5 text-[10px] font-bold">
-                      #{album.billboardRank}
+        <div className="w-full px-6 lg:px-12 xl:px-20">
+          <div className="grid grid-cols-12 border-l border-r border-[var(--border)]">
+            {/* TRENDING - Left Side */}
+            <div className="col-span-12 lg:col-span-7 border-r border-[var(--border)] py-10 lg:py-14 px-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-bold">Trending</h2>
+                <Link href="/trending" className="text-[10px] tracking-[0.15em] uppercase text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
+                  See All Trending →
+                </Link>
+              </div>
+              
+              <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
+                {billboardAlbums.slice(0, 20).map((album) => (
+                  <Link
+                    key={album.id}
+                    href={`/album/${album.spotifyId}`}
+                    className="group"
+                  >
+                    <div className="aspect-square w-full bg-[var(--surface)] overflow-hidden relative">
+                      {album.coverArtUrl && (
+                        <img
+                          src={album.coverArtUrlLarge || album.coverArtUrl}
+                          alt={album.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      )}
+                      {album.billboardRank && album.billboardRank <= 20 && (
+                        <div className="absolute top-1 left-1 bg-[#ffd700] text-black px-1 py-0.5 text-[9px] font-bold">
+                          #{album.billboardRank}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-                <p className="text-[11px] font-medium truncate mt-2 group-hover:text-[var(--muted)] transition-colors">
-                  {album.title}
-                </p>
-                <p className="text-[10px] text-[var(--muted-dim)] truncate">
-                  {album.artistName}
-                </p>
-              </Link>
-            ))}
+                    <p className="text-[10px] font-medium truncate mt-1.5 group-hover:text-[var(--muted)] transition-colors">
+                      {album.title}
+                    </p>
+                    <p className="text-[9px] text-[var(--muted-dim)] truncate">
+                      {album.artistName}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* RECENT REVIEWS - Right Side */}
+            <div className="col-span-12 lg:col-span-5 py-10 lg:py-14 px-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-bold">Recent Reviews</h2>
+                <Link href="/reviews" className="text-[10px] tracking-[0.15em] uppercase text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
+                  View All →
+                </Link>
+              </div>
+              
+              <div className="space-y-1">
+                {recentReviews.map((review) => (
+                  <Link
+                    key={review.id}
+                    href={`/album/${review.album.spotifyId}`}
+                    className="group flex gap-3 py-3 border-b border-[var(--border)] hover:bg-[var(--surface)] -mx-3 px-3 transition-colors"
+                  >
+                    <div className="w-12 h-12 flex-shrink-0 bg-[var(--surface)]">
+                      {review.album.coverArtUrl && (
+                        <img src={review.album.coverArtUrl} alt="" className="w-full h-full object-cover" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium truncate group-hover:text-[var(--muted)] transition-colors">
+                          {review.album.title}
+                        </span>
+                        <span className="text-[#ffd700] font-bold text-sm tabular-nums">{review.rating.toFixed(1)}</span>
+                      </div>
+                      <p className="text-xs text-[var(--muted)] truncate">{review.album.artistName}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        {review.user.image ? (
+                          <img src={review.user.image} alt="" className="w-4 h-4 rounded-full" />
+                        ) : (
+                          <DefaultAvatar size="xs" />
+                        )}
+                        <span className="text-[10px] text-[var(--muted-dim)]">@{review.user.username}</span>
+                        <span className="text-[10px] text-[var(--muted-faint)]" suppressHydrationWarning>
+                          {formatDistanceToNow(new Date(review.createdAt), { addSuffix: true })}
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* RECENT ACTIVITY */}
+      {/* COLLEGE RADIO PARTNERSHIP */}
       <section className="border-b border-[var(--border)]">
-        <div className="w-full px-6 lg:px-12 xl:px-20 py-12 lg:py-16">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-lg font-bold">Recent Ratings</h2>
-            <Link href="/reviews" className="text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
-              View All →
-            </Link>
-          </div>
-          
-          <div className="grid md:grid-cols-2 gap-4">
-            {recentReviews.map((review) => (
-              <Link
-                key={review.id}
-                href={`/album/${review.album.spotifyId}`}
-                className="group flex gap-4 p-4 border border-[var(--border)] hover:border-[var(--border-dim)] transition-colors"
-              >
-                <div className="w-16 h-16 flex-shrink-0 bg-[var(--surface)]">
-                  {review.album.coverArtUrl && (
-                    <img src={review.album.coverArtUrl} alt="" className="w-full h-full object-cover" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium truncate">{review.album.title}</span>
-                    <span className="text-[#ffd700] font-bold tabular-nums">{review.rating.toFixed(1)}</span>
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-16 lg:py-20">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <p className="text-[10px] tracking-[0.3em] uppercase text-[#ffd700] mb-4">
+                College Radio Partnership
+              </p>
+              <h2 className="text-3xl lg:text-4xl font-bold mb-4 leading-tight">
+                Your station breaks artists.<br />
+                Now you can prove it.
+              </h2>
+              <p className="text-[var(--muted)] mb-6 leading-relaxed">
+                First 50 stations get Founding Status—free premium features forever. 
+                Station leaderboards. Verified DJ badges. Conference rankings.
+              </p>
+              <div className="flex items-center gap-4">
+                <Link
+                  href="/stations"
+                  className="px-6 py-3 bg-[#ffd700] text-black text-sm font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors"
+                >
+                  Apply Now
+                </Link>
+                <span className="text-sm text-[var(--muted)]">
+                  <span className="text-[#ffd700] font-bold">23</span> spots remaining
+                </span>
+              </div>
+            </div>
+            <div className="border border-[var(--border)] p-6">
+              <p className="text-[10px] tracking-[0.3em] uppercase text-[var(--muted)] mb-4">
+                Station Preview
+              </p>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between py-2 border-b border-[var(--border)]">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[#ffd700] font-bold">#1</span>
+                    <span className="font-medium">WRVU Nashville</span>
                   </div>
-                  <p className="text-sm text-[var(--muted)] truncate">{review.album.artistName}</p>
-                  <div className="flex items-center gap-2 mt-2">
-                    {review.user.image ? (
-                      <img src={review.user.image} alt="" className="w-5 h-5 rounded-full" />
-                    ) : (
-                      <DefaultAvatar size="xs" />
-                    )}
-                    <span className="text-xs text-[var(--muted-dim)]">@{review.user.username}</span>
-                    <span className="text-xs text-[var(--muted-faint)]" suppressHydrationWarning>
-                      {formatDistanceToNow(new Date(review.createdAt), { addSuffix: true })}
-                    </span>
-                  </div>
+                  <span className="text-sm tabular-nums">847</span>
                 </div>
-              </Link>
-            ))}
+                <div className="flex items-center justify-between py-2 border-b border-[var(--border)]">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[var(--muted)] font-bold">#2</span>
+                    <span className="font-medium">WJPZ Syracuse</span>
+                  </div>
+                  <span className="text-sm tabular-nums">712</span>
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[var(--muted)] font-bold">#3</span>
+                    <span className="text-[var(--muted)]">Your Station?</span>
+                  </div>
+                  <span className="text-sm text-[var(--muted)]">—</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
