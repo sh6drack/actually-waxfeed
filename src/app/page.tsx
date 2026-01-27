@@ -204,104 +204,135 @@ export default async function Home() {
         </section>
       )}
 
-      {/* HERO - Clear Value Proposition */}
+      {/* HERO - 3 PILLARS ACTION CENTER */}
       <section className="border-b border-[var(--border)]">
-        <div className="w-full px-6 lg:px-12 xl:px-20 py-8 lg:py-12">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-8 lg:py-10">
             {session ? (
-              /* Personalized hero for logged in users */
+              /* Personalized 3-Pillar Action Center for logged in users */
               <>
-                {/* Left - Impactful Tagline + 3 CTAs */}
-                <div>
-                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-4">
-                    {userStatus.hasTasteID ? (
-                      <>
-                        You've rated <span className="text-[#ffd700]">{userStatus.reviewCount}</span> albums.
-                        <br />
-                        <span className="text-[var(--muted)]">What's next on your radar?</span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-[#ffd700]">{userStatus.reviewCount}</span> down, <span className="text-[#ffd700]">{25 - userStatus.reviewCount}</span> to go.
-                        <br />
-                        <span className="text-[var(--muted)]">Your TasteID awaits.</span>
-                      </>
-                    )}
-                  </h1>
-                  
-                  <p className="text-lg text-[var(--muted)] mb-6 max-w-md">
-                    {userStatus.hasTasteID ? (
-                      <>Every rating earns WAX. Every discovery could be your next obsession.</>
-                    ) : (
-                      <>Rate {25 - userStatus.reviewCount} more albums to unlock your unique TasteID and start connecting with people who get your music.</>
+                {/* Quick Welcome Line */}
+                <div className="text-center mb-8">
+                  <p className="text-lg">
+                    Welcome back. You have <span className="text-[#ffd700] font-bold">{userStatus.firstSpinCount}</span> First Spins 
+                    and <span className="text-[#ffd700] font-bold">{userStatus.waxBalance}</span> WAX.
+                    {!userStatus.hasTasteID && (
+                      <span className="text-[var(--muted)]"> — {25 - userStatus.reviewCount} ratings until TasteID</span>
                     )}
                   </p>
-                  
-                  {/* 3 Action Buttons */}
-                  <div className="flex flex-wrap gap-3">
-                    <Link
-                      href="/quick-rate"
-                      className="px-6 py-3 bg-[#ffd700] text-black text-sm font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors"
-                    >
-                      Rate Now
-                    </Link>
-                    <Link
-                      href={`/u/${userStatus.username}/tasteid`}
-                      className="px-6 py-3 border border-[#ffd700] text-[#ffd700] text-sm font-bold uppercase tracking-wider hover:bg-[#ffd700] hover:text-black transition-colors"
-                    >
-                      View TasteID
-                    </Link>
-                    <Link
-                      href="/discover/connections"
-                      className="px-6 py-3 border border-[var(--border)] text-sm font-bold uppercase tracking-wider hover:border-[var(--foreground)] transition-colors"
-                    >
-                      Find Connections
-                    </Link>
-                  </div>
                 </div>
-                
-                {/* Right - Recent Activity */}
-                <div className="border border-[var(--border)] p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xs tracking-[0.2em] uppercase text-[var(--muted)]">Your Recent Ratings</h3>
-                    <Link href={`/u/${userStatus.username}`} className="text-xs text-[#ffd700] hover:underline">
-                      View All →
-                    </Link>
-                  </div>
+
+                {/* THE 3 PILLARS - Main Action Cards */}
+                <div className="grid md:grid-cols-3 gap-4 lg:gap-6">
                   
-                  {userStatus.recentReviews && userStatus.recentReviews.length > 0 ? (
-                    <div className="space-y-2">
-                      {userStatus.recentReviews.slice(0, 4).map((review: any) => (
+                  {/* PILLAR 1: GAMIFY - Prove You Were First */}
+                  <Link 
+                    href="/quick-rate" 
+                    className="group block p-6 border-2 border-[var(--border)] hover:border-[#ffd700] bg-[var(--surface)] transition-all hover:shadow-lg"
+                  >
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-12 h-12 border-2 border-[#ffd700] flex items-center justify-center text-[#ffd700] group-hover:bg-[#ffd700] group-hover:text-black transition-colors">
+                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-xs tracking-[0.2em] uppercase text-[#ffd700]">Gamify</p>
+                        <p className="font-bold text-lg">Prove You Were First</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-[var(--muted)] mb-4">
+                      Rate albums before they blow up. Earn <span className="text-[#ffd700]">Gold</span>, <span className="text-gray-400">Silver</span>, <span className="text-amber-600">Bronze</span> badges. Collect WAX rewards.
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-[var(--muted)]">Your badges: <span className="text-[#ffd700] font-bold">{userStatus.firstSpinCount}</span></span>
+                      <span className="text-[#ffd700] text-sm font-bold group-hover:translate-x-1 transition-transform">Rate Now →</span>
+                    </div>
+                  </Link>
+
+                  {/* PILLAR 2: CONNECT - First Music Social Network */}
+                  <Link 
+                    href="/discover/connections" 
+                    className="group block p-6 border-2 border-[var(--border)] hover:border-[#00ff88] bg-[var(--surface)] transition-all hover:shadow-lg"
+                  >
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-12 h-12 border-2 border-[#00ff88] flex items-center justify-center text-[#00ff88] group-hover:bg-[#00ff88] group-hover:text-black transition-colors">
+                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-xs tracking-[0.2em] uppercase text-[#00ff88]">Connect</p>
+                        <p className="font-bold text-lg">Find Your People</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-[var(--muted)] mb-4">
+                      <span className="text-[#00ff88]">First-ever</span> music connection platform. Match with listeners who truly get your taste. Message, share, discuss.
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-[var(--muted)]">Powered by Polarity 1.2</span>
+                      <span className="text-[#00ff88] text-sm font-bold group-hover:translate-x-1 transition-transform">Find Matches →</span>
+                    </div>
+                  </Link>
+
+                  {/* PILLAR 3: DISCOVER - Best Discovery Ever */}
+                  <Link 
+                    href={`/u/${userStatus.username}/tasteid`}
+                    className="group block p-6 border-2 border-[var(--border)] hover:border-[#00bfff] bg-[var(--surface)] transition-all hover:shadow-lg"
+                  >
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-12 h-12 border-2 border-[#00bfff] flex items-center justify-center text-[#00bfff] group-hover:bg-[#00bfff] group-hover:text-black transition-colors">
+                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-xs tracking-[0.2em] uppercase text-[#00bfff]">Discover</p>
+                        <p className="font-bold text-lg">Your TasteID</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-[var(--muted)] mb-4">
+                      <span className="text-[#00bfff]">Most accurate</span> taste profiling ever. See your musical DNA, archetype, and get personalized recommendations.
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-[var(--muted)]">
+                        {userStatus.hasTasteID ? (
+                          <span className="text-[#00bfff]">{userStatus.archetype}</span>
+                        ) : (
+                          <span>{userStatus.tasteIDProgress}% complete</span>
+                        )}
+                      </span>
+                      <span className="text-[#00bfff] text-sm font-bold group-hover:translate-x-1 transition-transform">View TasteID →</span>
+                    </div>
+                  </Link>
+                </div>
+
+                {/* Quick Recent Activity Row */}
+                {userStatus.recentReviews && userStatus.recentReviews.length > 0 && (
+                  <div className="mt-8 pt-6 border-t border-[var(--border)]">
+                    <div className="flex items-center justify-between mb-4">
+                      <p className="text-xs tracking-[0.2em] uppercase text-[var(--muted)]">Your Recent Ratings</p>
+                      <Link href={`/u/${userStatus.username}`} className="text-xs text-[#ffd700] hover:underline">View Profile →</Link>
+                    </div>
+                    <div className="flex gap-3 overflow-x-auto pb-2">
+                      {userStatus.recentReviews.slice(0, 6).map((review: any) => (
                         <Link
                           key={review.id}
                           href={`/album/${review.album.spotifyId}`}
-                          className="flex items-center gap-3 p-2 hover:bg-[var(--surface)] transition-colors -mx-2"
+                          className="flex-shrink-0 group/album"
                         >
-                          <div className="w-10 h-10 flex-shrink-0 bg-[var(--surface)]">
+                          <div className="w-16 h-16 bg-[var(--surface)] overflow-hidden relative">
                             {review.album.coverArtUrl && (
-                              <img src={review.album.coverArtUrl} alt="" className="w-full h-full object-cover" />
+                              <img src={review.album.coverArtUrl} alt="" className="w-full h-full object-cover group-hover/album:scale-110 transition-transform" />
                             )}
+                            <div className="absolute bottom-0 right-0 bg-[#ffd700] text-black text-[10px] font-bold px-1">
+                              {review.rating.toFixed(1)}
+                            </div>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{review.album.title}</p>
-                            <p className="text-xs text-[var(--muted)] truncate">{review.album.artistName}</p>
-                          </div>
-                          <span className="text-[#ffd700] font-bold text-sm">{review.rating.toFixed(1)}</span>
                         </Link>
                       ))}
                     </div>
-                  ) : (
-                    <div className="text-center py-6">
-                      <p className="text-sm text-[var(--muted)] mb-3">No ratings yet</p>
-                      <Link
-                        href="/quick-rate"
-                        className="text-xs text-[#ffd700] font-bold uppercase tracking-wider hover:underline"
-                      >
-                        Start Rating →
-                      </Link>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </>
             ) : (
               /* Default hero for logged out users - FIRST IMPRESSION */
