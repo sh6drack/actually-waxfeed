@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 
 // Small recompute button inside the section
@@ -140,6 +140,142 @@ export function RecomputeButton() {
         <div className={`text-sm ${result.startsWith('✓') ? 'text-green-400' : 'text-red-400'}`}>
           {result}
         </div>
+      )}
+    </div>
+  )
+}
+
+const CONFIRM_TEXT = "DELETE"
+
+export function ResetTasteIDButton() {
+  const [step, setStep] = useState<'idle' | 'confirm' | 'type' | 'loading' | 'done'>('idle')
+  const [error, setError] = useState<string | null>(null)
+  const [deletedCount, setDeletedCount] = useState(0)
+  const [confirmInput, setConfirmInput] = useState("")
+  const router = useRouter()
+
+  const handleReset = async () => {
+    if (step === 'idle') {
+      setStep('confirm')
+      return
+    }
+
+    if (step === 'confirm') {
+      setStep('type')
+      return
+    }
+
+    if (step !== 'type') return
+
+    if (confirmInput !== CONFIRM_TEXT) {
+      setError(`Please type "${CONFIRM_TEXT}" to confirm`)
+      return
+    }
+
+    setStep('loading')
+    setError(null)
+
+    try {
+      const res = await fetch("/api/tasteid/reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirm: "DELETE_ALL_MY_REVIEWS" })
+      })
+
+      const data = await res.json()
+
+      if (res.ok && data.success) {
+        setDeletedCount(data.deleted?.reviews || 0)
+        setStep('done')
+        // Redirect to home after 2 seconds
+        setTimeout(() => {
+          router.push('/')
+          router.refresh()
+        }, 2000)
+      } else {
+        setError(data.error || 'Failed to reset')
+        setStep('type')
+      }
+    } catch (err) {
+      console.error("Reset error:", err)
+      setError("Network error")
+      setStep('type')
+    }
+  }
+
+  const handleCancel = () => {
+    setStep('idle')
+    setConfirmInput("")
+    setError(null)
+  }
+
+  if (step === 'done') {
+    return (
+      <div className="text-center p-4 border border-green-500/50 bg-green-500/10">
+        <div className="text-green-400 font-bold mb-1">RESET COMPLETE</div>
+        <div className="text-sm text-muted-foreground">
+          Deleted {deletedCount} reviews. Redirecting...
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-3">
+      {step === 'confirm' && (
+        <div className="p-3 border border-red-500/50 bg-red-500/10 text-sm">
+          <div className="font-bold text-red-400 mb-1">ARE YOU SURE?</div>
+          <div className="text-muted-foreground">
+            This will permanently delete ALL your reviews and your TasteID.
+            This action cannot be undone.
+          </div>
+        </div>
+      )}
+
+      {step === 'type' && (
+        <div className="p-3 border border-red-500/50 bg-red-500/10 text-sm space-y-3">
+          <div className="font-bold text-red-400">FINAL CONFIRMATION</div>
+          <div className="text-muted-foreground">
+            Type <span className="font-mono text-red-400">{CONFIRM_TEXT}</span> to permanently delete all your reviews.
+          </div>
+          <input
+            type="text"
+            value={confirmInput}
+            onChange={(e) => setConfirmInput(e.target.value)}
+            placeholder={`Type ${CONFIRM_TEXT} here`}
+            className="w-full px-3 py-2 bg-transparent border border-red-500/50 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-red-500"
+            autoFocus
+          />
+        </div>
+      )}
+
+      <div className="flex gap-2">
+        <button
+          type="button"
+          disabled={step === 'loading' || (step === 'type' && confirmInput !== CONFIRM_TEXT)}
+          onClick={handleReset}
+          className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+            step === 'confirm' || step === 'type'
+              ? 'border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white'
+              : 'border border-red-500/30 text-red-500/70 hover:border-red-500 hover:text-red-500'
+          }`}
+        >
+          {step === 'loading' ? 'DELETING...' : step === 'type' ? 'DELETE EVERYTHING' : step === 'confirm' ? 'YES, CONTINUE' : 'RESET TASTEID'}
+        </button>
+
+        {(step === 'confirm' || step === 'type') && (
+          <button
+            type="button"
+            onClick={handleCancel}
+            className="px-4 py-2 text-xs font-bold uppercase tracking-wider border border-muted-foreground/30 text-muted-foreground hover:border-foreground hover:text-foreground transition-colors"
+          >
+            CANCEL
+          </button>
+        )}
+      </div>
+
+      {error && (
+        <div className="text-sm text-red-400">{error}</div>
       )}
     </div>
   )

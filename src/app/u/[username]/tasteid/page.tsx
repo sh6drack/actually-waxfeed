@@ -35,7 +35,7 @@ import {
   ArtistDNA,
 } from "@/lib/tasteid"
 import { ArrowRightIcon } from "@/components/icons"
-import { GenerateTasteIDButton, RecomputeButton, SmallRecomputeButton } from "./tasteid-actions"
+import { GenerateTasteIDButton, RecomputeButton, SmallRecomputeButton, ResetTasteIDButton } from "./tasteid-actions"
 
 interface Props {
   params: Promise<{ username: string }>
@@ -1165,6 +1165,16 @@ export default async function TasteIDPage({ params }: Props) {
           Last computed:{" "}
           {new Date(tasteId.lastComputedAt).toLocaleDateString()}
         </div>
+
+        {/* Danger Zone - Reset */}
+        {isOwnProfile && (
+          <div className="mt-12 pt-8 border-t border-red-500/20">
+            <div className="text-xs uppercase tracking-widest text-red-500/70 mb-4">
+              DANGER ZONE
+            </div>
+            <ResetTasteIDButton />
+          </div>
+        )}
       </div>
     </div>
   )
