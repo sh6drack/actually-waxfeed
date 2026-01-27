@@ -148,7 +148,7 @@ export default async function TasteIDPage({ params }: Props) {
   if (!tasteId) {
     return (
       <div className="min-h-screen bg-background text-foreground p-4 sm:p-8">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-lg mx-auto">
           <Link
             href={`/u/${username}`}
             className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground mb-8"
@@ -156,120 +156,149 @@ export default async function TasteIDPage({ params }: Props) {
             ← Back to profile
           </Link>
 
-          <div className="border-2 border-foreground p-6 sm:p-10">
-            {/* Header */}
-            <div className="text-center mb-8">
-              <div className="w-20 h-20 mx-auto mb-6 border-2 border-[#ffd700] flex items-center justify-center">
-                <svg className="w-10 h-10 text-[#ffd700]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
-                </svg>
+          {/* Premium Card Design */}
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f23] border border-white/10 shadow-2xl">
+            {/* Animated background glow */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#ffd700]/10 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 right-0 w-64 h-64 bg-[#00ff88]/10 rounded-full blur-3xl" />
+            
+            <div className="relative p-8 sm:p-10">
+              {/* Header */}
+              <div className="text-center mb-8">
+                {/* Animated icon */}
+                <div className="w-24 h-24 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-[#ffd700] to-[#ff6b6b] p-[2px]">
+                  <div className="w-full h-full rounded-2xl bg-[#1a1a2e] flex items-center justify-center">
+                    <svg className="w-12 h-12 text-[#ffd700]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+                    </svg>
+                  </div>
+                </div>
+                
+                <h1 className="text-2xl sm:text-3xl font-bold mb-2 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
+                  {isOwnProfile ? "Build Your TasteID" : "TasteID Not Generated"}
+                </h1>
+                <p className="text-white/60 text-sm">
+                  {isOwnProfile
+                    ? "Your unique musical fingerprint awaits"
+                    : `@${username} hasn't generated their TasteID yet.`}
+                </p>
               </div>
-              <h1 className="text-3xl font-bold uppercase tracking-wider mb-2">
-                {isOwnProfile ? "Build Your TasteID" : "TasteID Not Generated"}
-              </h1>
-              <p className="text-muted-foreground">
-                {isOwnProfile
-                  ? "Your unique musical fingerprint awaits. Rate albums to unlock it."
-                  : `@${username} hasn't generated their TasteID yet.`}
-              </p>
-            </div>
 
-            {isOwnProfile && (
-              <>
-                {/* Progress Section */}
-                <div className="mb-8 p-4 border border-border bg-muted/20">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs uppercase tracking-wider text-muted-foreground font-bold">Progress</span>
-                    <span className="text-sm font-bold">
-                      <span className="text-[#ffd700]">{reviewCount}</span>
-                      <span className="text-muted-foreground"> / {minReviews} albums</span>
-                    </span>
+              {isOwnProfile && (
+                <>
+                  {/* Progress Section */}
+                  <div className="mb-8 p-5 rounded-xl bg-white/5 border border-white/10 backdrop-blur">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-xs uppercase tracking-wider text-white/50 font-medium">Progress</span>
+                      <span className="text-lg font-bold">
+                        <span className="text-[#ffd700]">{reviewCount}</span>
+                        <span className="text-white/40"> / {minReviews}</span>
+                      </span>
+                    </div>
+                    
+                    {/* Progress Bar */}
+                    <div className="h-3 bg-white/10 rounded-full overflow-hidden mb-4">
+                      <div 
+                        className="h-full bg-gradient-to-r from-[#ff6b6b] via-[#ffd700] to-[#00ff88] rounded-full transition-all duration-700 ease-out"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                    
+                    {/* Milestones */}
+                    <div className="flex justify-between">
+                      {[1, 2, 3].map((num) => (
+                        <div key={num} className="flex flex-col items-center">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold mb-1 transition-all ${
+                            reviewCount >= num 
+                              ? 'bg-[#ffd700] text-black' 
+                              : 'bg-white/10 text-white/40'
+                          }`}>
+                            {reviewCount >= num ? '✓' : num}
+                          </div>
+                          <span className={`text-[10px] ${reviewCount >= num ? 'text-[#ffd700]' : 'text-white/40'}`}>
+                            {num === 3 ? 'Unlock!' : `Album ${num}`}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  
-                  {/* Progress Bar */}
-                  <div className="h-3 bg-border overflow-hidden mb-3">
-                    <div 
-                      className="h-full bg-gradient-to-r from-[#ff6b6b] via-[#ffd700] to-[#00ff88] transition-all duration-500"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                  
-                  {/* Milestones */}
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span className={reviewCount >= 1 ? 'text-[#ffd700]' : ''}>1 album</span>
-                    <span className={reviewCount >= 2 ? 'text-[#ffd700]' : ''}>2 albums</span>
-                    <span className={reviewCount >= 3 ? 'text-[#00ff88]' : ''}>3 albums ✓</span>
-                  </div>
-                </div>
 
-                {/* Status Message */}
-                <div className="text-center mb-8">
-                  {canGenerate ? (
-                    <p className="text-[#00ff88] font-medium">
-                      You're ready! Generate your TasteID now.
-                    </p>
-                  ) : (
-                    <p className="text-muted-foreground">
-                      Rate <span className="text-[#ffd700] font-bold">{minReviews - reviewCount}</span> more album{minReviews - reviewCount !== 1 ? 's' : ''} to unlock your TasteID.
-                    </p>
-                  )}
-                </div>
+                  {/* Status Message */}
+                  <div className="text-center mb-8">
+                    {canGenerate ? (
+                      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00ff88]/20 text-[#00ff88]">
+                        <span className="w-2 h-2 rounded-full bg-[#00ff88] animate-pulse" />
+                        <span className="font-medium text-sm">Ready to generate!</span>
+                      </div>
+                    ) : (
+                      <p className="text-white/60">
+                        Rate <span className="text-[#ffd700] font-bold">{minReviews - reviewCount}</span> more album{minReviews - reviewCount !== 1 ? 's' : ''} to unlock
+                      </p>
+                    )}
+                  </div>
 
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  {canGenerate ? (
-                    <GenerateTasteIDButton />
-                  ) : (
+                  {/* Action Buttons */}
+                  <div className="space-y-3">
+                    {canGenerate ? (
+                      <GenerateTasteIDButton />
+                    ) : (
+                      <Link
+                        href="/quick-rate"
+                        className="block w-full py-4 bg-gradient-to-r from-[#ffd700] to-[#ffed4a] text-black text-sm font-bold uppercase tracking-wider rounded-xl text-center hover:shadow-lg hover:shadow-[#ffd700]/25 transition-all"
+                      >
+                        Start Rating Albums
+                      </Link>
+                    )}
+                    
                     <Link
-                      href="/quick-rate"
-                      className="px-8 py-4 bg-[#ffd700] text-black text-sm font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors text-center"
+                      href="/discover"
+                      className="block w-full py-4 border border-white/20 text-white/80 text-sm font-bold uppercase tracking-wider rounded-xl text-center hover:bg-white/5 hover:border-white/40 transition-all"
                     >
-                      Rate Albums Now
+                      Discover Music
                     </Link>
-                  )}
-                  
+                  </div>
+
+                  {/* What is TasteID */}
+                  <div className="mt-10 pt-8 border-t border-white/10">
+                    <h3 className="text-xs uppercase tracking-wider text-white/40 font-medium mb-5 text-center">What You'll Unlock</h3>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="p-4 rounded-xl bg-white/5 text-center hover:bg-white/10 transition-colors">
+                        <div className="w-10 h-10 mx-auto mb-3 rounded-lg bg-gradient-to-br from-[#ff6b6b] to-[#ff8585] flex items-center justify-center">
+                          <span className="text-lg">🎭</span>
+                        </div>
+                        <div className="text-xs font-bold text-white/90 mb-1">Archetype</div>
+                        <div className="text-[10px] text-white/50">Your personality</div>
+                      </div>
+                      <div className="p-4 rounded-xl bg-white/5 text-center hover:bg-white/10 transition-colors">
+                        <div className="w-10 h-10 mx-auto mb-3 rounded-lg bg-gradient-to-br from-[#00bfff] to-[#00d4ff] flex items-center justify-center">
+                          <span className="text-lg">📊</span>
+                        </div>
+                        <div className="text-xs font-bold text-white/90 mb-1">Analysis</div>
+                        <div className="text-[10px] text-white/50">Deep insights</div>
+                      </div>
+                      <div className="p-4 rounded-xl bg-white/5 text-center hover:bg-white/10 transition-colors">
+                        <div className="w-10 h-10 mx-auto mb-3 rounded-lg bg-gradient-to-br from-[#00ff88] to-[#00ffaa] flex items-center justify-center">
+                          <span className="text-lg">🤝</span>
+                        </div>
+                        <div className="text-xs font-bold text-white/90 mb-1">Connect</div>
+                        <div className="text-[10px] text-white/50">Find your people</div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {!isOwnProfile && (
+                <div className="text-center">
                   <Link
-                    href="/discover"
-                    className="px-8 py-4 border-2 border-border text-sm font-bold uppercase tracking-wider hover:border-foreground transition-colors text-center"
+                    href={`/u/${username}`}
+                    className="inline-block px-8 py-4 border border-white/20 text-sm font-bold uppercase tracking-wider rounded-xl hover:bg-white/5 transition-colors"
                   >
-                    Discover Music
+                    View Profile
                   </Link>
                 </div>
-
-                {/* What is TasteID */}
-                <div className="mt-10 pt-8 border-t border-border">
-                  <h3 className="text-xs uppercase tracking-wider text-muted-foreground font-bold mb-4 text-center">What You'll Unlock</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-                    <div className="p-3">
-                      <div className="text-2xl mb-2">🎭</div>
-                      <div className="text-sm font-bold mb-1">Your Archetype</div>
-                      <div className="text-xs text-muted-foreground">Discover your listener personality</div>
-                    </div>
-                    <div className="p-3">
-                      <div className="text-2xl mb-2">📊</div>
-                      <div className="text-sm font-bold mb-1">Taste Analysis</div>
-                      <div className="text-xs text-muted-foreground">Genres, decades, and patterns</div>
-                    </div>
-                    <div className="p-3">
-                      <div className="text-2xl mb-2">🤝</div>
-                      <div className="text-sm font-bold mb-1">Find Your People</div>
-                      <div className="text-xs text-muted-foreground">Connect with similar tasters</div>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {!isOwnProfile && (
-              <div className="text-center">
-                <Link
-                  href={`/u/${username}`}
-                  className="px-6 py-3 border-2 border-border text-sm font-bold uppercase tracking-wider hover:border-foreground transition-colors"
-                >
-                  View Profile
-                </Link>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>
