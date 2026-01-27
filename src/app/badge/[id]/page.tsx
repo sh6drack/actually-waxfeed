@@ -230,7 +230,7 @@ export default async function BadgePage({ params }: BadgePageProps) {
         {/* Share Section */}
         <div className="mt-12 text-center animate-fade-in" style={{ animationDelay: '400ms' }}>
           <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-4">Share This Badge</p>
-          <BadgeShareButtons badgeId={badgeId} albumTitle={badge.album.title} label={label} />
+          <BadgeShareButtons badgeId={id} albumTitle={badge.album.title} label={label} />
         </div>
       </div>
     </div>
