@@ -56,28 +56,28 @@ export default function MessagesPage() {
     <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
       <div className="w-full px-4 lg:px-12 xl:px-20 flex flex-col flex-1 overflow-hidden">
         {/* Compact Header */}
-        <div className="py-4 border-b border-[--border] flex-shrink-0">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-[#ffd700] flex items-center justify-center">
-                <svg className="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <div className="py-3 sm:py-4 border-b border-[--border] flex-shrink-0">
+          <div className="flex items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-[#ffd700] flex items-center justify-center flex-shrink-0">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
               </div>
               <div>
-                <h1 className="text-xl font-bold tracking-tight">Messages</h1>
-                <p className="text-xs text-[--muted]">Connect through music taste</p>
+                <h1 className="text-lg sm:text-xl font-bold tracking-tight">Messages</h1>
+                <p className="text-[10px] sm:text-xs text-[--muted] hidden sm:block">Connect through music taste</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               {totalUnread > 0 && (
-                <div className="px-3 py-1 bg-[#ffd700] text-black text-sm font-bold">
-                  {totalUnread} unread
+                <div className="px-2 sm:px-3 py-1 bg-[#ffd700] text-black text-xs sm:text-sm font-bold">
+                  {totalUnread}
                 </div>
               )}
               <Link
                 href="/discover/similar-tasters"
-                className="px-4 py-2 border border-[--border] text-xs uppercase tracking-wider hover:border-[#ffd700] hover:text-[#ffd700] transition-colors"
+                className="hidden sm:block px-4 py-2 border border-[--border] text-xs uppercase tracking-wider hover:border-[#ffd700] hover:text-[#ffd700] transition-colors"
               >
                 Find Matches
               </Link>
@@ -86,50 +86,53 @@ export default function MessagesPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-[--border] flex-shrink-0">
+        <div className="flex border-b border-[--border] flex-shrink-0 overflow-x-auto scrollbar-hide">
           <button
             onClick={() => setActiveTab('dms')}
-            className={`px-6 py-3 text-xs uppercase tracking-wider transition-colors border-b-2 -mb-px ${
+            className={`flex-1 sm:flex-none px-3 sm:px-6 py-3 text-[10px] sm:text-xs uppercase tracking-wider transition-colors border-b-2 -mb-px whitespace-nowrap min-h-[44px] ${
               activeTab === 'dms'
                 ? 'border-[#ffd700] text-[#ffd700]'
                 : 'border-transparent text-[--muted] hover:text-[--foreground]'
             }`}
           >
-            <span className="flex items-center gap-2">
+            <span className="flex items-center justify-center gap-1.5 sm:gap-2">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
-              Direct Messages
+              <span className="hidden sm:inline">Direct Messages</span>
+              <span className="sm:hidden">DMs</span>
             </span>
           </button>
           <button
             onClick={() => setActiveTab('circles')}
-            className={`px-6 py-3 text-xs uppercase tracking-wider transition-colors border-b-2 -mb-px ${
+            className={`flex-1 sm:flex-none px-3 sm:px-6 py-3 text-[10px] sm:text-xs uppercase tracking-wider transition-colors border-b-2 -mb-px whitespace-nowrap min-h-[44px] ${
               activeTab === 'circles'
                 ? 'border-[#00ff88] text-[#00ff88]'
                 : 'border-transparent text-[--muted] hover:text-[--foreground]'
             }`}
           >
-            <span className="flex items-center gap-2">
+            <span className="flex items-center justify-center gap-1.5 sm:gap-2">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              Taste Circles
+              <span className="hidden sm:inline">Taste Circles</span>
+              <span className="sm:hidden">Circles</span>
             </span>
           </button>
           <button
             onClick={() => setActiveTab('rooms')}
-            className={`px-6 py-3 text-xs uppercase tracking-wider transition-colors border-b-2 -mb-px ${
+            className={`flex-1 sm:flex-none px-3 sm:px-6 py-3 text-[10px] sm:text-xs uppercase tracking-wider transition-colors border-b-2 -mb-px whitespace-nowrap min-h-[44px] ${
               activeTab === 'rooms'
                 ? 'border-[#00bfff] text-[#00bfff]'
                 : 'border-transparent text-[--muted] hover:text-[--foreground]'
             }`}
           >
-            <span className="flex items-center gap-2">
+            <span className="flex items-center justify-center gap-1.5 sm:gap-2">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
               </svg>
-              Album Rooms
+              <span className="hidden sm:inline">Album Rooms</span>
+              <span className="sm:hidden">Rooms</span>
             </span>
           </button>
         </div>
@@ -201,23 +204,23 @@ export default function MessagesPage() {
         </div>
 
         {/* Quick Actions Footer */}
-        <div className="border-t border-[--border] py-4 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-[--muted]">
-              Messaging powered by <span className="text-[#ffd700]">Polarity</span> taste matching
+        <div className="border-t border-[--border] py-3 sm:py-4 flex-shrink-0">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-0">
+            <p className="text-[10px] sm:text-xs text-[--muted] text-center sm:text-left">
+              Powered by <span className="text-[#ffd700]">Polarity</span> matching
             </p>
-            <div className="flex gap-3">
+            <div className="flex gap-3 sm:gap-3">
               <Link
                 href="/discover/connections"
-                className="text-xs text-[--muted] hover:text-[--foreground] transition-colors"
+                className="text-[10px] sm:text-xs text-[--muted] hover:text-[--foreground] transition-colors"
               >
                 Find Connections
               </Link>
               <Link
                 href="/settings"
-                className="text-xs text-[--muted] hover:text-[--foreground] transition-colors"
+                className="text-[10px] sm:text-xs text-[--muted] hover:text-[--foreground] transition-colors"
               >
-                Message Settings
+                Settings
               </Link>
             </div>
           </div>

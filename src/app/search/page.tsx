@@ -132,42 +132,42 @@ function SearchContent() {
   return (
     <>
       {/* Search Input */}
-      <div className="mb-8">
+      <div className="mb-6 sm:mb-8">
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search for albums, songs, artists..."
-          className="w-full max-w-xl text-lg"
+          placeholder="Search albums, songs, artists..."
+          className="w-full max-w-xl text-base sm:text-lg min-h-[48px] px-4"
           autoFocus
         />
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-4 mb-8 border-b border-[--border]">
+      <div className="flex gap-1 sm:gap-4 mb-6 sm:mb-8 border-b border-[--border] overflow-x-auto scrollbar-hide">
         <button
           onClick={() => setActiveTab("all")}
-          className={`pb-2 px-1 text-sm transition-colors ${activeTab === "all" ? "border-b-2 border-[--foreground]" : "text-[--muted]"}`}
+          className={`pb-2 px-2 sm:px-3 text-xs sm:text-sm transition-colors whitespace-nowrap min-h-[44px] flex items-end ${activeTab === "all" ? "border-b-2 border-[--foreground]" : "text-[--muted]"}`}
         >
           All
         </button>
         <button
           onClick={() => setActiveTab("albums")}
-          className={`pb-2 px-1 text-sm transition-colors ${activeTab === "albums" ? "border-b-2 border-[--foreground]" : "text-[--muted]"}`}
+          className={`pb-2 px-2 sm:px-3 text-xs sm:text-sm transition-colors whitespace-nowrap min-h-[44px] flex items-end ${activeTab === "albums" ? "border-b-2 border-[--foreground]" : "text-[--muted]"}`}
         >
-          Albums ({localResults.length})
+          Albums <span className="hidden sm:inline ml-1">({localResults.length})</span>
         </button>
         <button
           onClick={() => setActiveTab("tracks")}
-          className={`pb-2 px-1 text-sm transition-colors ${activeTab === "tracks" ? "border-b-2 border-[--foreground]" : "text-[--muted]"}`}
+          className={`pb-2 px-2 sm:px-3 text-xs sm:text-sm transition-colors whitespace-nowrap min-h-[44px] flex items-end ${activeTab === "tracks" ? "border-b-2 border-[--foreground]" : "text-[--muted]"}`}
         >
-          Songs ({trackResults.length})
+          Songs <span className="hidden sm:inline ml-1">({trackResults.length})</span>
         </button>
         <button
           onClick={() => setActiveTab("spotify")}
-          className={`pb-2 px-1 text-sm transition-colors ${activeTab === "spotify" ? "border-b-2 border-[--foreground]" : "text-[--muted]"}`}
+          className={`pb-2 px-2 sm:px-3 text-xs sm:text-sm transition-colors whitespace-nowrap min-h-[44px] flex items-end ${activeTab === "spotify" ? "border-b-2 border-[--foreground]" : "text-[--muted]"}`}
         >
-          Spotify ({spotifyResults.length})
+          Spotify <span className="hidden sm:inline ml-1">({spotifyResults.length})</span>
         </button>
       </div>
 
@@ -345,8 +345,8 @@ function TrackResult({ track }: { track: Track }) {
 
 export default function SearchPage() {
   return (
-    <div className="w-full px-4 lg:px-12 xl:px-20 py-8">
-      <h1 className="text-4xl font-bold tracking-tighter mb-8">Search</h1>
+    <div className="w-full px-4 lg:px-12 xl:px-20 py-6 sm:py-8">
+      <h1 className="text-2xl sm:text-4xl font-bold tracking-tighter mb-6 sm:mb-8">Search</h1>
       <Suspense fallback={<p className="text-[--muted]">Loading...</p>}>
         <SearchContent />
       </Suspense>
