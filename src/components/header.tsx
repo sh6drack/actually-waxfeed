@@ -193,7 +193,7 @@ export function Header() {
             <svg className="w-4 h-4" style={{ color: 'var(--header-text)', opacity: 0.6 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
             </svg>
-            <span className="text-xs font-medium" style={{ color: 'var(--header-text)' }}>College Radio</span>
+            <span className="text-xs font-medium" style={{ color: 'var(--header-text)' }}>College Radio Program</span>
           </Link>
 
           {/* Messages Button */}
