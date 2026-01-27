@@ -61,7 +61,7 @@ async function getUserStatus(userId: string) {
         username: true,
         image: true,
         waxBalance: true,
-        tasteId: { select: { id: true, archetype: true } },
+        tasteId: { select: { id: true, primaryArchetype: true } },
         createdAt: true,
       }
     }),
@@ -82,7 +82,7 @@ async function getUserStatus(userId: string) {
     waxBalance: user?.waxBalance || 0,
     reviewCount, 
     hasTasteID: !!user?.tasteId,
-    archetype: user?.tasteId?.archetype,
+    archetype: user?.tasteId?.primaryArchetype,
     tasteIDProgress,
     firstSpinCount,
     memberSince: user?.createdAt,
