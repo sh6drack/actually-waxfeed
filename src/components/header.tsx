@@ -15,6 +15,8 @@ type WaxStats = {
   silverSpinCount: number
   bronzeSpinCount: number
   tier: string
+  hasTasteID?: boolean
+  reviewCount?: number
 }
 
 export function Header() {
@@ -27,7 +29,7 @@ export function Header() {
   const [unreadMessages, setUnreadMessages] = useState(0)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  // Fetch Wax stats
+  // Fetch Wax stats and TasteID status
   useEffect(() => {
     const fetchWax = async () => {
       if (!session?.user) return
@@ -42,6 +44,8 @@ export function Header() {
             silverSpinCount: data.data.silverSpinCount || 0,
             bronzeSpinCount: data.data.bronzeSpinCount || 0,
             tier: data.data.tier || 'FREE',
+            hasTasteID: data.data.hasTasteID || false,
+            reviewCount: data.data.reviewCount || 0,
           })
         }
       } catch (error) {
@@ -137,13 +141,13 @@ export function Header() {
           >
             REVIEW
           </Link>
-          {/* TasteID CTA - only for logged in users without username (incomplete onboarding) */}
-          {session && !session.user?.username && (
+          {/* TasteID CTA - for logged in users without TasteID or incomplete onboarding */}
+          {session && ((!session.user?.username) || (waxStats && !waxStats.hasTasteID && (waxStats.reviewCount || 0) < 20)) && (
             <Link
-              href="/onboarding"
+              href={session.user?.username ? "/quick-rate" : "/onboarding"}
               className="px-3 py-1.5 no-underline transition-all border-2 border-[#ffd700] text-[#ffd700] hover:bg-[#ffd700] hover:text-black"
             >
-              CREATE TASTEID
+              {session.user?.username ? "🎮 BUILD TASTEID" : "CREATE TASTEID"}
             </Link>
           )}
           <Link href="/trending" className="no-underline hover:opacity-60 transition-opacity">
@@ -450,15 +454,18 @@ export function Header() {
             </div>
           </form>
 
-          {/* TasteID CTA in mobile - prominent if user doesn't have username */}
-          {session && !session.user?.username && (
+          {/* TasteID CTA in mobile - prominent if user doesn't have TasteID or incomplete onboarding */}
+          {session && ((!session.user?.username) || (waxStats && !waxStats.hasTasteID && (waxStats.reviewCount || 0) < 20)) && (
             <div className="px-4 pt-4 pb-2">
               <Link
-                href="/onboarding"
+                href={session.user?.username ? "/quick-rate" : "/onboarding"}
                 className="block w-full px-4 py-4 text-center text-sm font-bold no-underline border-2 border-[#ffd700] text-[#ffd700] hover:bg-[#ffd700] hover:text-black transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                🎮 CREATE YOUR TASTEID
+                {session.user?.username 
+                  ? `🎮 BUILD YOUR TASTEID (${waxStats?.reviewCount || 0}/20)`
+                  : "🎮 CREATE YOUR TASTEID"
+                }
               </Link>
             </div>
           )}

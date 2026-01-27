@@ -431,24 +431,28 @@ export function canAwardWaxType(
 // ============================================
 
 export async function getWalletStats(userId: string) {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      waxBalance: true,
-      lifetimeWaxEarned: true,
-      lifetimeWaxSpent: true,
-      weeklyWaxEarned: true,
-      weeklyResetAt: true,
-      subscriptionTier: true,
-      currentStreak: true,
-      dailyClaimedAt: true,
-      // First Spin stats
-      tastemakeScore: true,
-      goldSpinCount: true,
-      silverSpinCount: true,
-      bronzeSpinCount: true,
-    }
-  })
+  const [user, reviewCount, tasteIdExists] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        waxBalance: true,
+        lifetimeWaxEarned: true,
+        lifetimeWaxSpent: true,
+        weeklyWaxEarned: true,
+        weeklyResetAt: true,
+        subscriptionTier: true,
+        currentStreak: true,
+        dailyClaimedAt: true,
+        // First Spin stats
+        tastemakeScore: true,
+        goldSpinCount: true,
+        silverSpinCount: true,
+        bronzeSpinCount: true,
+      }
+    }),
+    prisma.review.count({ where: { userId } }),
+    prisma.tasteID.findUnique({ where: { userId }, select: { id: true } }),
+  ])
 
   if (!user) {
     throw new Error('User not found')
@@ -492,6 +496,9 @@ export async function getWalletStats(userId: string) {
     goldSpinCount: user.goldSpinCount ?? 0,
     silverSpinCount: user.silverSpinCount ?? 0,
     bronzeSpinCount: user.bronzeSpinCount ?? 0,
+    // TasteID status
+    hasTasteID: !!tasteIdExists,
+    reviewCount,
   }
 }
 

@@ -17,14 +17,14 @@ export async function GET(request: NextRequest) {
     })
     const reviewedIds = reviewedAlbumIds.map(r => r.albumId)
 
-    // For onboarding, return popular/well-reviewed albums for broader appeal
+    // For onboarding, return popular albums for broader appeal
     if (isOnboarding) {
-      const popularAlbums = await prisma.album.findMany({
+      // First try: Get Billboard charting albums (most recognizable)
+      let popularAlbums = await prisma.album.findMany({
         where: {
           id: { notIn: reviewedIds },
           coverArtUrl: { not: null },
-          totalReviews: { gte: 3 },
-          averageRating: { gte: 6 },
+          billboardRank: { not: null },
         },
         select: {
           id: true,
@@ -35,12 +35,35 @@ export async function GET(request: NextRequest) {
           releaseDate: true,
           genres: true,
         },
-        take: limit * 2, // Get extra for shuffling
-        orderBy: [
-          { totalReviews: 'desc' },
-          { averageRating: 'desc' },
-        ],
+        take: limit * 2,
+        orderBy: { billboardRank: 'asc' },
       })
+
+      // Fallback: If not enough Billboard albums, get any albums with cover art
+      if (popularAlbums.length < limit) {
+        const fallbackAlbums = await prisma.album.findMany({
+          where: {
+            id: { notIn: [...reviewedIds, ...popularAlbums.map(a => a.id)] },
+            coverArtUrl: { not: null },
+            albumType: { not: 'single' },
+          },
+          select: {
+            id: true,
+            title: true,
+            artistName: true,
+            coverArtUrl: true,
+            coverArtUrlLarge: true,
+            releaseDate: true,
+            genres: true,
+          },
+          take: (limit * 2) - popularAlbums.length,
+          orderBy: [
+            { totalReviews: 'desc' },
+            { releaseDate: 'desc' },
+          ],
+        })
+        popularAlbums = [...popularAlbums, ...fallbackAlbums]
+      }
 
       // Shuffle and return
       const shuffled = popularAlbums
