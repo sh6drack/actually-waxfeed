@@ -1,0 +1,260 @@
+From ebdeb6cb62bc9c413678050fb72510ca8b801446 Mon Sep 17 00:00:00 2001
+From: sh6drack <sh6drack@users.noreply.github.com>
+Date: Sun, 25 Jan 2026 20:38:25 -0500
+Subject: [PATCH 38/50] feat: personalized Quick Rate algorithm using TasteID
+
+- Use user's TasteID topGenres and liked artists for recommendations
+- 30% albums from favorite artists
+- 50% albums in user's preferred genres
+- 20% discovery (highly-rated outside comfort zone)
+- Add country field to User model for future localization
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+---
+ prisma/schema.prisma              |   1 +
+ src/app/api/albums/swipe/route.ts | 196 ++++++++++++++++++++++++------
+ 2 files changed, 162 insertions(+), 35 deletions(-)
+
+diff --git a/prisma/schema.prisma b/prisma/schema.prisma
+index e0586de..bc62416 100644
+--- a/prisma/schema.prisma
++++ b/prisma/schema.prisma
+@@ -78,6 +78,7 @@ model User {
+   name                String?
+   image               String?
+   bio                 String?   @db.VarChar(150)
++  country             String?   // ISO 3166-1 alpha-2 code (e.g., "US", "GB", "DE")
+   socialLinks         Json? // { instagram, twitter, spotify, etc. }
+   role                UserRole  @default(USER)
+   waxScore            Int       @default(0)
+diff --git a/src/app/api/albums/swipe/route.ts b/src/app/api/albums/swipe/route.ts
+index 12b4be2..56769c5 100644
+--- a/src/app/api/albums/swipe/route.ts
++++ b/src/app/api/albums/swipe/route.ts
+@@ -2,62 +2,188 @@ import { NextRequest } from 'next/server'
+ import { successResponse, errorResponse, requireAuth } from '@/lib/api-utils'
+ import { prisma } from '@/lib/prisma'
+ 
+-// GET /api/albums/swipe - Get random unrated albums for swipe mode
++// GET /api/albums/swipe - Get personalized albums for Quick Rate mode
+ export async function GET(request: NextRequest) {
+   try {
+     const user = await requireAuth()
+     const { searchParams } = new URL(request.url)
+     const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 50)
+ 
++    // Get user's TasteID for personalization
++    const tasteId = await prisma.tasteID.findUnique({
++      where: { userId: user.id },
++      select: {
++        topGenres: true,
++        topArtists: true,
++        genreVector: true,
++        adventurenessScore: true,
++      },
++    })
++
+     // Get IDs of albums the user has already reviewed
+     const reviewedAlbumIds = await prisma.review.findMany({
+       where: { userId: user.id },
+       select: { albumId: true },
+     })
++    const reviewedIds = reviewedAlbumIds.map(r => r.albumId)
+ 
+-    const reviewedIds = new Set(reviewedAlbumIds.map(r => r.albumId))
+-
+-    // Get random albums the user hasn't reviewed
+-    // Using a subquery approach for better performance
+-    const totalUnrated = await prisma.album.count({
++    // Get user's highly-rated albums for artist inference
++    const likedReviews = await prisma.review.findMany({
+       where: {
+-        id: { notIn: Array.from(reviewedIds) },
+-        coverArtUrl: { not: null }, // Only albums with cover art
++        userId: user.id,
++        rating: { gte: 7 },
+       },
++      include: {
++        album: {
++          select: { artistName: true, genres: true },
++        },
++      },
++      take: 50,
+     })
+ 
+-    if (totalUnrated === 0) {
+-      return successResponse([])
++    // Extract favorite artists from reviews
++    const favoriteArtists = [...new Set(likedReviews.map(r => r.album.artistName))]
++
++    // Extract genres from liked albums (more reliable than TasteID sometimes)
++    const likedGenres = [...new Set(likedReviews.flatMap(r => r.album.genres))]
++
++    // Combine with TasteID genres
++    const userGenres = tasteId?.topGenres?.length
++      ? [...new Set([...tasteId.topGenres, ...likedGenres])]
++      : likedGenres
++
++    let albums: Array<{
++      id: string
++      title: string
++      artistName: string
++      coverArtUrl: string | null
++      coverArtUrlLarge: string | null
++      releaseDate: Date
++      genres: string[]
++    }> = []
++
++    // Strategy 1: Albums by favorite artists (30% of results)
++    if (favoriteArtists.length > 0) {
++      const artistAlbums = await prisma.album.findMany({
++        where: {
++          artistName: { in: favoriteArtists.slice(0, 20) },
++          id: { notIn: reviewedIds },
++          coverArtUrl: { not: null },
++        },
++        select: {
++          id: true,
++          title: true,
++          artistName: true,
++          coverArtUrl: true,
++          coverArtUrlLarge: true,
++          releaseDate: true,
++          genres: true,
++        },
++        take: Math.ceil(limit * 0.3),
++        orderBy: { totalReviews: 'desc' },
++      })
++      albums.push(...artistAlbums)
+     }
+ 
+-    // Get random offset for variety
+-    const maxOffset = Math.max(0, totalUnrated - limit)
+-    const randomOffset = Math.floor(Math.random() * (maxOffset + 1))
++    // Strategy 2: Albums in user's genres (50% of results)
++    if (userGenres.length > 0) {
++      const genreAlbums = await prisma.album.findMany({
++        where: {
++          id: { notIn: [...reviewedIds, ...albums.map(a => a.id)] },
++          coverArtUrl: { not: null },
++          genres: { hasSome: userGenres.slice(0, 10) },
++          totalReviews: { gte: 1 }, // Some social proof
++        },
++        select: {
++          id: true,
++          title: true,
++          artistName: true,
++          coverArtUrl: true,
++          coverArtUrlLarge: true,
++          releaseDate: true,
++          genres: true,
++        },
++        take: Math.ceil(limit * 0.5),
++        orderBy: [
++          { averageRating: 'desc' },
++          { totalReviews: 'desc' },
++        ],
++      })
++      albums.push(...genreAlbums)
++    }
+ 
+-    const albums = await prisma.album.findMany({
+-      where: {
+-        id: { notIn: Array.from(reviewedIds) },
+-        coverArtUrl: { not: null },
+-      },
+-      select: {
+-        id: true,
+-        title: true,
+-        artistName: true,
+-        coverArtUrl: true,
+-        coverArtUrlLarge: true,
+-        releaseDate: true,
+-        genres: true,
+-      },
+-      skip: randomOffset,
+-      take: limit,
+-      orderBy: {
+-        // Mix of popularity and randomness
+-        totalReviews: 'desc',
+-      },
++    // Strategy 3: Discovery - well-rated albums outside comfort zone (20% of results)
++    const discoveryCount = limit - albums.length
++    if (discoveryCount > 0) {
++      const discoveryAlbums = await prisma.album.findMany({
++        where: {
++          id: { notIn: [...reviewedIds, ...albums.map(a => a.id)] },
++          coverArtUrl: { not: null },
++          averageRating: { gte: 7 }, // Only highly-rated discoveries
++          totalReviews: { gte: 5 }, // Social proof
++          // Exclude user's main genres for discovery
++          ...(userGenres.length > 0 ? {
++            NOT: {
++              genres: { hasSome: userGenres.slice(0, 3) }, // Avoid top 3 genres
++            },
++          } : {}),
++        },
++        select: {
++          id: true,
++          title: true,
++          artistName: true,
++          coverArtUrl: true,
++          coverArtUrlLarge: true,
++          releaseDate: true,
++          genres: true,
++        },
++        take: discoveryCount,
++        orderBy: { averageRating: 'desc' },
++      })
++      albums.push(...discoveryAlbums)
++    }
++
++    // Fallback: If we still don't have enough, get popular albums
++    const remaining = limit - albums.length
++    if (remaining > 0) {
++      const fallbackAlbums = await prisma.album.findMany({
++        where: {
++          id: { notIn: [...reviewedIds, ...albums.map(a => a.id)] },
++          coverArtUrl: { not: null },
++          totalReviews: { gte: 1 },
++        },
++        select: {
++          id: true,
++          title: true,
++          artistName: true,
++          coverArtUrl: true,
++          coverArtUrlLarge: true,
++          releaseDate: true,
++          genres: true,
++        },
++        take: remaining,
++        orderBy: [
++          { averageRating: 'desc' },
++          { totalReviews: 'desc' },
++        ],
++      })
++      albums.push(...fallbackAlbums)
++    }
++
++    // Deduplicate
++    const seen = new Set<string>()
++    albums = albums.filter(album => {
++      if (seen.has(album.id)) return false
++      seen.add(album.id)
++      return true
+     })
+ 
+-    // Shuffle the results for more randomness
+-    const shuffled = albums.sort(() => Math.random() - 0.5)
++    // Shuffle for variety (but keep some taste-matched ones near the top)
++    const shuffled = albums
++      .map((album, index) => ({ album, sortKey: index < 5 ? Math.random() * 0.5 : Math.random() }))
++      .sort((a, b) => a.sortKey - b.sortKey)
++      .map(({ album }) => album)
++      .slice(0, limit)
+ 
+     return successResponse(shuffled)
+ 
+-- 
+2.50.1 (Apple Git-155)
+

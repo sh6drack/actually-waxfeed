@@ -1,0 +1,49 @@
+From 4584f289f033d1939f8abcf42df2ae19987fc350 Mon Sep 17 00:00:00 2001
+From: sh6drack <sh6drack@users.noreply.github.com>
+Date: Mon, 26 Jan 2026 12:34:51 -0500
+Subject: [PATCH 46/50] fix: update branding to WAXFEED (all caps)
+
+- Updated FirstTimeWelcome modal headline
+- Updated homepage "What Makes WAXFEED Different" section
+- Consistent brand capitalization across user-facing text
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+---
+ src/app/page.tsx                      | 4 ++--
+ src/components/first-time-welcome.tsx | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index a9a62c0..e50468a 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -252,11 +252,11 @@ export default async function Home() {
+         />
+       )}
+ 
+-      {/* The 3 Pillars - What Makes WaxFeed Different */}
++      {/* The 3 Pillars - What Makes WAXFEED Different */}
+       <section className="border-b border-[--border] bg-white/[0.02]">
+         <div className="max-w-7xl mx-auto px-6 py-12">
+           <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-8">
+-            What Makes WaxFeed Different
++            What Makes WAXFEED Different
+           </p>
+           <div className="grid md:grid-cols-3 gap-8">
+             {/* Pillar 1: Gamification - You Were First */}
+diff --git a/src/components/first-time-welcome.tsx b/src/components/first-time-welcome.tsx
+index 6141ed4..d35dbc8 100644
+--- a/src/components/first-time-welcome.tsx
++++ b/src/components/first-time-welcome.tsx
+@@ -82,7 +82,7 @@ export function FirstTimeWelcome() {
+ 
+             {/* Headline */}
+             <h2 className="text-3xl md:text-4xl font-bold mb-3">
+-              Welcome to WaxFeed
++              Welcome to WAXFEED
+             </h2>
+ 
+             {/* Subheadline */}
+-- 
+2.50.1 (Apple Git-155)
+

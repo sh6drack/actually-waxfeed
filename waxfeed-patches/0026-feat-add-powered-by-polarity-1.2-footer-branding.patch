@@ -1,0 +1,29 @@
+From 7e9f00657d2753a631dd2c286af51c762d5f89e0 Mon Sep 17 00:00:00 2001
+From: Shadrack Annor <shadrack@Shadracks-MacBook-Air-10.local>
+Date: Sun, 25 Jan 2026 17:38:38 -0500
+Subject: [PATCH 26/50] feat: add powered by polarity 1.2 footer branding
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+---
+ src/app/layout.tsx | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/src/app/layout.tsx b/src/app/layout.tsx
+index 7e128b0..1e099e3 100644
+--- a/src/app/layout.tsx
++++ b/src/app/layout.tsx
+@@ -40,6 +40,11 @@ export default function RootLayout({
+             <main className="pt-16">
+               {children}
+             </main>
++            <footer className="fixed bottom-3 right-4 z-40">
++              <span className="text-[10px] tracking-[0.2em] uppercase text-foreground/30 font-medium">
++                powered by polarity 1.2
++              </span>
++            </footer>
+             <Analytics />
+           </ThemeProvider>
+         </SessionProvider>
+-- 
+2.50.1 (Apple Git-155)
+

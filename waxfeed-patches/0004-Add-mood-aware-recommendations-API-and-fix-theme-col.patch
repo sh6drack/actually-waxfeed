@@ -1,0 +1,1258 @@
+From 69edeb1e090b0c64457f71cf85b2d357341363cc Mon Sep 17 00:00:00 2001
+From: Shadrack Annor <shadrack@mac.mynetworksettings.com>
+Date: Sat, 24 Jan 2026 10:23:51 -0500
+Subject: [PATCH 04/50] Add mood-aware recommendations API and fix theme colors
+ across pages
+
+- Add /api/recommendations/mood endpoint for mood-based album suggestions
+- Add mood-recommendations.ts lib with listening mode detection
+- Fix hardcoded colors in login, signup, onboarding, settings, search pages
+- Update stats page to use CSS variables for theme support
+- Update TasteID page to use new Music Networks terminology (not BrainID)
+- Update billboard-list and album-card with proper theme colors
+- Add new CSS variables for consistent theming
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+---
+ src/app/api/recommendations/mood/route.ts |  37 +++
+ src/app/globals.css                       |  18 ++
+ src/app/login/page.tsx                    |  14 +-
+ src/app/onboarding/page.tsx               |  24 +-
+ src/app/search/page.tsx                   |  24 +-
+ src/app/settings/page.tsx                 |  40 +--
+ src/app/signup/page.tsx                   |  18 +-
+ src/app/trending/billboard-list.tsx       |   4 +-
+ src/app/u/[username]/stats/page.tsx       |  64 ++---
+ src/app/u/[username]/tasteid/page.tsx     |  92 +++++++
+ src/components/album-card.tsx             |   6 +-
+ src/lib/mood-recommendations.ts           | 308 ++++++++++++++++++++++
+ 12 files changed, 552 insertions(+), 97 deletions(-)
+ create mode 100644 src/app/api/recommendations/mood/route.ts
+ create mode 100644 src/lib/mood-recommendations.ts
+
+diff --git a/src/app/api/recommendations/mood/route.ts b/src/app/api/recommendations/mood/route.ts
+new file mode 100644
+index 0000000..f01cdb0
+--- /dev/null
++++ b/src/app/api/recommendations/mood/route.ts
+@@ -0,0 +1,37 @@
++import { NextRequest, NextResponse } from "next/server"
++import { getMoodAwareRecommendations } from "@/lib/mood-recommendations"
++
++export async function GET(request: NextRequest) {
++  const searchParams = request.nextUrl.searchParams
++  const userId = searchParams.get("userId")
++  const mood = searchParams.get("mood") as "comfort" | "discovery" | "depth" | "reactive" | "emotional"
++
++  if (!userId) {
++    return NextResponse.json(
++      { success: false, error: "userId required" },
++      { status: 400 }
++    )
++  }
++
++  if (!mood || !["comfort", "discovery", "depth", "reactive", "emotional"].includes(mood)) {
++    return NextResponse.json(
++      { success: false, error: "valid mood required" },
++      { status: 400 }
++    )
++  }
++
++  try {
++    const recommendations = await getMoodAwareRecommendations(userId, mood, 6)
++
++    return NextResponse.json({
++      success: true,
++      data: recommendations,
++    })
++  } catch (error) {
++    console.error("Error fetching mood recommendations:", error)
++    return NextResponse.json(
++      { success: false, error: "Failed to get recommendations" },
++      { status: 500 }
++    )
++  }
++}
+diff --git a/src/app/globals.css b/src/app/globals.css
+index 6a0acec..64ab342 100644
+--- a/src/app/globals.css
++++ b/src/app/globals.css
+@@ -6,11 +6,20 @@ html.light {
+   --background: #0a0a0a;
+   --foreground: #ededed;
+   --muted: #888888;
++  --muted-dim: #666666;
++  --muted-faint: #444444;
+   --border: #222222;
++  --border-dim: #333333;
++  --surface: #111111;
++  --surface-raised: #1a1a1a;
+   --accent: #ffffff;
++  --accent-muted: #cccccc;
+   --header-bg: #ffffff;
+   --header-text: #000000;
+   --header-border: #000000;
++  --error: #ff3b3b;
++  --success: #22c55e;
++  --warning: #eab308;
+ }
+ 
+ /* Dark mode - white body, dark header */
+@@ -18,11 +27,20 @@ html.dark {
+   --background: #ffffff;
+   --foreground: #0a0a0a;
+   --muted: #666666;
++  --muted-dim: #888888;
++  --muted-faint: #aaaaaa;
+   --border: #dddddd;
++  --border-dim: #cccccc;
++  --surface: #f5f5f5;
++  --surface-raised: #eeeeee;
+   --accent: #000000;
++  --accent-muted: #333333;
+   --header-bg: #0a0a0a;
+   --header-text: #ededed;
+   --header-border: #222222;
++  --error: #dc2626;
++  --success: #16a34a;
++  --warning: #ca8a04;
+ }
+ 
+ @theme inline {
+diff --git a/src/app/login/page.tsx b/src/app/login/page.tsx
+index 19c3cc5..45766d6 100644
+--- a/src/app/login/page.tsx
++++ b/src/app/login/page.tsx
+@@ -47,7 +47,7 @@ export default function LoginPage() {
+   if (status === "loading") {
+     return (
+       <div className="min-h-[80vh] flex items-center justify-center">
+-        <p className="text-[#888]">Loading...</p>
++        <p className="text-[--muted]">Loading...</p>
+       </div>
+     )
+   }
+@@ -56,7 +56,7 @@ export default function LoginPage() {
+     <div className="min-h-[80vh] flex items-center justify-center px-4">
+       <div className="max-w-md w-full">
+         <h1 className="text-4xl font-bold tracking-tighter mb-4">Sign In</h1>
+-        <p className="text-[#888] mb-8">
++        <p className="text-[--muted] mb-8">
+           Welcome back to Waxfeed.
+         </p>
+ 
+@@ -87,10 +87,10 @@ export default function LoginPage() {
+ 
+         <div className="relative mb-6">
+           <div className="absolute inset-0 flex items-center">
+-            <div className="w-full border-t border-[#333]"></div>
++            <div className="w-full border-t border-[--border-dim]"></div>
+           </div>
+           <div className="relative flex justify-center text-sm">
+-            <span className="px-2 bg-black text-[#888]">Or continue with email</span>
++            <span className="px-2 bg-black text-[--muted]">Or continue with email</span>
+           </div>
+         </div>
+ 
+@@ -110,7 +110,7 @@ export default function LoginPage() {
+               type="email"
+               value={email}
+               onChange={(e) => setEmail(e.target.value)}
+-              className="w-full bg-[#111] border border-[#333] px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
++              className="w-full bg-[--surface] border border-[--border-dim] px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
+               placeholder="you@example.com"
+               required
+             />
+@@ -125,7 +125,7 @@ export default function LoginPage() {
+               type="password"
+               value={password}
+               onChange={(e) => setPassword(e.target.value)}
+-              className="w-full bg-[#111] border border-[#333] px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
++              className="w-full bg-[--surface] border border-[--border-dim] px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
+               placeholder="••••••••"
+               required
+             />
+@@ -140,7 +140,7 @@ export default function LoginPage() {
+           </button>
+         </form>
+ 
+-        <p className="text-sm text-[#888] mt-6 text-center">
++        <p className="text-sm text-[--muted] mt-6 text-center">
+           Don&apos;t have an account?{" "}
+           <Link href="/signup" className="text-white hover:underline">
+             Sign up
+diff --git a/src/app/onboarding/page.tsx b/src/app/onboarding/page.tsx
+index 9aa3397..046fd67 100644
+--- a/src/app/onboarding/page.tsx
++++ b/src/app/onboarding/page.tsx
+@@ -119,7 +119,7 @@ export default function OnboardingPage() {
+   if (status === "loading") {
+     return (
+       <div className="min-h-[80vh] flex items-center justify-center">
+-        <p className="text-[#888]">Loading...</p>
++        <p className="text-[--muted]">Loading...</p>
+       </div>
+     )
+   }
+@@ -129,22 +129,22 @@ export default function OnboardingPage() {
+       <div className="max-w-md w-full">
+         {/* Progress indicator */}
+         <div className="flex gap-2 mb-8">
+-          <div className={`h-1 flex-1 ${step >= 1 ? "bg-white" : "bg-[#333]"}`} />
+-          <div className={`h-1 flex-1 ${step >= 2 ? "bg-white" : "bg-[#333]"}`} />
++          <div className={`h-1 flex-1 ${step >= 1 ? "bg-white" : "bg-[--border-dim]"}`} />
++          <div className={`h-1 flex-1 ${step >= 2 ? "bg-white" : "bg-[--border-dim]"}`} />
+         </div>
+ 
+         {step === 1 && (
+           <>
+             <h1 className="text-4xl font-bold tracking-tighter mb-4">Welcome to Waxfeed</h1>
+-            <p className="text-[#888] mb-8">
++            <p className="text-[--muted] mb-8">
+               First, choose your username. This is how you&apos;ll be known on Waxfeed.
+             </p>
+ 
+             <form onSubmit={handleUsernameSubmit} className="space-y-6">
+               <div>
+-                <label className="block text-sm text-[#888] mb-2">Username</label>
++                <label className="block text-sm text-[--muted] mb-2">Username</label>
+                 <div className="relative">
+-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#666]">@</span>
++                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[--muted-dim]">@</span>
+                   <input
+                     type="text"
+                     value={username}
+@@ -164,12 +164,12 @@ export default function OnboardingPage() {
+                   />
+                 </div>
+                 {checking && (
+-                  <p className="text-xs text-[#888] mt-1">Checking availability...</p>
++                  <p className="text-xs text-[--muted] mt-1">Checking availability...</p>
+                 )}
+                 {error && (
+                   <p className="text-xs text-red-500 mt-1">{error}</p>
+                 )}
+-                <p className="text-xs text-[#666] mt-2">
++                <p className="text-xs text-[--muted-dim] mt-2">
+                   3-30 characters, letters, numbers, and underscores only
+                 </p>
+               </div>
+@@ -188,7 +188,7 @@ export default function OnboardingPage() {
+         {step === 2 && (
+           <>
+             <h1 className="text-4xl font-bold tracking-tighter mb-4">Add a Profile Picture</h1>
+-            <p className="text-[#888] mb-8">
++            <p className="text-[--muted] mb-8">
+               Help your friends recognize you. You can always change this later.
+             </p>
+ 
+@@ -201,7 +201,7 @@ export default function OnboardingPage() {
+                   <img
+                     src={image}
+                     alt=""
+-                    className="w-full h-full object-cover border border-[#333]"
++                    className="w-full h-full object-cover border border-[--border-dim]"
+                   />
+                 ) : (
+                   <DefaultAvatar size="lg" className="w-full h-full" />
+@@ -235,7 +235,7 @@ export default function OnboardingPage() {
+                 onChange={handleImageUpload}
+                 className="hidden"
+               />
+-              <p className="text-sm text-[#888]">
++              <p className="text-sm text-[--muted]">
+                 Click to upload • Max 5MB
+               </p>
+               {error && (
+@@ -246,7 +246,7 @@ export default function OnboardingPage() {
+             <div className="flex gap-3">
+               <button
+                 onClick={handleComplete}
+-                className="flex-1 border border-[#333] py-4 px-6 font-bold text-lg hover:bg-[#111] transition-colors"
++                className="flex-1 border border-[--border-dim] py-4 px-6 font-bold text-lg hover:bg-[#111] transition-colors"
+               >
+                 Skip for now
+               </button>
+diff --git a/src/app/search/page.tsx b/src/app/search/page.tsx
+index 1ecc835..be16d01 100644
+--- a/src/app/search/page.tsx
++++ b/src/app/search/page.tsx
+@@ -99,29 +99,29 @@ function SearchContent() {
+       </div>
+ 
+       {/* Tabs */}
+-      <div className="flex gap-4 mb-8 border-b border-[#222]">
++      <div className="flex gap-4 mb-8 border-b border-[--border]">
+         <button
+           onClick={() => setActiveTab("all")}
+-          className={`pb-2 px-1 text-sm ${activeTab === "all" ? "border-b-2 border-white" : "text-[#888]"}`}
++          className={`pb-2 px-1 text-sm ${activeTab === "all" ? "border-b-2 border-white" : "text-[--muted]"}`}
+         >
+           All
+         </button>
+         <button
+           onClick={() => setActiveTab("local")}
+-          className={`pb-2 px-1 text-sm ${activeTab === "local" ? "border-b-2 border-white" : "text-[#888]"}`}
++          className={`pb-2 px-1 text-sm ${activeTab === "local" ? "border-b-2 border-white" : "text-[--muted]"}`}
+         >
+           On Waxfeed ({localResults.length})
+         </button>
+         <button
+           onClick={() => setActiveTab("spotify")}
+-          className={`pb-2 px-1 text-sm ${activeTab === "spotify" ? "border-b-2 border-white" : "text-[#888]"}`}
++          className={`pb-2 px-1 text-sm ${activeTab === "spotify" ? "border-b-2 border-white" : "text-[--muted]"}`}
+         >
+           Spotify ({spotifyResults.length})
+         </button>
+       </div>
+ 
+       {loading ? (
+-        <p className="text-[#888]">Searching...</p>
++        <p className="text-[--muted]">Searching...</p>
+       ) : (
+         <div className="space-y-12">
+           {/* Local Results */}
+@@ -155,7 +155,7 @@ function SearchContent() {
+                   return (
+                     <div key={album.id} className="group">
+                       <div className="w-40">
+-                        <div className="aspect-square bg-[#222] relative overflow-hidden border border-[#333]">
++                        <div className="aspect-square bg-[--border] relative overflow-hidden border border-[--border-dim]">
+                           {album.images[0]?.url ? (
+                             <img
+                               src={album.images[0].url}
+@@ -163,7 +163,7 @@ function SearchContent() {
+                               className="w-full h-full object-cover"
+                             />
+                           ) : (
+-                            <div className="w-full h-full flex items-center justify-center text-[#666]">
++                            <div className="w-full h-full flex items-center justify-center text-[--muted-dim]">
+                               No Cover
+                             </div>
+                           )}
+@@ -188,10 +188,10 @@ function SearchContent() {
+                           ) : (
+                             <p className="font-bold text-sm truncate">{album.name}</p>
+                           )}
+-                          <p className="text-[#888] text-xs truncate">
++                          <p className="text-[--muted] text-xs truncate">
+                             {album.artists.map(a => a.name).join(", ")}
+                           </p>
+-                          <p className="text-[#666] text-xs">
++                          <p className="text-[--muted-dim] text-xs">
+                             {album.album_type} • {album.release_date?.split("-")[0]}
+                           </p>
+                         </div>
+@@ -206,14 +206,14 @@ function SearchContent() {
+           {/* Empty State */}
+           {query && !loading && filteredLocal.length === 0 && filteredSpotify.length === 0 && (
+             <div className="text-center py-12">
+-              <p className="text-[#888]">No results found for &ldquo;{query}&rdquo;</p>
++              <p className="text-[--muted]">No results found for &ldquo;{query}&rdquo;</p>
+             </div>
+           )}
+ 
+           {/* Initial State */}
+           {!query && (
+             <div className="text-center py-12">
+-              <p className="text-[#888]">Start typing to search for albums</p>
++              <p className="text-[--muted]">Start typing to search for albums</p>
+             </div>
+           )}
+         </div>
+@@ -226,7 +226,7 @@ export default function SearchPage() {
+   return (
+     <div className="max-w-7xl mx-auto px-4 py-8">
+       <h1 className="text-4xl font-bold tracking-tighter mb-8">Search</h1>
+-      <Suspense fallback={<p className="text-[#888]">Loading...</p>}>
++      <Suspense fallback={<p className="text-[--muted]">Loading...</p>}>
+         <SearchContent />
+       </Suspense>
+     </div>
+diff --git a/src/app/settings/page.tsx b/src/app/settings/page.tsx
+index 58e0ae8..d3d5eca 100644
+--- a/src/app/settings/page.tsx
++++ b/src/app/settings/page.tsx
+@@ -140,7 +140,7 @@ export default function SettingsPage() {
+   if (status === "loading") {
+     return (
+       <div className="max-w-2xl mx-auto px-4 py-8">
+-        <p className="text-[#888]">Loading...</p>
++        <p className="text-[--muted]">Loading...</p>
+       </div>
+     )
+   }
+@@ -156,14 +156,14 @@ export default function SettingsPage() {
+         <div className="space-y-6">
+           {/* Profile Picture */}
+           <div>
+-            <label className="block text-sm text-[#888] mb-2">Profile Picture</label>
++            <label className="block text-sm text-[--muted] mb-2">Profile Picture</label>
+             <div className="flex items-center gap-4">
+               <label className="relative w-24 h-24 cursor-pointer group">
+                 {image ? (
+                   <img
+                     src={image}
+                     alt=""
+-                    className="w-full h-full object-cover border border-[#333]"
++                    className="w-full h-full object-cover border border-[--border-dim]"
+                   />
+                 ) : (
+                   <DefaultAvatar size="lg" className="w-full h-full" />
+@@ -196,25 +196,25 @@ export default function SettingsPage() {
+                   className="hidden"
+                 />
+               </label>
+-              <div className="text-sm text-[#888]">
++              <div className="text-sm text-[--muted]">
+                 <p>Click to upload</p>
+-                <p className="text-xs text-[#666]">Max 4MB • JPEG, PNG, GIF, WebP</p>
++                <p className="text-xs text-[--muted-dim]">Max 4MB • JPEG, PNG, GIF, WebP</p>
+               </div>
+             </div>
+           </div>
+ 
+           {/* Username */}
+           <div>
+-            <label className="block text-sm text-[#888] mb-2">Username</label>
++            <label className="block text-sm text-[--muted] mb-2">Username</label>
+             <div className="flex items-center gap-2">
+-              <span className="text-[#666]">@</span>
++              <span className="text-[--muted-dim]">@</span>
+               <input
+                 type="text"
+                 value={username}
+                 onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, ""))}
+                 placeholder="username"
+                 maxLength={30}
+-                className="flex-1 bg-[#111] border border-[#333] px-3 py-2 text-white focus:outline-none focus:border-white transition-colors"
++                className="flex-1 bg-[--surface] border border-[--border-dim] px-3 py-2 text-white focus:outline-none focus:border-white transition-colors"
+               />
+             </div>
+             {usernameChanged && !canChangeUsername && (
+@@ -228,7 +228,7 @@ export default function SettingsPage() {
+               </p>
+             )}
+             {!usernameChanged && (
+-              <p className="text-xs text-[#666] mt-1">
++              <p className="text-xs text-[--muted-dim] mt-1">
+                 {hasPrivilegedRole
+                   ? "You can change your username anytime"
+                   : usernameChangesUsed === 0
+@@ -242,7 +242,7 @@ export default function SettingsPage() {
+ 
+           {/* Bio */}
+           <div>
+-            <label className="block text-sm text-[#888] mb-2">Bio</label>
++            <label className="block text-sm text-[--muted] mb-2">Bio</label>
+             <textarea
+               value={bio}
+               onChange={(e) => setBio(e.target.value)}
+@@ -251,17 +251,17 @@ export default function SettingsPage() {
+               placeholder="Tell people about yourself..."
+               className="w-full"
+             />
+-            <p className="text-xs text-[#666] mt-1">{bio.length}/150</p>
++            <p className="text-xs text-[--muted-dim] mt-1">{bio.length}/150</p>
+           </div>
+ 
+           {/* Social Links */}
+           <div>
+-            <label className="block text-sm text-[#888] mb-2">Social Links</label>
++            <label className="block text-sm text-[--muted] mb-2">Social Links</label>
+             <div className="space-y-3">
+               <div className="flex items-center gap-3">
+-                <span className="text-[#888] w-20">Instagram</span>
++                <span className="text-[--muted] w-20">Instagram</span>
+                 <div className="flex-1 flex items-center gap-1">
+-                  <span className="text-[#666]">@</span>
++                  <span className="text-[--muted-dim]">@</span>
+                   <input
+                     type="text"
+                     value={socialLinks.instagram}
+@@ -272,9 +272,9 @@ export default function SettingsPage() {
+                 </div>
+               </div>
+               <div className="flex items-center gap-3">
+-                <span className="text-[#888] w-20">Twitter/X</span>
++                <span className="text-[--muted] w-20">Twitter/X</span>
+                 <div className="flex-1 flex items-center gap-1">
+-                  <span className="text-[#666]">@</span>
++                  <span className="text-[--muted-dim]">@</span>
+                   <input
+                     type="text"
+                     value={socialLinks.twitter}
+@@ -285,7 +285,7 @@ export default function SettingsPage() {
+                 </div>
+               </div>
+               <div className="flex items-center gap-3">
+-                <span className="text-[#888] w-20">Spotify</span>
++                <span className="text-[--muted] w-20">Spotify</span>
+                 <input
+                   type="text"
+                   value={socialLinks.spotify}
+@@ -295,7 +295,7 @@ export default function SettingsPage() {
+                 />
+               </div>
+               <div className="flex items-center gap-3">
+-                <span className="text-[#888] w-20">Website</span>
++                <span className="text-[--muted] w-20">Website</span>
+                 <input
+                   type="text"
+                   value={socialLinks.website}
+@@ -326,9 +326,9 @@ export default function SettingsPage() {
+       </div>
+ 
+       {/* Danger Zone */}
+-      <section className="mt-16 pt-8 border-t border-[#222]">
++      <section className="mt-16 pt-8 border-t border-[--border]">
+         <h2 className="text-xl font-bold mb-6 text-red-500">Danger Zone</h2>
+-        <p className="text-sm text-[#888] mb-4">
++        <p className="text-sm text-[--muted] mb-4">
+           Contact scrolling@waxfeed.com to delete your account.
+         </p>
+       </section>
+diff --git a/src/app/signup/page.tsx b/src/app/signup/page.tsx
+index 542d72d..c761458 100644
+--- a/src/app/signup/page.tsx
++++ b/src/app/signup/page.tsx
+@@ -73,7 +73,7 @@ export default function SignupPage() {
+   if (status === "loading") {
+     return (
+       <div className="min-h-[80vh] flex items-center justify-center">
+-        <p className="text-[#888]">Loading...</p>
++        <p className="text-[--muted]">Loading...</p>
+       </div>
+     )
+   }
+@@ -82,7 +82,7 @@ export default function SignupPage() {
+     <div className="min-h-[80vh] flex items-center justify-center px-4">
+       <div className="max-w-md w-full">
+         <h1 className="text-4xl font-bold tracking-tighter mb-4">Create Account</h1>
+-        <p className="text-[#888] mb-8">
++        <p className="text-[--muted] mb-8">
+           Join Waxfeed to review albums, create lists, and discover music through friends.
+         </p>
+ 
+@@ -113,10 +113,10 @@ export default function SignupPage() {
+ 
+         <div className="relative mb-6">
+           <div className="absolute inset-0 flex items-center">
+-            <div className="w-full border-t border-[#333]"></div>
++            <div className="w-full border-t border-[--border-dim]"></div>
+           </div>
+           <div className="relative flex justify-center text-sm">
+-            <span className="px-2 bg-black text-[#888]">Or continue with email</span>
++            <span className="px-2 bg-black text-[--muted]">Or continue with email</span>
+           </div>
+         </div>
+ 
+@@ -136,7 +136,7 @@ export default function SignupPage() {
+               type="email"
+               value={email}
+               onChange={(e) => setEmail(e.target.value)}
+-              className="w-full bg-[#111] border border-[#333] px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
++              className="w-full bg-[--surface] border border-[--border-dim] px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
+               placeholder="you@example.com"
+               required
+             />
+@@ -151,7 +151,7 @@ export default function SignupPage() {
+               type="password"
+               value={password}
+               onChange={(e) => setPassword(e.target.value)}
+-              className="w-full bg-[#111] border border-[#333] px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
++              className="w-full bg-[--surface] border border-[--border-dim] px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
+               placeholder="••••••••"
+               required
+               minLength={6}
+@@ -167,7 +167,7 @@ export default function SignupPage() {
+               type="password"
+               value={confirmPassword}
+               onChange={(e) => setConfirmPassword(e.target.value)}
+-              className="w-full bg-[#111] border border-[#333] px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
++              className="w-full bg-[--surface] border border-[--border-dim] px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
+               placeholder="••••••••"
+               required
+               minLength={6}
+@@ -183,14 +183,14 @@ export default function SignupPage() {
+           </button>
+         </form>
+ 
+-        <p className="text-sm text-[#888] mt-6 text-center">
++        <p className="text-sm text-[--muted] mt-6 text-center">
+           Already have an account?{" "}
+           <Link href="/login" className="text-white hover:underline">
+             Sign in
+           </Link>
+         </p>
+ 
+-        <p className="text-xs text-[#666] mt-6 text-center">
++        <p className="text-xs text-[--muted-dim] mt-6 text-center">
+           By signing up, you agree to our Terms of Service and Privacy Policy.
+         </p>
+       </div>
+diff --git a/src/app/trending/billboard-list.tsx b/src/app/trending/billboard-list.tsx
+index b364a78..a1203e2 100644
+--- a/src/app/trending/billboard-list.tsx
++++ b/src/app/trending/billboard-list.tsx
+@@ -30,8 +30,8 @@ export function BillboardList({ albums }: BillboardListProps) {
+     return () => window.removeEventListener('resize', checkMobile)
+   }, [])
+ 
+-  // Mobile: 21 albums (7 rows × 3 cols), Desktop: show all 50
+-  const initialCount = isMobile ? 21 : 50
++  // Mobile: 18 albums (6 rows × 3 cols, under 20 for cleaner UX), Desktop: show all 50
++  const initialCount = isMobile ? 18 : 50
+   const displayedAlbums = isExpanded ? albums : albums.slice(0, initialCount)
+   const hasMore = albums.length > initialCount
+ 
+diff --git a/src/app/u/[username]/stats/page.tsx b/src/app/u/[username]/stats/page.tsx
+index a35e9b7..1ee42a3 100644
+--- a/src/app/u/[username]/stats/page.tsx
++++ b/src/app/u/[username]/stats/page.tsx
+@@ -142,7 +142,7 @@ export default async function UserStatsPage({ params }: Props) {
+       {/* Header */}
+       <div className="flex items-center justify-between mb-8">
+         <div>
+-          <Link href={`/u/${user.username}`} className="text-[#888] hover:text-white no-underline text-sm">
++          <Link href={`/u/${user.username}`} className="text-[--muted] hover:text-[--foreground] no-underline text-sm">
+             ← Back to profile
+           </Link>
+           <h1 className="text-2xl lg:text-3xl font-bold mt-2">
+@@ -151,45 +151,45 @@ export default async function UserStatsPage({ params }: Props) {
+         </div>
+         <div className="text-right">
+           <p className="text-3xl lg:text-4xl font-bold">{stats.currentYear}</p>
+-          <p className="text-xs text-[#888]">Year in Review</p>
++          <p className="text-xs text-[--muted]">Year in Review</p>
+         </div>
+       </div>
+ 
+       {/* Quick Stats */}
+       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+-        <div className="border border-[#222] p-4 text-center">
++        <div className="border border-[--border] p-4 text-center">
+           <p className="text-3xl font-bold">{stats.totalReviews}</p>
+-          <p className="text-xs text-[#888]">Total Reviews</p>
++          <p className="text-xs text-[--muted]">Total Reviews</p>
+         </div>
+-        <div className="border border-[#222] p-4 text-center">
++        <div className="border border-[--border] p-4 text-center">
+           <p className="text-3xl font-bold">{stats.thisYearReviews}</p>
+-          <p className="text-xs text-[#888]">This Year</p>
++          <p className="text-xs text-[--muted]">This Year</p>
+         </div>
+-        <div className="border border-[#222] p-4 text-center">
++        <div className="border border-[--border] p-4 text-center">
+           <p className="text-3xl font-bold">{stats.avgRating.toFixed(1)}</p>
+-          <p className="text-xs text-[#888]">Avg Rating</p>
++          <p className="text-xs text-[--muted]">Avg Rating</p>
+         </div>
+-        <div className="border border-[#222] p-4 text-center">
++        <div className="border border-[--border] p-4 text-center">
+           <p className="text-3xl font-bold">{stats.listsCount}</p>
+-          <p className="text-xs text-[#888]">Lists</p>
++          <p className="text-xs text-[--muted]">Lists</p>
+         </div>
+       </div>
+ 
+       {/* Monthly Activity Chart */}
+       <section className="mb-8">
+         <h2 className="text-lg font-bold mb-4">{stats.currentYear} Activity</h2>
+-        <div className="border border-[#222] p-4">
++        <div className="border border-[--border] p-4">
+           <div className="flex items-end gap-1 h-32">
+             {months.map((month, i) => (
+               <div key={month} className="flex-1 flex flex-col items-center gap-1">
+                 <div
+-                  className="w-full bg-white transition-all"
++                  className="w-full bg-[--accent] transition-all"
+                   style={{
+                     height: `${(stats.monthlyActivity[i + 1] / maxMonthlyActivity) * 100}%`,
+                     minHeight: stats.monthlyActivity[i + 1] > 0 ? "4px" : "0",
+                   }}
+                 />
+-                <span className="text-[10px] text-[#666]">{month}</span>
++                <span className="text-[10px] text-[--muted-dim]">{month}</span>
+               </div>
+             ))}
+           </div>
+@@ -199,18 +199,18 @@ export default async function UserStatsPage({ params }: Props) {
+       {/* Rating Distribution */}
+       <section className="mb-8">
+         <h2 className="text-lg font-bold mb-4">Rating Distribution</h2>
+-        <div className="border border-[#222] p-4">
++        <div className="border border-[--border] p-4">
+           <div className="flex items-end gap-1 h-24">
+             {Array.from({ length: 11 }, (_, i) => (
+               <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                 <div
+-                  className="w-full bg-white transition-all"
++                  className="w-full bg-[--accent] transition-all"
+                   style={{
+                     height: `${(stats.ratingDistribution[i] / maxRatingCount) * 100}%`,
+                     minHeight: stats.ratingDistribution[i] > 0 ? "4px" : "0",
+                   }}
+                 />
+-                <span className="text-[10px] text-[#666]">{i}</span>
++                <span className="text-[10px] text-[--muted-dim]">{i}</span>
+               </div>
+             ))}
+           </div>
+@@ -221,15 +221,15 @@ export default async function UserStatsPage({ params }: Props) {
+       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+         <section>
+           <h2 className="text-lg font-bold mb-4">Top Artists</h2>
+-          <div className="border border-[#222]">
++          <div className="border border-[--border]">
+             {stats.topArtists.length === 0 ? (
+-              <p className="p-4 text-[#888] text-sm">No reviews yet</p>
++              <p className="p-4 text-[--muted] text-sm">No reviews yet</p>
+             ) : (
+               stats.topArtists.map((artist, i) => (
+-                <div key={artist.name} className="flex items-center gap-3 p-3 border-b border-[#181818] last:border-0">
+-                  <span className="text-[#666] text-sm w-5">{i + 1}</span>
++                <div key={artist.name} className="flex items-center gap-3 p-3 border-b border-[--surface] last:border-0">
++                  <span className="text-[--muted-dim] text-sm w-5">{i + 1}</span>
+                   <span className="flex-1 truncate text-sm">{artist.name}</span>
+-                  <span className="text-[#888] text-xs">{artist.count} reviews</span>
++                  <span className="text-[--muted] text-xs">{artist.count} reviews</span>
+                 </div>
+               ))
+             )}
+@@ -238,15 +238,15 @@ export default async function UserStatsPage({ params }: Props) {
+ 
+         <section>
+           <h2 className="text-lg font-bold mb-4">Top Genres</h2>
+-          <div className="border border-[#222]">
++          <div className="border border-[--border]">
+             {stats.topGenres.length === 0 ? (
+-              <p className="p-4 text-[#888] text-sm">No genre data</p>
++              <p className="p-4 text-[--muted] text-sm">No genre data</p>
+             ) : (
+               stats.topGenres.map((genre, i) => (
+-                <div key={genre.name} className="flex items-center gap-3 p-3 border-b border-[#181818] last:border-0">
+-                  <span className="text-[#666] text-sm w-5">{i + 1}</span>
++                <div key={genre.name} className="flex items-center gap-3 p-3 border-b border-[--surface] last:border-0">
++                  <span className="text-[--muted-dim] text-sm w-5">{i + 1}</span>
+                   <span className="flex-1 truncate text-sm capitalize">{genre.name}</span>
+-                  <span className="text-[#888] text-xs">{genre.count}</span>
++                  <span className="text-[--muted] text-xs">{genre.count}</span>
+                 </div>
+               ))
+             )}
+@@ -265,7 +265,7 @@ export default async function UserStatsPage({ params }: Props) {
+                 href={`/album/${review.album.spotifyId}`}
+                 className="no-underline group"
+               >
+-                <div className="aspect-square bg-[#181818] mb-2 overflow-hidden">
++                <div className="aspect-square bg-[--surface] mb-2 overflow-hidden">
+                   {review.album.coverArtUrl ? (
+                     <img
+                       src={review.album.coverArtUrl}
+@@ -273,13 +273,13 @@ export default async function UserStatsPage({ params }: Props) {
+                       className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                     />
+                   ) : (
+-                    <div className="w-full h-full flex items-center justify-center text-[#666] text-xs">
++                    <div className="w-full h-full flex items-center justify-center text-[--muted-dim] text-xs">
+                       No Cover
+                     </div>
+                   )}
+                 </div>
+                 <p className="text-xs truncate">{review.album.title}</p>
+-                <p className="text-xs text-[#888] truncate">{review.album.artistName}</p>
++                <p className="text-xs text-[--muted] truncate">{review.album.artistName}</p>
+                 <p className="text-sm font-bold">{review.rating.toFixed(1)}</p>
+               </Link>
+             ))}
+@@ -298,7 +298,7 @@ export default async function UserStatsPage({ params }: Props) {
+                 href={`/album/${review.album.spotifyId}`}
+                 className="no-underline group"
+               >
+-                <div className="aspect-square bg-[#181818] mb-2 overflow-hidden">
++                <div className="aspect-square bg-[--surface] mb-2 overflow-hidden">
+                   {review.album.coverArtUrl ? (
+                     <img
+                       src={review.album.coverArtUrl}
+@@ -306,13 +306,13 @@ export default async function UserStatsPage({ params }: Props) {
+                       className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                     />
+                   ) : (
+-                    <div className="w-full h-full flex items-center justify-center text-[#666] text-xs">
++                    <div className="w-full h-full flex items-center justify-center text-[--muted-dim] text-xs">
+                       No Cover
+                     </div>
+                   )}
+                 </div>
+                 <p className="text-xs truncate">{review.album.title}</p>
+-                <p className="text-xs text-[#888] truncate">{review.album.artistName}</p>
++                <p className="text-xs text-[--muted] truncate">{review.album.artistName}</p>
+                 <p className="text-sm font-bold">{review.rating.toFixed(1)}</p>
+               </Link>
+             ))}
+diff --git a/src/app/u/[username]/tasteid/page.tsx b/src/app/u/[username]/tasteid/page.tsx
+index 47f1962..1b0122e 100644
+--- a/src/app/u/[username]/tasteid/page.tsx
++++ b/src/app/u/[username]/tasteid/page.tsx
+@@ -9,6 +9,13 @@ import {
+   ArtistDNAStrip,
+   TasteCardShare,
+ } from "@/components/tasteid"
++import {
++  MusicNetworksVisualization,
++  MusicNetworksLegend,
++  ListeningModeIndicator,
++  MusicNetworkKey,
++  MUSIC_NETWORKS,
++} from "@/components/tasteid"
+ import { DefaultAvatar } from "@/components/default-avatar"
+ import {
+   getArchetypeInfo,
+@@ -206,6 +213,21 @@ export default async function TasteIDPage({ params }: Props) {
+     return meanings[networkId] || ""
+   }
+ 
++  // Derive Music Network activations from listening signature
++  // Based on TasteID architecture - 7 Music Networks mapped from Yeo model
++  const deriveMusicNetworks = (sig: ListeningSignature): Partial<Record<MusicNetworkKey, number>> => {
++    // Direct mapping from listening signature to Music Networks
++    return {
++      DISCOVERY: sig.discovery || 0,
++      COMFORT: sig.comfort || 0,
++      DEEP_DIVE: sig.deep_dive || 0,
++      REACTIVE: sig.reactive || 0,
++      EMOTIONAL: sig.emotional || 0,
++      SOCIAL: sig.social || 0,
++      AESTHETIC: sig.aesthetic || 0,
++    }
++  }
++
+   // Get pattern explanation
+   const getPatternMeaning = (pattern: string): string => {
+     const meanings: Record<string, string> = {
+@@ -581,6 +603,76 @@ export default async function TasteIDPage({ params }: Props) {
+           )
+         })()}
+ 
++        {/* 7 Music Networks Visualization */}
++        {listeningSignature && (() => {
++          const musicNetworks = deriveMusicNetworks(listeningSignature)
++
++          return (
++            <div className="mb-6 sm:mb-8 border-2 border-foreground p-4 sm:p-6">
++              <div className="flex items-center gap-3 mb-4">
++                <div className="w-2 h-2 bg-blue-400" />
++                <h2 className="text-xs uppercase tracking-[0.3em] text-foreground font-bold">
++                  7 MUSIC NETWORKS
++                </h2>
++                <span className="text-[10px] px-2 py-0.5 border border-blue-400/30 text-blue-400 uppercase tracking-wider">
++                  YEO MODEL
++                </span>
++              </div>
++
++              <p className="text-muted-foreground mb-6 leading-relaxed">
++                Your listening signature mapped to 7 distinct modes of musical engagement, adapted from the Yeo 7-Network cognitive model.
++              </p>
++
++              <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
++                {/* Music Networks Visualization */}
++                <div className="flex justify-center lg:justify-start">
++                  <MusicNetworksVisualization
++                    networkActivations={musicNetworks}
++                    size={240}
++                  />
++                </div>
++
++                {/* Listening Mode + Legend */}
++                <div className="flex-1 space-y-4">
++                  <ListeningModeIndicator
++                    networkActivations={musicNetworks}
++                    className="mb-4"
++                  />
++
++                  <div className="pt-4 border-t border-border">
++                    <MusicNetworksLegend showYeoMapping={true} />
++                  </div>
++                </div>
++              </div>
++
++              {/* Network Detection Signals */}
++              <div className="mt-6 pt-4 border-t border-border">
++                <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
++                  Network Detection Signals
++                </p>
++                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
++                  <div className="p-3 border border-border">
++                    <span className="text-blue-400 font-bold block mb-2">DISCOVERY MODE</span>
++                    <ul className="text-muted-foreground space-y-1">
++                      <li>• First-time artist reviews</li>
++                      <li>• Genre diversity in recent reviews</li>
++                      <li>• Low artist repeat rate</li>
++                    </ul>
++                  </div>
++                  <div className="p-3 border border-border">
++                    <span className="text-emerald-400 font-bold block mb-2">DEEP DIVE MODE</span>
++                    <ul className="text-muted-foreground space-y-1">
++                      <li>• Multiple albums from same artist</li>
++                      <li>• Chronological exploration</li>
++                      <li>• Complete discography patterns</li>
++                    </ul>
++                  </div>
++                </div>
++              </div>
++            </div>
++          )
++        })()}
++
+         {/* Signature Patterns */}
+         {signaturePatterns.length > 0 && (
+           <div className="mb-6 sm:mb-8">
+diff --git a/src/components/album-card.tsx b/src/components/album-card.tsx
+index ed6ebb3..9d29751 100644
+--- a/src/components/album-card.tsx
++++ b/src/components/album-card.tsx
+@@ -33,7 +33,7 @@ export const AlbumCard = memo(function AlbumCard({
+   return (
+     <Link href={`/album/${spotifyId}`} className="group block">
+       <div className={`${sizeClasses[size]}`}>
+-        <div className="aspect-square bg-[#181818] relative overflow-hidden group-hover:opacity-80 transition-opacity">
++        <div className="aspect-square bg-[--surface] relative overflow-hidden group-hover:opacity-80 transition-opacity">
+           {coverArtUrl ? (
+             <img
+               src={coverArtUrl}
+@@ -41,7 +41,7 @@ export const AlbumCard = memo(function AlbumCard({
+               className="w-full h-full object-cover"
+             />
+           ) : (
+-            <div className="w-full h-full flex items-center justify-center text-[#444]">
++            <div className="w-full h-full flex items-center justify-center text-[--muted-faint]">
+               <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                 <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1" fill="none"/>
+                 <circle cx="12" cy="12" r="3" fill="currentColor"/>
+@@ -51,7 +51,7 @@ export const AlbumCard = memo(function AlbumCard({
+         </div>
+         <div className="mt-1.5">
+           <p className="text-xs font-medium truncate leading-tight">{title}</p>
+-          <p className="text-[#666] text-xs truncate leading-tight">{artistName}</p>
++          <p className="text-[--muted-dim] text-xs truncate leading-tight">{artistName}</p>
+         </div>
+       </div>
+     </Link>
+diff --git a/src/lib/mood-recommendations.ts b/src/lib/mood-recommendations.ts
+new file mode 100644
+index 0000000..ffdbe87
+--- /dev/null
++++ b/src/lib/mood-recommendations.ts
+@@ -0,0 +1,308 @@
++import { prisma } from "@/lib/prisma"
++import { ListeningSignature } from "@/lib/tasteid"
++
++// Mood types based on TasteID Music Networks
++export type ListeningMood = "comfort" | "discovery" | "depth" | "reactive" | "emotional"
++
++interface MoodRecommendation {
++  album: {
++    id: string
++    spotifyId: string
++    title: string
++    artistName: string
++    coverArtUrl: string | null
++    averageRating: number | null
++    genres: string[]
++  }
++  reason: string
++  moodMatch: number
++}
++
++// Derive the current listening mood from a user's listening signature
++export function deriveCognitiveState(signature: ListeningSignature): ListeningMood {
++  // Find the dominant mode
++  let maxMode: ListeningMood = "comfort"
++  let maxValue = 0
++
++  const moodMap: Record<string, ListeningMood> = {
++    discovery: "discovery",
++    comfort: "comfort",
++    deep_dive: "depth",
++    reactive: "reactive",
++    emotional: "emotional",
++  }
++
++  Object.entries(signature).forEach(([key, value]) => {
++    if (moodMap[key] && value > maxValue) {
++      maxValue = value
++      maxMode = moodMap[key]
++    }
++  })
++
++  return maxMode
++}
++
++// Get mood-aware recommendations based on current listening state
++export async function getMoodAwareRecommendations(
++  userId: string,
++  mood: ListeningMood,
++  limit: number = 6
++): Promise<MoodRecommendation[]> {
++  // Get the user's taste profile
++  const user = await prisma.user.findUnique({
++    where: { id: userId },
++    include: {
++      tasteId: {
++        select: {
++          topGenres: true,
++          topArtists: true,
++          genreVector: true,
++          listeningSignature: true,
++        },
++      },
++      reviews: {
++        take: 50,
++        orderBy: { createdAt: "desc" },
++        select: {
++          albumId: true,
++          rating: true,
++          album: {
++            select: {
++              artistName: true,
++            },
++          },
++        },
++      },
++    },
++  })
++
++  if (!user?.tasteId) {
++    return []
++  }
++
++  const reviewedAlbumIds = new Set(user.reviews.map((r) => r.albumId))
++  const favoriteArtists = user.tasteId.topArtists || []
++  const topGenres = user.tasteId.topGenres || []
++
++  // Different recommendation strategies based on mood
++  let albums: MoodRecommendation[] = []
++
++  switch (mood) {
++    case "comfort":
++      // Recommend albums from favorite artists they haven't reviewed
++      albums = await getComfortRecommendations(
++        favoriteArtists,
++        reviewedAlbumIds,
++        limit
++      )
++      break
++
++    case "discovery":
++      // Recommend albums from unfamiliar genres or new artists
++      albums = await getDiscoveryRecommendations(
++        topGenres,
++        reviewedAlbumIds,
++        limit
++      )
++      break
++
++    case "depth":
++      // Recommend deeper cuts from artists they've reviewed positively
++      albums = await getDepthRecommendations(
++        user.reviews,
++        reviewedAlbumIds,
++        limit
++      )
++      break
++
++    case "reactive":
++      // Recommend new releases and trending albums
++      albums = await getReactiveRecommendations(reviewedAlbumIds, limit)
++      break
++
++    case "emotional":
++      // Recommend highly-rated albums that match emotional resonance
++      albums = await getEmotionalRecommendations(
++        topGenres,
++        reviewedAlbumIds,
++        limit
++      )
++      break
++  }
++
++  return albums
++}
++
++async function getComfortRecommendations(
++  favoriteArtists: string[],
++  excludeIds: Set<string>,
++  limit: number
++): Promise<MoodRecommendation[]> {
++  const albums = await prisma.album.findMany({
++    where: {
++      artistName: { in: favoriteArtists },
++      id: { notIn: Array.from(excludeIds) },
++    },
++    take: limit * 2,
++    orderBy: { averageRating: "desc" },
++    select: {
++      id: true,
++      spotifyId: true,
++      title: true,
++      artistName: true,
++      coverArtUrl: true,
++      averageRating: true,
++      genres: true,
++    },
++  })
++
++  return albums.slice(0, limit).map((album) => ({
++    album,
++    reason: `More from ${album.artistName}`,
++    moodMatch: 0.9,
++  }))
++}
++
++async function getDiscoveryRecommendations(
++  topGenres: string[],
++  excludeIds: Set<string>,
++  limit: number
++): Promise<MoodRecommendation[]> {
++  // Find albums in adjacent genres
++  const albums = await prisma.album.findMany({
++    where: {
++      id: { notIn: Array.from(excludeIds) },
++      averageRating: { gte: 7 },
++    },
++    take: limit * 3,
++    orderBy: { averageRating: "desc" },
++    select: {
++      id: true,
++      spotifyId: true,
++      title: true,
++      artistName: true,
++      coverArtUrl: true,
++      averageRating: true,
++      genres: true,
++    },
++  })
++
++  // Filter to albums that aren't in their top genres
++  const discoveryAlbums = albums.filter((album) => {
++    const albumGenres = album.genres || []
++    return !topGenres.some((g) => albumGenres.includes(g))
++  })
++
++  return discoveryAlbums.slice(0, limit).map((album) => ({
++    album,
++    reason: `Expand your horizons`,
++    moodMatch: 0.85,
++  }))
++}
++
++async function getDepthRecommendations(
++  reviews: { albumId: string; rating: number; album: { artistName: string } }[],
++  excludeIds: Set<string>,
++  limit: number
++): Promise<MoodRecommendation[]> {
++  // Find artists they've rated highly
++  const highlyRatedArtists = reviews
++    .filter((r) => r.rating >= 8)
++    .map((r) => r.album.artistName)
++  const uniqueArtists = [...new Set(highlyRatedArtists)]
++
++  const albums = await prisma.album.findMany({
++    where: {
++      artistName: { in: uniqueArtists.slice(0, 10) },
++      id: { notIn: Array.from(excludeIds) },
++    },
++    take: limit * 2,
++    orderBy: { releaseDate: "asc" }, // Get earlier albums
++    select: {
++      id: true,
++      spotifyId: true,
++      title: true,
++      artistName: true,
++      coverArtUrl: true,
++      averageRating: true,
++      genres: true,
++    },
++  })
++
++  return albums.slice(0, limit).map((album) => ({
++    album,
++    reason: `Deep cut from ${album.artistName}`,
++    moodMatch: 0.88,
++  }))
++}
++
++async function getReactiveRecommendations(
++  excludeIds: Set<string>,
++  limit: number
++): Promise<MoodRecommendation[]> {
++  // Get recently released albums
++  const sixMonthsAgo = new Date()
++  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
++
++  const albums = await prisma.album.findMany({
++    where: {
++      id: { notIn: Array.from(excludeIds) },
++      releaseDate: { gte: sixMonthsAgo },
++    },
++    take: limit * 2,
++    orderBy: { releaseDate: "desc" },
++    select: {
++      id: true,
++      spotifyId: true,
++      title: true,
++      artistName: true,
++      coverArtUrl: true,
++      averageRating: true,
++      genres: true,
++    },
++  })
++
++  return albums.slice(0, limit).map((album) => ({
++    album,
++    reason: `Fresh release`,
++    moodMatch: 0.92,
++  }))
++}
++
++async function getEmotionalRecommendations(
++  topGenres: string[],
++  excludeIds: Set<string>,
++  limit: number
++): Promise<MoodRecommendation[]> {
++  // Get highly-rated albums in their favorite genres
++  const albums = await prisma.album.findMany({
++    where: {
++      id: { notIn: Array.from(excludeIds) },
++      averageRating: { gte: 8.5 },
++    },
++    take: limit * 3,
++    orderBy: { averageRating: "desc" },
++    select: {
++      id: true,
++      spotifyId: true,
++      title: true,
++      artistName: true,
++      coverArtUrl: true,
++      averageRating: true,
++      genres: true,
++    },
++  })
++
++  // Prefer albums in their favorite genres
++  const sortedAlbums = albums.sort((a, b) => {
++    const aMatch = (a.genres || []).some((g) => topGenres.includes(g)) ? 1 : 0
++    const bMatch = (b.genres || []).some((g) => topGenres.includes(g)) ? 1 : 0
++    return bMatch - aMatch
++  })
++
++  return sortedAlbums.slice(0, limit).map((album) => ({
++    album,
++    reason: `Emotionally resonant`,
++    moodMatch: 0.95,
++  }))
++}
+-- 
+2.50.1 (Apple Git-155)
+

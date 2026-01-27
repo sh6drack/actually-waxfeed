@@ -1,0 +1,45 @@
+From 035135a4f81eeced78e60aafae313f24c895295a Mon Sep 17 00:00:00 2001
+From: Shadrack Annor <shadrack@mac.mynetworksettings.com>
+Date: Sat, 24 Jan 2026 10:54:06 -0500
+Subject: [PATCH 09/50] fix: theme-aware rank/rating badges on Billboard
+
+- Rank badge: bg-foreground + text-background (dark on light, light on dark)
+- Rating badge: bg-background + text-foreground (inverted for contrast)
+- Fixes unreadable text in light mode
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+---
+ src/app/trending/billboard-list.tsx | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/src/app/trending/billboard-list.tsx b/src/app/trending/billboard-list.tsx
+index fb6f1d3..2450dd3 100644
+--- a/src/app/trending/billboard-list.tsx
++++ b/src/app/trending/billboard-list.tsx
+@@ -49,17 +49,17 @@ export function BillboardList({ albums }: BillboardListProps) {
+                   />
+                 )}
+ 
+-                {/* Rank badge */}
+-                <div className="absolute top-0 left-0 bg-black/90 backdrop-blur-sm px-1.5 py-0.5 min-w-[24px]">
+-                  <span className="text-white text-[11px] font-bold tabular-nums">
++                {/* Rank badge - high contrast in both light/dark */}
++                <div className="absolute top-0 left-0 bg-foreground px-1.5 py-0.5 min-w-[24px]">
++                  <span className="text-background text-[11px] font-bold tabular-nums">
+                     {album.billboardRank}
+                   </span>
+                 </div>
+ 
+-                {/* Rating badge */}
++                {/* Rating badge - inverted colors for contrast */}
+                 {album.averageRating !== null && (
+-                  <div className="absolute bottom-0 right-0 bg-white text-black px-1.5 py-0.5">
+-                    <span className="text-[10px] font-bold tabular-nums">
++                  <div className="absolute bottom-0 right-0 bg-background px-1.5 py-0.5">
++                    <span className="text-foreground text-[10px] font-bold tabular-nums">
+                       {album.averageRating.toFixed(1)}
+                     </span>
+                   </div>
+-- 
+2.50.1 (Apple Git-155)
+

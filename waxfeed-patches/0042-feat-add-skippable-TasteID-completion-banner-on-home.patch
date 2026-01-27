@@ -1,0 +1,553 @@
+From b7ded2e2b91490265de58fefaec5386ae510665c Mon Sep 17 00:00:00 2001
+From: sh6drack <sh6drack@users.noreply.github.com>
+Date: Mon, 26 Jan 2026 12:13:59 -0500
+Subject: [PATCH 42/50] feat: add skippable TasteID completion banner on
+ homepage
+
+- Add TasteIDCompletionBanner component with dismissible UI
+- Show banner for users with <20 reviews or no TasteID
+- Banner stores dismissal state in localStorage
+- Display progress bar and ratings needed
+- Add "Complete TasteID" or "Continue Rating" CTA
+- Create dedicated /quick-rate page for standalone rating
+- Integrate banner into homepage after hero section
+- Include keyboard shortcuts (Enter/S) in Quick Rate mode
+- Track session progress with celebration at 10+ ratings
+- Auto-fetch more albums when running low
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+---
+ src/app/page.tsx                             |  32 +-
+ src/app/quick-rate/page.tsx                  | 319 +++++++++++++++++++
+ src/components/tasteid-completion-banner.tsx | 128 ++++++++
+ 3 files changed, 478 insertions(+), 1 deletion(-)
+ create mode 100644 src/app/quick-rate/page.tsx
+ create mode 100644 src/components/tasteid-completion-banner.tsx
+
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 0eac0f7..67ce74d 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -4,6 +4,7 @@ import Link from "next/link"
+ import { auth } from "@/lib/auth"
+ import { format, formatDistanceToNow } from "date-fns"
+ import { FirstSpinWidget } from "@/components/wax/FirstSpinWidget"
++import { TasteIDCompletionBanner } from "@/components/tasteid-completion-banner"
+ 
+ export const dynamic = "force-dynamic"
+ 
+@@ -138,15 +139,36 @@ async function getActiveUsers(excludeUserId?: string) {
+   })
+ }
+ 
++// Get current user's TasteID completion status
++async function getUserTasteIDStatus(userId: string) {
++  const [user, reviewCount] = await Promise.all([
++    prisma.user.findUnique({
++      where: { id: userId },
++      select: {
++        tasteId: {
++          select: { id: true }
++        }
++      }
++    }),
++    prisma.review.count({ where: { userId } })
++  ])
++
++  return {
++    reviewCount,
++    hasTasteID: !!user?.tasteId
++  }
++}
++
+ export default async function Home() {
+   const session = await auth()
+-  const [billboardAlbums, recentReviews, stats, activeUsers, recentlyTrended, approachingTrend] = await Promise.all([
++  const [billboardAlbums, recentReviews, stats, activeUsers, recentlyTrended, approachingTrend, tasteIDStatus] = await Promise.all([
+     getBillboardAlbums(),
+     getRecentReviews(),
+     getStats(),
+     getActiveUsers(session?.user?.id),
+     getRecentlyTrended(),
+     getApproachingTrend(),
++    session?.user?.id ? getUserTasteIDStatus(session.user.id) : Promise.resolve({ reviewCount: 0, hasTasteID: false }),
+   ])
+   const weekOf = format(new Date(), "MMM d, yyyy")
+ 
+@@ -222,6 +244,14 @@ export default async function Home() {
+         </div>
+       </section>
+ 
++      {/* TasteID Completion Banner - only for logged in users */}
++      {session?.user && (
++        <TasteIDCompletionBanner
++          reviewCount={tasteIDStatus.reviewCount}
++          hasTasteID={tasteIDStatus.hasTasteID}
++        />
++      )}
++
+       {/* How It Works - 3 Steps */}
+       <section className="border-b border-[--border] bg-white/[0.02]">
+         <div className="max-w-7xl mx-auto px-6 py-12">
+diff --git a/src/app/quick-rate/page.tsx b/src/app/quick-rate/page.tsx
+new file mode 100644
+index 0000000..fe05981
+--- /dev/null
++++ b/src/app/quick-rate/page.tsx
+@@ -0,0 +1,319 @@
++"use client"
++
++import { useSession } from "next-auth/react"
++import { useRouter } from "next/navigation"
++import { useState, useEffect, useCallback } from "react"
++import { RatingSlider } from "@/components/rating-slider"
++
++const BATCH_SIZE = 20
++
++interface Album {
++  id: string
++  title: string
++  artistName: string
++  coverArtUrl: string | null
++  coverArtUrlLarge: string | null
++  genres: string[]
++}
++
++export default function QuickRatePage() {
++  const { data: session, status } = useSession()
++  const router = useRouter()
++
++  const [albums, setAlbums] = useState<Album[]>([])
++  const [currentAlbumIndex, setCurrentAlbumIndex] = useState(0)
++  const [rating, setRating] = useState(5)
++  const [ratedCount, setRatedCount] = useState(0)
++  const [skippedCount, setSkippedCount] = useState(0)
++  const [sessionRatedCount, setSessionRatedCount] = useState(0)
++  const [submitting, setSubmitting] = useState(false)
++  const [loadingAlbums, setLoadingAlbums] = useState(false)
++  const [error, setError] = useState("")
++
++  useEffect(() => {
++    if (status === "unauthenticated") {
++      router.push("/login?callbackUrl=/quick-rate")
++    }
++  }, [status, router])
++
++  useEffect(() => {
++    if (session?.user) {
++      fetchAlbums()
++      fetchUserStats()
++    }
++  }, [session])
++
++  const fetchUserStats = async () => {
++    try {
++      const res = await fetch('/api/users/me')
++      const data = await res.json()
++      if (data.success) {
++        setRatedCount(data.data._count?.reviews || 0)
++      }
++    } catch (err) {
++      console.error('Failed to fetch user stats:', err)
++    }
++  }
++
++  const fetchAlbums = async () => {
++    setLoadingAlbums(true)
++    try {
++      const res = await fetch(`/api/albums/swipe?limit=${BATCH_SIZE * 2}`)
++      const data = await res.json()
++      if (data.success) {
++        setAlbums(data.data || [])
++      }
++    } catch (err) {
++      console.error('Failed to fetch albums:', err)
++      setError('Failed to load albums')
++    }
++    setLoadingAlbums(false)
++  }
++
++  const submitRating = async () => {
++    if (currentAlbumIndex >= albums.length) return
++
++    const album = albums[currentAlbumIndex]
++    setSubmitting(true)
++    setError("")
++
++    try {
++      const res = await fetch('/api/reviews', {
++        method: 'POST',
++        headers: { 'Content-Type': 'application/json' },
++        body: JSON.stringify({
++          albumId: album.id,
++          rating,
++          text: '',
++          isQuickRate: true,
++        }),
++      })
++      const data = await res.json()
++
++      if (data.success) {
++        setRatedCount((prev) => prev + 1)
++        setSessionRatedCount((prev) => prev + 1)
++        nextAlbum()
++      } else {
++        if (data.error?.includes('already reviewed')) {
++          nextAlbum()
++        } else {
++          setError(data.error || 'Failed to submit rating')
++        }
++      }
++    } catch (err) {
++      console.error('Failed to submit rating:', err)
++      setError('Failed to submit rating')
++    } finally {
++      setSubmitting(false)
++    }
++  }
++
++  const skip = () => {
++    setSkippedCount((prev) => prev + 1)
++    nextAlbum()
++  }
++
++  const nextAlbum = () => {
++    setRating(5)
++    setError("")
++    setCurrentAlbumIndex((prev) => prev + 1)
++
++    // Load more albums if running low
++    if (currentAlbumIndex >= albums.length - 5) {
++      fetchAlbums()
++    }
++  }
++
++  const handleKeyDown = useCallback(
++    (e: KeyboardEvent) => {
++      if (submitting) return
++      if (e.key === 'Enter') {
++        e.preventDefault()
++        submitRating()
++      }
++      if (e.key === 's' || e.key === 'S') {
++        skip()
++      }
++    },
++    [submitRating, skip, submitting]
++  )
++
++  useEffect(() => {
++    window.addEventListener('keydown', handleKeyDown)
++    return () => window.removeEventListener('keydown', handleKeyDown)
++  }, [handleKeyDown])
++
++  if (status === "loading") {
++    return (
++      <div className="min-h-[80vh] flex items-center justify-center">
++        <div className="flex flex-col items-center gap-3">
++          <div className="w-10 h-10 border-2 border-[#333] border-t-[#ffd700] animate-spin" />
++          <span className="text-xs tracking-[0.2em] uppercase text-[#888]">Loading</span>
++        </div>
++      </div>
++    )
++  }
++
++  const currentAlbum = albums[currentAlbumIndex]
++  const progress = Math.min(100, (ratedCount / 20) * 100)
++
++  return (
++    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
++      <div className="max-w-2xl mx-auto px-4 py-8">
++        {/* Header */}
++        <div className="mb-8">
++          <div className="flex items-center justify-between mb-4">
++            <h1 className="text-3xl font-bold tracking-tighter">Quick Rate</h1>
++            <button
++              onClick={() => router.push('/')}
++              className="text-[#888] hover:text-white transition-colors"
++            >
++              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
++                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
++              </svg>
++            </button>
++          </div>
++          <p className="text-[#888]">
++            Build your TasteID by rating albums. Skip anything you haven't heard.
++          </p>
++        </div>
++
++        {/* Stats */}
++        <div className="mb-6 p-4 border border-[#333] bg-[#111]">
++          <div className="flex justify-between items-center mb-2">
++            <div className="flex gap-4 text-sm">
++              <span className="text-[#888]">
++                <span className="text-white font-bold">{ratedCount}</span> total ratings
++              </span>
++              {sessionRatedCount > 0 && (
++                <span className="text-[#ffd700]">
++                  +{sessionRatedCount} this session
++                </span>
++              )}
++              {skippedCount > 0 && (
++                <span className="text-[#666]">
++                  {skippedCount} skipped
++                </span>
++              )}
++            </div>
++          </div>
++
++          {/* Progress bar */}
++          <div>
++            <div className="flex justify-between text-xs text-[#888] mb-1">
++              <span>TasteID Progress</span>
++              <span>{Math.round(progress)}%</span>
++            </div>
++            <div className="h-2 bg-[#333] rounded-full overflow-hidden">
++              <div
++                className="h-full bg-[#ffd700] transition-all duration-300"
++                style={{ width: `${progress}%` }}
++              />
++            </div>
++          </div>
++        </div>
++
++        {/* Content */}
++        {loadingAlbums && albums.length === 0 ? (
++          <div className="flex flex-col items-center justify-center py-20">
++            <div className="w-10 h-10 border-2 border-[#333] border-t-[#ffd700] animate-spin mb-4" />
++            <span className="text-xs tracking-[0.2em] uppercase text-[#888]">Loading albums</span>
++          </div>
++        ) : currentAlbum ? (
++          <div className="space-y-6">
++            {/* Album Card */}
++            <div className="border border-[#333] overflow-hidden">
++              <div className="aspect-square relative">
++                {currentAlbum.coverArtUrlLarge || currentAlbum.coverArtUrl ? (
++                  <img
++                    src={currentAlbum.coverArtUrlLarge || currentAlbum.coverArtUrl!}
++                    alt={currentAlbum.title}
++                    className="w-full h-full object-cover"
++                  />
++                ) : (
++                  <div className="w-full h-full bg-[#111] flex items-center justify-center">
++                    <svg className="w-20 h-20 text-[#333]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
++                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
++                    </svg>
++                  </div>
++                )}
++              </div>
++              <div className="p-6">
++                <h2 className="text-2xl font-bold mb-1">{currentAlbum.title}</h2>
++                <p className="text-[#888] text-lg mb-4">{currentAlbum.artistName}</p>
++                {currentAlbum.genres && currentAlbum.genres.length > 0 && (
++                  <div className="flex flex-wrap gap-2">
++                    {currentAlbum.genres.slice(0, 3).map((genre) => (
++                      <span
++                        key={genre}
++                        className="text-[10px] px-2 py-1 border border-[#333] text-[#666] uppercase tracking-wider"
++                      >
++                        {genre}
++                      </span>
++                    ))}
++                  </div>
++                )}
++              </div>
++            </div>
++
++            {/* Rating */}
++            <div className="space-y-4">
++              <RatingSlider value={rating} onChange={setRating} disabled={submitting} />
++
++              {error && (
++                <p className="text-red-500 text-sm text-center">{error}</p>
++              )}
++
++              <div className="flex gap-3">
++                <button
++                  onClick={skip}
++                  disabled={submitting}
++                  className="flex-1 py-4 border border-[#333] text-[#888] font-bold uppercase tracking-wider hover:border-white hover:text-white transition-colors disabled:opacity-50"
++                >
++                  Haven't Heard
++                </button>
++                <button
++                  onClick={submitRating}
++                  disabled={submitting}
++                  className="flex-1 py-4 bg-[#ffd700] text-black font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors disabled:opacity-50"
++                >
++                  {submitting ? 'Saving...' : 'Rate'}
++                </button>
++              </div>
++
++              <p className="text-center text-xs text-[#666]">
++                <kbd className="px-1.5 py-0.5 border border-[#333] text-[10px]">Enter</kbd> to rate · <kbd className="px-1.5 py-0.5 border border-[#333] text-[10px]">S</kbd> to skip
++              </p>
++            </div>
++          </div>
++        ) : (
++          <div className="text-center py-12">
++            <p className="text-[#888] mb-4">No more albums available right now.</p>
++            <button
++              onClick={() => router.push('/')}
++              className="bg-[#ffd700] text-black px-8 py-4 font-bold text-lg hover:bg-[#ffed4a] transition-colors"
++            >
++              Back to Home
++            </button>
++          </div>
++        )}
++
++        {/* Quick navigation */}
++        {sessionRatedCount >= 10 && (
++          <div className="mt-8 text-center">
++            <p className="text-sm text-[#888] mb-3">
++              You've rated {sessionRatedCount} albums this session! 🎉
++            </p>
++            <button
++              onClick={() => router.push('/tasteid/me')}
++              className="text-[#ffd700] text-sm hover:underline"
++            >
++              View Your TasteID →
++            </button>
++          </div>
++        )}
++      </div>
++    </div>
++  )
++}
+diff --git a/src/components/tasteid-completion-banner.tsx b/src/components/tasteid-completion-banner.tsx
+new file mode 100644
+index 0000000..a6970e6
+--- /dev/null
++++ b/src/components/tasteid-completion-banner.tsx
+@@ -0,0 +1,128 @@
++"use client"
++
++import { useState, useEffect } from 'react'
++import Link from 'next/link'
++import { useSession } from 'next-auth/react'
++
++interface TasteIDCompletionBannerProps {
++  reviewCount: number
++  hasTasteID: boolean
++}
++
++export function TasteIDCompletionBanner({ reviewCount, hasTasteID }: TasteIDCompletionBannerProps) {
++  const { data: session } = useSession()
++  const [isDismissed, setIsDismissed] = useState(false)
++  const [isVisible, setIsVisible] = useState(false)
++
++  useEffect(() => {
++    // Check if user has dismissed this banner
++    const dismissed = localStorage.getItem('tasteid-banner-dismissed')
++    if (dismissed === 'true') {
++      setIsDismissed(true)
++      return
++    }
++
++    // Show banner if user has less than 20 reviews or no TasteID
++    if (session?.user && (reviewCount < 20 || !hasTasteID)) {
++      setIsVisible(true)
++    }
++  }, [session, reviewCount, hasTasteID])
++
++  const handleDismiss = () => {
++    localStorage.setItem('tasteid-banner-dismissed', 'true')
++    setIsDismissed(true)
++    setIsVisible(false)
++  }
++
++  if (!isVisible || isDismissed || !session?.user) {
++    return null
++  }
++
++  const ratingsNeeded = Math.max(0, 20 - reviewCount)
++  const progress = Math.min(100, (reviewCount / 20) * 100)
++
++  return (
++    <div className="border-b border-[--border] bg-gradient-to-r from-[#ffd700]/10 to-transparent">
++      <div className="max-w-7xl mx-auto px-6 py-6">
++        <div className="flex items-start gap-4">
++          {/* Icon */}
++          <div className="flex-shrink-0 w-10 h-10 border-2 border-[#ffd700] flex items-center justify-center">
++            <svg className="w-5 h-5 text-[#ffd700]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
++              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
++            </svg>
++          </div>
++
++          {/* Content */}
++          <div className="flex-1 min-w-0">
++            <h3 className="text-base font-bold mb-1">
++              {reviewCount === 0
++                ? 'Complete Your TasteID'
++                : reviewCount < 20
++                ? 'Continue Building Your TasteID'
++                : 'Unlock Your Full TasteID'}
++            </h3>
++            <p className="text-sm text-[--muted] mb-3">
++              {reviewCount === 0
++                ? 'Rate 20 albums to unlock your personalized taste profile and find your music people.'
++                : reviewCount < 20
++                ? `Rate ${ratingsNeeded} more album${ratingsNeeded === 1 ? '' : 's'} to complete your taste profile.`
++                : 'Your TasteID is ready! View your complete taste profile and discover similar listeners.'}
++            </p>
++
++            {/* Progress bar */}
++            {reviewCount < 20 && (
++              <div className="mb-3">
++                <div className="flex justify-between text-xs text-[--muted] mb-1">
++                  <span>{reviewCount} / 20 ratings</span>
++                  <span>{Math.round(progress)}%</span>
++                </div>
++                <div className="h-1.5 bg-[--border] rounded-full overflow-hidden">
++                  <div
++                    className="h-full bg-[#ffd700] transition-all duration-300"
++                    style={{ width: `${progress}%` }}
++                  />
++                </div>
++              </div>
++            )}
++
++            {/* CTA Buttons */}
++            <div className="flex flex-wrap gap-3">
++              {reviewCount < 20 ? (
++                <Link
++                  href="/quick-rate"
++                  className="px-4 py-2 bg-[#ffd700] text-black text-xs uppercase tracking-wider font-bold hover:bg-[#ffed4a] transition-colors"
++                >
++                  {reviewCount === 0 ? 'Start Rating' : 'Continue Rating'}
++                </Link>
++              ) : (
++                <Link
++                  href="/tasteid/me"
++                  className="px-4 py-2 bg-[#ffd700] text-black text-xs uppercase tracking-wider font-bold hover:bg-[#ffed4a] transition-colors"
++                >
++                  View Your TasteID
++                </Link>
++              )}
++              <button
++                onClick={handleDismiss}
++                className="px-4 py-2 border border-[--border] text-xs uppercase tracking-wider hover:border-white transition-colors"
++              >
++                Skip for Now
++              </button>
++            </div>
++          </div>
++
++          {/* Close button */}
++          <button
++            onClick={handleDismiss}
++            className="flex-shrink-0 text-[--muted] hover:text-white transition-colors"
++            aria-label="Dismiss"
++          >
++            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
++              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
++            </svg>
++          </button>
++        </div>
++      </div>
++    </div>
++  )
++}
+-- 
+2.50.1 (Apple Git-155)
+

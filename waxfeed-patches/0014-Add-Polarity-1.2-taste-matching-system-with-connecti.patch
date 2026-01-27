@@ -1,0 +1,5526 @@
+From 7205641714bf9e6727bbfd84a9a406f53c15fdc3 Mon Sep 17 00:00:00 2001
+From: Shadrack Annor <shadrack@mac.mynetworksettings.com>
+Date: Sat, 24 Jan 2026 11:52:07 -0500
+Subject: [PATCH 14/50] Add Polarity 1.2 taste matching system with connections
+
+Implements complete taste connection system including:
+- Enhanced TasteMatch model with signature similarity tracking
+- Music Network resonance/contrast calculations
+- 6 match types: taste_twin, opposite_attracts, network_resonance,
+  explorer_guide, complementary, genre_buddy
+- Animated radar chart signature comparison visualizations
+- Connection discovery API with filtering modes
+- Taste Challenges (genre swap, decade dive, rate same album)
+- Shared Listening sessions with real-time sync
+- Direct messaging between connected users
+
+New pages:
+- /discover/connections - Browse taste matches
+- /discover/challenges - Create and manage challenges
+- /listen - Shared listening session management
+- /messages - Direct messaging interface
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+---
+ prisma/schema.prisma                          | 153 ++++-
+ src/app/api/challenges/[id]/route.ts          | 181 ++++++
+ src/app/api/challenges/route.ts               | 128 +++++
+ src/app/api/connections/[userId]/route.ts     | 233 ++++++++
+ src/app/api/connections/discover/route.ts     | 106 ++++
+ src/app/api/listening/[inviteCode]/route.ts   | 219 ++++++++
+ src/app/api/listening/route.ts                | 131 +++++
+ .../api/messages/[conversationId]/route.ts    | 183 ++++++
+ src/app/api/messages/route.ts                 | 153 +++++
+ src/app/discover/challenges/page.tsx          | 321 +++++++++++
+ src/app/discover/connections/page.tsx         | 333 +++++++++++
+ src/app/discover/page.tsx                     |  33 ++
+ src/app/listen/[inviteCode]/page.tsx          |  46 ++
+ src/app/listen/page.tsx                       | 379 +++++++++++++
+ src/app/messages/page.tsx                     | 262 +++++++++
+ src/components/challenges/ChallengeCard.tsx   | 204 +++++++
+ .../challenges/CreateChallengeModal.tsx       | 220 ++++++++
+ src/components/challenges/index.ts            |   2 +
+ src/components/connections/ConnectionCard.tsx | 252 +++++++++
+ .../connections/ConnectionsSection.tsx        | 256 +++++++++
+ .../connections/SignatureComparison.tsx       | 309 +++++++++++
+ src/components/connections/index.ts           |   7 +
+ src/components/listening/ListeningSession.tsx | 406 ++++++++++++++
+ src/components/listening/index.ts             |   1 +
+ src/components/messages/ChatView.tsx          | 212 +++++++
+ src/components/messages/index.ts              |   1 +
+ src/lib/tasteid.ts                            | 524 ++++++++++++++++++
+ 27 files changed, 5253 insertions(+), 2 deletions(-)
+ create mode 100644 src/app/api/challenges/[id]/route.ts
+ create mode 100644 src/app/api/challenges/route.ts
+ create mode 100644 src/app/api/connections/[userId]/route.ts
+ create mode 100644 src/app/api/connections/discover/route.ts
+ create mode 100644 src/app/api/listening/[inviteCode]/route.ts
+ create mode 100644 src/app/api/listening/route.ts
+ create mode 100644 src/app/api/messages/[conversationId]/route.ts
+ create mode 100644 src/app/api/messages/route.ts
+ create mode 100644 src/app/discover/challenges/page.tsx
+ create mode 100644 src/app/discover/connections/page.tsx
+ create mode 100644 src/app/listen/[inviteCode]/page.tsx
+ create mode 100644 src/app/listen/page.tsx
+ create mode 100644 src/app/messages/page.tsx
+ create mode 100644 src/components/challenges/ChallengeCard.tsx
+ create mode 100644 src/components/challenges/CreateChallengeModal.tsx
+ create mode 100644 src/components/challenges/index.ts
+ create mode 100644 src/components/connections/ConnectionCard.tsx
+ create mode 100644 src/components/connections/ConnectionsSection.tsx
+ create mode 100644 src/components/connections/SignatureComparison.tsx
+ create mode 100644 src/components/connections/index.ts
+ create mode 100644 src/components/listening/ListeningSession.tsx
+ create mode 100644 src/components/listening/index.ts
+ create mode 100644 src/components/messages/ChatView.tsx
+ create mode 100644 src/components/messages/index.ts
+
+diff --git a/prisma/schema.prisma b/prisma/schema.prisma
+index ab150e2..4a0c8f7 100644
+--- a/prisma/schema.prisma
++++ b/prisma/schema.prisma
+@@ -804,13 +804,24 @@ model TasteMatch {
+   artistOverlap   Float    // Shared artist preferences
+   ratingAlignment Float    // How similarly they rate albums
+ 
++  // Polarity 1.2 - Network-based matching
++  signatureSimilarity Float?    // Listening signature cosine similarity (0-1)
++  networkResonance    Json?     // { network: strength } - which networks align
++  networkContrast     Json?     // { network: diff } - complementary differences
++  matchStrength       Float?    // Combined algorithm confidence (0-1)
++
+   // Shared elements for display
+   sharedGenres    String[]
+   sharedArtists   String[]
+   sharedAlbums    String[] // Album IDs both rated highly
+ 
+-  // Relationship descriptor
+-  matchType       String   // "taste_twin" | "complementary" | "explorer_guide" | "genre_buddy"
++  // Relationship descriptor - enhanced with Polarity types
++  matchType       String   // "taste_twin" | "opposite_attracts" | "network_resonance" | "explorer_guide" | "complementary" | "genre_buddy"
++
++  // Connection status
++  status          String   @default("potential") // "potential" | "connected" | "dismissed"
++  connectedAt     DateTime?
++  lastInteraction DateTime?
+ 
+   createdAt       DateTime @default(now())
+   updatedAt       DateTime @updatedAt
+@@ -823,4 +834,142 @@ model TasteMatch {
+   @@index([user2Id])
+   @@index([overallScore])
+   @@index([matchType])
++  @@index([status])
++  @@index([matchStrength])
++}
++
++// ============================================
++// TASTE CHALLENGES - Gamified taste exploration
++// ============================================
++
++model TasteChallenge {
++  id              String   @id @default(cuid())
++  creatorId       String
++  partnerId       String
++
++  // Challenge details
++  challengeType   String   // "discover_together" | "rate_same_album" | "genre_swap" | "decade_dive"
++  targetAlbumId   String?  // For rate_same_album challenges
++  targetGenre     String?  // For genre_swap challenges
++  targetDecade    String?  // For decade_dive challenges
++  title           String?  // Custom challenge title
++
++  // Progress tracking
++  status          String   @default("pending") // "pending" | "active" | "completed" | "expired"
++  creatorProgress Json?    // { albumsRated: [], score: number }
++  partnerProgress Json?    // { albumsRated: [], score: number }
++
++  // Results
++  winnerId        String?
++  completedAt     DateTime?
++  expiresAt       DateTime
++
++  createdAt       DateTime @default(now())
++  updatedAt       DateTime @updatedAt
++
++  @@index([creatorId])
++  @@index([partnerId])
++  @@index([status])
++  @@index([expiresAt])
++}
++
++// ============================================
++// SHARED LISTENING - Real-time music sessions
++// ============================================
++
++model SharedListeningSession {
++  id              String   @id @default(cuid())
++  hostId          String
++  guestId         String?  // null if open invite
++
++  // Session details
++  title           String?
++  currentAlbumId  String?  // Album currently being listened to
++  currentTrackIndex Int    @default(0)
++  isPlaying       Boolean  @default(false)
++  playbackPosition Int     @default(0) // in seconds
++
++  // Session state
++  status          String   @default("waiting") // "waiting" | "active" | "paused" | "ended"
++  inviteCode      String   @unique // For sharing invite links
++
++  // Chat within session
++  messages        SharedListeningMessage[]
++
++  // Timestamps
++  startedAt       DateTime?
++  endedAt         DateTime?
++  createdAt       DateTime @default(now())
++  updatedAt       DateTime @updatedAt
++
++  @@index([hostId])
++  @@index([guestId])
++  @@index([status])
++  @@index([inviteCode])
++}
++
++model SharedListeningMessage {
++  id        String   @id @default(cuid())
++  sessionId String
++  userId    String
++  content   String   @db.VarChar(500)
++  type      String   @default("text") // "text" | "reaction" | "album_suggestion"
++  metadata  Json?    // For album suggestions: { albumId, albumTitle, etc }
++
++  createdAt DateTime @default(now())
++
++  session   SharedListeningSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
++
++  @@index([sessionId])
++  @@index([userId])
++  @@index([createdAt])
++}
++
++// ============================================
++// DIRECT MESSAGES - Connection chat
++// ============================================
++
++model Conversation {
++  id           String   @id @default(cuid())
++  participant1Id String
++  participant2Id String
++
++  // Last message preview
++  lastMessageAt   DateTime?
++  lastMessageText String?  @db.VarChar(100)
++
++  // Unread counts
++  participant1Unread Int @default(0)
++  participant2Unread Int @default(0)
++
++  messages     DirectMessage[]
++
++  createdAt    DateTime @default(now())
++  updatedAt    DateTime @updatedAt
++
++  @@unique([participant1Id, participant2Id])
++  @@index([participant1Id])
++  @@index([participant2Id])
++  @@index([lastMessageAt])
++}
++
++model DirectMessage {
++  id             String   @id @default(cuid())
++  conversationId String
++  senderId       String
++  content        String   @db.Text
++  type           String   @default("text") // "text" | "album_share" | "challenge_invite" | "session_invite"
++  metadata       Json?    // For shared content: { albumId, challengeId, sessionId, etc }
++
++  isRead         Boolean  @default(false)
++  readAt         DateTime?
++
++  createdAt      DateTime @default(now())
++
++  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
++
++  @@index([conversationId])
++  @@index([senderId])
++  @@index([createdAt])
++  @@index([isRead])
+ }
+diff --git a/src/app/api/challenges/[id]/route.ts b/src/app/api/challenges/[id]/route.ts
+new file mode 100644
+index 0000000..0ac8da5
+--- /dev/null
++++ b/src/app/api/challenges/[id]/route.ts
+@@ -0,0 +1,181 @@
++/**
++ * API: /api/challenges/[id]
++ * Individual challenge operations
++ */
++
++import { NextResponse } from "next/server"
++import { auth } from "@/lib/auth"
++import { prisma } from "@/lib/prisma"
++
++export async function GET(
++  request: Request,
++  { params }: { params: Promise<{ id: string }> }
++) {
++  try {
++    const session = await auth()
++    const { id } = await params
++
++    if (!session?.user?.id) {
++      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
++    }
++
++    const challenge = await prisma.tasteChallenge.findUnique({
++      where: { id },
++    })
++
++    if (!challenge) {
++      return NextResponse.json({ error: "Challenge not found" }, { status: 404 })
++    }
++
++    // Check if user is participant
++    if (challenge.creatorId !== session.user.id && challenge.partnerId !== session.user.id) {
++      return NextResponse.json({ error: "Not authorized" }, { status: 403 })
++    }
++
++    // Get users
++    const [creator, partner] = await Promise.all([
++      prisma.user.findUnique({
++        where: { id: challenge.creatorId },
++        select: { id: true, username: true, image: true },
++      }),
++      prisma.user.findUnique({
++        where: { id: challenge.partnerId },
++        select: { id: true, username: true, image: true },
++      }),
++    ])
++
++    // Get target album if applicable
++    let targetAlbum = null
++    if (challenge.targetAlbumId) {
++      targetAlbum = await prisma.album.findUnique({
++        where: { id: challenge.targetAlbumId },
++        select: { id: true, spotifyId: true, title: true, artistName: true, coverArtUrl: true },
++      })
++    }
++
++    return NextResponse.json({
++      challenge: {
++        ...challenge,
++        creator,
++        partner,
++        targetAlbum,
++        isCreator: challenge.creatorId === session.user.id,
++      },
++    })
++  } catch (error) {
++    console.error("Error fetching challenge:", error)
++    return NextResponse.json({ error: "Failed to fetch challenge" }, { status: 500 })
++  }
++}
++
++export async function PATCH(
++  request: Request,
++  { params }: { params: Promise<{ id: string }> }
++) {
++  try {
++    const session = await auth()
++    const { id } = await params
++
++    if (!session?.user?.id) {
++      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
++    }
++
++    const body = await request.json()
++    const { action, albumId, rating } = body
++
++    const challenge = await prisma.tasteChallenge.findUnique({
++      where: { id },
++    })
++
++    if (!challenge) {
++      return NextResponse.json({ error: "Challenge not found" }, { status: 404 })
++    }
++
++    const isCreator = challenge.creatorId === session.user.id
++    const isPartner = challenge.partnerId === session.user.id
++
++    if (!isCreator && !isPartner) {
++      return NextResponse.json({ error: "Not authorized" }, { status: 403 })
++    }
++
++    if (action === "accept") {
++      // Partner accepts the challenge
++      if (!isPartner || challenge.status !== "pending") {
++        return NextResponse.json({ error: "Cannot accept challenge" }, { status: 400 })
++      }
++
++      await prisma.tasteChallenge.update({
++        where: { id },
++        data: { status: "active" },
++      })
++
++      return NextResponse.json({ success: true, status: "active" })
++    }
++
++    if (action === "decline") {
++      if (challenge.status !== "pending") {
++        return NextResponse.json({ error: "Cannot decline challenge" }, { status: 400 })
++      }
++
++      await prisma.tasteChallenge.update({
++        where: { id },
++        data: { status: "expired" },
++      })
++
++      return NextResponse.json({ success: true, status: "expired" })
++    }
++
++    if (action === "submit_rating" && albumId && rating !== undefined) {
++      // Submit a rating for the challenge
++      if (challenge.status !== "active") {
++        return NextResponse.json({ error: "Challenge not active" }, { status: 400 })
++      }
++
++      const progressField = isCreator ? "creatorProgress" : "partnerProgress"
++      const currentProgress = (challenge[progressField] as { albumsRated: string[]; score: number }) || { albumsRated: [], score: 0 }
++
++      // Add album to progress
++      if (!currentProgress.albumsRated.includes(albumId)) {
++        currentProgress.albumsRated.push(albumId)
++        currentProgress.score += rating
++      }
++
++      await prisma.tasteChallenge.update({
++        where: { id },
++        data: { [progressField]: currentProgress },
++      })
++
++      // Check if challenge is complete
++      const updatedChallenge = await prisma.tasteChallenge.findUnique({ where: { id } })
++      const creatorProgress = updatedChallenge?.creatorProgress as { albumsRated: string[]; score: number }
++      const partnerProgress = updatedChallenge?.partnerProgress as { albumsRated: string[]; score: number }
++
++      // For "rate_same_album" type, complete when both have rated
++      if (challenge.challengeType === "rate_same_album") {
++        if (creatorProgress?.albumsRated?.length > 0 && partnerProgress?.albumsRated?.length > 0) {
++          const winnerId = creatorProgress.score > partnerProgress.score
++            ? challenge.creatorId
++            : partnerProgress.score > creatorProgress.score
++            ? challenge.partnerId
++            : null // tie
++
++          await prisma.tasteChallenge.update({
++            where: { id },
++            data: {
++              status: "completed",
++              completedAt: new Date(),
++              winnerId,
++            },
++          })
++        }
++      }
++
++      return NextResponse.json({ success: true, progress: currentProgress })
++    }
++
++    return NextResponse.json({ error: "Invalid action" }, { status: 400 })
++  } catch (error) {
++    console.error("Error updating challenge:", error)
++    return NextResponse.json({ error: "Failed to update challenge" }, { status: 500 })
++  }
++}
+diff --git a/src/app/api/challenges/route.ts b/src/app/api/challenges/route.ts
+new file mode 100644
+index 0000000..9469a74
+--- /dev/null
++++ b/src/app/api/challenges/route.ts
+@@ -0,0 +1,128 @@
++/**
++ * API: /api/challenges
++ * Taste Challenges - Gamified taste exploration
++ */
++
++import { NextResponse } from "next/server"
++import { auth } from "@/lib/auth"
++import { prisma } from "@/lib/prisma"
++
++export async function GET(request: Request) {
++  try {
++    const session = await auth()
++
++    if (!session?.user?.id) {
++      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
++    }
++
++    const { searchParams } = new URL(request.url)
++    const status = searchParams.get("status") || "all"
++
++    const where = {
++      OR: [
++        { creatorId: session.user.id },
++        { partnerId: session.user.id },
++      ],
++      ...(status !== "all" && { status }),
++    }
++
++    const challenges = await prisma.tasteChallenge.findMany({
++      where,
++      orderBy: { createdAt: "desc" },
++      take: 20,
++    })
++
++    // Enrich with user data
++    const userIds = [...new Set(challenges.flatMap(c => [c.creatorId, c.partnerId]))]
++    const users = await prisma.user.findMany({
++      where: { id: { in: userIds } },
++      select: { id: true, username: true, image: true },
++    })
++    const userMap = Object.fromEntries(users.map(u => [u.id, u]))
++
++    const enrichedChallenges = challenges.map(c => ({
++      ...c,
++      creator: userMap[c.creatorId],
++      partner: userMap[c.partnerId],
++      isCreator: c.creatorId === session.user.id,
++    }))
++
++    return NextResponse.json({
++      challenges: enrichedChallenges,
++      counts: {
++        pending: challenges.filter(c => c.status === "pending").length,
++        active: challenges.filter(c => c.status === "active").length,
++        completed: challenges.filter(c => c.status === "completed").length,
++      },
++    })
++  } catch (error) {
++    console.error("Error fetching challenges:", error)
++    return NextResponse.json({ error: "Failed to fetch challenges" }, { status: 500 })
++  }
++}
++
++export async function POST(request: Request) {
++  try {
++    const session = await auth()
++
++    if (!session?.user?.id) {
++      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
++    }
++
++    const body = await request.json()
++    const { partnerId, challengeType, targetAlbumId, targetGenre, targetDecade, title } = body
++
++    if (!partnerId || !challengeType) {
++      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
++    }
++
++    // Validate challenge type
++    const validTypes = ["discover_together", "rate_same_album", "genre_swap", "decade_dive"]
++    if (!validTypes.includes(challengeType)) {
++      return NextResponse.json({ error: "Invalid challenge type" }, { status: 400 })
++    }
++
++    // Create challenge with 7-day expiration
++    const expiresAt = new Date()
++    expiresAt.setDate(expiresAt.getDate() + 7)
++
++    const challenge = await prisma.tasteChallenge.create({
++      data: {
++        creatorId: session.user.id,
++        partnerId,
++        challengeType,
++        targetAlbumId,
++        targetGenre,
++        targetDecade,
++        title,
++        expiresAt,
++        creatorProgress: { albumsRated: [], score: 0 },
++        partnerProgress: { albumsRated: [], score: 0 },
++      },
++    })
++
++    // Create notification for partner
++    const creator = await prisma.user.findUnique({
++      where: { id: session.user.id },
++      select: { username: true },
++    })
++
++    await prisma.notification.create({
++      data: {
++        userId: partnerId,
++        type: "challenge_invite",
++        content: {
++          challengeId: challenge.id,
++          challengeType,
++          actorId: session.user.id,
++          actorName: creator?.username || "Someone",
++        },
++      },
++    })
++
++    return NextResponse.json({ challenge })
++  } catch (error) {
++    console.error("Error creating challenge:", error)
++    return NextResponse.json({ error: "Failed to create challenge" }, { status: 500 })
++  }
++}
+diff --git a/src/app/api/connections/[userId]/route.ts b/src/app/api/connections/[userId]/route.ts
+new file mode 100644
+index 0000000..9d69411
+--- /dev/null
++++ b/src/app/api/connections/[userId]/route.ts
+@@ -0,0 +1,233 @@
++/**
++ * API: /api/connections/[userId]
++ * Manage individual taste connections
++ */
++
++import { NextResponse } from "next/server"
++import { auth } from "@/lib/auth"
++import { prisma } from "@/lib/prisma"
++import { computeTasteMatch } from "@/lib/tasteid"
++
++export async function GET(
++  request: Request,
++  { params }: { params: Promise<{ userId: string }> }
++) {
++  try {
++    const session = await auth()
++    const { userId } = await params
++
++    if (!session?.user?.id) {
++      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
++    }
++
++    // Get detailed taste comparison between current user and target
++    const match = await computeTasteMatch(session.user.id, userId)
++
++    if (!match) {
++      return NextResponse.json(
++        { error: "Could not compute taste match" },
++        { status: 404 }
++      )
++    }
++
++    // Get both users' TasteIDs for signature comparison
++    const [userTaste, targetTaste] = await Promise.all([
++      prisma.tasteID.findUnique({
++        where: { userId: session.user.id },
++        select: {
++          listeningSignature: true,
++          primaryArchetype: true,
++          topGenres: true,
++          topArtists: true,
++          signaturePatterns: true,
++        },
++      }),
++      prisma.tasteID.findUnique({
++        where: { userId },
++        include: {
++          user: {
++            select: {
++              id: true,
++              username: true,
++              image: true,
++              bio: true,
++            },
++          },
++        },
++      }),
++    ])
++
++    if (!targetTaste?.user) {
++      return NextResponse.json({ error: "User not found" }, { status: 404 })
++    }
++
++    // Check existing connection status
++    const [sortedUser1, sortedUser2] = [session.user.id, userId].sort()
++    const existingMatch = await prisma.tasteMatch.findUnique({
++      where: {
++        user1Id_user2Id: {
++          user1Id: sortedUser1,
++          user2Id: sortedUser2,
++        },
++      },
++    })
++
++    // Check if they're already friends
++    const friendship = await prisma.friendship.findFirst({
++      where: {
++        OR: [
++          { user1Id: session.user.id, user2Id: userId },
++          { user1Id: userId, user2Id: session.user.id },
++        ],
++      },
++    })
++
++    return NextResponse.json({
++      match,
++      targetUser: {
++        id: targetTaste.user.id,
++        username: targetTaste.user.username,
++        image: targetTaste.user.image,
++        bio: targetTaste.user.bio,
++        archetype: targetTaste.primaryArchetype,
++        topGenres: targetTaste.topGenres,
++        topArtists: targetTaste.topArtists,
++        patterns: targetTaste.signaturePatterns,
++      },
++      userSignature: userTaste?.listeningSignature,
++      targetSignature: targetTaste.listeningSignature,
++      connectionStatus: existingMatch?.status || "potential",
++      isFriend: !!friendship,
++    })
++  } catch (error) {
++    console.error("Error getting connection:", error)
++    return NextResponse.json(
++      { error: "Failed to get connection details" },
++      { status: 500 }
++    )
++  }
++}
++
++// Connect with a user (mark as connected)
++export async function POST(
++  request: Request,
++  { params }: { params: Promise<{ userId: string }> }
++) {
++  try {
++    const session = await auth()
++    const { userId } = await params
++
++    if (!session?.user?.id) {
++      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
++    }
++
++    if (session.user.id === userId) {
++      return NextResponse.json(
++        { error: "Cannot connect with yourself" },
++        { status: 400 }
++      )
++    }
++
++    const body = await request.json()
++    const { action } = body // "connect", "dismiss"
++
++    // Sort IDs for consistency
++    const [sortedUser1, sortedUser2] = [session.user.id, userId].sort()
++
++    // Get or compute taste match
++    let match = await prisma.tasteMatch.findUnique({
++      where: {
++        user1Id_user2Id: {
++          user1Id: sortedUser1,
++          user2Id: sortedUser2,
++        },
++      },
++    })
++
++    if (!match) {
++      // Compute new match
++      const computed = await computeTasteMatch(session.user.id, userId)
++      if (!computed) {
++        return NextResponse.json(
++          { error: "Could not compute taste match" },
++          { status: 400 }
++        )
++      }
++
++      match = await prisma.tasteMatch.create({
++        data: {
++          user1Id: sortedUser1,
++          user2Id: sortedUser2,
++          overallScore: computed.overallScore,
++          genreOverlap: computed.genreOverlap,
++          artistOverlap: computed.artistOverlap,
++          ratingAlignment: computed.ratingAlignment,
++          sharedGenres: computed.sharedGenres,
++          sharedArtists: computed.sharedArtists,
++          sharedAlbums: computed.sharedAlbums,
++          matchType: computed.matchType,
++          status: "potential",
++        },
++      })
++    }
++
++    // Update status based on action
++    if (action === "connect") {
++      match = await prisma.tasteMatch.update({
++        where: { id: match.id },
++        data: {
++          status: "connected",
++          connectedAt: new Date(),
++          lastInteraction: new Date(),
++        },
++      })
++
++      // Optionally send a friend request if not already friends
++      const existingFriendship = await prisma.friendship.findFirst({
++        where: {
++          OR: [
++            { user1Id: session.user.id, user2Id: userId },
++            { user1Id: userId, user2Id: session.user.id },
++          ],
++        },
++      })
++
++      const existingRequest = await prisma.friendRequest.findFirst({
++        where: {
++          OR: [
++            { senderId: session.user.id, receiverId: userId },
++            { senderId: userId, receiverId: session.user.id },
++          ],
++          status: "pending",
++        },
++      })
++
++      if (!existingFriendship && !existingRequest) {
++        await prisma.friendRequest.create({
++          data: {
++            senderId: session.user.id,
++            receiverId: userId,
++          },
++        })
++      }
++    } else if (action === "dismiss") {
++      match = await prisma.tasteMatch.update({
++        where: { id: match.id },
++        data: {
++          status: "dismissed",
++        },
++      })
++    }
++
++    return NextResponse.json({
++      success: true,
++      status: match.status,
++    })
++  } catch (error) {
++    console.error("Error updating connection:", error)
++    return NextResponse.json(
++      { error: "Failed to update connection" },
++      { status: 500 }
++    )
++  }
++}
+diff --git a/src/app/api/connections/discover/route.ts b/src/app/api/connections/discover/route.ts
+new file mode 100644
+index 0000000..06fbc56
+--- /dev/null
++++ b/src/app/api/connections/discover/route.ts
+@@ -0,0 +1,106 @@
++/**
++ * API: /api/connections/discover
++ * Discover taste connections powered by Polarity 1.2
++ */
++
++import { NextResponse } from "next/server"
++import { auth } from "@/lib/auth"
++import { prisma } from "@/lib/prisma"
++import {
++  discoverTasteConnections,
++  findOppositeAttracts,
++  findTasteTwins,
++  findExplorerGuides,
++  type ConnectionMatchType
++} from "@/lib/tasteid"
++
++export async function GET(request: Request) {
++  try {
++    const session = await auth()
++
++    if (!session?.user?.id) {
++      return NextResponse.json(
++        { error: "Unauthorized" },
++        { status: 401 }
++      )
++    }
++
++    const { searchParams } = new URL(request.url)
++    const mode = searchParams.get("mode") || "all"  // all, twins, opposites, guides
++    const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 50)
++    const matchTypesParam = searchParams.get("matchTypes")
++
++    // Check if user has a TasteID
++    const tasteId = await prisma.tasteID.findUnique({
++      where: { userId: session.user.id },
++    })
++
++    if (!tasteId) {
++      return NextResponse.json({
++        error: "TasteID required",
++        message: "You need at least 20 reviews to discover connections",
++        reviewCount: 0,
++        required: 20,
++      }, { status: 400 })
++    }
++
++    if (tasteId.reviewCount < 20) {
++      return NextResponse.json({
++        error: "More reviews needed",
++        message: `Review ${20 - tasteId.reviewCount} more albums to unlock taste connections`,
++        reviewCount: tasteId.reviewCount,
++        required: 20,
++      }, { status: 400 })
++    }
++
++    let connections
++
++    switch (mode) {
++      case "twins":
++        connections = await findTasteTwins(session.user.id, limit)
++        break
++      case "opposites":
++        connections = await findOppositeAttracts(session.user.id, limit)
++        break
++      case "guides":
++        connections = await findExplorerGuides(session.user.id, limit)
++        break
++      default:
++        // Parse match types filter if provided
++        const matchTypes = matchTypesParam
++          ? matchTypesParam.split(",") as ConnectionMatchType[]
++          : undefined
++        connections = await discoverTasteConnections(session.user.id, {
++          limit,
++          matchTypes,
++        })
++    }
++
++    // Group connections by match type for UI
++    const grouped = {
++      tasteTwins: connections.filter(c => c.matchType === "taste_twin"),
++      networkResonance: connections.filter(c => c.matchType === "network_resonance"),
++      oppositeAttracts: connections.filter(c => c.matchType === "opposite_attracts"),
++      explorerGuides: connections.filter(c => c.matchType === "explorer_guide"),
++      genreBuddies: connections.filter(c => c.matchType === "genre_buddy"),
++      complementary: connections.filter(c => c.matchType === "complementary"),
++    }
++
++    return NextResponse.json({
++      connections,
++      grouped,
++      total: connections.length,
++      userTasteId: {
++        archetype: tasteId.primaryArchetype,
++        reviewCount: tasteId.reviewCount,
++        polarityScore: tasteId.polarityScore2 || tasteId.polarityScore,
++      },
++    })
++  } catch (error) {
++    console.error("Error discovering connections:", error)
++    return NextResponse.json(
++      { error: "Failed to discover connections" },
++      { status: 500 }
++    )
++  }
++}
+diff --git a/src/app/api/listening/[inviteCode]/route.ts b/src/app/api/listening/[inviteCode]/route.ts
+new file mode 100644
+index 0000000..21840f4
+--- /dev/null
++++ b/src/app/api/listening/[inviteCode]/route.ts
+@@ -0,0 +1,219 @@
++/**
++ * API: /api/listening/[inviteCode]
++ * Individual listening session operations
++ */
++
++import { NextResponse } from "next/server"
++import { auth } from "@/lib/auth"
++import { prisma } from "@/lib/prisma"
++
++export async function GET(
++  request: Request,
++  { params }: { params: Promise<{ inviteCode: string }> }
++) {
++  try {
++    const session = await auth()
++    const { inviteCode } = await params
++
++    if (!session?.user?.id) {
++      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
++    }
++
++    const listeningSession = await prisma.sharedListeningSession.findUnique({
++      where: { inviteCode },
++      include: {
++        messages: {
++          orderBy: { createdAt: "asc" },
++          take: 100,
++        },
++      },
++    })
++
++    if (!listeningSession) {
++      return NextResponse.json({ error: "Session not found" }, { status: 404 })
++    }
++
++    // Get participants and album
++    const [host, guest, album] = await Promise.all([
++      prisma.user.findUnique({
++        where: { id: listeningSession.hostId },
++        select: { id: true, username: true, image: true },
++      }),
++      listeningSession.guestId ? prisma.user.findUnique({
++        where: { id: listeningSession.guestId },
++        select: { id: true, username: true, image: true },
++      }) : null,
++      listeningSession.currentAlbumId ? prisma.album.findUnique({
++        where: { id: listeningSession.currentAlbumId },
++        select: {
++          id: true,
++          spotifyId: true,
++          title: true,
++          artistName: true,
++          coverArtUrl: true,
++          coverArtUrlLarge: true,
++          tracks: {
++            orderBy: { trackNumber: "asc" },
++            select: { id: true, name: true, trackNumber: true, durationMs: true, previewUrl: true },
++          },
++        },
++      }) : null,
++    ])
++
++    // Enrich messages with user data
++    const messageUserIds = [...new Set(listeningSession.messages.map(m => m.userId))]
++    const messageUsers = await prisma.user.findMany({
++      where: { id: { in: messageUserIds } },
++      select: { id: true, username: true, image: true },
++    })
++    const userMap = Object.fromEntries(messageUsers.map(u => [u.id, u]))
++
++    const enrichedMessages = listeningSession.messages.map(m => ({
++      ...m,
++      user: userMap[m.userId],
++    }))
++
++    return NextResponse.json({
++      session: {
++        ...listeningSession,
++        host,
++        guest,
++        currentAlbum: album,
++        messages: enrichedMessages,
++        isHost: listeningSession.hostId === session.user.id,
++        canJoin: !listeningSession.guestId || listeningSession.guestId === session.user.id,
++      },
++    })
++  } catch (error) {
++    console.error("Error fetching session:", error)
++    return NextResponse.json({ error: "Failed to fetch session" }, { status: 500 })
++  }
++}
++
++export async function PATCH(
++  request: Request,
++  { params }: { params: Promise<{ inviteCode: string }> }
++) {
++  try {
++    const session = await auth()
++    const { inviteCode } = await params
++
++    if (!session?.user?.id) {
++      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
++    }
++
++    const body = await request.json()
++    const { action, albumId, trackIndex, playbackPosition, message } = body
++
++    const listeningSession = await prisma.sharedListeningSession.findUnique({
++      where: { inviteCode },
++    })
++
++    if (!listeningSession) {
++      return NextResponse.json({ error: "Session not found" }, { status: 404 })
++    }
++
++    const isHost = listeningSession.hostId === session.user.id
++    const isGuest = listeningSession.guestId === session.user.id
++
++    if (action === "join") {
++      // Guest joins session
++      if (listeningSession.guestId && listeningSession.guestId !== session.user.id) {
++        return NextResponse.json({ error: "Session is full" }, { status: 400 })
++      }
++
++      await prisma.sharedListeningSession.update({
++        where: { inviteCode },
++        data: {
++          guestId: session.user.id,
++          status: "active",
++          startedAt: listeningSession.startedAt || new Date(),
++        },
++      })
++
++      return NextResponse.json({ success: true, status: "active" })
++    }
++
++    if (action === "play" && isHost) {
++      await prisma.sharedListeningSession.update({
++        where: { inviteCode },
++        data: { isPlaying: true },
++      })
++      return NextResponse.json({ success: true })
++    }
++
++    if (action === "pause" && isHost) {
++      await prisma.sharedListeningSession.update({
++        where: { inviteCode },
++        data: { isPlaying: false },
++      })
++      return NextResponse.json({ success: true })
++    }
++
++    if (action === "seek" && isHost && playbackPosition !== undefined) {
++      await prisma.sharedListeningSession.update({
++        where: { inviteCode },
++        data: { playbackPosition },
++      })
++      return NextResponse.json({ success: true })
++    }
++
++    if (action === "change_track" && isHost && trackIndex !== undefined) {
++      await prisma.sharedListeningSession.update({
++        where: { inviteCode },
++        data: { currentTrackIndex: trackIndex, playbackPosition: 0 },
++      })
++      return NextResponse.json({ success: true })
++    }
++
++    if (action === "change_album" && isHost && albumId) {
++      await prisma.sharedListeningSession.update({
++        where: { inviteCode },
++        data: { currentAlbumId: albumId, currentTrackIndex: 0, playbackPosition: 0 },
++      })
++      return NextResponse.json({ success: true })
++    }
++
++    if (action === "send_message" && message && (isHost || isGuest)) {
++      const newMessage = await prisma.sharedListeningMessage.create({
++        data: {
++          sessionId: listeningSession.id,
++          userId: session.user.id,
++          content: message,
++          type: "text",
++        },
++      })
++
++      const user = await prisma.user.findUnique({
++        where: { id: session.user.id },
++        select: { id: true, username: true, image: true },
++      })
++
++      return NextResponse.json({
++        success: true,
++        message: { ...newMessage, user },
++      })
++    }
++
++    if (action === "end" && isHost) {
++      await prisma.sharedListeningSession.update({
++        where: { inviteCode },
++        data: { status: "ended", endedAt: new Date() },
++      })
++      return NextResponse.json({ success: true, status: "ended" })
++    }
++
++    if (action === "leave" && isGuest) {
++      await prisma.sharedListeningSession.update({
++        where: { inviteCode },
++        data: { guestId: null, status: "waiting" },
++      })
++      return NextResponse.json({ success: true })
++    }
++
++    return NextResponse.json({ error: "Invalid action" }, { status: 400 })
++  } catch (error) {
++    console.error("Error updating session:", error)
++    return NextResponse.json({ error: "Failed to update session" }, { status: 500 })
++  }
++}
+diff --git a/src/app/api/listening/route.ts b/src/app/api/listening/route.ts
+new file mode 100644
+index 0000000..2b98d25
+--- /dev/null
++++ b/src/app/api/listening/route.ts
+@@ -0,0 +1,131 @@
++/**
++ * API: /api/listening
++ * Shared Listening Sessions
++ */
++
++import { NextResponse } from "next/server"
++import { auth } from "@/lib/auth"
++import { prisma } from "@/lib/prisma"
++import crypto from "crypto"
++
++function generateInviteCode(): string {
++  return crypto.randomBytes(5).toString("hex")
++}
++
++export async function GET(request: Request) {
++  try {
++    const session = await auth()
++
++    if (!session?.user?.id) {
++      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
++    }
++
++    const { searchParams } = new URL(request.url)
++    const status = searchParams.get("status")
++
++    const sessions = await prisma.sharedListeningSession.findMany({
++      where: {
++        OR: [
++          { hostId: session.user.id },
++          { guestId: session.user.id },
++        ],
++        ...(status && { status }),
++      },
++      orderBy: { createdAt: "desc" },
++      take: 20,
++      include: {
++        messages: {
++          orderBy: { createdAt: "desc" },
++          take: 1,
++        },
++      },
++    })
++
++    // Enrich with user and album data
++    const userIds = [...new Set(sessions.flatMap(s => [s.hostId, s.guestId].filter(Boolean) as string[]))]
++    const albumIds = sessions.map(s => s.currentAlbumId).filter(Boolean) as string[]
++
++    const [users, albums] = await Promise.all([
++      prisma.user.findMany({
++        where: { id: { in: userIds } },
++        select: { id: true, username: true, image: true },
++      }),
++      albumIds.length > 0 ? prisma.album.findMany({
++        where: { id: { in: albumIds } },
++        select: { id: true, spotifyId: true, title: true, artistName: true, coverArtUrl: true },
++      }) : [],
++    ])
++
++    const userMap = Object.fromEntries(users.map(u => [u.id, u]))
++    const albumMap = Object.fromEntries(albums.map(a => [a.id, a]))
++
++    const enrichedSessions = sessions.map(s => ({
++      ...s,
++      host: userMap[s.hostId],
++      guest: s.guestId ? userMap[s.guestId] : null,
++      currentAlbum: s.currentAlbumId ? albumMap[s.currentAlbumId] : null,
++      isHost: s.hostId === session.user.id,
++    }))
++
++    return NextResponse.json({ sessions: enrichedSessions })
++  } catch (error) {
++    console.error("Error fetching sessions:", error)
++    return NextResponse.json({ error: "Failed to fetch sessions" }, { status: 500 })
++  }
++}
++
++export async function POST(request: Request) {
++  try {
++    const session = await auth()
++
++    if (!session?.user?.id) {
++      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
++    }
++
++    const body = await request.json()
++    const { guestId, albumId, title } = body
++
++    // Generate unique invite code
++    const inviteCode = generateInviteCode()
++
++    const listeningSession = await prisma.sharedListeningSession.create({
++      data: {
++        hostId: session.user.id,
++        guestId,
++        currentAlbumId: albumId,
++        title: title || "Listening Session",
++        inviteCode,
++        status: guestId ? "waiting" : "waiting",
++      },
++    })
++
++    // If guest specified, send notification
++    if (guestId) {
++      const host = await prisma.user.findUnique({
++        where: { id: session.user.id },
++        select: { username: true },
++      })
++
++      await prisma.notification.create({
++        data: {
++          userId: guestId,
++          type: "listening_invite",
++          content: {
++            sessionId: listeningSession.id,
++            inviteCode,
++            actorId: session.user.id,
++            actorName: host?.username || "Someone",
++          },
++        },
++      })
++    }
++
++    return NextResponse.json({
++      session: listeningSession,
++      inviteUrl: `/listen/${inviteCode}`,
++    })
++  } catch (error) {
++    console.error("Error creating session:", error)
++    return NextResponse.json({ error: "Failed to create session" }, { status: 500 })
++  }
++}
+diff --git a/src/app/api/messages/[conversationId]/route.ts b/src/app/api/messages/[conversationId]/route.ts
+new file mode 100644
+index 0000000..584eb78
+--- /dev/null
++++ b/src/app/api/messages/[conversationId]/route.ts
+@@ -0,0 +1,183 @@
++/**
++ * API: /api/messages/[conversationId]
++ * Individual conversation operations
++ */
++
++import { NextResponse } from "next/server"
++import { auth } from "@/lib/auth"
++import { prisma } from "@/lib/prisma"
++
++export async function GET(
++  request: Request,
++  { params }: { params: Promise<{ conversationId: string }> }
++) {
++  try {
++    const session = await auth()
++    const { conversationId } = await params
++
++    if (!session?.user?.id) {
++      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
++    }
++
++    const conversation = await prisma.conversation.findUnique({
++      where: { id: conversationId },
++    })
++
++    if (!conversation) {
++      return NextResponse.json({ error: "Conversation not found" }, { status: 404 })
++    }
++
++    // Check if user is participant
++    const isParticipant1 = conversation.participant1Id === session.user.id
++    const isParticipant2 = conversation.participant2Id === session.user.id
++
++    if (!isParticipant1 && !isParticipant2) {
++      return NextResponse.json({ error: "Not authorized" }, { status: 403 })
++    }
++
++    // Get messages
++    const { searchParams } = new URL(request.url)
++    const cursor = searchParams.get("cursor")
++    const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100)
++
++    const messages = await prisma.directMessage.findMany({
++      where: { conversationId },
++      orderBy: { createdAt: "desc" },
++      take: limit,
++      ...(cursor && {
++        cursor: { id: cursor },
++        skip: 1,
++      }),
++    })
++
++    // Get sender info
++    const senderIds = [...new Set(messages.map(m => m.senderId))]
++    const senders = await prisma.user.findMany({
++      where: { id: { in: senderIds } },
++      select: { id: true, username: true, image: true },
++    })
++    const senderMap = Object.fromEntries(senders.map(s => [s.id, s]))
++
++    const enrichedMessages = messages.map(m => ({
++      ...m,
++      sender: senderMap[m.senderId],
++      isMine: m.senderId === session.user.id,
++    }))
++
++    // Get other user
++    const otherId = isParticipant1 ? conversation.participant2Id : conversation.participant1Id
++    const otherUser = await prisma.user.findUnique({
++      where: { id: otherId },
++      select: { id: true, username: true, image: true },
++    })
++
++    // Mark messages as read
++    const unreadField = isParticipant1 ? "participant1Unread" : "participant2Unread"
++    await prisma.conversation.update({
++      where: { id: conversationId },
++      data: { [unreadField]: 0 },
++    })
++
++    // Mark individual messages as read
++    await prisma.directMessage.updateMany({
++      where: {
++        conversationId,
++        senderId: { not: session.user.id },
++        isRead: false,
++      },
++      data: {
++        isRead: true,
++        readAt: new Date(),
++      },
++    })
++
++    return NextResponse.json({
++      conversation: {
++        id: conversation.id,
++        otherUser,
++      },
++      messages: enrichedMessages.reverse(), // Oldest first for display
++      hasMore: messages.length === limit,
++      nextCursor: messages.length === limit ? messages[messages.length - 1].id : null,
++    })
++  } catch (error) {
++    console.error("Error fetching conversation:", error)
++    return NextResponse.json({ error: "Failed to fetch conversation" }, { status: 500 })
++  }
++}
++
++export async function POST(
++  request: Request,
++  { params }: { params: Promise<{ conversationId: string }> }
++) {
++  try {
++    const session = await auth()
++    const { conversationId } = await params
++
++    if (!session?.user?.id) {
++      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
++    }
++
++    const conversation = await prisma.conversation.findUnique({
++      where: { id: conversationId },
++    })
++
++    if (!conversation) {
++      return NextResponse.json({ error: "Conversation not found" }, { status: 404 })
++    }
++
++    const isParticipant1 = conversation.participant1Id === session.user.id
++    const isParticipant2 = conversation.participant2Id === session.user.id
++
++    if (!isParticipant1 && !isParticipant2) {
++      return NextResponse.json({ error: "Not authorized" }, { status: 403 })
++    }
++
++    const body = await request.json()
++    const { content, type = "text", metadata } = body
++
++    if (!content) {
++      return NextResponse.json({ error: "Message content required" }, { status: 400 })
++    }
++
++    // Create message
++    const message = await prisma.directMessage.create({
++      data: {
++        conversationId,
++        senderId: session.user.id,
++        content,
++        type,
++        metadata,
++      },
++    })
++
++    // Update conversation
++    const unreadField = isParticipant1 ? "participant2Unread" : "participant1Unread"
++
++    await prisma.conversation.update({
++      where: { id: conversationId },
++      data: {
++        lastMessageAt: new Date(),
++        lastMessageText: content.slice(0, 100),
++        [unreadField]: { increment: 1 },
++      },
++    })
++
++    // Get sender info
++    const sender = await prisma.user.findUnique({
++      where: { id: session.user.id },
++      select: { id: true, username: true, image: true },
++    })
++
++    return NextResponse.json({
++      message: {
++        ...message,
++        sender,
++        isMine: true,
++      },
++    })
++  } catch (error) {
++    console.error("Error sending message:", error)
++    return NextResponse.json({ error: "Failed to send message" }, { status: 500 })
++  }
++}
+diff --git a/src/app/api/messages/route.ts b/src/app/api/messages/route.ts
+new file mode 100644
+index 0000000..7038613
+--- /dev/null
++++ b/src/app/api/messages/route.ts
+@@ -0,0 +1,153 @@
++/**
++ * API: /api/messages
++ * Direct Messages / Conversations
++ */
++
++import { NextResponse } from "next/server"
++import { auth } from "@/lib/auth"
++import { prisma } from "@/lib/prisma"
++
++export async function GET(request: Request) {
++  try {
++    const session = await auth()
++
++    if (!session?.user?.id) {
++      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
++    }
++
++    // Get all conversations for user
++    const conversations = await prisma.conversation.findMany({
++      where: {
++        OR: [
++          { participant1Id: session.user.id },
++          { participant2Id: session.user.id },
++        ],
++      },
++      orderBy: { lastMessageAt: "desc" },
++      take: 50,
++    })
++
++    // Get other participants
++    const otherUserIds = conversations.map(c =>
++      c.participant1Id === session.user.id ? c.participant2Id : c.participant1Id
++    )
++
++    const users = await prisma.user.findMany({
++      where: { id: { in: otherUserIds } },
++      select: { id: true, username: true, image: true },
++    })
++    const userMap = Object.fromEntries(users.map(u => [u.id, u]))
++
++    const enrichedConversations = conversations.map(c => {
++      const isParticipant1 = c.participant1Id === session.user.id
++      const otherId = isParticipant1 ? c.participant2Id : c.participant1Id
++      const unreadCount = isParticipant1 ? c.participant1Unread : c.participant2Unread
++
++      return {
++        id: c.id,
++        otherUser: userMap[otherId],
++        lastMessageText: c.lastMessageText,
++        lastMessageAt: c.lastMessageAt,
++        unreadCount,
++      }
++    })
++
++    // Count total unread
++    const totalUnread = enrichedConversations.reduce((sum, c) => sum + c.unreadCount, 0)
++
++    return NextResponse.json({
++      conversations: enrichedConversations,
++      totalUnread,
++    })
++  } catch (error) {
++    console.error("Error fetching conversations:", error)
++    return NextResponse.json({ error: "Failed to fetch conversations" }, { status: 500 })
++  }
++}
++
++export async function POST(request: Request) {
++  try {
++    const session = await auth()
++
++    if (!session?.user?.id) {
++      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
++    }
++
++    const body = await request.json()
++    const { recipientId, content, type = "text", metadata } = body
++
++    if (!recipientId || !content) {
++      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
++    }
++
++    // Check if conversation exists
++    const [p1, p2] = [session.user.id, recipientId].sort()
++
++    let conversation = await prisma.conversation.findUnique({
++      where: {
++        participant1Id_participant2Id: {
++          participant1Id: p1,
++          participant2Id: p2,
++        },
++      },
++    })
++
++    if (!conversation) {
++      // Create new conversation
++      conversation = await prisma.conversation.create({
++        data: {
++          participant1Id: p1,
++          participant2Id: p2,
++        },
++      })
++    }
++
++    // Create message
++    const message = await prisma.directMessage.create({
++      data: {
++        conversationId: conversation.id,
++        senderId: session.user.id,
++        content,
++        type,
++        metadata,
++      },
++    })
++
++    // Update conversation
++    const isParticipant1 = conversation.participant1Id === session.user.id
++    const unreadField = isParticipant1 ? "participant2Unread" : "participant1Unread"
++
++    await prisma.conversation.update({
++      where: { id: conversation.id },
++      data: {
++        lastMessageAt: new Date(),
++        lastMessageText: content.slice(0, 100),
++        [unreadField]: { increment: 1 },
++      },
++    })
++
++    // Create notification for recipient
++    const sender = await prisma.user.findUnique({
++      where: { id: session.user.id },
++      select: { username: true },
++    })
++
++    await prisma.notification.create({
++      data: {
++        userId: recipientId,
++        type: "direct_message",
++        content: {
++          conversationId: conversation.id,
++          actorId: session.user.id,
++          actorName: sender?.username || "Someone",
++          preview: content.slice(0, 50),
++        },
++      },
++    })
++
++    return NextResponse.json({ message, conversationId: conversation.id })
++  } catch (error) {
++    console.error("Error sending message:", error)
++    return NextResponse.json({ error: "Failed to send message" }, { status: 500 })
++  }
++}
+diff --git a/src/app/discover/challenges/page.tsx b/src/app/discover/challenges/page.tsx
+new file mode 100644
+index 0000000..d0dbee7
+--- /dev/null
++++ b/src/app/discover/challenges/page.tsx
+@@ -0,0 +1,321 @@
++"use client"
++
++import { useState, useEffect } from "react"
++import Link from "next/link"
++import { useSession } from "next-auth/react"
++import { ChallengeCard } from "@/components/challenges/ChallengeCard"
++import { CreateChallengeModal } from "@/components/challenges/CreateChallengeModal"
++
++interface Challenge {
++  id: string
++  challengeType: string
++  title: string | null
++  status: string
++  targetAlbumId: string | null
++  targetGenre: string | null
++  targetDecade: string | null
++  creatorProgress: Record<string, unknown> | null
++  partnerProgress: Record<string, unknown> | null
++  winnerId: string | null
++  expiresAt: string
++  createdAt: string
++  completedAt: string | null
++  creator: {
++    id: string
++    username: string
++    image: string | null
++  }
++  partner: {
++    id: string
++    username: string
++    image: string | null
++  }
++  targetAlbum?: {
++    id: string
++    spotifyId: string
++    name: string
++    artist: string
++    imageUrl: string | null
++  }
++}
++
++type TabType = "active" | "pending" | "completed"
++
++export default function ChallengesPage() {
++  const { data: session, status } = useSession()
++  const [tab, setTab] = useState<TabType>("active")
++  const [challenges, setChallenges] = useState<Challenge[]>([])
++  const [loading, setLoading] = useState(true)
++  const [showCreateModal, setShowCreateModal] = useState(false)
++  const [selectedPartnerId, setSelectedPartnerId] = useState<string | null>(null)
++
++  useEffect(() => {
++    if (status === "loading") return
++    if (!session?.user?.id) {
++      setLoading(false)
++      return
++    }
++    fetchChallenges()
++  }, [session?.user?.id, status])
++
++  const fetchChallenges = async () => {
++    try {
++      setLoading(true)
++      const response = await fetch("/api/challenges")
++      if (response.ok) {
++        const data = await response.json()
++        setChallenges(data.challenges)
++      }
++    } catch (err) {
++      console.error("Failed to fetch challenges:", err)
++    } finally {
++      setLoading(false)
++    }
++  }
++
++  const handleAccept = async (challengeId: string) => {
++    try {
++      const response = await fetch(`/api/challenges/${challengeId}`, {
++        method: "POST",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify({ action: "accept" }),
++      })
++      if (response.ok) {
++        fetchChallenges()
++      }
++    } catch (err) {
++      console.error("Failed to accept challenge:", err)
++    }
++  }
++
++  const handleDecline = async (challengeId: string) => {
++    try {
++      const response = await fetch(`/api/challenges/${challengeId}`, {
++        method: "POST",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify({ action: "decline" }),
++      })
++      if (response.ok) {
++        fetchChallenges()
++      }
++    } catch (err) {
++      console.error("Failed to decline challenge:", err)
++    }
++  }
++
++  const handleCreateChallenge = async (data: {
++    partnerId: string
++    challengeType: string
++    targetAlbumId?: string
++    targetGenre?: string
++    targetDecade?: string
++  }) => {
++    try {
++      const response = await fetch("/api/challenges", {
++        method: "POST",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify(data),
++      })
++      if (response.ok) {
++        setShowCreateModal(false)
++        setSelectedPartnerId(null)
++        fetchChallenges()
++      }
++    } catch (err) {
++      console.error("Failed to create challenge:", err)
++    }
++  }
++
++  const filteredChallenges = challenges.filter((c) => {
++    if (tab === "active") return c.status === "active"
++    if (tab === "pending") return c.status === "pending"
++    if (tab === "completed") return c.status === "completed" || c.status === "expired"
++    return true
++  })
++
++  const pendingForMe = challenges.filter(
++    (c) => c.status === "pending" && c.partner.id === session?.user?.id
++  )
++
++  if (status === "loading") {
++    return (
++      <div className="min-h-screen flex items-center justify-center">
++        <div className="animate-pulse text-[--muted]">Loading...</div>
++      </div>
++    )
++  }
++
++  if (!session) {
++    return (
++      <div className="min-h-screen flex items-center justify-center px-6">
++        <div className="text-center max-w-md">
++          <div className="text-6xl mb-6">🎯</div>
++          <h1 className="text-3xl font-bold mb-4">Taste Challenges</h1>
++          <p className="text-[--muted] mb-6">
++            Sign in to challenge your friends to musical duels and discover new music together.
++          </p>
++          <Link
++            href="/login?callbackUrl=/discover/challenges"
++            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-bold text-sm hover:bg-white/90 transition-colors"
++          >
++            Sign In to Challenge
++          </Link>
++        </div>
++      </div>
++    )
++  }
++
++  return (
++    <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
++      {/* Header */}
++      <header className="border-b border-[--border]">
++        <div className="max-w-5xl mx-auto px-6 py-8 lg:py-12">
++          <Link
++            href="/discover"
++            className="inline-flex items-center gap-2 text-xs text-[--muted] hover:text-white transition-colors mb-6"
++          >
++            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
++              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
++            </svg>
++            Back to Discover
++          </Link>
++
++          <div className="flex items-start justify-between">
++            <div>
++              <h1 className="text-4xl lg:text-5xl font-bold tracking-tight mb-3">Taste Challenges</h1>
++              <p className="text-[--muted] max-w-xl">
++                Challenge friends to musical duels. Rate the same album, swap genres, or explore decades together.
++              </p>
++            </div>
++            <button
++              onClick={() => setShowCreateModal(true)}
++              className="hidden lg:flex items-center gap-2 px-5 py-2.5 bg-white text-black font-bold text-sm hover:bg-white/90 transition-colors"
++            >
++              <span>+</span>
++              New Challenge
++            </button>
++          </div>
++        </div>
++      </header>
++
++      {/* Pending invites banner */}
++      {pendingForMe.length > 0 && (
++        <div className="bg-yellow-500/10 border-b border-yellow-500/30">
++          <div className="max-w-5xl mx-auto px-6 py-4">
++            <p className="text-sm">
++              <span className="font-bold text-yellow-400">{pendingForMe.length} challenge{pendingForMe.length > 1 ? "s" : ""}</span>
++              {" "}waiting for your response
++            </p>
++          </div>
++        </div>
++      )}
++
++      {/* Tabs */}
++      <div className="border-b border-[--border] sticky top-0 bg-[--background] z-10">
++        <div className="max-w-5xl mx-auto px-6">
++          <div className="flex gap-6 py-4">
++            {(["active", "pending", "completed"] as TabType[]).map((t) => (
++              <button
++                key={t}
++                onClick={() => setTab(t)}
++                className={`text-sm font-medium capitalize transition-colors ${
++                  tab === t ? "text-white" : "text-[--muted] hover:text-white"
++                }`}
++              >
++                {t}
++                {t === "pending" && pendingForMe.length > 0 && (
++                  <span className="ml-2 px-1.5 py-0.5 text-[10px] bg-yellow-500 text-black rounded-full">
++                    {pendingForMe.length}
++                  </span>
++                )}
++              </button>
++            ))}
++          </div>
++        </div>
++      </div>
++
++      {/* Mobile create button */}
++      <div className="lg:hidden px-6 py-4 border-b border-[--border]">
++        <button
++          onClick={() => setShowCreateModal(true)}
++          className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-white text-black font-bold text-sm"
++        >
++          <span>+</span>
++          New Challenge
++        </button>
++      </div>
++
++      {/* Content */}
++      <div className="max-w-5xl mx-auto px-6 py-8">
++        {loading ? (
++          <div className="space-y-4">
++            {[1, 2, 3].map((i) => (
++              <div key={i} className="border border-[--border] p-6 animate-pulse">
++                <div className="flex items-center gap-4 mb-4">
++                  <div className="w-12 h-12 bg-[--border]" />
++                  <div className="flex-1">
++                    <div className="h-5 bg-[--border] w-1/3 mb-2" />
++                    <div className="h-3 bg-[--border] w-1/4" />
++                  </div>
++                </div>
++                <div className="h-16 bg-[--border]" />
++              </div>
++            ))}
++          </div>
++        ) : filteredChallenges.length === 0 ? (
++          <div className="border-2 border-dashed border-[--border] p-12 text-center">
++            <div className="text-4xl mb-4">
++              {tab === "active" ? "🎮" : tab === "pending" ? "📬" : "🏆"}
++            </div>
++            <h3 className="text-xl font-bold mb-2">
++              {tab === "active"
++                ? "No active challenges"
++                : tab === "pending"
++                ? "No pending challenges"
++                : "No completed challenges yet"}
++            </h3>
++            <p className="text-[--muted] mb-6 max-w-md mx-auto">
++              {tab === "active"
++                ? "Start a challenge with a friend to compare your musical tastes!"
++                : tab === "pending"
++                ? "All caught up! No challenges waiting for you."
++                : "Complete some challenges to see your history here."}
++            </p>
++            {tab !== "completed" && (
++              <button
++                onClick={() => setShowCreateModal(true)}
++                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-bold text-sm hover:bg-white/90 transition-colors"
++              >
++                Create Challenge
++              </button>
++            )}
++          </div>
++        ) : (
++          <div className="space-y-4">
++            {filteredChallenges.map((challenge) => (
++              <ChallengeCard
++                key={challenge.id}
++                challenge={challenge}
++                currentUserId={session.user.id}
++                onAccept={handleAccept}
++                onDecline={handleDecline}
++              />
++            ))}
++          </div>
++        )}
++      </div>
++
++      {/* Create modal */}
++      {showCreateModal && (
++        <CreateChallengeModal
++          partnerId={selectedPartnerId}
++          onClose={() => {
++            setShowCreateModal(false)
++            setSelectedPartnerId(null)
++          }}
++          onCreate={handleCreateChallenge}
++        />
++      )}
++    </div>
++  )
++}
+diff --git a/src/app/discover/connections/page.tsx b/src/app/discover/connections/page.tsx
+new file mode 100644
+index 0000000..90cca65
+--- /dev/null
++++ b/src/app/discover/connections/page.tsx
+@@ -0,0 +1,333 @@
++"use client"
++
++import { useState, useEffect } from "react"
++import Link from "next/link"
++import { useSession } from "next-auth/react"
++import { ConnectionCard } from "@/components/connections"
++import { SignatureComparison } from "@/components/connections/SignatureComparison"
++import type { EnhancedTasteMatch, ListeningSignature } from "@/lib/tasteid"
++
++type ConnectionMode = "all" | "twins" | "opposites" | "guides"
++
++const MODE_CONFIG: Record<ConnectionMode, { label: string; description: string; icon: string }> = {
++  all: { label: "All Connections", description: "Everyone with potential musical chemistry", icon: "🎵" },
++  twins: { label: "Taste Twins", description: "Your musical soulmates with nearly identical taste", icon: "👯" },
++  opposites: { label: "Opposite Attracts", description: "Different tastes that could expand your horizons", icon: "🔄" },
++  guides: { label: "Explorer Guides", description: "People who can introduce you to new music", icon: "🧭" },
++}
++
++interface ConnectionsResponse {
++  connections: EnhancedTasteMatch[]
++  grouped: {
++    tasteTwins: EnhancedTasteMatch[]
++    networkResonance: EnhancedTasteMatch[]
++    oppositeAttracts: EnhancedTasteMatch[]
++    explorerGuides: EnhancedTasteMatch[]
++    genreBuddies: EnhancedTasteMatch[]
++    complementary: EnhancedTasteMatch[]
++  }
++  total: number
++  userTasteId: {
++    archetype: string
++    reviewCount: number
++    polarityScore: number
++  }
++}
++
++export default function ConnectionsPage() {
++  const { data: session, status } = useSession()
++  const [mode, setMode] = useState<ConnectionMode>("all")
++  const [connections, setConnections] = useState<EnhancedTasteMatch[]>([])
++  const [userSignature, setUserSignature] = useState<ListeningSignature | null>(null)
++  const [userTasteId, setUserTasteId] = useState<{ archetype: string; reviewCount: number; polarityScore: number } | null>(null)
++  const [loading, setLoading] = useState(true)
++  const [error, setError] = useState<string | null>(null)
++  const [selectedConnection, setSelectedConnection] = useState<EnhancedTasteMatch | null>(null)
++
++  useEffect(() => {
++    if (status === "loading") return
++    if (!session?.user?.id) {
++      setLoading(false)
++      return
++    }
++
++    async function fetchData() {
++      try {
++        setLoading(true)
++        setError(null)
++
++        const [connectionsRes, tasteRes] = await Promise.all([
++          fetch(`/api/connections/discover?mode=${mode}&limit=50`),
++          fetch("/api/tasteid/me"),
++        ])
++
++        if (!connectionsRes.ok) {
++          const data = await connectionsRes.json()
++          setError(data.message || data.error)
++          setConnections([])
++          return
++        }
++
++        const connectionsData: ConnectionsResponse = await connectionsRes.json()
++        setConnections(connectionsData.connections)
++        setUserTasteId(connectionsData.userTasteId)
++
++        if (tasteRes.ok) {
++          const tasteData = await tasteRes.json()
++          setUserSignature(tasteData.tasteId?.polarity12?.listeningSignature || null)
++        }
++      } catch (err) {
++        setError("Failed to load connections")
++      } finally {
++        setLoading(false)
++      }
++    }
++
++    fetchData()
++  }, [session?.user?.id, mode, status])
++
++  const handleConnect = async (targetUserId: string) => {
++    try {
++      await fetch(`/api/connections/${targetUserId}`, {
++        method: "POST",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify({ action: "connect" }),
++      })
++    } catch (err) {
++      console.error("Failed to connect:", err)
++    }
++  }
++
++  const handleDismiss = async (targetUserId: string) => {
++    try {
++      await fetch(`/api/connections/${targetUserId}`, {
++        method: "POST",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify({ action: "dismiss" }),
++      })
++      setConnections(prev => prev.filter(c => c.userId !== targetUserId))
++      if (selectedConnection?.userId === targetUserId) {
++        setSelectedConnection(null)
++      }
++    } catch (err) {
++      console.error("Failed to dismiss:", err)
++    }
++  }
++
++  if (status === "loading") {
++    return (
++      <div className="min-h-screen flex items-center justify-center">
++        <div className="animate-pulse text-[--muted]">Loading...</div>
++      </div>
++    )
++  }
++
++  if (!session) {
++    return (
++      <div className="min-h-screen flex items-center justify-center px-6">
++        <div className="text-center max-w-md">
++          <div className="text-6xl mb-6">🎵</div>
++          <h1 className="text-3xl font-bold mb-4">Taste Connections</h1>
++          <p className="text-[--muted] mb-6">
++            Sign in to discover people who share your musical taste—or can expand your horizons.
++          </p>
++          <Link
++            href="/login?callbackUrl=/discover/connections"
++            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-bold text-sm hover:bg-white/90 transition-colors"
++          >
++            Sign In to Connect
++          </Link>
++        </div>
++      </div>
++    )
++  }
++
++  return (
++    <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
++      {/* Header */}
++      <header className="border-b border-[--border]">
++        <div className="max-w-7xl mx-auto px-6 py-8 lg:py-12">
++          <Link
++            href="/discover"
++            className="inline-flex items-center gap-2 text-xs text-[--muted] hover:text-white transition-colors mb-6"
++          >
++            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
++              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
++            </svg>
++            Back to Discover
++          </Link>
++
++          <div className="flex items-start justify-between">
++            <div>
++              <h1 className="text-4xl lg:text-5xl font-bold tracking-tight mb-3">Taste Connections</h1>
++              <p className="text-[--muted] max-w-xl">
++                Find your musical tribe. Polarity-powered matching connects you with people based on how you listen, not just what you listen to.
++              </p>
++            </div>
++            {userTasteId && (
++              <div className="hidden lg:block text-right">
++                <p className="text-xs text-[--muted] uppercase tracking-wider mb-1">Your Profile</p>
++                <p className="font-bold">{userTasteId.archetype}</p>
++                <p className="text-sm text-[--muted]">{userTasteId.reviewCount} reviews</p>
++              </div>
++            )}
++          </div>
++        </div>
++      </header>
++
++      {/* Mode tabs */}
++      <div className="border-b border-[--border] sticky top-0 bg-[--background] z-10">
++        <div className="max-w-7xl mx-auto px-6">
++          <div className="flex gap-1 py-3 overflow-x-auto">
++            {(Object.entries(MODE_CONFIG) as [ConnectionMode, typeof MODE_CONFIG.all][]).map(([key, config]) => (
++              <button
++                key={key}
++                onClick={() => setMode(key)}
++                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors ${
++                  mode === key
++                    ? "bg-white text-black"
++                    : "text-[--muted] hover:text-white"
++                }`}
++              >
++                <span>{config.icon}</span>
++                <span>{config.label}</span>
++              </button>
++            ))}
++          </div>
++        </div>
++      </div>
++
++      {/* Content */}
++      <div className="max-w-7xl mx-auto px-6 py-8">
++        <p className="text-sm text-[--muted] mb-8">{MODE_CONFIG[mode].description}</p>
++
++        {loading ? (
++          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
++            {[1, 2, 3, 4, 5, 6].map(i => (
++              <div key={i} className="border border-[--border] p-4 animate-pulse">
++                <div className="flex items-start gap-4 mb-4">
++                  <div className="w-16 h-16 bg-[--border]" />
++                  <div className="flex-1">
++                    <div className="h-5 bg-[--border] w-2/3 mb-2" />
++                    <div className="h-3 bg-[--border] w-1/2" />
++                  </div>
++                </div>
++                <div className="h-20 bg-[--border]" />
++              </div>
++            ))}
++          </div>
++        ) : error ? (
++          <div className="border-2 border-dashed border-[--border] p-12 text-center">
++            <div className="text-4xl mb-4">📊</div>
++            <h3 className="text-xl font-bold mb-2">More reviews needed</h3>
++            <p className="text-[--muted] mb-6 max-w-md mx-auto">{error}</p>
++            <Link
++              href="/search"
++              className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-bold text-sm hover:bg-white/90 transition-colors"
++            >
++              Find Albums to Review
++            </Link>
++          </div>
++        ) : connections.length === 0 ? (
++          <div className="border-2 border-dashed border-[--border] p-12 text-center">
++            <div className="text-4xl mb-4">🔍</div>
++            <h3 className="text-xl font-bold mb-2">No connections found</h3>
++            <p className="text-[--muted] max-w-md mx-auto">
++              No matches found for this category. Try a different filter or check back as more users join.
++            </p>
++          </div>
++        ) : (
++          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
++            {/* Connection list */}
++            <div className="lg:col-span-2 space-y-4">
++              {connections.map((connection, i) => (
++                <div
++                  key={connection.userId}
++                  onClick={() => setSelectedConnection(connection)}
++                  className={`cursor-pointer transition-all ${
++                    selectedConnection?.userId === connection.userId
++                      ? "ring-2 ring-white"
++                      : ""
++                  }`}
++                  style={{ animationDelay: `${i * 0.05}s` }}
++                >
++                  <ConnectionCard
++                    connection={connection}
++                    userSignature={userSignature}
++                    onConnect={handleConnect}
++                    onDismiss={handleDismiss}
++                    showActions
++                  />
++                </div>
++              ))}
++            </div>
++
++            {/* Detailed comparison panel */}
++            <div className="hidden lg:block">
++              <div className="sticky top-24">
++                {selectedConnection && userSignature ? (
++                  <div className="border border-[--border] p-6">
++                    <h3 className="text-lg font-bold mb-4">Signature Comparison</h3>
++                    <p className="text-xs text-[--muted] mb-6">
++                      How your listening patterns compare with @{selectedConnection.username}
++                    </p>
++
++                    <div className="flex justify-center mb-6">
++                      <SignatureComparison
++                        userSignature={userSignature}
++                        otherSignature={selectedConnection.networkResonance as unknown as ListeningSignature}
++                        userName="You"
++                        otherName={selectedConnection.username}
++                        size={220}
++                        animated
++                      />
++                    </div>
++
++                    <div className="space-y-4 text-sm">
++                      <div className="flex justify-between items-center">
++                        <span className="text-[--muted]">Signature Similarity</span>
++                        <span className="font-bold">{Math.round(selectedConnection.signatureSimilarity * 100)}%</span>
++                      </div>
++                      <div className="flex justify-between items-center">
++                        <span className="text-[--muted]">Genre Overlap</span>
++                        <span className="font-bold">{selectedConnection.genreOverlap}%</span>
++                      </div>
++                      <div className="flex justify-between items-center">
++                        <span className="text-[--muted]">Rating Alignment</span>
++                        <span className="font-bold">{selectedConnection.ratingAlignment}%</span>
++                      </div>
++                    </div>
++
++                    {selectedConnection.potentialIntroductions.length > 0 && (
++                      <div className="mt-6 pt-4 border-t border-[--border]">
++                        <p className="text-xs text-[--muted] uppercase tracking-wider mb-2">
++                          Could introduce you to
++                        </p>
++                        <div className="flex flex-wrap gap-1.5">
++                          {selectedConnection.potentialIntroductions.map((intro, i) => (
++                            <span
++                              key={i}
++                              className="text-xs px-2 py-0.5 border border-[--border]"
++                            >
++                              {intro}
++                            </span>
++                          ))}
++                        </div>
++                      </div>
++                    )}
++                  </div>
++                ) : (
++                  <div className="border border-dashed border-[--border] p-6 text-center">
++                    <p className="text-[--muted] text-sm">
++                      Click on a connection to see detailed comparison
++                    </p>
++                  </div>
++                )}
++              </div>
++            </div>
++          </div>
++        )}
++      </div>
++    </div>
++  )
++}
+diff --git a/src/app/discover/page.tsx b/src/app/discover/page.tsx
+index e8a7403..f5aa39b 100644
+--- a/src/app/discover/page.tsx
++++ b/src/app/discover/page.tsx
+@@ -1,6 +1,7 @@
+ import { prisma } from "@/lib/prisma"
+ import { auth } from "@/lib/auth"
+ import { SpinWheel } from "@/components/spin-wheel"
++import { ConnectionsSection } from "@/components/connections"
+ import Link from "next/link"
+ 
+ export const dynamic = "force-dynamic"
+@@ -207,6 +208,38 @@ export default async function DiscoverPage() {
+         </div>
+       </section>
+ 
++      {/* Taste Connections - Polarity 1.2 Powered */}
++      <section className="border-b border-[--border]">
++        <div className="max-w-7xl mx-auto px-6">
++          <div className="grid grid-cols-12 border-l border-r border-[--border]">
++            <div className="col-span-12 lg:col-span-1 border-r border-[--border] py-8 flex lg:flex-col items-center lg:items-start justify-between lg:justify-start gap-4">
++              <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted] lg:writing-mode-vertical lg:rotate-180" style={{ writingMode: 'vertical-rl' as const }}>
++                Connect
++              </span>
++              <span className="text-4xl lg:text-6xl font-bold text-[--border]">{getSectionNum()}</span>
++            </div>
++            <div className="col-span-12 lg:col-span-11 py-10 lg:py-14 px-6 lg:px-12">
++              <div className="flex items-baseline justify-between mb-8">
++                <div>
++                  <h2 className="text-2xl lg:text-3xl font-bold tracking-tight mb-2">Taste Connections</h2>
++                  <p className="text-[11px] tracking-[0.15em] uppercase text-[--muted]">
++                    Polarity-powered music community
++                  </p>
++                </div>
++                <Link
++                  href="/discover/connections"
++                  className="text-[10px] tracking-[0.15em] uppercase text-[--muted] hover:text-white transition-colors hidden sm:block"
++                >
++                  View All →
++                </Link>
++              </div>
++
++              <ConnectionsSection userId={session?.user?.id} />
++            </div>
++          </div>
++        </div>
++      </section>
++
+       {/* For You - Personalized */}
+       {recommendations.forYou.length > 0 && (
+         <section className="border-b border-[--border]">
+diff --git a/src/app/listen/[inviteCode]/page.tsx b/src/app/listen/[inviteCode]/page.tsx
+new file mode 100644
+index 0000000..1776df5
+--- /dev/null
++++ b/src/app/listen/[inviteCode]/page.tsx
+@@ -0,0 +1,46 @@
++"use client"
++
++import { useParams } from "next/navigation"
++import { useSession } from "next-auth/react"
++import Link from "next/link"
++import { ListeningSession } from "@/components/listening/ListeningSession"
++
++export default function ListeningSessionPage() {
++  const params = useParams()
++  const { data: session, status } = useSession()
++  const inviteCode = params.inviteCode as string
++
++  if (status === "loading") {
++    return (
++      <div className="min-h-screen flex items-center justify-center">
++        <div className="animate-pulse text-[--muted]">Loading...</div>
++      </div>
++    )
++  }
++
++  if (!session) {
++    return (
++      <div className="min-h-screen flex items-center justify-center px-6">
++        <div className="text-center max-w-md">
++          <div className="text-6xl mb-6">🎧</div>
++          <h1 className="text-3xl font-bold mb-4">Join Listening Session</h1>
++          <p className="text-[--muted] mb-6">
++            Sign in to join this shared listening session.
++          </p>
++          <Link
++            href={`/login?callbackUrl=/listen/${inviteCode}`}
++            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-bold text-sm hover:bg-white/90 transition-colors"
++          >
++            Sign In to Join
++          </Link>
++        </div>
++      </div>
++    )
++  }
++
++  return (
++    <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
++      <ListeningSession inviteCode={inviteCode} currentUserId={session.user.id} />
++    </div>
++  )
++}
+diff --git a/src/app/listen/page.tsx b/src/app/listen/page.tsx
+new file mode 100644
+index 0000000..ef05387
+--- /dev/null
++++ b/src/app/listen/page.tsx
+@@ -0,0 +1,379 @@
++"use client"
++
++import { useState, useEffect } from "react"
++import Link from "next/link"
++import { useSession } from "next-auth/react"
++import { useRouter } from "next/navigation"
++import { DefaultAvatar } from "@/components/default-avatar"
++
++interface ListeningSession {
++  id: string
++  title: string | null
++  status: string
++  inviteCode: string
++  currentTrackIndex: number
++  isPlaying: boolean
++  createdAt: string
++  host: {
++    id: string
++    username: string
++    image: string | null
++  }
++  guest: {
++    id: string
++    username: string
++    image: string | null
++  } | null
++  currentAlbum: {
++    id: string
++    spotifyId: string
++    name: string
++    artist: string
++    imageUrl: string | null
++  } | null
++}
++
++export default function ListenPage() {
++  const { data: session, status } = useSession()
++  const router = useRouter()
++  const [sessions, setSessions] = useState<ListeningSession[]>([])
++  const [loading, setLoading] = useState(true)
++  const [creating, setCreating] = useState(false)
++  const [joinCode, setJoinCode] = useState("")
++  const [joining, setJoining] = useState(false)
++  const [error, setError] = useState<string | null>(null)
++
++  useEffect(() => {
++    if (status === "loading") return
++    if (!session?.user?.id) {
++      setLoading(false)
++      return
++    }
++    fetchSessions()
++  }, [session?.user?.id, status])
++
++  const fetchSessions = async () => {
++    try {
++      setLoading(true)
++      const response = await fetch("/api/listening")
++      if (response.ok) {
++        const data = await response.json()
++        setSessions(data.sessions)
++      }
++    } catch (err) {
++      console.error("Failed to fetch sessions:", err)
++    } finally {
++      setLoading(false)
++    }
++  }
++
++  const handleCreateSession = async () => {
++    try {
++      setCreating(true)
++      setError(null)
++      const response = await fetch("/api/listening", {
++        method: "POST",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify({ title: "Listening Session" }),
++      })
++
++      if (response.ok) {
++        const data = await response.json()
++        router.push(`/listen/${data.session.inviteCode}`)
++      } else {
++        const data = await response.json()
++        setError(data.error || "Failed to create session")
++      }
++    } catch (err) {
++      setError("Failed to create session")
++    } finally {
++      setCreating(false)
++    }
++  }
++
++  const handleJoinSession = async (e: React.FormEvent) => {
++    e.preventDefault()
++    if (!joinCode.trim()) return
++
++    try {
++      setJoining(true)
++      setError(null)
++      const response = await fetch(`/api/listening/${joinCode.trim()}`, {
++        method: "POST",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify({ action: "join" }),
++      })
++
++      if (response.ok) {
++        router.push(`/listen/${joinCode.trim()}`)
++      } else {
++        const data = await response.json()
++        setError(data.error || "Failed to join session")
++      }
++    } catch (err) {
++      setError("Failed to join session")
++    } finally {
++      setJoining(false)
++    }
++  }
++
++  const formatTime = (dateString: string) => {
++    const date = new Date(dateString)
++    const now = new Date()
++    const diff = now.getTime() - date.getTime()
++    const minutes = Math.floor(diff / 60000)
++    const hours = Math.floor(diff / 3600000)
++
++    if (minutes < 1) return "Just now"
++    if (minutes < 60) return `${minutes}m ago`
++    if (hours < 24) return `${hours}h ago`
++    return date.toLocaleDateString()
++  }
++
++  if (status === "loading") {
++    return (
++      <div className="min-h-screen flex items-center justify-center">
++        <div className="animate-pulse text-[--muted]">Loading...</div>
++      </div>
++    )
++  }
++
++  if (!session) {
++    return (
++      <div className="min-h-screen flex items-center justify-center px-6">
++        <div className="text-center max-w-md">
++          <div className="text-6xl mb-6">🎧</div>
++          <h1 className="text-3xl font-bold mb-4">Shared Listening</h1>
++          <p className="text-[--muted] mb-6">
++            Sign in to listen to albums together with friends in real-time.
++          </p>
++          <Link
++            href="/login?callbackUrl=/listen"
++            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-bold text-sm hover:bg-white/90 transition-colors"
++          >
++            Sign In to Listen
++          </Link>
++        </div>
++      </div>
++    )
++  }
++
++  const activeSessions = sessions.filter((s) => s.status === "active" || s.status === "waiting")
++  const endedSessions = sessions.filter((s) => s.status === "ended")
++
++  return (
++    <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
++      {/* Header */}
++      <header className="border-b border-[--border]">
++        <div className="max-w-4xl mx-auto px-6 py-8 lg:py-12">
++          <Link
++            href="/discover"
++            className="inline-flex items-center gap-2 text-xs text-[--muted] hover:text-white transition-colors mb-6"
++          >
++            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
++              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
++            </svg>
++            Back to Discover
++          </Link>
++
++          <h1 className="text-4xl lg:text-5xl font-bold tracking-tight mb-3">Shared Listening</h1>
++          <p className="text-[--muted] max-w-xl">
++            Listen to albums together with friends in real-time. Start a session and share the code.
++          </p>
++        </div>
++      </header>
++
++      {/* Actions */}
++      <div className="border-b border-[--border]">
++        <div className="max-w-4xl mx-auto px-6 py-6">
++          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
++            {/* Create session */}
++            <div className="border border-[--border] p-6">
++              <h2 className="text-lg font-bold mb-2">Start a Session</h2>
++              <p className="text-sm text-[--muted] mb-4">
++                Create a new listening room and invite a friend to join.
++              </p>
++              <button
++                onClick={handleCreateSession}
++                disabled={creating}
++                className="w-full px-5 py-3 bg-white text-black font-bold text-sm disabled:opacity-50"
++              >
++                {creating ? "Creating..." : "Create Session"}
++              </button>
++            </div>
++
++            {/* Join session */}
++            <div className="border border-[--border] p-6">
++              <h2 className="text-lg font-bold mb-2">Join a Session</h2>
++              <p className="text-sm text-[--muted] mb-4">
++                Enter the invite code shared by a friend.
++              </p>
++              <form onSubmit={handleJoinSession} className="flex gap-2">
++                <input
++                  type="text"
++                  value={joinCode}
++                  onChange={(e) => setJoinCode(e.target.value)}
++                  placeholder="Enter code"
++                  className="flex-1 px-4 py-3 bg-transparent border border-[--border] text-sm focus:border-white outline-none transition-colors"
++                />
++                <button
++                  type="submit"
++                  disabled={!joinCode.trim() || joining}
++                  className="px-5 py-3 bg-white text-black font-bold text-sm disabled:opacity-50"
++                >
++                  {joining ? "..." : "Join"}
++                </button>
++              </form>
++            </div>
++          </div>
++
++          {error && (
++            <div className="mt-4 p-4 border border-red-500/50 text-red-400 text-sm">
++              {error}
++            </div>
++          )}
++        </div>
++      </div>
++
++      {/* Sessions */}
++      <div className="max-w-4xl mx-auto px-6 py-8">
++        {loading ? (
++          <div className="space-y-4">
++            {[1, 2].map((i) => (
++              <div key={i} className="border border-[--border] p-6 animate-pulse">
++                <div className="flex items-center gap-4">
++                  <div className="w-16 h-16 bg-[--border]" />
++                  <div className="flex-1">
++                    <div className="h-5 bg-[--border] w-1/3 mb-2" />
++                    <div className="h-3 bg-[--border] w-1/4" />
++                  </div>
++                </div>
++              </div>
++            ))}
++          </div>
++        ) : (
++          <>
++            {/* Active sessions */}
++            {activeSessions.length > 0 && (
++              <div className="mb-8">
++                <h2 className="text-xs uppercase tracking-wider text-[--muted] mb-4">Active Sessions</h2>
++                <div className="space-y-4">
++                  {activeSessions.map((s) => (
++                    <Link
++                      key={s.id}
++                      href={`/listen/${s.inviteCode}`}
++                      className="block border border-[--border] p-6 hover:border-white/30 transition-colors"
++                    >
++                      <div className="flex items-center gap-4">
++                        {s.currentAlbum?.imageUrl ? (
++                          <img
++                            src={s.currentAlbum.imageUrl}
++                            alt=""
++                            className="w-16 h-16 object-cover"
++                          />
++                        ) : (
++                          <div className="w-16 h-16 bg-[--surface] flex items-center justify-center text-2xl">
++                            🎧
++                          </div>
++                        )}
++
++                        <div className="flex-1 min-w-0">
++                          <h3 className="font-bold truncate">
++                            {s.currentAlbum ? s.currentAlbum.name : s.title || "Listening Session"}
++                          </h3>
++                          <p className="text-sm text-[--muted]">
++                            {s.currentAlbum?.artist || "No album selected"}
++                          </p>
++                          <div className="flex items-center gap-2 mt-2">
++                            <div className="w-5 h-5 overflow-hidden">
++                              {s.host.image ? (
++                                <img src={s.host.image} alt="" className="w-full h-full object-cover" />
++                              ) : (
++                                <DefaultAvatar size="sm" className="w-full h-full" />
++                              )}
++                            </div>
++                            {s.guest && (
++                              <>
++                                <span className="text-[--muted]">+</span>
++                                <div className="w-5 h-5 overflow-hidden">
++                                  {s.guest.image ? (
++                                    <img src={s.guest.image} alt="" className="w-full h-full object-cover" />
++                                  ) : (
++                                    <DefaultAvatar size="sm" className="w-full h-full" />
++                                  )}
++                                </div>
++                              </>
++                            )}
++                            <span className="text-xs text-[--muted] ml-2">
++                              {s.isPlaying ? "Playing" : "Paused"}
++                            </span>
++                          </div>
++                        </div>
++
++                        <div className="text-right">
++                          <p className="text-xs text-[--muted]">{formatTime(s.createdAt)}</p>
++                          <p className="text-xs font-mono mt-1">{s.inviteCode}</p>
++                        </div>
++                      </div>
++                    </Link>
++                  ))}
++                </div>
++              </div>
++            )}
++
++            {/* Ended sessions */}
++            {endedSessions.length > 0 && (
++              <div>
++                <h2 className="text-xs uppercase tracking-wider text-[--muted] mb-4">Past Sessions</h2>
++                <div className="space-y-4">
++                  {endedSessions.map((s) => (
++                    <div
++                      key={s.id}
++                      className="border border-[--border] p-6 opacity-60"
++                    >
++                      <div className="flex items-center gap-4">
++                        {s.currentAlbum?.imageUrl ? (
++                          <img
++                            src={s.currentAlbum.imageUrl}
++                            alt=""
++                            className="w-12 h-12 object-cover grayscale"
++                          />
++                        ) : (
++                          <div className="w-12 h-12 bg-[--surface] flex items-center justify-center text-xl">
++                            🎧
++                          </div>
++                        )}
++
++                        <div className="flex-1 min-w-0">
++                          <h3 className="font-medium truncate">
++                            {s.currentAlbum ? s.currentAlbum.name : s.title || "Listening Session"}
++                          </h3>
++                          <p className="text-sm text-[--muted]">
++                            with @{s.guest?.username || "guest"}
++                          </p>
++                        </div>
++
++                        <p className="text-xs text-[--muted]">{formatTime(s.createdAt)}</p>
++                      </div>
++                    </div>
++                  ))}
++                </div>
++              </div>
++            )}
++
++            {/* Empty state */}
++            {sessions.length === 0 && (
++              <div className="border-2 border-dashed border-[--border] p-12 text-center">
++                <div className="text-4xl mb-4">🎧</div>
++                <h3 className="text-xl font-bold mb-2">No listening sessions yet</h3>
++                <p className="text-[--muted] max-w-md mx-auto">
++                  Start a session and invite a friend to listen to music together in real-time.
++                </p>
++              </div>
++            )}
++          </>
++        )}
++      </div>
++    </div>
++  )
++}
+diff --git a/src/app/messages/page.tsx b/src/app/messages/page.tsx
+new file mode 100644
+index 0000000..c128459
+--- /dev/null
++++ b/src/app/messages/page.tsx
+@@ -0,0 +1,262 @@
++"use client"
++
++import { useState, useEffect } from "react"
++import Link from "next/link"
++import { useSession } from "next-auth/react"
++import { DefaultAvatar } from "@/components/default-avatar"
++import { ChatView } from "@/components/messages/ChatView"
++
++interface User {
++  id: string
++  username: string
++  image: string | null
++}
++
++interface Conversation {
++  id: string
++  createdAt: string
++  updatedAt: string
++  participants: User[]
++  lastMessage: {
++    id: string
++    content: string
++    type: string
++    createdAt: string
++    sender: User
++  } | null
++  unreadCount: number
++}
++
++export default function MessagesPage() {
++  const { data: session, status } = useSession()
++  const [conversations, setConversations] = useState<Conversation[]>([])
++  const [loading, setLoading] = useState(true)
++  const [selectedId, setSelectedId] = useState<string | null>(null)
++  const [selectedOtherUser, setSelectedOtherUser] = useState<User | null>(null)
++
++  useEffect(() => {
++    if (status === "loading") return
++    if (!session?.user?.id) {
++      setLoading(false)
++      return
++    }
++    fetchConversations()
++    // Poll for new messages
++    const interval = setInterval(fetchConversations, 10000)
++    return () => clearInterval(interval)
++  }, [session?.user?.id, status])
++
++  const fetchConversations = async () => {
++    try {
++      const response = await fetch("/api/messages")
++      if (response.ok) {
++        const data = await response.json()
++        setConversations(data.conversations)
++      }
++    } catch (err) {
++      console.error("Failed to fetch conversations:", err)
++    } finally {
++      setLoading(false)
++    }
++  }
++
++  const selectConversation = (conv: Conversation) => {
++    const otherUser = conv.participants.find((p) => p.id !== session?.user?.id)
++    if (otherUser) {
++      setSelectedId(conv.id)
++      setSelectedOtherUser(otherUser)
++    }
++  }
++
++  const formatTime = (dateString: string) => {
++    const date = new Date(dateString)
++    const now = new Date()
++    const diff = now.getTime() - date.getTime()
++    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
++
++    if (days === 0) {
++      return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
++    } else if (days === 1) {
++      return "Yesterday"
++    } else if (days < 7) {
++      return date.toLocaleDateString([], { weekday: "short" })
++    } else {
++      return date.toLocaleDateString([], { month: "short", day: "numeric" })
++    }
++  }
++
++  const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0)
++
++  if (status === "loading") {
++    return (
++      <div className="min-h-screen flex items-center justify-center">
++        <div className="animate-pulse text-[--muted]">Loading...</div>
++      </div>
++    )
++  }
++
++  if (!session) {
++    return (
++      <div className="min-h-screen flex items-center justify-center px-6">
++        <div className="text-center max-w-md">
++          <div className="text-6xl mb-6">💬</div>
++          <h1 className="text-3xl font-bold mb-4">Messages</h1>
++          <p className="text-[--muted] mb-6">
++            Sign in to message your taste connections.
++          </p>
++          <Link
++            href="/login?callbackUrl=/messages"
++            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-bold text-sm hover:bg-white/90 transition-colors"
++          >
++            Sign In to Message
++          </Link>
++        </div>
++      </div>
++    )
++  }
++
++  return (
++    <div className="h-screen flex flex-col" style={{ backgroundColor: "var(--background)" }}>
++      {/* Header */}
++      <header className="border-b border-[--border] flex-shrink-0">
++        <div className="px-6 py-4 flex items-center justify-between">
++          <div className="flex items-center gap-4">
++            <Link
++              href="/discover"
++              className="text-[--muted] hover:text-white transition-colors"
++            >
++              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
++                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
++              </svg>
++            </Link>
++            <h1 className="text-xl font-bold">Messages</h1>
++            {totalUnread > 0 && (
++              <span className="px-2 py-0.5 text-xs bg-white text-black font-bold">
++                {totalUnread}
++              </span>
++            )}
++          </div>
++        </div>
++      </header>
++
++      {/* Main content */}
++      <div className="flex-1 flex overflow-hidden">
++        {/* Conversation list */}
++        <div className={`w-full lg:w-80 border-r border-[--border] flex flex-col ${selectedId ? "hidden lg:flex" : "flex"}`}>
++          {loading ? (
++            <div className="p-4 space-y-4">
++              {[1, 2, 3].map((i) => (
++                <div key={i} className="flex items-center gap-3 animate-pulse">
++                  <div className="w-12 h-12 bg-[--border]" />
++                  <div className="flex-1">
++                    <div className="h-4 bg-[--border] w-1/2 mb-2" />
++                    <div className="h-3 bg-[--border] w-3/4" />
++                  </div>
++                </div>
++              ))}
++            </div>
++          ) : conversations.length === 0 ? (
++            <div className="flex-1 flex items-center justify-center p-6 text-center">
++              <div>
++                <div className="text-4xl mb-4">💬</div>
++                <h3 className="font-bold mb-2">No conversations yet</h3>
++                <p className="text-sm text-[--muted] max-w-xs">
++                  Connect with taste matches to start messaging.
++                </p>
++                <Link
++                  href="/discover/connections"
++                  className="inline-block mt-4 text-sm text-white underline hover:no-underline"
++                >
++                  Find connections
++                </Link>
++              </div>
++            </div>
++          ) : (
++            <div className="flex-1 overflow-y-auto">
++              {conversations.map((conv) => {
++                const otherUser = conv.participants.find((p) => p.id !== session.user.id)
++                if (!otherUser) return null
++
++                return (
++                  <button
++                    key={conv.id}
++                    onClick={() => selectConversation(conv)}
++                    className={`w-full p-4 flex items-start gap-3 text-left hover:bg-[--surface] transition-colors border-b border-[--border] ${
++                      selectedId === conv.id ? "bg-[--surface]" : ""
++                    }`}
++                  >
++                    <div className="relative flex-shrink-0">
++                      <div className="w-12 h-12 border border-[--border] overflow-hidden">
++                        {otherUser.image ? (
++                          <img src={otherUser.image} alt="" className="w-full h-full object-cover" />
++                        ) : (
++                          <DefaultAvatar size="sm" className="w-full h-full" />
++                        )}
++                      </div>
++                      {conv.unreadCount > 0 && (
++                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-white text-black text-[10px] font-bold flex items-center justify-center">
++                          {conv.unreadCount}
++                        </span>
++                      )}
++                    </div>
++
++                    <div className="flex-1 min-w-0">
++                      <div className="flex items-center justify-between mb-1">
++                        <span className={`font-bold truncate ${conv.unreadCount > 0 ? "text-white" : ""}`}>
++                          @{otherUser.username}
++                        </span>
++                        {conv.lastMessage && (
++                          <span className="text-[10px] text-[--muted] flex-shrink-0 ml-2">
++                            {formatTime(conv.lastMessage.createdAt)}
++                          </span>
++                        )}
++                      </div>
++                      {conv.lastMessage ? (
++                        <p className={`text-sm truncate ${conv.unreadCount > 0 ? "text-white" : "text-[--muted]"}`}>
++                          {conv.lastMessage.sender.id === session.user.id && "You: "}
++                          {conv.lastMessage.type === "album_share" ? "Shared an album" : conv.lastMessage.content}
++                        </p>
++                      ) : (
++                        <p className="text-sm text-[--muted]">No messages yet</p>
++                      )}
++                    </div>
++                  </button>
++                )
++              })}
++            </div>
++          )}
++        </div>
++
++        {/* Chat view */}
++        <div className={`flex-1 flex flex-col ${selectedId ? "flex" : "hidden lg:flex"}`}>
++          {selectedId && selectedOtherUser ? (
++            <>
++              {/* Mobile back button */}
++              <div className="lg:hidden border-b border-[--border] p-2">
++                <button
++                  onClick={() => {
++                    setSelectedId(null)
++                    setSelectedOtherUser(null)
++                  }}
++                  className="p-2 text-[--muted] hover:text-white transition-colors"
++                >
++                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
++                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
++                  </svg>
++                </button>
++              </div>
++              <ChatView conversationId={selectedId} otherUser={selectedOtherUser} />
++            </>
++          ) : (
++            <div className="flex-1 flex items-center justify-center p-6 text-center">
++              <div>
++                <div className="text-4xl mb-4">💬</div>
++                <p className="text-[--muted]">Select a conversation to start messaging</p>
++              </div>
++            </div>
++          )}
++        </div>
++      </div>
++    </div>
++  )
++}
+diff --git a/src/components/challenges/ChallengeCard.tsx b/src/components/challenges/ChallengeCard.tsx
+new file mode 100644
+index 0000000..e647c25
+--- /dev/null
++++ b/src/components/challenges/ChallengeCard.tsx
+@@ -0,0 +1,204 @@
++"use client"
++
++import { useState } from "react"
++import Link from "next/link"
++import { DefaultAvatar } from "@/components/default-avatar"
++
++interface Challenge {
++  id: string
++  challengeType: string
++  status: string
++  title?: string
++  targetGenre?: string
++  targetDecade?: string
++  creatorProgress: { albumsRated: string[]; score: number } | null
++  partnerProgress: { albumsRated: string[]; score: number } | null
++  creator: { id: string; username: string; image: string | null }
++  partner: { id: string; username: string; image: string | null }
++  targetAlbum?: { id: string; title: string; artistName: string; coverArtUrl: string | null } | null
++  isCreator: boolean
++  expiresAt: string
++  createdAt: string
++}
++
++interface ChallengeCardProps {
++  challenge: Challenge
++  onAccept?: (id: string) => void
++  onDecline?: (id: string) => void
++}
++
++const CHALLENGE_TYPES: Record<string, { label: string; icon: string; color: string }> = {
++  discover_together: { label: "Discover Together", icon: "🔍", color: "text-blue-400" },
++  rate_same_album: { label: "Rate Same Album", icon: "⚔️", color: "text-amber-400" },
++  genre_swap: { label: "Genre Swap", icon: "🔄", color: "text-purple-400" },
++  decade_dive: { label: "Decade Dive", icon: "📅", color: "text-emerald-400" },
++}
++
++const STATUS_STYLES: Record<string, { bg: string; text: string }> = {
++  pending: { bg: "bg-amber-500/10", text: "text-amber-400" },
++  active: { bg: "bg-emerald-500/10", text: "text-emerald-400" },
++  completed: { bg: "bg-blue-500/10", text: "text-blue-400" },
++  expired: { bg: "bg-red-500/10", text: "text-red-400" },
++}
++
++export function ChallengeCard({ challenge, onAccept, onDecline }: ChallengeCardProps) {
++  const [loading, setLoading] = useState(false)
++  const typeInfo = CHALLENGE_TYPES[challenge.challengeType] || CHALLENGE_TYPES.discover_together
++  const statusStyle = STATUS_STYLES[challenge.status] || STATUS_STYLES.pending
++  const opponent = challenge.isCreator ? challenge.partner : challenge.creator
++
++  const handleAccept = async () => {
++    if (!onAccept || loading) return
++    setLoading(true)
++    await onAccept(challenge.id)
++    setLoading(false)
++  }
++
++  const handleDecline = async () => {
++    if (!onDecline || loading) return
++    setLoading(true)
++    await onDecline(challenge.id)
++    setLoading(false)
++  }
++
++  const creatorScore = challenge.creatorProgress?.score || 0
++  const partnerScore = challenge.partnerProgress?.score || 0
++
++  return (
++    <div className="border border-[--border] overflow-hidden hover:border-white/30 transition-colors">
++      {/* Header */}
++      <div className="flex items-center justify-between px-4 py-2 border-b border-[--border]">
++        <div className="flex items-center gap-2">
++          <span className={`text-lg ${typeInfo.color}`}>{typeInfo.icon}</span>
++          <span className="text-xs font-medium">{typeInfo.label}</span>
++        </div>
++        <span className={`text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 ${statusStyle.bg} ${statusStyle.text}`}>
++          {challenge.status}
++        </span>
++      </div>
++
++      {/* Content */}
++      <div className="p-4">
++        {/* Title if custom */}
++        {challenge.title && (
++          <p className="font-bold text-lg mb-3">{challenge.title}</p>
++        )}
++
++        {/* Opponent */}
++        <div className="flex items-center gap-3 mb-4">
++          <Link href={`/u/${opponent.username}`} className="flex items-center gap-3 group">
++            <div className="w-10 h-10 border border-[--border] overflow-hidden group-hover:border-white/30 transition-colors">
++              {opponent.image ? (
++                <img src={opponent.image} alt="" className="w-full h-full object-cover" />
++              ) : (
++                <DefaultAvatar size="sm" className="w-full h-full" />
++              )}
++            </div>
++            <div>
++              <p className="font-semibold group-hover:underline">@{opponent.username}</p>
++              <p className="text-xs text-[--muted]">
++                {challenge.isCreator ? "Challenged by you" : "Challenged you"}
++              </p>
++            </div>
++          </Link>
++        </div>
++
++        {/* Target info */}
++        {challenge.targetAlbum && (
++          <div className="flex items-center gap-3 p-3 border border-[--border] mb-4">
++            {challenge.targetAlbum.coverArtUrl && (
++              <img src={challenge.targetAlbum.coverArtUrl} alt="" className="w-12 h-12" />
++            )}
++            <div className="min-w-0">
++              <p className="text-xs text-[--muted] uppercase tracking-wider">Target Album</p>
++              <p className="font-medium truncate">{challenge.targetAlbum.title}</p>
++              <p className="text-xs text-[--muted] truncate">{challenge.targetAlbum.artistName}</p>
++            </div>
++          </div>
++        )}
++
++        {challenge.targetGenre && (
++          <div className="p-3 border border-[--border] mb-4">
++            <p className="text-xs text-[--muted] uppercase tracking-wider mb-1">Target Genre</p>
++            <p className="font-bold capitalize">{challenge.targetGenre}</p>
++          </div>
++        )}
++
++        {challenge.targetDecade && (
++          <div className="p-3 border border-[--border] mb-4">
++            <p className="text-xs text-[--muted] uppercase tracking-wider mb-1">Target Decade</p>
++            <p className="font-bold">{challenge.targetDecade}</p>
++          </div>
++        )}
++
++        {/* Progress */}
++        {challenge.status === "active" && (
++          <div className="grid grid-cols-2 gap-4 mb-4">
++            <div className="text-center p-3 border border-[--border]">
++              <p className="text-2xl font-bold">{creatorScore}</p>
++              <p className="text-xs text-[--muted]">{challenge.creator.username}</p>
++            </div>
++            <div className="text-center p-3 border border-[--border]">
++              <p className="text-2xl font-bold">{partnerScore}</p>
++              <p className="text-xs text-[--muted]">{challenge.partner.username}</p>
++            </div>
++          </div>
++        )}
++
++        {/* Completed result */}
++        {challenge.status === "completed" && (
++          <div className="p-4 border border-emerald-500/30 bg-emerald-500/5 text-center mb-4">
++            <p className="text-xs text-[--muted] uppercase tracking-wider mb-1">Winner</p>
++            <p className="font-bold text-emerald-400">
++              {creatorScore > partnerScore
++                ? challenge.creator.username
++                : partnerScore > creatorScore
++                ? challenge.partner.username
++                : "Tie!"}
++            </p>
++            <p className="text-sm mt-1">
++              {creatorScore} - {partnerScore}
++            </p>
++          </div>
++        )}
++
++        {/* Expiration */}
++        <p className="text-[10px] text-[--muted]">
++          {challenge.status === "pending" || challenge.status === "active"
++            ? `Expires ${new Date(challenge.expiresAt).toLocaleDateString()}`
++            : `Created ${new Date(challenge.createdAt).toLocaleDateString()}`}
++        </p>
++      </div>
++
++      {/* Actions for pending challenges */}
++      {challenge.status === "pending" && !challenge.isCreator && (
++        <div className="flex border-t border-[--border]">
++          <button
++            onClick={handleDecline}
++            disabled={loading}
++            className="flex-1 py-3 text-xs font-medium text-[--muted] hover:bg-[--surface] transition-colors disabled:opacity-50"
++          >
++            Decline
++          </button>
++          <button
++            onClick={handleAccept}
++            disabled={loading}
++            className="flex-1 py-3 text-xs font-bold bg-white text-black hover:bg-white/90 transition-colors disabled:opacity-50"
++          >
++            {loading ? "..." : "Accept"}
++          </button>
++        </div>
++      )}
++
++      {/* View details link */}
++      {(challenge.status === "active" || challenge.status === "completed") && (
++        <Link
++          href={`/discover/challenges/${challenge.id}`}
++          className="block text-center py-3 border-t border-[--border] text-xs font-medium hover:bg-[--surface] transition-colors"
++        >
++          View Details →
++        </Link>
++      )}
++    </div>
++  )
++}
+diff --git a/src/components/challenges/CreateChallengeModal.tsx b/src/components/challenges/CreateChallengeModal.tsx
+new file mode 100644
+index 0000000..90f5780
+--- /dev/null
++++ b/src/components/challenges/CreateChallengeModal.tsx
+@@ -0,0 +1,220 @@
++"use client"
++
++import { useState } from "react"
++
++interface CreateChallengeModalProps {
++  partnerId: string
++  partnerUsername: string
++  onClose: () => void
++  onCreated: () => void
++}
++
++const CHALLENGE_TYPES = [
++  {
++    id: "rate_same_album",
++    label: "Rate Same Album",
++    icon: "⚔️",
++    description: "Both rate the same album - highest rating wins!",
++  },
++  {
++    id: "genre_swap",
++    label: "Genre Swap",
++    icon: "🔄",
++    description: "Rate 3 albums from a genre you don't usually listen to",
++  },
++  {
++    id: "decade_dive",
++    label: "Decade Dive",
++    icon: "📅",
++    description: "Explore music from a specific decade together",
++  },
++  {
++    id: "discover_together",
++    label: "Discover Together",
++    icon: "🔍",
++    description: "Find and rate new albums neither of you have heard",
++  },
++]
++
++const DECADES = ["1960s", "1970s", "1980s", "1990s", "2000s", "2010s", "2020s"]
++
++export function CreateChallengeModal({
++  partnerId,
++  partnerUsername,
++  onClose,
++  onCreated,
++}: CreateChallengeModalProps) {
++  const [selectedType, setSelectedType] = useState<string | null>(null)
++  const [targetGenre, setTargetGenre] = useState("")
++  const [targetDecade, setTargetDecade] = useState("")
++  const [title, setTitle] = useState("")
++  const [loading, setLoading] = useState(false)
++  const [error, setError] = useState<string | null>(null)
++
++  const handleCreate = async () => {
++    if (!selectedType) return
++
++    setLoading(true)
++    setError(null)
++
++    try {
++      const response = await fetch("/api/challenges", {
++        method: "POST",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify({
++          partnerId,
++          challengeType: selectedType,
++          targetGenre: selectedType === "genre_swap" ? targetGenre : undefined,
++          targetDecade: selectedType === "decade_dive" ? targetDecade : undefined,
++          title: title || undefined,
++        }),
++      })
++
++      if (!response.ok) {
++        const data = await response.json()
++        throw new Error(data.error || "Failed to create challenge")
++      }
++
++      onCreated()
++    } catch (err) {
++      setError(err instanceof Error ? err.message : "Failed to create challenge")
++    } finally {
++      setLoading(false)
++    }
++  }
++
++  const needsAdditionalInput =
++    (selectedType === "genre_swap" && !targetGenre) ||
++    (selectedType === "decade_dive" && !targetDecade)
++
++  return (
++    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
++      {/* Backdrop */}
++      <div className="absolute inset-0 bg-black/80" onClick={onClose} />
++
++      {/* Modal */}
++      <div className="relative w-full max-w-md bg-[--background] border border-[--border] max-h-[90vh] overflow-y-auto">
++        {/* Header */}
++        <div className="flex items-center justify-between p-4 border-b border-[--border]">
++          <div>
++            <h2 className="text-lg font-bold">Create Challenge</h2>
++            <p className="text-xs text-[--muted]">Challenge @{partnerUsername}</p>
++          </div>
++          <button
++            onClick={onClose}
++            className="p-2 hover:bg-[--surface] transition-colors"
++          >
++            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
++              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
++            </svg>
++          </button>
++        </div>
++
++        {/* Content */}
++        <div className="p-4 space-y-4">
++          {/* Custom title */}
++          <div>
++            <label className="text-xs text-[--muted] uppercase tracking-wider block mb-2">
++              Challenge Title (optional)
++            </label>
++            <input
++              type="text"
++              value={title}
++              onChange={(e) => setTitle(e.target.value)}
++              placeholder="Give your challenge a name..."
++              className="w-full px-3 py-2 bg-transparent border border-[--border] text-sm focus:border-white outline-none transition-colors"
++            />
++          </div>
++
++          {/* Challenge type selection */}
++          <div>
++            <label className="text-xs text-[--muted] uppercase tracking-wider block mb-2">
++              Challenge Type
++            </label>
++            <div className="space-y-2">
++              {CHALLENGE_TYPES.map((type) => (
++                <button
++                  key={type.id}
++                  onClick={() => setSelectedType(type.id)}
++                  className={`w-full p-3 border text-left transition-colors ${
++                    selectedType === type.id
++                      ? "border-white bg-white/5"
++                      : "border-[--border] hover:border-white/30"
++                  }`}
++                >
++                  <div className="flex items-center gap-3">
++                    <span className="text-xl">{type.icon}</span>
++                    <div>
++                      <p className="font-medium">{type.label}</p>
++                      <p className="text-xs text-[--muted]">{type.description}</p>
++                    </div>
++                  </div>
++                </button>
++              ))}
++            </div>
++          </div>
++
++          {/* Additional inputs based on type */}
++          {selectedType === "genre_swap" && (
++            <div>
++              <label className="text-xs text-[--muted] uppercase tracking-wider block mb-2">
++                Target Genre
++              </label>
++              <input
++                type="text"
++                value={targetGenre}
++                onChange={(e) => setTargetGenre(e.target.value)}
++                placeholder="e.g., jazz, metal, country..."
++                className="w-full px-3 py-2 bg-transparent border border-[--border] text-sm focus:border-white outline-none transition-colors"
++              />
++            </div>
++          )}
++
++          {selectedType === "decade_dive" && (
++            <div>
++              <label className="text-xs text-[--muted] uppercase tracking-wider block mb-2">
++                Target Decade
++              </label>
++              <div className="grid grid-cols-4 gap-2">
++                {DECADES.map((decade) => (
++                  <button
++                    key={decade}
++                    onClick={() => setTargetDecade(decade)}
++                    className={`py-2 text-sm border transition-colors ${
++                      targetDecade === decade
++                        ? "border-white bg-white text-black"
++                        : "border-[--border] hover:border-white/30"
++                    }`}
++                  >
++                    {decade}
++                  </button>
++                ))}
++              </div>
++            </div>
++          )}
++
++          {error && (
++            <p className="text-red-400 text-sm">{error}</p>
++          )}
++        </div>
++
++        {/* Footer */}
++        <div className="flex gap-3 p-4 border-t border-[--border]">
++          <button
++            onClick={onClose}
++            className="flex-1 py-2 border border-[--border] text-sm font-medium hover:border-white transition-colors"
++          >
++            Cancel
++          </button>
++          <button
++            onClick={handleCreate}
++            disabled={!selectedType || needsAdditionalInput || loading}
++            className="flex-1 py-2 bg-white text-black text-sm font-bold hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
++          >
++            {loading ? "Creating..." : "Send Challenge"}
++          </button>
++        </div>
++      </div>
++    </div>
++  )
++}
+diff --git a/src/components/challenges/index.ts b/src/components/challenges/index.ts
+new file mode 100644
+index 0000000..9cc0802
+--- /dev/null
++++ b/src/components/challenges/index.ts
+@@ -0,0 +1,2 @@
++export { ChallengeCard } from "./ChallengeCard"
++export { CreateChallengeModal } from "./CreateChallengeModal"
+diff --git a/src/components/connections/ConnectionCard.tsx b/src/components/connections/ConnectionCard.tsx
+new file mode 100644
+index 0000000..d27f690
+--- /dev/null
++++ b/src/components/connections/ConnectionCard.tsx
+@@ -0,0 +1,252 @@
++"use client"
++
++import { useState } from "react"
++import Link from "next/link"
++import { DefaultAvatar } from "@/components/default-avatar"
++import { SignatureComparisonMini } from "./SignatureComparison"
++import type { EnhancedTasteMatch, ListeningSignature } from "@/lib/tasteid"
++
++interface ConnectionCardProps {
++  connection: EnhancedTasteMatch
++  userSignature?: ListeningSignature | null
++  onConnect?: (userId: string) => void
++  onDismiss?: (userId: string) => void
++  showActions?: boolean
++  variant?: "card" | "compact"
++}
++
++const MATCH_TYPE_COLORS: Record<string, { bg: string; text: string; label: string }> = {
++  taste_twin: { bg: "bg-emerald-500/10", text: "text-emerald-400", label: "Taste Twin" },
++  network_resonance: { bg: "bg-blue-500/10", text: "text-blue-400", label: "Network Resonance" },
++  opposite_attracts: { bg: "bg-amber-500/10", text: "text-amber-400", label: "Opposite Attracts" },
++  explorer_guide: { bg: "bg-purple-500/10", text: "text-purple-400", label: "Explorer Guide" },
++  complementary: { bg: "bg-indigo-500/10", text: "text-indigo-400", label: "Complementary" },
++  genre_buddy: { bg: "bg-rose-500/10", text: "text-rose-400", label: "Genre Buddy" },
++}
++
++export function ConnectionCard({
++  connection,
++  userSignature,
++  onConnect,
++  onDismiss,
++  showActions = true,
++  variant = "card",
++}: ConnectionCardProps) {
++  const [isLoading, setIsLoading] = useState(false)
++  const [dismissed, setDismissed] = useState(false)
++  const [connected, setConnected] = useState(false)
++
++  const matchStyle = MATCH_TYPE_COLORS[connection.matchType] || MATCH_TYPE_COLORS.complementary
++
++  const handleConnect = async () => {
++    if (!onConnect || isLoading) return
++    setIsLoading(true)
++    try {
++      await onConnect(connection.userId)
++      setConnected(true)
++    } finally {
++      setIsLoading(false)
++    }
++  }
++
++  const handleDismiss = async () => {
++    if (!onDismiss || isLoading) return
++    setIsLoading(true)
++    try {
++      await onDismiss(connection.userId)
++      setDismissed(true)
++    } finally {
++      setIsLoading(false)
++    }
++  }
++
++  if (dismissed) {
++    return null
++  }
++
++  if (variant === "compact") {
++    return (
++      <Link
++        href={`/u/${connection.username}`}
++        className="flex items-center gap-3 p-3 border border-[--border] hover:border-white/30 transition-all group"
++      >
++        <div className="w-10 h-10 flex-shrink-0 border border-[--border] overflow-hidden group-hover:border-white/30 transition-colors">
++          {connection.image ? (
++            <img src={connection.image} alt="" className="w-full h-full object-cover" />
++          ) : (
++            <DefaultAvatar size="sm" className="w-full h-full" />
++          )}
++        </div>
++        <div className="flex-1 min-w-0">
++          <p className="text-sm font-semibold truncate">@{connection.username}</p>
++          <p className="text-[10px] text-[--muted] truncate">{connection.connectionReason}</p>
++        </div>
++        <div className="text-right flex-shrink-0">
++          <p className="text-lg font-bold">{connection.overallScore}%</p>
++          <span className={`text-[9px] ${matchStyle.text} font-bold tracking-wide uppercase`}>
++            {matchStyle.label}
++          </span>
++        </div>
++      </Link>
++    )
++  }
++
++  return (
++    <div
++      className="border border-[--border] hover:border-white/30 transition-all overflow-hidden group"
++      style={{
++        animation: "fadeSlideIn 0.4s ease-out forwards",
++        opacity: 0,
++      }}
++    >
++      {/* Header with match type badge */}
++      <div className="flex items-center justify-between px-4 py-2 border-b border-[--border]">
++        <span className={`text-[9px] ${matchStyle.text} font-bold tracking-[0.15em] uppercase px-2 py-0.5 ${matchStyle.bg}`}>
++          {matchStyle.label}
++        </span>
++        <span className="text-[10px] text-[--muted]">
++          {Math.round(connection.matchStrength * 100)}% confidence
++        </span>
++      </div>
++
++      {/* User info */}
++      <div className="p-4">
++        <div className="flex items-start gap-4">
++          {/* Avatar */}
++          <Link href={`/u/${connection.username}`} className="block flex-shrink-0">
++            <div className="w-16 h-16 border border-[--border] overflow-hidden group-hover:border-white/30 transition-colors">
++              {connection.image ? (
++                <img src={connection.image} alt="" className="w-full h-full object-cover" />
++              ) : (
++                <DefaultAvatar size="md" className="w-full h-full" />
++              )}
++            </div>
++          </Link>
++
++          {/* Info */}
++          <div className="flex-1 min-w-0">
++            <Link href={`/u/${connection.username}`} className="hover:underline">
++              <p className="text-lg font-bold truncate">@{connection.username}</p>
++            </Link>
++            <p className="text-xs text-[--muted] flex items-center gap-1.5 mb-2">
++              <span>{connection.archetypeIcon}</span>
++              <span>{connection.archetype}</span>
++            </p>
++            <p className="text-xs text-[--muted] line-clamp-2">
++              {connection.connectionReason}
++            </p>
++          </div>
++
++          {/* Score */}
++          <div className="text-center flex-shrink-0">
++            <div
++              className="relative w-16 h-16 flex items-center justify-center"
++              style={{
++                background: `conic-gradient(from 0deg, ${matchStyle.text.replace('text-', 'rgb(var(--')} / 0.3) ${connection.overallScore}%, transparent ${connection.overallScore}%)`,
++              }}
++            >
++              <div className="absolute inset-1 bg-[--background] flex items-center justify-center">
++                <span className="text-2xl font-bold">{connection.overallScore}</span>
++              </div>
++            </div>
++            <p className="text-[9px] text-[--muted] mt-1 uppercase tracking-wider">Match</p>
++          </div>
++        </div>
++
++        {/* Signature comparison mini visualization */}
++        {userSignature && connection.networkResonance && (
++          <div className="mt-4 pt-4 border-t border-[--border]">
++            <SignatureComparisonMini
++              userSignature={userSignature}
++              otherResonance={connection.networkResonance}
++              contrast={connection.networkContrast}
++            />
++          </div>
++        )}
++
++        {/* Compatibility highlights */}
++        {connection.compatibilityHighlights.length > 0 && (
++          <div className="mt-4 flex flex-wrap gap-1.5">
++            {connection.compatibilityHighlights.map((highlight, i) => (
++              <span
++                key={i}
++                className="text-[10px] px-2 py-0.5 border border-[--border] text-[--muted]"
++              >
++                {highlight}
++              </span>
++            ))}
++          </div>
++        )}
++
++        {/* Shared genres and artists */}
++        {(connection.sharedGenres.length > 0 || connection.sharedArtists.length > 0) && (
++          <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
++            {connection.sharedGenres.length > 0 && (
++              <div>
++                <p className="text-[9px] uppercase tracking-wider text-[--muted] mb-1">Shared Genres</p>
++                <p className="font-medium truncate">{connection.sharedGenres.slice(0, 3).join(", ")}</p>
++              </div>
++            )}
++            {connection.sharedArtists.length > 0 && (
++              <div>
++                <p className="text-[9px] uppercase tracking-wider text-[--muted] mb-1">Shared Artists</p>
++                <p className="font-medium truncate">{connection.sharedArtists.slice(0, 3).join(", ")}</p>
++              </div>
++            )}
++          </div>
++        )}
++
++        {/* Potential introductions */}
++        {connection.potentialIntroductions.length > 0 && (
++          <div className="mt-4 p-3 border border-dashed border-[--border]">
++            <p className="text-[9px] uppercase tracking-wider text-[--muted] mb-1">
++              Could introduce you to
++            </p>
++            <p className="text-xs font-medium">
++              {connection.potentialIntroductions.join(", ")}
++            </p>
++          </div>
++        )}
++      </div>
++
++      {/* Actions */}
++      {showActions && !connected && (
++        <div className="flex border-t border-[--border]">
++          <button
++            onClick={handleDismiss}
++            disabled={isLoading}
++            className="flex-1 py-3 text-xs font-medium text-[--muted] hover:bg-[--surface] transition-colors disabled:opacity-50"
++          >
++            Not interested
++          </button>
++          <button
++            onClick={handleConnect}
++            disabled={isLoading}
++            className="flex-1 py-3 text-xs font-bold bg-white text-black hover:bg-white/90 transition-colors disabled:opacity-50"
++          >
++            {isLoading ? "Connecting..." : "Connect"}
++          </button>
++        </div>
++      )}
++
++      {connected && (
++        <div className="px-4 py-3 border-t border-[--border] bg-emerald-500/10 text-emerald-400 text-center text-xs font-medium">
++          Friend request sent
++        </div>
++      )}
++
++      <style jsx>{`
++        @keyframes fadeSlideIn {
++          from {
++            opacity: 0;
++            transform: translateY(10px);
++          }
++          to {
++            opacity: 1;
++            transform: translateY(0);
++          }
++        }
++      `}</style>
++    </div>
++  )
++}
+diff --git a/src/components/connections/ConnectionsSection.tsx b/src/components/connections/ConnectionsSection.tsx
+new file mode 100644
+index 0000000..dea8dd4
+--- /dev/null
++++ b/src/components/connections/ConnectionsSection.tsx
+@@ -0,0 +1,256 @@
++"use client"
++
++import { useState, useEffect } from "react"
++import Link from "next/link"
++import { ConnectionCard } from "./ConnectionCard"
++import type { EnhancedTasteMatch, ListeningSignature } from "@/lib/tasteid"
++
++interface ConnectionsSectionProps {
++  userId: string | undefined
++}
++
++type ConnectionMode = "all" | "twins" | "opposites" | "guides"
++
++const MODE_CONFIG: Record<ConnectionMode, { label: string; description: string }> = {
++  all: { label: "All", description: "All potential connections" },
++  twins: { label: "Taste Twins", description: "People with very similar taste" },
++  opposites: { label: "Opposite Attracts", description: "Different tastes to expand your horizons" },
++  guides: { label: "Explorer Guides", description: "People who can introduce you to new music" },
++}
++
++interface ConnectionsResponse {
++  connections: EnhancedTasteMatch[]
++  grouped: {
++    tasteTwins: EnhancedTasteMatch[]
++    networkResonance: EnhancedTasteMatch[]
++    oppositeAttracts: EnhancedTasteMatch[]
++    explorerGuides: EnhancedTasteMatch[]
++    genreBuddies: EnhancedTasteMatch[]
++    complementary: EnhancedTasteMatch[]
++  }
++  total: number
++  userTasteId: {
++    archetype: string
++    reviewCount: number
++    polarityScore: number
++  }
++  error?: string
++  message?: string
++  reviewCount?: number
++  required?: number
++}
++
++export function ConnectionsSection({ userId }: ConnectionsSectionProps) {
++  const [mode, setMode] = useState<ConnectionMode>("all")
++  const [connections, setConnections] = useState<EnhancedTasteMatch[]>([])
++  const [userSignature, setUserSignature] = useState<ListeningSignature | null>(null)
++  const [loading, setLoading] = useState(true)
++  const [error, setError] = useState<string | null>(null)
++  const [needsMoreReviews, setNeedsMoreReviews] = useState(false)
++  const [reviewCount, setReviewCount] = useState(0)
++
++  useEffect(() => {
++    if (!userId) {
++      setLoading(false)
++      return
++    }
++
++    async function fetchConnections() {
++      try {
++        setLoading(true)
++        setError(null)
++
++        const response = await fetch(`/api/connections/discover?mode=${mode}&limit=12`)
++        const data: ConnectionsResponse = await response.json()
++
++        if (!response.ok) {
++          if (data.error === "More reviews needed" || data.error === "TasteID required") {
++            setNeedsMoreReviews(true)
++            setReviewCount(data.reviewCount || 0)
++          } else {
++            setError(data.error || "Failed to load connections")
++          }
++          setConnections([])
++          return
++        }
++
++        setConnections(data.connections)
++        setNeedsMoreReviews(false)
++
++        // Fetch user signature for comparison visualizations
++        const tasteResponse = await fetch(`/api/tasteid/me`)
++        if (tasteResponse.ok) {
++          const tasteData = await tasteResponse.json()
++          setUserSignature(tasteData.tasteId?.polarity12?.listeningSignature || null)
++        }
++      } catch (err) {
++        setError("Failed to load connections")
++        setConnections([])
++      } finally {
++        setLoading(false)
++      }
++    }
++
++    fetchConnections()
++  }, [userId, mode])
++
++  const handleConnect = async (targetUserId: string) => {
++    try {
++      await fetch(`/api/connections/${targetUserId}`, {
++        method: "POST",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify({ action: "connect" }),
++      })
++    } catch (err) {
++      console.error("Failed to connect:", err)
++    }
++  }
++
++  const handleDismiss = async (targetUserId: string) => {
++    try {
++      await fetch(`/api/connections/${targetUserId}`, {
++        method: "POST",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify({ action: "dismiss" }),
++      })
++      // Remove from local state
++      setConnections(prev => prev.filter(c => c.userId !== targetUserId))
++    } catch (err) {
++      console.error("Failed to dismiss:", err)
++    }
++  }
++
++  if (!userId) {
++    return (
++      <div className="border-2 border-dashed border-[--border] p-8 text-center">
++        <div className="text-3xl mb-3">🎵</div>
++        <h3 className="text-lg font-bold mb-2">Discover Taste Connections</h3>
++        <p className="text-sm text-[--muted] mb-4 max-w-md mx-auto">
++          Sign in to find people who share your musical taste—or can expand your horizons.
++        </p>
++        <Link
++          href="/login"
++          className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-black text-xs font-bold tracking-wide hover:bg-white/90 transition-colors"
++        >
++          Sign In to Connect
++        </Link>
++      </div>
++    )
++  }
++
++  if (needsMoreReviews) {
++    return (
++      <div className="border-2 border-dashed border-[--border] p-8 text-center">
++        <div className="text-3xl mb-3">📊</div>
++        <h3 className="text-lg font-bold mb-2">Build Your TasteID</h3>
++        <p className="text-sm text-[--muted] mb-4 max-w-md mx-auto">
++          Review {20 - reviewCount} more albums to unlock taste connections.
++          Your TasteID needs more data to find meaningful matches.
++        </p>
++        <div className="w-full max-w-xs mx-auto mb-4">
++          <div className="h-2 bg-[--border] overflow-hidden">
++            <div
++              className="h-full bg-white transition-all duration-500"
++              style={{ width: `${(reviewCount / 20) * 100}%` }}
++            />
++          </div>
++          <p className="text-xs text-[--muted] mt-1">{reviewCount} / 20 reviews</p>
++        </div>
++        <Link
++          href="/search"
++          className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-black text-xs font-bold tracking-wide hover:bg-white/90 transition-colors"
++        >
++          Find Albums to Review
++        </Link>
++      </div>
++    )
++  }
++
++  return (
++    <div>
++      {/* Mode selector */}
++      <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2">
++        {(Object.entries(MODE_CONFIG) as [ConnectionMode, typeof MODE_CONFIG.all][]).map(([key, config]) => (
++          <button
++            key={key}
++            onClick={() => setMode(key)}
++            className={`px-3 py-1.5 text-[11px] font-medium tracking-wide uppercase whitespace-nowrap transition-colors ${
++              mode === key
++                ? "bg-white text-black"
++                : "border border-[--border] text-[--muted] hover:border-white hover:text-white"
++            }`}
++          >
++            {config.label}
++          </button>
++        ))}
++      </div>
++
++      {/* Description */}
++      <p className="text-xs text-[--muted] mb-6">{MODE_CONFIG[mode].description}</p>
++
++      {/* Content */}
++      {loading ? (
++        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
++          {[1, 2, 3].map(i => (
++            <div key={i} className="border border-[--border] p-4 animate-pulse">
++              <div className="flex items-start gap-4">
++                <div className="w-16 h-16 bg-[--border]" />
++                <div className="flex-1">
++                  <div className="h-5 bg-[--border] w-2/3 mb-2" />
++                  <div className="h-3 bg-[--border] w-1/2" />
++                </div>
++              </div>
++            </div>
++          ))}
++        </div>
++      ) : error ? (
++        <div className="text-center py-8 text-[--muted]">
++          <p>{error}</p>
++        </div>
++      ) : connections.length === 0 ? (
++        <div className="border-2 border-dashed border-[--border] p-8 text-center">
++          <div className="text-3xl mb-3">🔍</div>
++          <h3 className="text-lg font-bold mb-2">No connections found</h3>
++          <p className="text-sm text-[--muted] max-w-md mx-auto">
++            {mode === "twins"
++              ? "No taste twins found yet. Keep reviewing to improve your matches!"
++              : mode === "opposites"
++              ? "No opposite taste profiles found. More users need to build their TasteIDs."
++              : mode === "guides"
++              ? "No explorer guides available right now."
++              : "No potential connections found. More users are joining every day!"}
++          </p>
++        </div>
++      ) : (
++        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
++          {connections.map((connection, i) => (
++            <div
++              key={connection.userId}
++              style={{ animationDelay: `${i * 0.1}s` }}
++            >
++              <ConnectionCard
++                connection={connection}
++                userSignature={userSignature}
++                onConnect={handleConnect}
++                onDismiss={handleDismiss}
++                showActions
++              />
++            </div>
++          ))}
++        </div>
++      )}
++
++      {/* View all link */}
++      {connections.length > 0 && (
++        <div className="mt-6 text-center">
++          <Link
++            href="/discover/connections"
++            className="text-xs text-[--muted] hover:text-white transition-colors"
++          >
++            View all connections →
++          </Link>
++        </div>
++      )}
++    </div>
++  )
++}
+diff --git a/src/components/connections/SignatureComparison.tsx b/src/components/connections/SignatureComparison.tsx
+new file mode 100644
+index 0000000..80def6f
+--- /dev/null
++++ b/src/components/connections/SignatureComparison.tsx
+@@ -0,0 +1,309 @@
++"use client"
++
++import { useEffect, useRef, useState } from "react"
++import type { ListeningSignature } from "@/lib/tasteid"
++
++const NETWORK_LABELS: Record<keyof ListeningSignature, { name: string; color: string }> = {
++  discovery: { name: "Discovery", color: "#60a5fa" },
++  comfort: { name: "Comfort", color: "#a78bfa" },
++  deep_dive: { name: "Deep Dive", color: "#34d399" },
++  reactive: { name: "Reactive", color: "#fbbf24" },
++  emotional: { name: "Emotional", color: "#f87171" },
++  social: { name: "Social", color: "#fb923c" },
++  aesthetic: { name: "Aesthetic", color: "#818cf8" },
++}
++
++const NETWORKS = Object.keys(NETWORK_LABELS) as Array<keyof ListeningSignature>
++
++interface SignatureComparisonProps {
++  userSignature: ListeningSignature
++  otherSignature: ListeningSignature
++  userName?: string
++  otherName?: string
++  size?: number
++  animated?: boolean
++}
++
++/**
++ * Full radar chart comparison of two listening signatures
++ */
++export function SignatureComparison({
++  userSignature,
++  otherSignature,
++  userName = "You",
++  otherName = "Them",
++  size = 240,
++  animated = true,
++}: SignatureComparisonProps) {
++  const [animationProgress, setAnimationProgress] = useState(animated ? 0 : 1)
++  const animationRef = useRef<number>(null)
++
++  useEffect(() => {
++    if (!animated) return
++
++    const startTime = performance.now()
++    const duration = 1000 // 1 second animation
++
++    const animate = (currentTime: number) => {
++      const elapsed = currentTime - startTime
++      const progress = Math.min(elapsed / duration, 1)
++      // Ease out cubic
++      const eased = 1 - Math.pow(1 - progress, 3)
++      setAnimationProgress(eased)
++
++      if (progress < 1) {
++        animationRef.current = requestAnimationFrame(animate)
++      }
++    }
++
++    animationRef.current = requestAnimationFrame(animate)
++    return () => {
++      if (animationRef.current) cancelAnimationFrame(animationRef.current)
++    }
++  }, [animated])
++
++  const center = size / 2
++  const maxRadius = (size / 2) - 30
++
++  // Generate polygon points for a signature
++  const getPolygonPoints = (signature: ListeningSignature, progress: number) => {
++    return NETWORKS.map((network, i) => {
++      const angle = (Math.PI * 2 * i) / NETWORKS.length - Math.PI / 2
++      const value = signature[network] * progress
++      const radius = value * maxRadius
++      const x = center + radius * Math.cos(angle)
++      const y = center + radius * Math.sin(angle)
++      return `${x},${y}`
++    }).join(" ")
++  }
++
++  // Generate grid circles
++  const gridCircles = [0.25, 0.5, 0.75, 1].map(level => (
++    <circle
++      key={level}
++      cx={center}
++      cy={center}
++      r={maxRadius * level}
++      fill="none"
++      stroke="var(--border)"
++      strokeWidth={1}
++      strokeOpacity={0.3}
++    />
++  ))
++
++  // Generate axis lines and labels
++  const axisLines = NETWORKS.map((network, i) => {
++    const angle = (Math.PI * 2 * i) / NETWORKS.length - Math.PI / 2
++    const x2 = center + maxRadius * Math.cos(angle)
++    const y2 = center + maxRadius * Math.sin(angle)
++    const labelX = center + (maxRadius + 15) * Math.cos(angle)
++    const labelY = center + (maxRadius + 15) * Math.sin(angle)
++
++    return (
++      <g key={network}>
++        <line
++          x1={center}
++          y1={center}
++          x2={x2}
++          y2={y2}
++          stroke="var(--border)"
++          strokeWidth={1}
++          strokeOpacity={0.3}
++        />
++        <text
++          x={labelX}
++          y={labelY}
++          textAnchor="middle"
++          dominantBaseline="middle"
++          fill="var(--muted)"
++          fontSize={9}
++          fontWeight={500}
++        >
++          {NETWORK_LABELS[network].name.charAt(0)}
++        </text>
++      </g>
++    )
++  })
++
++  return (
++    <div className="relative">
++      <svg width={size} height={size} className="overflow-visible">
++        {/* Grid */}
++        {gridCircles}
++        {axisLines}
++
++        {/* Other user's signature (background) */}
++        <polygon
++          points={getPolygonPoints(otherSignature, animationProgress)}
++          fill="rgba(168, 85, 247, 0.1)"
++          stroke="rgb(168, 85, 247)"
++          strokeWidth={2}
++          strokeOpacity={0.6}
++        />
++
++        {/* User's signature (foreground) */}
++        <polygon
++          points={getPolygonPoints(userSignature, animationProgress)}
++          fill="rgba(96, 165, 250, 0.15)"
++          stroke="rgb(96, 165, 250)"
++          strokeWidth={2}
++        />
++
++        {/* Center dot */}
++        <circle cx={center} cy={center} r={3} fill="var(--foreground)" />
++      </svg>
++
++      {/* Legend */}
++      <div className="flex items-center justify-center gap-6 mt-4">
++        <div className="flex items-center gap-2">
++          <div className="w-3 h-3 bg-blue-400 rounded-sm" />
++          <span className="text-xs text-[--muted]">{userName}</span>
++        </div>
++        <div className="flex items-center gap-2">
++          <div className="w-3 h-3 bg-purple-500 rounded-sm" />
++          <span className="text-xs text-[--muted]">{otherName}</span>
++        </div>
++      </div>
++    </div>
++  )
++}
++
++interface SignatureComparisonMiniProps {
++  userSignature: ListeningSignature
++  otherResonance: Record<string, number>
++  contrast: Record<string, number>
++}
++
++/**
++ * Mini bar chart showing network resonance and contrast
++ */
++export function SignatureComparisonMini({
++  userSignature,
++  otherResonance,
++  contrast,
++}: SignatureComparisonMiniProps) {
++  const [animated, setAnimated] = useState(false)
++
++  useEffect(() => {
++    const timer = setTimeout(() => setAnimated(true), 100)
++    return () => clearTimeout(timer)
++  }, [])
++
++  // Find top resonating and contrasting networks
++  const resonanceEntries = Object.entries(otherResonance).sort((a, b) => b[1] - a[1])
++  const topResonance = resonanceEntries.slice(0, 3)
++
++  return (
++    <div className="space-y-2">
++      <p className="text-[9px] uppercase tracking-wider text-[--muted]">Network Alignment</p>
++      <div className="grid grid-cols-7 gap-1">
++        {NETWORKS.map(network => {
++          const resonance = otherResonance[network] || 0
++          const diff = contrast[network] || 0
++          const { color, name } = NETWORK_LABELS[network]
++
++          return (
++            <div key={network} className="text-center">
++              <div
++                className="h-8 w-full relative overflow-hidden"
++                style={{ backgroundColor: `${color}15` }}
++              >
++                <div
++                  className="absolute bottom-0 left-0 right-0 transition-all duration-700 ease-out"
++                  style={{
++                    height: animated ? `${resonance * 300}%` : "0%",
++                    backgroundColor: color,
++                    opacity: 0.6,
++                  }}
++                />
++              </div>
++              <p className="text-[8px] text-[--muted] mt-1" title={name}>
++                {name.charAt(0)}
++              </p>
++            </div>
++          )
++        })}
++      </div>
++    </div>
++  )
++}
++
++interface SignatureOverlapVisualizationProps {
++  userSignature: ListeningSignature
++  otherSignature: ListeningSignature
++  size?: number
++}
++
++/**
++ * Venn-diagram style overlap visualization
++ */
++export function SignatureOverlapVisualization({
++  userSignature,
++  otherSignature,
++  size = 200,
++}: SignatureOverlapVisualizationProps) {
++  const [progress, setProgress] = useState(0)
++
++  useEffect(() => {
++    const timer = setTimeout(() => setProgress(1), 100)
++    return () => clearTimeout(timer)
++  }, [])
++
++  // Calculate overlap
++  let overlapScore = 0
++  NETWORKS.forEach(network => {
++    overlapScore += Math.min(userSignature[network], otherSignature[network])
++  })
++  overlapScore = overlapScore / NETWORKS.length
++
++  const circleRadius = size * 0.35
++  const overlapAmount = overlapScore * circleRadius
++
++  return (
++    <div className="flex flex-col items-center">
++      <svg width={size} height={size * 0.7} className="overflow-visible">
++        {/* User circle */}
++        <circle
++          cx={size * 0.35}
++          cy={size * 0.35}
++          r={circleRadius}
++          fill="rgba(96, 165, 250, 0.2)"
++          stroke="rgb(96, 165, 250)"
++          strokeWidth={2}
++          style={{
++            transform: `translateX(${progress * overlapAmount * 0.3}px)`,
++            transition: "transform 0.7s ease-out",
++          }}
++        />
++
++        {/* Other circle */}
++        <circle
++          cx={size * 0.65}
++          cy={size * 0.35}
++          r={circleRadius}
++          fill="rgba(168, 85, 247, 0.2)"
++          stroke="rgb(168, 85, 247)"
++          strokeWidth={2}
++          style={{
++            transform: `translateX(${-progress * overlapAmount * 0.3}px)`,
++            transition: "transform 0.7s ease-out",
++          }}
++        />
++
++        {/* Overlap percentage */}
++        <text
++          x={size / 2}
++          y={size * 0.35}
++          textAnchor="middle"
++          dominantBaseline="middle"
++          fill="var(--foreground)"
++          fontSize={24}
++          fontWeight="bold"
++        >
++          {Math.round(overlapScore * 100)}%
++        </text>
++      </svg>
++      <p className="text-xs text-[--muted] mt-2">Signature Overlap</p>
++    </div>
++  )
++}
+diff --git a/src/components/connections/index.ts b/src/components/connections/index.ts
+new file mode 100644
+index 0000000..6a871fd
+--- /dev/null
++++ b/src/components/connections/index.ts
+@@ -0,0 +1,7 @@
++export { ConnectionCard } from "./ConnectionCard"
++export { ConnectionsSection } from "./ConnectionsSection"
++export {
++  SignatureComparison,
++  SignatureComparisonMini,
++  SignatureOverlapVisualization,
++} from "./SignatureComparison"
+diff --git a/src/components/listening/ListeningSession.tsx b/src/components/listening/ListeningSession.tsx
+new file mode 100644
+index 0000000..e421965
+--- /dev/null
++++ b/src/components/listening/ListeningSession.tsx
+@@ -0,0 +1,406 @@
++"use client"
++
++import { useState, useEffect, useRef } from "react"
++import Link from "next/link"
++import { DefaultAvatar } from "@/components/default-avatar"
++
++interface Track {
++  id: string
++  name: string
++  trackNumber: number
++  durationMs: number
++  previewUrl: string | null
++}
++
++interface Album {
++  id: string
++  spotifyId: string
++  title: string
++  artistName: string
++  coverArtUrl: string | null
++  coverArtUrlLarge: string | null
++  tracks: Track[]
++}
++
++interface User {
++  id: string
++  username: string
++  image: string | null
++}
++
++interface Message {
++  id: string
++  userId: string
++  content: string
++  type: string
++  createdAt: string
++  user: User
++}
++
++interface Session {
++  id: string
++  inviteCode: string
++  title: string | null
++  status: string
++  isPlaying: boolean
++  currentTrackIndex: number
++  playbackPosition: number
++  host: User
++  guest: User | null
++  currentAlbum: Album | null
++  messages: Message[]
++  isHost: boolean
++  canJoin: boolean
++}
++
++interface ListeningSessionProps {
++  session: Session
++  onUpdate: () => void
++}
++
++export function ListeningSession({ session, onUpdate }: ListeningSessionProps) {
++  const [message, setMessage] = useState("")
++  const [sending, setSending] = useState(false)
++  const [localMessages, setLocalMessages] = useState<Message[]>(session.messages)
++  const messagesEndRef = useRef<HTMLDivElement>(null)
++  const audioRef = useRef<HTMLAudioElement>(null)
++
++  useEffect(() => {
++    setLocalMessages(session.messages)
++  }, [session.messages])
++
++  useEffect(() => {
++    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
++  }, [localMessages])
++
++  // Sync audio playback
++  useEffect(() => {
++    if (audioRef.current && session.currentAlbum?.tracks[session.currentTrackIndex]?.previewUrl) {
++      if (session.isPlaying) {
++        audioRef.current.play().catch(() => {})
++      } else {
++        audioRef.current.pause()
++      }
++    }
++  }, [session.isPlaying, session.currentTrackIndex, session.currentAlbum])
++
++  const handleAction = async (action: string, data?: Record<string, unknown>) => {
++    try {
++      await fetch(`/api/listening/${session.inviteCode}`, {
++        method: "PATCH",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify({ action, ...data }),
++      })
++      onUpdate()
++    } catch (err) {
++      console.error("Action failed:", err)
++    }
++  }
++
++  const handleSendMessage = async (e: React.FormEvent) => {
++    e.preventDefault()
++    if (!message.trim() || sending) return
++
++    setSending(true)
++    try {
++      const response = await fetch(`/api/listening/${session.inviteCode}`, {
++        method: "PATCH",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify({ action: "send_message", message: message.trim() }),
++      })
++
++      if (response.ok) {
++        const data = await response.json()
++        setLocalMessages((prev) => [...prev, data.message])
++        setMessage("")
++      }
++    } finally {
++      setSending(false)
++    }
++  }
++
++  const currentTrack = session.currentAlbum?.tracks[session.currentTrackIndex]
++
++  const formatTime = (ms: number) => {
++    const seconds = Math.floor(ms / 1000)
++    const minutes = Math.floor(seconds / 60)
++    const secs = seconds % 60
++    return `${minutes}:${secs.toString().padStart(2, "0")}`
++  }
++
++  if (session.status === "ended") {
++    return (
++      <div className="text-center py-12">
++        <div className="text-4xl mb-4">👋</div>
++        <h2 className="text-xl font-bold mb-2">Session Ended</h2>
++        <p className="text-[--muted] mb-6">Thanks for listening together!</p>
++        <Link
++          href="/listen"
++          className="inline-flex px-6 py-2 bg-white text-black font-bold text-sm"
++        >
++          Back to Sessions
++        </Link>
++      </div>
++    )
++  }
++
++  if (session.status === "waiting" && !session.isHost) {
++    return (
++      <div className="text-center py-12">
++        <div className="text-4xl mb-4">🎧</div>
++        <h2 className="text-xl font-bold mb-2">Join Listening Session</h2>
++        <p className="text-[--muted] mb-6">
++          @{session.host.username} invited you to listen together
++        </p>
++        <button
++          onClick={() => handleAction("join")}
++          className="inline-flex px-6 py-2 bg-white text-black font-bold text-sm"
++        >
++          Join Session
++        </button>
++      </div>
++    )
++  }
++
++  return (
++    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
++      {/* Now Playing */}
++      <div className="lg:col-span-2 space-y-6">
++        {/* Album display */}
++        {session.currentAlbum ? (
++          <div className="border border-[--border] p-6">
++            <div className="flex gap-6">
++              <div className="w-40 h-40 flex-shrink-0">
++                {session.currentAlbum.coverArtUrlLarge || session.currentAlbum.coverArtUrl ? (
++                  <img
++                    src={session.currentAlbum.coverArtUrlLarge || session.currentAlbum.coverArtUrl!}
++                    alt=""
++                    className="w-full h-full object-cover"
++                  />
++                ) : (
++                  <div className="w-full h-full bg-[--border]" />
++                )}
++              </div>
++              <div className="flex-1 min-w-0">
++                <p className="text-xs text-[--muted] uppercase tracking-wider mb-1">Now Playing</p>
++                <Link
++                  href={`/album/${session.currentAlbum.spotifyId}`}
++                  className="hover:underline"
++                >
++                  <h2 className="text-2xl font-bold truncate">{session.currentAlbum.title}</h2>
++                </Link>
++                <p className="text-[--muted]">{session.currentAlbum.artistName}</p>
++
++                {currentTrack && (
++                  <div className="mt-4">
++                    <p className="font-medium">
++                      {currentTrack.trackNumber}. {currentTrack.name}
++                    </p>
++                    <p className="text-xs text-[--muted]">
++                      {formatTime(currentTrack.durationMs)}
++                    </p>
++                  </div>
++                )}
++              </div>
++            </div>
++
++            {/* Hidden audio element for preview */}
++            {currentTrack?.previewUrl && (
++              <audio ref={audioRef} src={currentTrack.previewUrl} />
++            )}
++
++            {/* Controls - Host only */}
++            {session.isHost && (
++              <div className="flex items-center justify-center gap-4 mt-6 pt-6 border-t border-[--border]">
++                <button
++                  onClick={() => handleAction("change_track", {
++                    trackIndex: Math.max(0, session.currentTrackIndex - 1),
++                  })}
++                  className="p-2 hover:bg-[--surface] transition-colors"
++                  disabled={session.currentTrackIndex === 0}
++                >
++                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
++                    <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
++                  </svg>
++                </button>
++                <button
++                  onClick={() => handleAction(session.isPlaying ? "pause" : "play")}
++                  className="p-4 bg-white text-black rounded-full hover:bg-white/90 transition-colors"
++                >
++                  {session.isPlaying ? (
++                    <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
++                      <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
++                    </svg>
++                  ) : (
++                    <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
++                      <path d="M8 5v14l11-7z" />
++                    </svg>
++                  )}
++                </button>
++                <button
++                  onClick={() => handleAction("change_track", {
++                    trackIndex: Math.min(
++                      (session.currentAlbum?.tracks.length || 1) - 1,
++                      session.currentTrackIndex + 1
++                    ),
++                  })}
++                  className="p-2 hover:bg-[--surface] transition-colors"
++                  disabled={
++                    session.currentTrackIndex >= (session.currentAlbum?.tracks.length || 1) - 1
++                  }
++                >
++                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
++                    <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
++                  </svg>
++                </button>
++              </div>
++            )}
++
++            {/* Track list */}
++            <div className="mt-6 pt-6 border-t border-[--border] max-h-48 overflow-y-auto">
++              {session.currentAlbum.tracks.map((track, i) => (
++                <button
++                  key={track.id}
++                  onClick={() => session.isHost && handleAction("change_track", { trackIndex: i })}
++                  disabled={!session.isHost}
++                  className={`w-full flex items-center gap-3 py-2 px-3 text-left transition-colors ${
++                    i === session.currentTrackIndex
++                      ? "bg-white/10"
++                      : session.isHost
++                      ? "hover:bg-[--surface]"
++                      : ""
++                  } ${!session.isHost ? "cursor-default" : ""}`}
++                >
++                  <span className="text-xs text-[--muted] w-5">{track.trackNumber}</span>
++                  <span className="flex-1 text-sm truncate">{track.name}</span>
++                  <span className="text-xs text-[--muted]">{formatTime(track.durationMs)}</span>
++                </button>
++              ))}
++            </div>
++          </div>
++        ) : (
++          <div className="border-2 border-dashed border-[--border] p-12 text-center">
++            <div className="text-4xl mb-4">🎵</div>
++            <p className="text-[--muted]">
++              {session.isHost
++                ? "Select an album to start listening"
++                : "Waiting for host to select an album"}
++            </p>
++          </div>
++        )}
++
++        {/* Session controls */}
++        <div className="flex items-center justify-between">
++          <div className="flex items-center gap-3">
++            <div className="flex -space-x-2">
++              <div className="w-8 h-8 border-2 border-[--background] overflow-hidden">
++                {session.host.image ? (
++                  <img src={session.host.image} alt="" className="w-full h-full object-cover" />
++                ) : (
++                  <DefaultAvatar size="sm" className="w-full h-full" />
++                )}
++              </div>
++              {session.guest && (
++                <div className="w-8 h-8 border-2 border-[--background] overflow-hidden">
++                  {session.guest.image ? (
++                    <img src={session.guest.image} alt="" className="w-full h-full object-cover" />
++                  ) : (
++                    <DefaultAvatar size="sm" className="w-full h-full" />
++                  )}
++                </div>
++              )}
++            </div>
++            <div>
++              <p className="text-sm font-medium">
++                @{session.host.username}
++                {session.guest && ` & @${session.guest.username}`}
++              </p>
++              <p className="text-xs text-[--muted]">
++                {session.guest ? "Listening together" : "Waiting for guest"}
++              </p>
++            </div>
++          </div>
++
++          <div className="flex gap-2">
++            {!session.isHost && session.guest && (
++              <button
++                onClick={() => handleAction("leave")}
++                className="px-4 py-2 border border-[--border] text-sm hover:border-red-500 hover:text-red-500 transition-colors"
++              >
++                Leave
++              </button>
++            )}
++            {session.isHost && (
++              <button
++                onClick={() => handleAction("end")}
++                className="px-4 py-2 border border-[--border] text-sm hover:border-red-500 hover:text-red-500 transition-colors"
++              >
++                End Session
++              </button>
++            )}
++          </div>
++        </div>
++      </div>
++
++      {/* Chat */}
++      <div className="border border-[--border] flex flex-col h-[600px]">
++        <div className="p-4 border-b border-[--border]">
++          <h3 className="font-bold">Session Chat</h3>
++        </div>
++
++        <div className="flex-1 overflow-y-auto p-4 space-y-3">
++          {localMessages.length === 0 ? (
++            <p className="text-center text-[--muted] text-sm py-8">
++              No messages yet. Say hi!
++            </p>
++          ) : (
++            localMessages.map((msg) => (
++              <div
++                key={msg.id}
++                className={`flex gap-2 ${
++                  msg.user.username === session.host.username ||
++                  msg.user.username === session.guest?.username
++                    ? ""
++                    : "opacity-50"
++                }`}
++              >
++                <div className="w-6 h-6 flex-shrink-0 overflow-hidden">
++                  {msg.user.image ? (
++                    <img src={msg.user.image} alt="" className="w-full h-full object-cover" />
++                  ) : (
++                    <DefaultAvatar size="sm" className="w-full h-full" />
++                  )}
++                </div>
++                <div className="min-w-0">
++                  <p className="text-xs text-[--muted]">@{msg.user.username}</p>
++                  <p className="text-sm break-words">{msg.content}</p>
++                </div>
++              </div>
++            ))
++          )}
++          <div ref={messagesEndRef} />
++        </div>
++
++        <form onSubmit={handleSendMessage} className="p-4 border-t border-[--border]">
++          <div className="flex gap-2">
++            <input
++              type="text"
++              value={message}
++              onChange={(e) => setMessage(e.target.value)}
++              placeholder="Say something..."
++              className="flex-1 px-3 py-2 bg-transparent border border-[--border] text-sm focus:border-white outline-none transition-colors"
++              disabled={!session.guest && !session.isHost}
++            />
++            <button
++              type="submit"
++              disabled={!message.trim() || sending}
++              className="px-4 py-2 bg-white text-black font-bold text-sm disabled:opacity-50"
++            >
++              Send
++            </button>
++          </div>
++        </form>
++      </div>
++    </div>
++  )
++}
+diff --git a/src/components/listening/index.ts b/src/components/listening/index.ts
+new file mode 100644
+index 0000000..0d5d175
+--- /dev/null
++++ b/src/components/listening/index.ts
+@@ -0,0 +1 @@
++export { ListeningSession } from "./ListeningSession"
+diff --git a/src/components/messages/ChatView.tsx b/src/components/messages/ChatView.tsx
+new file mode 100644
+index 0000000..9b6c6c2
+--- /dev/null
++++ b/src/components/messages/ChatView.tsx
+@@ -0,0 +1,212 @@
++"use client"
++
++import { useState, useEffect, useRef } from "react"
++import Link from "next/link"
++import { DefaultAvatar } from "@/components/default-avatar"
++
++interface User {
++  id: string
++  username: string
++  image: string | null
++}
++
++interface Message {
++  id: string
++  content: string
++  type: string
++  metadata: Record<string, unknown> | null
++  createdAt: string
++  sender: User
++  isMine: boolean
++}
++
++interface ChatViewProps {
++  conversationId: string
++  otherUser: User
++}
++
++export function ChatView({ conversationId, otherUser }: ChatViewProps) {
++  const [messages, setMessages] = useState<Message[]>([])
++  const [newMessage, setNewMessage] = useState("")
++  const [loading, setLoading] = useState(true)
++  const [sending, setSending] = useState(false)
++  const messagesEndRef = useRef<HTMLDivElement>(null)
++
++  useEffect(() => {
++    fetchMessages()
++    // Poll for new messages every 5 seconds
++    const interval = setInterval(fetchMessages, 5000)
++    return () => clearInterval(interval)
++  }, [conversationId])
++
++  useEffect(() => {
++    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
++  }, [messages])
++
++  const fetchMessages = async () => {
++    try {
++      const response = await fetch(`/api/messages/${conversationId}`)
++      if (response.ok) {
++        const data = await response.json()
++        setMessages(data.messages)
++      }
++    } catch (err) {
++      console.error("Failed to fetch messages:", err)
++    } finally {
++      setLoading(false)
++    }
++  }
++
++  const handleSend = async (e: React.FormEvent) => {
++    e.preventDefault()
++    if (!newMessage.trim() || sending) return
++
++    setSending(true)
++    try {
++      const response = await fetch(`/api/messages/${conversationId}`, {
++        method: "POST",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify({ content: newMessage.trim() }),
++      })
++
++      if (response.ok) {
++        const data = await response.json()
++        setMessages((prev) => [...prev, data.message])
++        setNewMessage("")
++      }
++    } finally {
++      setSending(false)
++    }
++  }
++
++  const formatTime = (dateString: string) => {
++    const date = new Date(dateString)
++    const now = new Date()
++    const diff = now.getTime() - date.getTime()
++    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
++
++    if (days === 0) {
++      return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
++    } else if (days === 1) {
++      return "Yesterday"
++    } else if (days < 7) {
++      return date.toLocaleDateString([], { weekday: "short" })
++    } else {
++      return date.toLocaleDateString([], { month: "short", day: "numeric" })
++    }
++  }
++
++  if (loading) {
++    return (
++      <div className="flex-1 flex items-center justify-center">
++        <div className="animate-pulse text-[--muted]">Loading...</div>
++      </div>
++    )
++  }
++
++  return (
++    <div className="flex flex-col h-full">
++      {/* Header */}
++      <div className="flex items-center gap-3 p-4 border-b border-[--border]">
++        <Link href={`/u/${otherUser.username}`} className="flex items-center gap-3 group">
++          <div className="w-10 h-10 border border-[--border] overflow-hidden group-hover:border-white/30 transition-colors">
++            {otherUser.image ? (
++              <img src={otherUser.image} alt="" className="w-full h-full object-cover" />
++            ) : (
++              <DefaultAvatar size="sm" className="w-full h-full" />
++            )}
++          </div>
++          <span className="font-bold group-hover:underline">@{otherUser.username}</span>
++        </Link>
++      </div>
++
++      {/* Messages */}
++      <div className="flex-1 overflow-y-auto p-4 space-y-4">
++        {messages.length === 0 ? (
++          <div className="text-center py-12">
++            <div className="text-4xl mb-4">💬</div>
++            <p className="text-[--muted]">No messages yet. Start the conversation!</p>
++          </div>
++        ) : (
++          messages.map((msg, i) => {
++            const showAvatar =
++              i === 0 || messages[i - 1].sender.id !== msg.sender.id
++            const showTime =
++              i === messages.length - 1 ||
++              messages[i + 1].sender.id !== msg.sender.id
++
++            return (
++              <div
++                key={msg.id}
++                className={`flex gap-3 ${msg.isMine ? "flex-row-reverse" : ""}`}
++              >
++                {!msg.isMine && showAvatar ? (
++                  <div className="w-8 h-8 flex-shrink-0 overflow-hidden">
++                    {msg.sender.image ? (
++                      <img src={msg.sender.image} alt="" className="w-full h-full object-cover" />
++                    ) : (
++                      <DefaultAvatar size="sm" className="w-full h-full" />
++                    )}
++                  </div>
++                ) : !msg.isMine ? (
++                  <div className="w-8 flex-shrink-0" />
++                ) : null}
++
++                <div
++                  className={`max-w-[70%] ${msg.isMine ? "text-right" : ""}`}
++                >
++                  <div
++                    className={`inline-block px-4 py-2 ${
++                      msg.isMine
++                        ? "bg-white text-black"
++                        : "bg-[--surface] border border-[--border]"
++                    }`}
++                  >
++                    {/* Special message types */}
++                    {msg.type === "album_share" && msg.metadata && (
++                      <Link
++                        href={`/album/${(msg.metadata as { spotifyId: string }).spotifyId}`}
++                        className="block mb-2 p-2 border border-current/20 hover:bg-current/5 transition-colors"
++                      >
++                        <p className="text-xs opacity-60 uppercase tracking-wider">Shared Album</p>
++                        <p className="font-medium">{(msg.metadata as { title: string }).title}</p>
++                      </Link>
++                    )}
++
++                    <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
++                  </div>
++                  {showTime && (
++                    <p className={`text-[10px] text-[--muted] mt-1 ${msg.isMine ? "text-right" : ""}`}>
++                      {formatTime(msg.createdAt)}
++                    </p>
++                  )}
++                </div>
++              </div>
++            )
++          })
++        )}
++        <div ref={messagesEndRef} />
++      </div>
++
++      {/* Input */}
++      <form onSubmit={handleSend} className="p-4 border-t border-[--border]">
++        <div className="flex gap-3">
++          <input
++            type="text"
++            value={newMessage}
++            onChange={(e) => setNewMessage(e.target.value)}
++            placeholder="Type a message..."
++            className="flex-1 px-4 py-3 bg-transparent border border-[--border] text-sm focus:border-white outline-none transition-colors"
++          />
++          <button
++            type="submit"
++            disabled={!newMessage.trim() || sending}
++            className="px-6 py-3 bg-white text-black font-bold text-sm disabled:opacity-50"
++          >
++            {sending ? "..." : "Send"}
++          </button>
++        </div>
++      </form>
++    </div>
++  )
++}
+diff --git a/src/components/messages/index.ts b/src/components/messages/index.ts
+new file mode 100644
+index 0000000..a2185c9
+--- /dev/null
++++ b/src/components/messages/index.ts
+@@ -0,0 +1 @@
++export { ChatView } from "./ChatView"
+diff --git a/src/lib/tasteid.ts b/src/lib/tasteid.ts
+index 62b0c8a..73bdea9 100644
+--- a/src/lib/tasteid.ts
++++ b/src/lib/tasteid.ts
+@@ -1835,3 +1835,527 @@ export function compareSignatures(
+     interpretation,
+   }
+ }
++
++// ============================================
++// POLARITY 1.2 - ENHANCED TASTE MATCHING
++// Dating-app style connection discovery
++// ============================================
++
++export type ConnectionMatchType =
++  | 'taste_twin'        // Very similar overall taste (>80% match)
++  | 'opposite_attracts' // Complementary different tastes
++  | 'network_resonance' // Strong alignment in specific networks
++  | 'explorer_guide'    // One can introduce the other to new music
++  | 'complementary'     // Different but complementary tastes
++  | 'genre_buddy'       // Shared genre preferences
++
++export interface EnhancedTasteMatch {
++  userId: string
++  username: string
++  image: string | null
++  overallScore: number           // 0-100 compatibility
++  matchType: ConnectionMatchType
++  matchStrength: number          // 0-1 algorithm confidence
++
++  // Signature comparison
++  signatureSimilarity: number    // 0-1 cosine similarity
++  networkResonance: Record<string, number>   // Which networks align
++  networkContrast: Record<string, number>    // Complementary differences
++
++  // Traditional metrics
++  genreOverlap: number
++  artistOverlap: number
++  ratingAlignment: number
++
++  // Shared elements
++  sharedGenres: string[]
++  sharedArtists: string[]
++  sharedAlbums: string[]
++
++  // Discovery potential
++  potentialIntroductions: string[]  // Genres/artists they could introduce you to
++
++  // Archetype info
++  archetype: string
++  archetypeIcon: string
++
++  // Connection context
++  connectionReason: string       // Human-readable explanation
++  compatibilityHighlights: string[]
++}
++
++/**
++ * Compute cosine similarity between two listening signatures
++ */
++export function computeSignatureSimilarity(sig1: ListeningSignature, sig2: ListeningSignature): number {
++  const networks = ['discovery', 'comfort', 'deep_dive', 'reactive', 'emotional', 'social', 'aesthetic'] as const
++
++  let dotProduct = 0
++  let norm1 = 0
++  let norm2 = 0
++
++  for (const network of networks) {
++    const v1 = sig1[network] || 0
++    const v2 = sig2[network] || 0
++    dotProduct += v1 * v2
++    norm1 += v1 * v1
++    norm2 += v2 * v2
++  }
++
++  if (norm1 === 0 || norm2 === 0) return 0
++  return dotProduct / (Math.sqrt(norm1) * Math.sqrt(norm2))
++}
++
++/**
++ * Compute network resonance - how much each network aligns between two users
++ */
++export function computeNetworkResonance(
++  sig1: ListeningSignature,
++  sig2: ListeningSignature
++): Record<string, number> {
++  const networks = ['discovery', 'comfort', 'deep_dive', 'reactive', 'emotional', 'social', 'aesthetic'] as const
++  const resonance: Record<string, number> = {}
++
++  for (const network of networks) {
++    const v1 = sig1[network] || 0
++    const v2 = sig2[network] || 0
++    // Resonance is high when both are high, low when either is low
++    resonance[network] = Math.min(v1, v2) * (1 - Math.abs(v1 - v2))
++  }
++
++  return resonance
++}
++
++/**
++ * Compute network contrast - where two users differ most
++ */
++export function computeNetworkContrast(
++  sig1: ListeningSignature,
++  sig2: ListeningSignature
++): Record<string, number> {
++  const networks = ['discovery', 'comfort', 'deep_dive', 'reactive', 'emotional', 'social', 'aesthetic'] as const
++  const contrast: Record<string, number> = {}
++
++  for (const network of networks) {
++    const v1 = sig1[network] || 0
++    const v2 = sig2[network] || 0
++    contrast[network] = v2 - v1  // Positive means user2 is higher
++  }
++
++  return contrast
++}
++
++/**
++ * Determine match type based on comprehensive analysis
++ */
++export function determineMatchType(
++  overallScore: number,
++  signatureSimilarity: number,
++  genreOverlap: number,
++  networkResonance: Record<string, number>,
++  networkContrast: Record<string, number>,
++  adventureness1: number,
++  adventureness2: number
++): ConnectionMatchType {
++  // Taste Twin: Very similar overall (>80%)
++  if (overallScore > 80 && signatureSimilarity > 0.8) {
++    return 'taste_twin'
++  }
++
++  // Check for strong network resonance in specific networks
++  const resonanceValues = Object.values(networkResonance)
++  const maxResonance = Math.max(...resonanceValues)
++  if (maxResonance > 0.15 && signatureSimilarity > 0.5) {
++    return 'network_resonance'
++  }
++
++  // Explorer Guide: One is adventurous, other is not
++  const adventurenessDiff = Math.abs(adventureness1 - adventureness2)
++  if (adventurenessDiff > 0.3) {
++    return 'explorer_guide'
++  }
++
++  // Opposite Attracts: Low similarity but potential for expansion
++  if (signatureSimilarity < 0.4 && genreOverlap < 0.3) {
++    const contrastValues = Object.values(networkContrast).map(Math.abs)
++    const maxContrast = Math.max(...contrastValues)
++    if (maxContrast > 0.2) {
++      return 'opposite_attracts'
++    }
++  }
++
++  // Complementary: Moderate differences that balance each other
++  if (signatureSimilarity >= 0.4 && signatureSimilarity < 0.7) {
++    return 'complementary'
++  }
++
++  // Genre Buddy: Shared genre preferences
++  if (genreOverlap > 0.5) {
++    return 'genre_buddy'
++  }
++
++  return 'complementary'
++}
++
++/**
++ * Generate connection reason based on match analysis
++ */
++export function generateConnectionReason(
++  matchType: ConnectionMatchType,
++  sharedGenres: string[],
++  networkResonance: Record<string, number>,
++  networkContrast: Record<string, number>
++): string {
++  const topResonanceNetwork = Object.entries(networkResonance)
++    .sort((a, b) => b[1] - a[1])[0]?.[0]
++
++  const topContrastNetwork = Object.entries(networkContrast)
++    .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0]
++
++  switch (matchType) {
++    case 'taste_twin':
++      return `You're musical twins! ${sharedGenres.length > 0 ? `Both deeply into ${sharedGenres.slice(0, 2).join(' and ')}.` : 'Remarkably similar listening patterns.'}`
++
++    case 'network_resonance':
++      return `Strong ${topResonanceNetwork?.replace('_', ' ')} energy alignment. You both engage with music in similar ways.`
++
++    case 'explorer_guide':
++      return 'One of you is a musical explorer who could introduce the other to new sounds.'
++
++    case 'opposite_attracts':
++      if (topContrastNetwork) {
++        const direction = topContrastNetwork[1] > 0 ? 'more' : 'less'
++        return `Different but fascinating. They're ${direction} ${topContrastNetwork[0].replace('_', ' ')}-driven than you.`
++      }
++      return 'Different tastes that could expand your horizons.'
++
++    case 'complementary':
++      return `Your tastes complement each other well${sharedGenres.length > 0 ? `, especially in ${sharedGenres[0]}` : ''}.`
++
++    case 'genre_buddy':
++      return `Fellow ${sharedGenres[0] || 'music'} enthusiast! Great for deep conversations about the genre.`
++
++    default:
++      return 'Interesting musical connection potential.'
++  }
++}
++
++/**
++ * Generate compatibility highlights
++ */
++export function generateCompatibilityHighlights(
++  matchType: ConnectionMatchType,
++  sharedGenres: string[],
++  sharedArtists: string[],
++  networkResonance: Record<string, number>,
++  signatureSimilarity: number
++): string[] {
++  const highlights: string[] = []
++
++  // Add shared genre highlight
++  if (sharedGenres.length > 0) {
++    highlights.push(`Both love ${sharedGenres[0]}`)
++  }
++
++  // Add shared artist highlight
++  if (sharedArtists.length > 0) {
++    highlights.push(`Shared appreciation for ${sharedArtists[0]}`)
++  }
++
++  // Add signature similarity highlight
++  if (signatureSimilarity > 0.7) {
++    highlights.push('Very similar listening patterns')
++  } else if (signatureSimilarity < 0.3) {
++    highlights.push('Fresh perspectives to share')
++  }
++
++  // Add top resonance network
++  const topResonance = Object.entries(networkResonance)
++    .sort((a, b) => b[1] - a[1])[0]
++  if (topResonance && topResonance[1] > 0.1) {
++    const networkName = topResonance[0].replace('_', ' ')
++    highlights.push(`Strong ${networkName} connection`)
++  }
++
++  // Match type specific
++  switch (matchType) {
++    case 'taste_twin':
++      highlights.push('Potential best music friend')
++      break
++    case 'opposite_attracts':
++      highlights.push('Great for discovering new music')
++      break
++    case 'explorer_guide':
++      highlights.push('Musical mentor/mentee potential')
++      break
++    case 'network_resonance':
++      highlights.push('Deep musical understanding')
++      break
++  }
++
++  return highlights.slice(0, 4)
++}
++
++/**
++ * Find potential genre/artist introductions one user could make to another
++ */
++export function findPotentialIntroductions(
++  taste1TopGenres: string[],
++  taste2TopGenres: string[],
++  taste1TopArtists: string[],
++  taste2TopArtists: string[]
++): string[] {
++  const introductions: string[] = []
++
++  // Genres taste2 has that taste1 doesn't
++  const newGenres = taste2TopGenres.filter(g => !taste1TopGenres.includes(g))
++  introductions.push(...newGenres.slice(0, 2).map(g => `${g} music`))
++
++  // Artists taste2 has that taste1 doesn't
++  const newArtists = taste2TopArtists.filter(a => !taste1TopArtists.includes(a))
++  introductions.push(...newArtists.slice(0, 2))
++
++  return introductions.slice(0, 4)
++}
++
++/**
++ * Enhanced taste match discovery - Polarity 1.2 powered
++ * Find potential connections with rich comparison data
++ */
++export async function discoverTasteConnections(
++  userId: string,
++  options: {
++    limit?: number
++    matchTypes?: ConnectionMatchType[]
++    minReviews?: number
++  } = {}
++): Promise<EnhancedTasteMatch[]> {
++  const { limit = 20, matchTypes, minReviews = 20 } = options
++
++  // Get user's TasteID
++  const userTaste = await prisma.tasteID.findUnique({
++    where: { userId },
++    include: { user: { select: { id: true } } },
++  })
++
++  if (!userTaste) return []
++
++  const userSignature = userTaste.listeningSignature as ListeningSignature | null
++  const userGenres = userTaste.genreVector as GenreVector
++
++  // Get potential matches (users with enough reviews and TasteIDs)
++  const candidates = await prisma.tasteID.findMany({
++    where: {
++      userId: { not: userId },
++      reviewCount: { gte: minReviews },
++    },
++    include: {
++      user: {
++        select: {
++          id: true,
++          username: true,
++          image: true,
++        },
++      },
++    },
++    take: 100, // Sample for performance
++  })
++
++  // Score and analyze each candidate
++  const matches: EnhancedTasteMatch[] = []
++
++  for (const candidate of candidates) {
++    if (!candidate.user.username) continue
++
++    const candSignature = candidate.listeningSignature as ListeningSignature | null
++    const candGenres = candidate.genreVector as GenreVector
++
++    // 1. Compute genre overlap
++    const genreOverlap = computeCosineSimilarity(userGenres, candGenres)
++
++    // 2. Compute artist overlap
++    const userArtists = new Set(userTaste.topArtists)
++    const candArtists = new Set(candidate.topArtists)
++    const sharedArtists = [...userArtists].filter(a => candArtists.has(a))
++    const artistOverlap = sharedArtists.length / Math.max(userArtists.size, candArtists.size, 1)
++
++    // 3. Rating alignment
++    const ratingDiff = Math.abs(userTaste.averageRating - candidate.averageRating)
++    const ratingAlignment = Math.max(0, 1 - ratingDiff / 5)
++
++    // 4. Signature-based analysis (Polarity 1.2)
++    let signatureSimilarity = 0.5  // Default if no signatures
++    let networkResonance: Record<string, number> = {}
++    let networkContrast: Record<string, number> = {}
++
++    if (userSignature && candSignature) {
++      signatureSimilarity = computeSignatureSimilarity(userSignature, candSignature)
++      networkResonance = computeNetworkResonance(userSignature, candSignature)
++      networkContrast = computeNetworkContrast(userSignature, candSignature)
++    }
++
++    // 5. Determine match type
++    const matchType = determineMatchType(
++      genreOverlap * 40 + artistOverlap * 30 + ratingAlignment * 20 + signatureSimilarity * 10,
++      signatureSimilarity,
++      genreOverlap,
++      networkResonance,
++      networkContrast,
++      userTaste.adventurenessScore,
++      candidate.adventurenessScore
++    )
++
++    // Filter by requested match types if specified
++    if (matchTypes && !matchTypes.includes(matchType)) continue
++
++    // 6. Compute overall score
++    const overallScore = Math.round(
++      genreOverlap * 35 +
++      artistOverlap * 25 +
++      ratingAlignment * 15 +
++      signatureSimilarity * 25
++    )
++
++    // 7. Match strength (algorithm confidence)
++    const matchStrength = userSignature && candSignature
++      ? 0.8 + Math.min(userTaste.reviewCount, candidate.reviewCount) / 500 * 0.2
++      : 0.5
++
++    // 8. Shared genres
++    const sharedGenres = userTaste.topGenres.filter(g => candidate.topGenres.includes(g))
++
++    // 9. Connection reason and highlights
++    const connectionReason = generateConnectionReason(matchType, sharedGenres, networkResonance, networkContrast)
++    const compatibilityHighlights = generateCompatibilityHighlights(
++      matchType, sharedGenres, sharedArtists, networkResonance, signatureSimilarity
++    )
++
++    // 10. Potential introductions
++    const potentialIntroductions = findPotentialIntroductions(
++      userTaste.topGenres, candidate.topGenres,
++      userTaste.topArtists, candidate.topArtists
++    )
++
++    // Get archetype info
++    const archetypeInfo = getArchetypeInfo(candidate.primaryArchetype)
++
++    matches.push({
++      userId: candidate.userId,
++      username: candidate.user.username,
++      image: candidate.user.image,
++      overallScore,
++      matchType,
++      matchStrength,
++      signatureSimilarity: Math.round(signatureSimilarity * 100) / 100,
++      networkResonance,
++      networkContrast,
++      genreOverlap: Math.round(genreOverlap * 100),
++      artistOverlap: Math.round(artistOverlap * 100),
++      ratingAlignment: Math.round(ratingAlignment * 100),
++      sharedGenres,
++      sharedArtists,
++      sharedAlbums: [], // Populated separately if needed
++      potentialIntroductions,
++      archetype: archetypeInfo.name,
++      archetypeIcon: archetypeInfo.icon,
++      connectionReason,
++      compatibilityHighlights,
++    })
++  }
++
++  // Sort by overall score and return top matches
++  return matches
++    .sort((a, b) => b.overallScore - a.overallScore)
++    .slice(0, limit)
++}
++
++/**
++ * Find "Opposite Attracts" connections - people with complementary different tastes
++ */
++export async function findOppositeAttracts(
++  userId: string,
++  limit: number = 10
++): Promise<EnhancedTasteMatch[]> {
++  return discoverTasteConnections(userId, {
++    limit,
++    matchTypes: ['opposite_attracts', 'complementary', 'explorer_guide'],
++  })
++}
++
++/**
++ * Find "Taste Twins" - people with very similar taste
++ */
++export async function findTasteTwins(
++  userId: string,
++  limit: number = 10
++): Promise<EnhancedTasteMatch[]> {
++  return discoverTasteConnections(userId, {
++    limit,
++    matchTypes: ['taste_twin', 'network_resonance', 'genre_buddy'],
++  })
++}
++
++/**
++ * Find "Explorer Guides" - people who can introduce you to new music
++ */
++export async function findExplorerGuides(
++  userId: string,
++  limit: number = 10
++): Promise<EnhancedTasteMatch[]> {
++  return discoverTasteConnections(userId, {
++    limit,
++    matchTypes: ['explorer_guide', 'opposite_attracts'],
++  })
++}
++
++/**
++ * Save taste match to database
++ */
++export async function saveTasteMatch(
++  user1Id: string,
++  user2Id: string,
++  match: EnhancedTasteMatch
++): Promise<void> {
++  // Sort IDs to maintain consistency (lower ID first)
++  const [sortedUser1, sortedUser2] = [user1Id, user2Id].sort()
++
++  await prisma.tasteMatch.upsert({
++    where: {
++      user1Id_user2Id: {
++        user1Id: sortedUser1,
++        user2Id: sortedUser2,
++      },
++    },
++    update: {
++      overallScore: match.overallScore,
++      genreOverlap: match.genreOverlap,
++      artistOverlap: match.artistOverlap,
++      ratingAlignment: match.ratingAlignment,
++      signatureSimilarity: match.signatureSimilarity,
++      networkResonance: match.networkResonance,
++      networkContrast: match.networkContrast,
++      matchStrength: match.matchStrength,
++      sharedGenres: match.sharedGenres,
++      sharedArtists: match.sharedArtists,
++      sharedAlbums: match.sharedAlbums,
++      matchType: match.matchType,
++      updatedAt: new Date(),
++    },
++    create: {
++      user1Id: sortedUser1,
++      user2Id: sortedUser2,
++      overallScore: match.overallScore,
++      genreOverlap: match.genreOverlap,
++      artistOverlap: match.artistOverlap,
++      ratingAlignment: match.ratingAlignment,
++      signatureSimilarity: match.signatureSimilarity,
++      networkResonance: match.networkResonance,
++      networkContrast: match.networkContrast,
++      matchStrength: match.matchStrength,
++      sharedGenres: match.sharedGenres,
++      sharedArtists: match.sharedArtists,
++      sharedAlbums: match.sharedAlbums,
++      matchType: match.matchType,
++    },
++  })
++}
+-- 
+2.50.1 (Apple Git-155)
+

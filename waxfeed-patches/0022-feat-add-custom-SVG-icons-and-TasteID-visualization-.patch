@@ -1,0 +1,1926 @@
+From 4d71ef248e7b5c263ed4ed5c16ec98645e548a60 Mon Sep 17 00:00:00 2001
+From: Shadrack Annor <shadrack@mac.mynetworksettings.com>
+Date: Sat, 24 Jan 2026 12:34:08 -0500
+Subject: [PATCH 22/50] feat: add custom SVG icons and TasteID visualization
+ components
+
+- Create custom network icons replacing all emojis (network-icons.tsx)
+- Add TasteID visualization with Yeo 7-Network display
+- Add CognitiveStateCard for listening mode indicator
+- Add TasteIDPaywall component for Pro subscription ($4.99/month)
+- Update taste-setup onboarding with custom icons and theme support
+- Update ConnectionCard to use MATCH_TYPE_ICONS
+- Update ChallengeCard to use CHALLENGE_TYPE_ICONS
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+---
+ src/app/taste-setup/page.tsx                  | 101 ++--
+ src/app/taste-setup/rate/page.tsx             |  59 +--
+ src/components/brainid/BrainIDPaywall.tsx     | 198 ++++++++
+ .../brainid/BrainIDVisualization.tsx          | 476 ++++++++++++++++++
+ src/components/brainid/CognitiveStateCard.tsx | 264 ++++++++++
+ src/components/brainid/index.ts               |   3 +
+ src/components/challenges/ChallengeCard.tsx   |  20 +-
+ src/components/connections/ConnectionCard.tsx |  51 +-
+ src/components/icons/network-icons.tsx        | 449 +++++++++++++++++
+ 9 files changed, 1539 insertions(+), 82 deletions(-)
+ create mode 100644 src/components/brainid/BrainIDPaywall.tsx
+ create mode 100644 src/components/brainid/BrainIDVisualization.tsx
+ create mode 100644 src/components/brainid/CognitiveStateCard.tsx
+ create mode 100644 src/components/brainid/index.ts
+ create mode 100644 src/components/icons/network-icons.tsx
+
+diff --git a/src/app/taste-setup/page.tsx b/src/app/taste-setup/page.tsx
+index 0c2e4d7..8135fb2 100644
+--- a/src/app/taste-setup/page.tsx
++++ b/src/app/taste-setup/page.tsx
+@@ -2,6 +2,12 @@ import { auth } from "@/lib/auth"
+ import { redirect } from "next/navigation"
+ import Link from "next/link"
+ import { prisma } from "@/lib/prisma"
++import {
++  BrainNetworkIcon,
++  TasteTwinIcon,
++  DiscoveryIcon,
++  AestheticIcon,
++} from "@/components/icons/network-icons"
+ 
+ export default async function TasteSetupPage() {
+   const session = await auth()
+@@ -31,53 +37,82 @@ export default async function TasteSetupPage() {
+   }
+ 
+   return (
+-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-8">
++    <div
++      className="min-h-screen flex flex-col items-center justify-center p-8"
++      style={{ backgroundColor: "var(--background)", color: "var(--foreground)" }}
++    >
+       <div className="max-w-xl w-full text-center space-y-8">
+         {/* Progress indicator */}
+         <div className="flex justify-center gap-2">
+-          <div className="w-3 h-3 bg-white" />
+-          <div className="w-3 h-3 bg-neutral-700" />
+-          <div className="w-3 h-3 bg-neutral-700" />
+-          <div className="w-3 h-3 bg-neutral-700" />
++          <div className="w-3 h-3 bg-[--foreground]" />
++          <div className="w-3 h-3 bg-[--border]" />
++          <div className="w-3 h-3 bg-[--border]" />
++          <div className="w-3 h-3 bg-[--border]" />
++        </div>
++
++        {/* TasteID Logo */}
++        <div className="flex justify-center">
++          <div className="w-20 h-20 flex items-center justify-center border-2 border-violet-500/50 bg-gradient-to-br from-violet-500/10 to-blue-500/10">
++            <BrainNetworkIcon size={40} color="rgb(139, 92, 246)" />
++          </div>
+         </div>
+ 
+         {/* Hero */}
+         <div className="space-y-4">
+           <h1 className="text-4xl md:text-5xl font-bold uppercase tracking-wider">
+-            DISCOVER MUSIC & FRIENDS
++            UNLOCK YOUR TASTEID
+           </h1>
+-          <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-wider text-neutral-400">
+-            TAILORED TO YOU
++          <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-wider text-[--muted]">
++            YOUR MUSICAL FINGERPRINT
+           </h2>
+         </div>
+ 
+         {/* Description */}
+-        <p className="text-lg text-neutral-400 max-w-md mx-auto">
+-          Rate a few albums to unlock your unique TasteID - a fingerprint of your musical preferences.
+-          Then we'll connect you with people who share your taste.
++        <p className="text-lg text-[--muted] max-w-md mx-auto">
++          Rate albums to map your unique listening signature. Your TasteID reveals your musical personality and connects you with like-minded listeners.
+         </p>
+ 
+         {/* What you'll get */}
+-        <div className="border-2 border-white p-6 text-left space-y-4">
+-          <h3 className="text-xs uppercase tracking-widest text-neutral-500 font-bold">
+-            WHAT YOU'LL GET
++        <div className="border-2 border-[--foreground] p-6 text-left space-y-4">
++          <h3 className="text-xs uppercase tracking-widest text-[--muted] font-bold">
++            WHAT YOU'LL UNLOCK
+           </h3>
+-          <ul className="space-y-3">
+-            <li className="flex items-center gap-3">
+-              <span className="text-xl">🎵</span>
+-              <span>Your unique TasteID archetype</span>
++          <ul className="space-y-4">
++            <li className="flex items-center gap-4">
++              <div className="w-10 h-10 flex items-center justify-center border border-violet-500/30 bg-violet-500/10 flex-shrink-0">
++                <BrainNetworkIcon size={20} color="rgb(139, 92, 246)" />
++              </div>
++              <div>
++                <span className="font-semibold">Your TasteID archetype</span>
++                <p className="text-xs text-[--muted]">Discover your unique listening personality</p>
++              </div>
+             </li>
+-            <li className="flex items-center gap-3">
+-              <span className="text-xl">👥</span>
+-              <span>Match with similar music lovers</span>
++            <li className="flex items-center gap-4">
++              <div className="w-10 h-10 flex items-center justify-center border border-emerald-500/30 bg-emerald-500/10 flex-shrink-0">
++                <TasteTwinIcon size={20} color="rgb(16, 185, 129)" />
++              </div>
++              <div>
++                <span className="font-semibold">Taste connections</span>
++                <p className="text-xs text-[--muted]">Match with people who share your listening patterns</p>
++              </div>
+             </li>
+-            <li className="flex items-center gap-3">
+-              <span className="text-xl">💿</span>
+-              <span>Personalized album recommendations</span>
++            <li className="flex items-center gap-4">
++              <div className="w-10 h-10 flex items-center justify-center border border-blue-500/30 bg-blue-500/10 flex-shrink-0">
++                <DiscoveryIcon size={20} color="rgb(59, 130, 246)" />
++              </div>
++              <div>
++                <span className="font-semibold">Personalized discovery</span>
++                <p className="text-xs text-[--muted]">Recommendations tailored to your taste signature</p>
++              </div>
+             </li>
+-            <li className="flex items-center gap-3">
+-              <span className="text-xl">📊</span>
+-              <span>Shareable taste card for social</span>
++            <li className="flex items-center gap-4">
++              <div className="w-10 h-10 flex items-center justify-center border border-amber-500/30 bg-amber-500/10 flex-shrink-0">
++                <AestheticIcon size={20} color="rgb(245, 158, 11)" />
++              </div>
++              <div>
++                <span className="font-semibold">Shareable taste card</span>
++                <p className="text-xs text-[--muted]">Show off your unique musical identity</p>
++              </div>
+             </li>
+           </ul>
+         </div>
+@@ -86,23 +121,23 @@ export default async function TasteSetupPage() {
+         <div className="space-y-4">
+           <Link
+             href="/taste-setup/rate"
+-            className="inline-block w-full md:w-auto px-8 py-4 bg-white text-black font-bold uppercase tracking-wider text-lg hover:bg-neutral-200 transition-colors"
++            className="inline-block w-full md:w-auto px-8 py-4 bg-gradient-to-r from-violet-500 to-blue-500 text-white font-bold uppercase tracking-wider text-lg hover:opacity-90 transition-opacity"
+           >
+-            LET'S GO
++            START RATING
+           </Link>
+           <div>
+             <Link
+               href="/"
+-              className="text-sm text-neutral-500 hover:text-white transition-colors"
++              className="text-sm text-[--muted] hover:text-[--foreground] transition-colors"
+             >
+               Skip for now →
+             </Link>
+           </div>
+         </div>
+ 
+-        {/* Time estimate */}
+-        <p className="text-xs text-neutral-600 uppercase tracking-wider">
+-          Takes less than 2 minutes
++        {/* Info */}
++        <p className="text-xs text-[--muted] uppercase tracking-wider">
++          Rate 20 albums to unlock your TasteID
+         </p>
+       </div>
+     </div>
+diff --git a/src/app/taste-setup/rate/page.tsx b/src/app/taste-setup/rate/page.tsx
+index 3a8a9f3..1e48c05 100644
+--- a/src/app/taste-setup/rate/page.tsx
++++ b/src/app/taste-setup/rate/page.tsx
+@@ -3,6 +3,7 @@
+ import { useState, useEffect } from "react"
+ import { useRouter } from "next/navigation"
+ import Link from "next/link"
++import { BrainNetworkIcon } from "@/components/icons/network-icons"
+ 
+ interface Album {
+   id: string
+@@ -93,7 +94,7 @@ export default function TasteSetupRatePage() {
+ 
+   if (loading) {
+     return (
+-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
++      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--background)", color: "var(--foreground)" }}>
+         <div className="text-xl uppercase tracking-wider animate-pulse">
+           Loading albums...
+         </div>
+@@ -103,10 +104,10 @@ export default function TasteSetupRatePage() {
+ 
+   if (albums.length === 0) {
+     return (
+-      <div className="min-h-screen bg-black text-white flex items-center justify-center p-8">
++      <div className="min-h-screen flex items-center justify-center p-8" style={{ backgroundColor: "var(--background)", color: "var(--foreground)" }}>
+         <div className="text-center space-y-4">
+           <p className="text-xl">No albums available for rating.</p>
+-          <Link href="/" className="text-neutral-400 hover:text-white">
++          <Link href="/" className="text-[--muted] hover:text-[--foreground]">
+             Go to homepage →
+           </Link>
+         </div>
+@@ -115,14 +116,14 @@ export default function TasteSetupRatePage() {
+   }
+ 
+   return (
+-    <div className="min-h-screen bg-black text-white p-8">
++    <div className="min-h-screen p-8" style={{ backgroundColor: "var(--background)", color: "var(--foreground)" }}>
+       <div className="max-w-xl mx-auto space-y-8">
+         {/* Progress */}
+         <div className="flex justify-center gap-2">
+-          <div className="w-3 h-3 bg-neutral-700" />
+-          <div className="w-3 h-3 bg-white" />
+-          <div className="w-3 h-3 bg-neutral-700" />
+-          <div className="w-3 h-3 bg-neutral-700" />
++          <div className="w-3 h-3 bg-[--border]" />
++          <div className="w-3 h-3 bg-[--foreground]" />
++          <div className="w-3 h-3 bg-[--border]" />
++          <div className="w-3 h-3 bg-[--border]" />
+         </div>
+ 
+         {/* Header */}
+@@ -130,8 +131,8 @@ export default function TasteSetupRatePage() {
+           <h1 className="text-2xl font-bold uppercase tracking-wider">
+             RATE ALBUMS
+           </h1>
+-          <p className="text-neutral-400">
+-            Rate at least 20 albums to generate your TasteID
++          <p className="text-[--muted]">
++            Rate at least 20 albums to unlock your TasteID
+           </p>
+         </div>
+ 
+@@ -140,11 +141,11 @@ export default function TasteSetupRatePage() {
+           {Array.from({ length: 20 }).map((_, i) => (
+             <div
+               key={i}
+-              className={`w-2 h-2 ${i < ratedCount ? "bg-white" : "bg-neutral-800"}`}
++              className={`w-2 h-2 ${i < ratedCount ? "bg-violet-500" : "bg-[--border]"}`}
+             />
+           ))}
+         </div>
+-        <p className="text-center text-sm text-neutral-500">
++        <p className="text-center text-sm text-[--muted]">
+           {ratedCount} / 20 minimum
+         </p>
+ 
+@@ -153,7 +154,7 @@ export default function TasteSetupRatePage() {
+           <div className="space-y-6">
+             {/* Album display */}
+             <div className="flex flex-col items-center gap-4">
+-              <div className="w-64 h-64 border-2 border-white">
++              <div className="w-64 h-64 border-2 border-[--foreground]">
+                 {currentAlbum.coverArtUrlMedium || currentAlbum.coverArtUrl ? (
+                   <img
+                     src={currentAlbum.coverArtUrlMedium || currentAlbum.coverArtUrl || ""}
+@@ -161,12 +162,12 @@ export default function TasteSetupRatePage() {
+                     className="w-full h-full object-cover"
+                   />
+                 ) : (
+-                  <div className="w-full h-full bg-neutral-800" />
++                  <div className="w-full h-full bg-[--surface]" />
+                 )}
+               </div>
+               <div className="text-center">
+                 <h2 className="text-xl font-bold">{currentAlbum.title}</h2>
+-                <p className="text-neutral-400">{currentAlbum.artistName}</p>
++                <p className="text-[--muted]">{currentAlbum.artistName}</p>
+               </div>
+             </div>
+ 
+@@ -178,16 +179,16 @@ export default function TasteSetupRatePage() {
+                     key={i}
+                     onClick={() => handleRate(i)}
+                     className={`
+-                      aspect-square border-2 border-white font-bold text-sm
+-                      hover:bg-white hover:text-black transition-colors
+-                      ${ratings[currentAlbum.id] === i ? "bg-white text-black" : ""}
++                      aspect-square border-2 border-[--foreground] font-bold text-sm
++                      hover:bg-[--foreground] hover:text-[--background] transition-colors
++                      ${ratings[currentAlbum.id] === i ? "bg-[--foreground] text-[--background]" : ""}
+                     `}
+                   >
+                     {i}
+                   </button>
+                 ))}
+               </div>
+-              <div className="flex justify-between text-xs text-neutral-500 uppercase">
++              <div className="flex justify-between text-xs text-[--muted] uppercase">
+                 <span>Skip it</span>
+                 <span>Masterpiece</span>
+               </div>
+@@ -196,7 +197,7 @@ export default function TasteSetupRatePage() {
+             {/* Skip button */}
+             <button
+               onClick={handleSkip}
+-              className="w-full py-3 text-neutral-500 hover:text-white transition-colors"
++              className="w-full py-3 text-[--muted] hover:text-[--foreground] transition-colors"
+             >
+               Haven't heard it? Skip →
+             </button>
+@@ -206,10 +207,12 @@ export default function TasteSetupRatePage() {
+         {/* Completion state */}
+         {canProceed && (
+           <div className="space-y-6 text-center">
+-            <div className="text-4xl">🎉</div>
+-            <h2 className="text-2xl font-bold uppercase">NICE TASTE!</h2>
+-            <p className="text-neutral-400">
+-              You've rated {ratedCount} albums. Ready to see your TasteID?
++            <div className="w-16 h-16 mx-auto flex items-center justify-center border-2 border-violet-500/50 bg-gradient-to-br from-violet-500/20 to-blue-500/20">
++              <BrainNetworkIcon size={32} color="rgb(139, 92, 246)" />
++            </div>
++            <h2 className="text-2xl font-bold uppercase">TASTEID READY</h2>
++            <p className="text-[--muted]">
++              You've rated {ratedCount} albums. Ready to see your music profile?
+             </p>
+ 
+             {/* Rated albums grid */}
+@@ -219,7 +222,7 @@ export default function TasteSetupRatePage() {
+                 .slice(0, 5)
+                 .map((album) => (
+                   <div key={album.id} className="text-center">
+-                    <div className="w-12 h-12 border border-white">
++                    <div className="w-12 h-12 border border-[--foreground]">
+                       {album.coverArtUrlMedium || album.coverArtUrl ? (
+                         <img
+                           src={album.coverArtUrlMedium || album.coverArtUrl || ""}
+@@ -227,7 +230,7 @@ export default function TasteSetupRatePage() {
+                           className="w-full h-full object-cover"
+                         />
+                       ) : (
+-                        <div className="w-full h-full bg-neutral-800" />
++                        <div className="w-full h-full bg-[--surface]" />
+                       )}
+                     </div>
+                     <span className="text-xs font-bold">{ratings[album.id]}</span>
+@@ -238,7 +241,7 @@ export default function TasteSetupRatePage() {
+             <button
+               onClick={handleComplete}
+               disabled={isSubmitting}
+-              className="w-full py-4 bg-white text-black font-bold uppercase tracking-wider text-lg hover:bg-neutral-200 transition-colors disabled:opacity-50"
++              className="w-full py-4 bg-gradient-to-r from-violet-500 to-blue-500 text-white font-bold uppercase tracking-wider text-lg hover:opacity-90 transition-opacity disabled:opacity-50"
+             >
+               {isSubmitting ? "COMPUTING..." : "REVEAL MY TASTEID"}
+             </button>
+@@ -246,7 +249,7 @@ export default function TasteSetupRatePage() {
+             {currentIndex < albums.length - 1 && (
+               <button
+                 onClick={() => {}}
+-                className="text-neutral-500 hover:text-white transition-colors"
++                className="text-[--muted] hover:text-[--foreground] transition-colors"
+               >
+                 Rate more albums →
+               </button>
+diff --git a/src/components/brainid/BrainIDPaywall.tsx b/src/components/brainid/BrainIDPaywall.tsx
+new file mode 100644
+index 0000000..5de8d7c
+--- /dev/null
++++ b/src/components/brainid/BrainIDPaywall.tsx
+@@ -0,0 +1,198 @@
++"use client"
++
++import { useState } from "react"
++import { BrainNetworkIcon, LockIcon } from "@/components/icons/network-icons"
++
++interface TasteIDPaywallProps {
++  feature: "updates" | "history" | "comparisons" | "insights"
++  currentPlan?: "free" | "pro"
++  onUpgrade?: () => void
++  className?: string
++}
++
++const FEATURE_INFO = {
++  updates: {
++    title: "TasteID Updates",
++    description: "Your taste profile evolves. Track monthly changes to your listening signature.",
++    benefits: [
++      "Monthly TasteID recalculation",
++      "Signature drift analysis",
++      "Network evolution tracking",
++      "Personalized insights",
++    ],
++  },
++  history: {
++    title: "Signature History",
++    description: "See how your taste has transformed over time with historical snapshots.",
++    benefits: [
++      "12-month signature archive",
++      "Visual evolution timeline",
++      "Milestone markers",
++      "Export your journey",
++    ],
++  },
++  comparisons: {
++    title: "Deep Comparisons",
++    description: "Unlock advanced comparison features with friends and public profiles.",
++    benefits: [
++      "Unlimited comparisons",
++      "Network overlay views",
++      "Compatibility reports",
++      "Shared listening sessions",
++    ],
++  },
++  insights: {
++    title: "AI Insights",
++    description: "Get personalized recommendations based on your listening patterns.",
++    benefits: [
++      "Mood-aware recommendations",
++      "Network-based discovery",
++      "Listening forecasts",
++      "Taste expansion paths",
++    ],
++  },
++}
++
++export function TasteIDPaywall({
++  feature,
++  currentPlan = "free",
++  onUpgrade,
++  className = "",
++}: TasteIDPaywallProps) {
++  const [isHovered, setIsHovered] = useState(false)
++  const info = FEATURE_INFO[feature]
++
++  if (currentPlan === "pro") {
++    return null
++  }
++
++  return (
++    <div
++      className={`relative overflow-hidden border border-[--border] ${className}`}
++      onMouseEnter={() => setIsHovered(true)}
++      onMouseLeave={() => setIsHovered(false)}
++    >
++      {/* Gradient background */}
++      <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 via-transparent to-blue-500/5" />
++
++      {/* Noise texture overlay */}
++      <div
++        className="absolute inset-0 opacity-30"
++        style={{
++          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
++        }}
++      />
++
++      <div className="relative p-6">
++        {/* Header */}
++        <div className="flex items-start justify-between mb-4">
++          <div className="flex items-center gap-3">
++            <div className="w-12 h-12 flex items-center justify-center bg-gradient-to-br from-violet-500/20 to-blue-500/20 border border-violet-500/30">
++              <BrainNetworkIcon size={24} color="rgb(139, 92, 246)" />
++            </div>
++            <div>
++              <div className="flex items-center gap-2">
++                <h3 className="font-bold text-lg">{info.title}</h3>
++                <span className="text-[9px] px-1.5 py-0.5 bg-violet-500/20 text-violet-400 uppercase tracking-wider font-bold">
++                  Pro
++                </span>
++              </div>
++              <p className="text-xs text-[--muted]">Monthly subscription</p>
++            </div>
++          </div>
++          <LockIcon size={20} color="var(--muted)" />
++        </div>
++
++        {/* Description */}
++        <p className="text-sm text-[--muted] mb-4 leading-relaxed">{info.description}</p>
++
++        {/* Benefits */}
++        <div className="space-y-2 mb-6">
++          {info.benefits.map((benefit, i) => (
++            <div key={i} className="flex items-center gap-2">
++              <div className="w-1.5 h-1.5 bg-violet-400" />
++              <span className="text-xs">{benefit}</span>
++            </div>
++          ))}
++        </div>
++
++        {/* Pricing */}
++        <div className="flex items-end gap-2 mb-4">
++          <span className="text-3xl font-bold">$4.99</span>
++          <span className="text-sm text-[--muted] pb-1">/month</span>
++        </div>
++
++        {/* CTA */}
++        <button
++          onClick={onUpgrade}
++          className={`w-full py-3 px-4 font-bold text-sm uppercase tracking-wider transition-all ${
++            isHovered
++              ? "bg-gradient-to-r from-violet-500 to-blue-500 text-white"
++              : "bg-white text-black hover:bg-white/90"
++          }`}
++        >
++          Upgrade to Pro
++        </button>
++
++        {/* Fine print */}
++        <p className="text-[10px] text-[--muted] text-center mt-3">
++          Cancel anytime. Your data is always yours.
++        </p>
++      </div>
++
++      {/* Animated border glow on hover */}
++      {isHovered && (
++        <div
++          className="absolute inset-0 pointer-events-none"
++          style={{
++            background: "linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.3), transparent)",
++            animation: "shimmer 2s infinite",
++          }}
++        />
++      )}
++
++      <style jsx>{`
++        @keyframes shimmer {
++          0% {
++            transform: translateX(-100%);
++          }
++          100% {
++            transform: translateX(100%);
++          }
++        }
++      `}</style>
++    </div>
++  )
++}
++
++/**
++ * Inline paywall teaser for locked features
++ */
++export function TasteIDFeatureLock({
++  feature,
++  onUpgrade,
++  className = "",
++}: {
++  feature: string
++  onUpgrade?: () => void
++  className?: string
++}) {
++  return (
++    <div
++      className={`flex items-center gap-3 p-3 border border-dashed border-[--border] bg-[--surface] ${className}`}
++    >
++      <LockIcon size={16} color="var(--muted)" />
++      <div className="flex-1 min-w-0">
++        <p className="text-xs text-[--muted]">
++          <span className="font-semibold text-violet-400">Pro feature:</span> {feature}
++        </p>
++      </div>
++      <button
++        onClick={onUpgrade}
++        className="text-[10px] px-2 py-1 bg-violet-500/20 text-violet-400 font-bold uppercase tracking-wider hover:bg-violet-500/30 transition-colors"
++      >
++        Unlock
++      </button>
++    </div>
++  )
++}
+diff --git a/src/components/brainid/BrainIDVisualization.tsx b/src/components/brainid/BrainIDVisualization.tsx
+new file mode 100644
+index 0000000..ae2131c
+--- /dev/null
++++ b/src/components/brainid/BrainIDVisualization.tsx
+@@ -0,0 +1,476 @@
++"use client"
++
++import { useState, useEffect, useRef, useMemo } from "react"
++import type { ListeningSignature } from "@/lib/tasteid"
++
++/**
++ * BrainID Visualization - Yeo 7-Network Model
++ *
++ * Maps listening signature to cognitive networks:
++ * - DMN (Default Mode Network) → Comfort listening
++ * - FP (Frontoparietal) → Discovery mode
++ * - DA (Dorsal Attention) → Deep Dive focus
++ * - VA (Ventral Attention) → Reactive/trending
++ * - LIM (Limbic) → Emotional engagement
++ * - SMN (Somatomotor) → Social listening
++ * - VIS (Visual) → Aesthetic appreciation
++ */
++
++const YEO_NETWORKS = [
++  { id: "dmn", name: "Default Mode", abbrev: "DMN", musicMap: "comfort", color: "#a78bfa", angle: 0 },
++  { id: "fp", name: "Frontoparietal", abbrev: "FP", musicMap: "discovery", color: "#60a5fa", angle: 51.4 },
++  { id: "da", name: "Dorsal Attention", abbrev: "DA", musicMap: "deep_dive", color: "#34d399", angle: 102.8 },
++  { id: "va", name: "Ventral Attention", abbrev: "VA", musicMap: "reactive", color: "#fbbf24", angle: 154.3 },
++  { id: "lim", name: "Limbic", abbrev: "LIM", musicMap: "emotional", color: "#f87171", angle: 205.7 },
++  { id: "smn", name: "Somatomotor", abbrev: "SMN", musicMap: "social", color: "#fb923c", angle: 257.1 },
++  { id: "vis", name: "Visual", abbrev: "VIS", musicMap: "aesthetic", color: "#818cf8", angle: 308.5 },
++] as const
++
++interface BrainIDVisualizationProps {
++  signature: ListeningSignature
++  size?: number
++  animated?: boolean
++  showLabels?: boolean
++  showConnections?: boolean
++  variant?: "full" | "compact" | "minimal"
++  className?: string
++}
++
++export function BrainIDVisualization({
++  signature,
++  size = 320,
++  animated = true,
++  showLabels = true,
++  showConnections = true,
++  variant = "full",
++  className = "",
++}: BrainIDVisualizationProps) {
++  const [progress, setProgress] = useState(animated ? 0 : 1)
++  const [hoveredNetwork, setHoveredNetwork] = useState<string | null>(null)
++  const [pulsePhase, setPulsePhase] = useState(0)
++  const animationRef = useRef<number>(undefined)
++
++  // Animate on mount
++  useEffect(() => {
++    if (!animated) return
++
++    const startTime = performance.now()
++    const duration = 1200
++
++    const animate = (time: number) => {
++      const elapsed = time - startTime
++      const t = Math.min(elapsed / duration, 1)
++      // Elastic ease-out
++      const eased = t === 1 ? 1 : 1 - Math.pow(2, -10 * t) * Math.cos((t * 10 - 0.75) * ((2 * Math.PI) / 3))
++      setProgress(eased)
++
++      if (t < 1) {
++        animationRef.current = requestAnimationFrame(animate)
++      }
++    }
++
++    animationRef.current = requestAnimationFrame(animate)
++    return () => {
++      if (animationRef.current) cancelAnimationFrame(animationRef.current)
++    }
++  }, [animated])
++
++  // Subtle pulse animation for active networks
++  useEffect(() => {
++    const interval = setInterval(() => {
++      setPulsePhase((p) => (p + 0.05) % (Math.PI * 2))
++    }, 50)
++    return () => clearInterval(interval)
++  }, [])
++
++  const center = size / 2
++  const maxRadius = (size / 2) * 0.7
++  const innerRadius = maxRadius * 0.2
++
++  // Calculate network positions and values
++  const networkData = useMemo(() => {
++    return YEO_NETWORKS.map((network) => {
++      const value = signature[network.musicMap as keyof ListeningSignature] || 0
++      const angleRad = (network.angle - 90) * (Math.PI / 180)
++      const radius = innerRadius + (maxRadius - innerRadius) * value * progress
++
++      return {
++        ...network,
++        value,
++        radius,
++        x: center + radius * Math.cos(angleRad),
++        y: center + radius * Math.sin(angleRad),
++        labelX: center + (maxRadius + 35) * Math.cos(angleRad),
++        labelY: center + (maxRadius + 35) * Math.sin(angleRad),
++        outerX: center + maxRadius * Math.cos(angleRad),
++        outerY: center + maxRadius * Math.sin(angleRad),
++      }
++    })
++  }, [signature, progress, center, maxRadius, innerRadius])
++
++  // Find dominant network
++  const dominantNetwork = useMemo(() => {
++    return networkData.reduce((max, n) => (n.value > max.value ? n : max), networkData[0])
++  }, [networkData])
++
++  // Generate brain shape path (organic blob)
++  const brainPath = useMemo(() => {
++    const points = networkData.map((n, i) => {
++      const nextN = networkData[(i + 1) % networkData.length]
++      const midAngle = ((n.angle + nextN.angle) / 2 - 90) * (Math.PI / 180)
++      const avgRadius = (n.radius + nextN.radius) / 2
++      const controlRadius = avgRadius * (0.85 + Math.sin(pulsePhase + i) * 0.02)
++
++      return {
++        x: n.x,
++        y: n.y,
++        cx: center + controlRadius * Math.cos(midAngle),
++        cy: center + controlRadius * Math.sin(midAngle),
++      }
++    })
++
++    let path = `M ${points[0].x} ${points[0].y}`
++    for (let i = 0; i < points.length; i++) {
++      const next = points[(i + 1) % points.length]
++      path += ` Q ${points[i].cx} ${points[i].cy} ${next.x} ${next.y}`
++    }
++    return path
++  }, [networkData, center, pulsePhase])
++
++  // Connection lines between related networks
++  const connections = useMemo(() => {
++    if (!showConnections) return []
++
++    const pairs = [
++      ["dmn", "lim"], // Comfort ↔ Emotional
++      ["fp", "da"],   // Discovery ↔ Deep Dive
++      ["va", "smn"],  // Reactive ↔ Social
++      ["vis", "fp"],  // Aesthetic ↔ Discovery
++    ]
++
++    return pairs.map(([a, b]) => {
++      const na = networkData.find((n) => n.id === a)!
++      const nb = networkData.find((n) => n.id === b)!
++      const strength = Math.min(na.value, nb.value)
++      return { na, nb, strength }
++    }).filter(c => c.strength > 0.15)
++  }, [networkData, showConnections])
++
++  if (variant === "minimal") {
++    return (
++      <div className={`relative ${className}`} style={{ width: size, height: size }}>
++        <svg width={size} height={size} className="overflow-visible">
++          <defs>
++            <radialGradient id="brainGradientMini" cx="50%" cy="50%" r="50%">
++              <stop offset="0%" stopColor={dominantNetwork.color} stopOpacity="0.3" />
++              <stop offset="100%" stopColor={dominantNetwork.color} stopOpacity="0" />
++            </radialGradient>
++          </defs>
++
++          <circle cx={center} cy={center} r={maxRadius * 0.8} fill="url(#brainGradientMini)" />
++
++          {networkData.map((n) => (
++            <circle
++              key={n.id}
++              cx={n.x}
++              cy={n.y}
++              r={4 + n.value * 4}
++              fill={n.color}
++              opacity={0.6 + n.value * 0.4}
++            />
++          ))}
++        </svg>
++      </div>
++    )
++  }
++
++  return (
++    <div className={`relative ${className}`} style={{ width: size, height: size }}>
++      <svg width={size} height={size} className="overflow-visible">
++        <defs>
++          {/* Brain gradient */}
++          <radialGradient id="brainGradient" cx="50%" cy="50%" r="50%">
++            <stop offset="0%" stopColor="var(--foreground)" stopOpacity="0.05" />
++            <stop offset="70%" stopColor={dominantNetwork.color} stopOpacity="0.15" />
++            <stop offset="100%" stopColor={dominantNetwork.color} stopOpacity="0.05" />
++          </radialGradient>
++
++          {/* Glow filter */}
++          <filter id="brainGlow" x="-50%" y="-50%" width="200%" height="200%">
++            <feGaussianBlur stdDeviation="3" result="blur" />
++            <feMerge>
++              <feMergeNode in="blur" />
++              <feMergeNode in="SourceGraphic" />
++            </feMerge>
++          </filter>
++
++          {/* Network gradients */}
++          {YEO_NETWORKS.map((n) => (
++            <radialGradient key={n.id} id={`grad-${n.id}`} cx="50%" cy="50%" r="50%">
++              <stop offset="0%" stopColor={n.color} stopOpacity="0.8" />
++              <stop offset="100%" stopColor={n.color} stopOpacity="0.2" />
++            </radialGradient>
++          ))}
++        </defs>
++
++        {/* Background rings */}
++        {[0.25, 0.5, 0.75, 1].map((scale, i) => (
++          <circle
++            key={i}
++            cx={center}
++            cy={center}
++            r={innerRadius + (maxRadius - innerRadius) * scale}
++            fill="none"
++            stroke="var(--border)"
++            strokeWidth={1}
++            strokeOpacity={0.2}
++            strokeDasharray={i < 3 ? "2,4" : "none"}
++          />
++        ))}
++
++        {/* Axis lines */}
++        {networkData.map((n) => (
++          <line
++            key={`axis-${n.id}`}
++            x1={center}
++            y1={center}
++            x2={n.outerX}
++            y2={n.outerY}
++            stroke="var(--border)"
++            strokeWidth={1}
++            strokeOpacity={0.15}
++          />
++        ))}
++
++        {/* Connection lines */}
++        {connections.map(({ na, nb, strength }, i) => (
++          <line
++            key={i}
++            x1={na.x}
++            y1={na.y}
++            x2={nb.x}
++            y2={nb.y}
++            stroke={`url(#grad-${na.id})`}
++            strokeWidth={strength * 3}
++            strokeOpacity={strength * 0.5}
++            strokeLinecap="round"
++          />
++        ))}
++
++        {/* Brain shape */}
++        <path
++          d={brainPath}
++          fill="url(#brainGradient)"
++          stroke={dominantNetwork.color}
++          strokeWidth={2}
++          strokeOpacity={0.4}
++          filter="url(#brainGlow)"
++        />
++
++        {/* Network nodes */}
++        {networkData.map((n) => {
++          const isHovered = hoveredNetwork === n.id
++          const isDominant = n.id === dominantNetwork.id
++          const pulseScale = isDominant ? 1 + Math.sin(pulsePhase * 2) * 0.05 : 1
++          const nodeSize = (8 + n.value * 12) * pulseScale
++
++          return (
++            <g
++              key={n.id}
++              onMouseEnter={() => setHoveredNetwork(n.id)}
++              onMouseLeave={() => setHoveredNetwork(null)}
++              style={{ cursor: "pointer" }}
++            >
++              {/* Outer glow */}
++              <circle
++                cx={n.x}
++                cy={n.y}
++                r={nodeSize + 6}
++                fill={n.color}
++                opacity={isHovered ? 0.3 : isDominant ? 0.15 : 0.1}
++                style={{ transition: "opacity 0.2s" }}
++              />
++
++              {/* Main node */}
++              <circle
++                cx={n.x}
++                cy={n.y}
++                r={nodeSize}
++                fill={`url(#grad-${n.id})`}
++                stroke={n.color}
++                strokeWidth={isHovered ? 3 : isDominant ? 2 : 1}
++                style={{ transition: "stroke-width 0.2s" }}
++              />
++
++              {/* Inner dot */}
++              <circle
++                cx={n.x}
++                cy={n.y}
++                r={3}
++                fill="var(--background)"
++              />
++            </g>
++          )
++        })}
++
++        {/* Labels */}
++        {showLabels && variant === "full" && networkData.map((n) => {
++          const isLeft = n.labelX < center
++          const isHovered = hoveredNetwork === n.id
++
++          return (
++            <g key={`label-${n.id}`} opacity={isHovered ? 1 : 0.8}>
++              <text
++                x={n.labelX}
++                y={n.labelY - 6}
++                textAnchor={isLeft ? "end" : "start"}
++                dominantBaseline="middle"
++                fill={n.color}
++                fontSize={10}
++                fontWeight="bold"
++                className="uppercase tracking-wider"
++                style={{ fontFamily: "var(--font-mono, monospace)" }}
++              >
++                {n.abbrev}
++              </text>
++              <text
++                x={n.labelX}
++                y={n.labelY + 8}
++                textAnchor={isLeft ? "end" : "start"}
++                dominantBaseline="middle"
++                fill="var(--muted-foreground)"
++                fontSize={9}
++                style={{ fontFamily: "var(--font-mono, monospace)" }}
++              >
++                {Math.round(n.value * 100)}%
++              </text>
++            </g>
++          )
++        })}
++
++        {/* Center label */}
++        <text
++          x={center}
++          y={center - 8}
++          textAnchor="middle"
++          dominantBaseline="middle"
++          fill="var(--muted-foreground)"
++          fontSize={8}
++          className="uppercase tracking-[0.3em]"
++        >
++          BRAIN
++        </text>
++        <text
++          x={center}
++          y={center + 8}
++          textAnchor="middle"
++          dominantBaseline="middle"
++          fill="var(--foreground)"
++          fontSize={11}
++          fontWeight="bold"
++          className="uppercase tracking-wider"
++        >
++          ID
++        </text>
++      </svg>
++
++      {/* Hover tooltip */}
++      {hoveredNetwork && variant === "full" && (
++        <div
++          className="absolute z-10 px-3 py-2 border border-[--border] bg-[--background] shadow-lg"
++          style={{
++            left: "50%",
++            bottom: -60,
++            transform: "translateX(-50%)",
++            minWidth: 180,
++          }}
++        >
++          {(() => {
++            const n = networkData.find((net) => net.id === hoveredNetwork)!
++            return (
++              <>
++                <div className="flex items-center gap-2 mb-1">
++                  <div className="w-2 h-2" style={{ backgroundColor: n.color }} />
++                  <span className="text-xs font-bold uppercase tracking-wider">{n.name}</span>
++                </div>
++                <div className="text-[10px] text-[--muted]">
++                  {n.abbrev} → {n.musicMap.replace("_", " ")} listening
++                </div>
++                <div className="text-xs font-mono mt-1" style={{ color: n.color }}>
++                  {Math.round(n.value * 100)}% activation
++                </div>
++              </>
++            )
++          })()}
++        </div>
++      )}
++    </div>
++  )
++}
++
++/**
++ * Compact inline BrainID indicator
++ */
++export function BrainIDIndicator({
++  signature,
++  className = "",
++}: {
++  signature: ListeningSignature
++  className?: string
++}) {
++  const dominant = useMemo(() => {
++    let max: { network: (typeof YEO_NETWORKS)[number]; value: number } = { network: YEO_NETWORKS[0], value: 0 }
++    YEO_NETWORKS.forEach((n) => {
++      const val = signature[n.musicMap as keyof ListeningSignature] || 0
++      if (val > max.value) {
++        max = { network: n, value: val }
++      }
++    })
++    return max
++  }, [signature])
++
++  return (
++    <div className={`inline-flex items-center gap-2 ${className}`}>
++      <div
++        className="w-6 h-6 rounded-full flex items-center justify-center text-[8px] font-bold text-white"
++        style={{ backgroundColor: dominant.network.color }}
++      >
++        {dominant.network.abbrev}
++      </div>
++      <div className="text-xs">
++        <span className="text-[--muted]">BrainID:</span>{" "}
++        <span className="font-semibold" style={{ color: dominant.network.color }}>
++          {dominant.network.name}
++        </span>
++      </div>
++    </div>
++  )
++}
++
++/**
++ * Network mapping legend
++ */
++export function BrainIDLegend({ className = "" }: { className?: string }) {
++  return (
++    <div className={`grid grid-cols-2 gap-3 ${className}`}>
++      {YEO_NETWORKS.map((n) => (
++        <div key={n.id} className="flex items-start gap-2">
++          <div
++            className="w-3 h-3 mt-0.5 flex-shrink-0"
++            style={{ backgroundColor: n.color }}
++          />
++          <div className="min-w-0">
++            <div className="flex items-center gap-1.5">
++              <span className="text-xs font-bold" style={{ color: n.color }}>
++                {n.abbrev}
++              </span>
++              <span className="text-[10px] text-[--muted]">→</span>
++              <span className="text-[10px] capitalize">{n.musicMap.replace("_", " ")}</span>
++            </div>
++            <p className="text-[9px] text-[--muted] truncate">{n.name}</p>
++          </div>
++        </div>
++      ))}
++    </div>
++  )
++}
+diff --git a/src/components/brainid/CognitiveStateCard.tsx b/src/components/brainid/CognitiveStateCard.tsx
+new file mode 100644
+index 0000000..069b2cb
+--- /dev/null
++++ b/src/components/brainid/CognitiveStateCard.tsx
+@@ -0,0 +1,264 @@
++"use client"
++
++import { useMemo } from "react"
++import type { ListeningSignature } from "@/lib/tasteid"
++import {
++  DiscoveryIcon,
++  ComfortIcon,
++  DeepDiveIcon,
++  ReactiveIcon,
++  EmotionalIcon,
++  SocialIcon,
++  AestheticIcon,
++} from "@/components/icons/network-icons"
++
++const COGNITIVE_STATES = {
++  discovery: {
++    name: "Explorer Mode",
++    description: "Seeking new sounds and expanding your boundaries",
++    Icon: DiscoveryIcon,
++    color: "#60a5fa",
++    gradient: "from-blue-500/20 to-blue-600/5",
++  },
++  comfort: {
++    name: "Comfort Zone",
++    description: "Returning to familiar favorites that ground you",
++    Icon: ComfortIcon,
++    color: "#a78bfa",
++    gradient: "from-violet-500/20 to-violet-600/5",
++  },
++  deep_dive: {
++    name: "Deep Focus",
++    description: "Immersed in artist catalogs and discography exploration",
++    Icon: DeepDiveIcon,
++    color: "#34d399",
++    gradient: "from-emerald-500/20 to-emerald-600/5",
++  },
++  reactive: {
++    name: "Pulse Mode",
++    description: "Tuned into current releases and cultural moments",
++    Icon: ReactiveIcon,
++    color: "#fbbf24",
++    gradient: "from-amber-500/20 to-amber-600/5",
++  },
++  emotional: {
++    name: "Heart Mode",
++    description: "Processing through music, feeling deeply",
++    Icon: EmotionalIcon,
++    color: "#f87171",
++    gradient: "from-red-500/20 to-red-600/5",
++  },
++  social: {
++    name: "Social Mode",
++    description: "Discovering through friends and community",
++    Icon: SocialIcon,
++    color: "#fb923c",
++    gradient: "from-orange-500/20 to-orange-600/5",
++  },
++  aesthetic: {
++    name: "Curator Mode",
++    description: "Appreciating the visual and artistic presentation",
++    Icon: AestheticIcon,
++    color: "#818cf8",
++    gradient: "from-indigo-500/20 to-indigo-600/5",
++  },
++} as const
++
++interface CognitiveStateCardProps {
++  signature: ListeningSignature
++  variant?: "full" | "compact" | "inline"
++  showSecondary?: boolean
++  animated?: boolean
++  className?: string
++}
++
++export function CognitiveStateCard({
++  signature,
++  variant = "full",
++  showSecondary = true,
++  animated = true,
++  className = "",
++}: CognitiveStateCardProps) {
++  const { dominant, secondary, allStates } = useMemo(() => {
++    const entries = Object.entries(signature)
++      .map(([key, value]) => ({
++        key: key as keyof typeof COGNITIVE_STATES,
++        value: value || 0,
++        ...COGNITIVE_STATES[key as keyof typeof COGNITIVE_STATES],
++      }))
++      .sort((a, b) => b.value - a.value)
++
++    return {
++      dominant: entries[0],
++      secondary: entries[1],
++      allStates: entries,
++    }
++  }, [signature])
++
++  if (variant === "inline") {
++    const DominantIcon = dominant.Icon
++    return (
++      <div className={`flex items-center gap-2 ${className}`}>
++        <div
++          className="w-8 h-8 flex items-center justify-center"
++          style={{ backgroundColor: `${dominant.color}20` }}
++        >
++          <DominantIcon size={16} color={dominant.color} />
++        </div>
++        <div>
++          <p className="text-xs font-bold" style={{ color: dominant.color }}>
++            {dominant.name}
++          </p>
++          <p className="text-[10px] text-[--muted]">{Math.round(dominant.value * 100)}% active</p>
++        </div>
++      </div>
++    )
++  }
++
++  if (variant === "compact") {
++    const DominantIcon = dominant.Icon
++    return (
++      <div
++        className={`p-4 border border-[--border] bg-gradient-to-br ${dominant.gradient} ${className}`}
++      >
++        <div className="flex items-center gap-3 mb-2">
++          <div
++            className="w-10 h-10 flex items-center justify-center"
++            style={{ backgroundColor: `${dominant.color}15`, border: `1px solid ${dominant.color}30` }}
++          >
++            <DominantIcon size={20} color={dominant.color} />
++          </div>
++          <div>
++            <p className="text-xs text-[--muted] uppercase tracking-wider">Current Mode</p>
++            <p className="font-bold" style={{ color: dominant.color }}>{dominant.name}</p>
++          </div>
++        </div>
++        <p className="text-xs text-[--muted] leading-relaxed">{dominant.description}</p>
++      </div>
++    )
++  }
++
++  // Full variant
++  const DominantIcon = dominant.Icon
++  const SecondaryIcon = secondary?.Icon
++
++  return (
++    <div className={`border border-[--border] overflow-hidden ${className}`}>
++      {/* Header */}
++      <div className="px-4 py-3 border-b border-[--border] bg-[--surface]">
++        <div className="flex items-center gap-2">
++          <div className="w-2 h-2" style={{ backgroundColor: dominant.color }} />
++          <span className="text-[10px] uppercase tracking-[0.2em] text-[--muted] font-bold">
++            Cognitive State
++          </span>
++        </div>
++      </div>
++
++      {/* Dominant state */}
++      <div className={`p-5 bg-gradient-to-br ${dominant.gradient}`}>
++        <div className="flex items-start gap-4">
++          <div
++            className={`w-14 h-14 flex items-center justify-center flex-shrink-0 ${animated ? "animate-pulse" : ""}`}
++            style={{
++              backgroundColor: `${dominant.color}10`,
++              border: `2px solid ${dominant.color}40`,
++            }}
++          >
++            <DominantIcon size={28} color={dominant.color} />
++          </div>
++          <div className="flex-1 min-w-0">
++            <div className="flex items-baseline gap-2 mb-1">
++              <h3 className="text-lg font-bold" style={{ color: dominant.color }}>
++                {dominant.name}
++              </h3>
++              <span className="text-xs font-mono text-[--muted]">
++                {Math.round(dominant.value * 100)}%
++              </span>
++            </div>
++            <p className="text-sm text-[--muted] leading-relaxed">{dominant.description}</p>
++          </div>
++        </div>
++
++        {/* Activity bar */}
++        <div className="mt-4">
++          <div className="h-1.5 bg-[--border] overflow-hidden">
++            <div
++              className="h-full transition-all duration-700 ease-out"
++              style={{
++                width: `${dominant.value * 100}%`,
++                backgroundColor: dominant.color,
++              }}
++            />
++          </div>
++        </div>
++      </div>
++
++      {/* Secondary state */}
++      {showSecondary && secondary && (
++        <div className="px-5 py-3 border-t border-[--border] flex items-center gap-3">
++          <div
++            className="w-8 h-8 flex items-center justify-center flex-shrink-0"
++            style={{ backgroundColor: `${secondary.color}10` }}
++          >
++            <SecondaryIcon size={16} color={secondary.color} />
++          </div>
++          <div className="flex-1 min-w-0">
++            <div className="flex items-baseline justify-between">
++              <span className="text-xs font-medium" style={{ color: secondary.color }}>
++                {secondary.name}
++              </span>
++              <span className="text-[10px] font-mono text-[--muted]">
++                {Math.round(secondary.value * 100)}%
++              </span>
++            </div>
++            <div className="h-1 bg-[--border] mt-1 overflow-hidden">
++              <div
++                className="h-full"
++                style={{
++                  width: `${secondary.value * 100}%`,
++                  backgroundColor: secondary.color,
++                  opacity: 0.6,
++                }}
++              />
++            </div>
++          </div>
++        </div>
++      )}
++
++      {/* All states mini view */}
++      <div className="px-5 py-3 border-t border-[--border]">
++        <p className="text-[9px] uppercase tracking-wider text-[--muted] mb-2">Network Activity</p>
++        <div className="flex gap-1">
++          {allStates.map((state) => (
++            <div
++              key={state.key}
++              className="flex-1 h-6 relative overflow-hidden"
++              style={{ backgroundColor: `${state.color}10` }}
++              title={`${state.name}: ${Math.round(state.value * 100)}%`}
++            >
++              <div
++                className="absolute bottom-0 left-0 right-0 transition-all duration-500"
++                style={{
++                  height: `${state.value * 100}%`,
++                  backgroundColor: state.color,
++                  opacity: 0.6,
++                }}
++              />
++            </div>
++          ))}
++        </div>
++        <div className="flex justify-between mt-1">
++          {allStates.map((state) => (
++            <span
++              key={state.key}
++              className="text-[7px] font-bold uppercase"
++              style={{ color: state.color, opacity: state.value > 0.15 ? 1 : 0.5 }}
++            >
++              {state.key.charAt(0)}
++            </span>
++          ))}
++        </div>
++      </div>
++    </div>
++  )
++}
+diff --git a/src/components/brainid/index.ts b/src/components/brainid/index.ts
+new file mode 100644
+index 0000000..db775b5
+--- /dev/null
++++ b/src/components/brainid/index.ts
+@@ -0,0 +1,3 @@
++export { BrainIDVisualization, BrainIDIndicator, BrainIDLegend } from "./BrainIDVisualization"
++export { CognitiveStateCard } from "./CognitiveStateCard"
++export { TasteIDPaywall, TasteIDFeatureLock } from "./BrainIDPaywall"
+diff --git a/src/components/challenges/ChallengeCard.tsx b/src/components/challenges/ChallengeCard.tsx
+index 5d2db2a..a2c0e41 100644
+--- a/src/components/challenges/ChallengeCard.tsx
++++ b/src/components/challenges/ChallengeCard.tsx
+@@ -3,6 +3,7 @@
+ import { useState } from "react"
+ import Link from "next/link"
+ import { DefaultAvatar } from "@/components/default-avatar"
++import { CHALLENGE_TYPE_ICONS } from "@/components/icons/network-icons"
+ 
+ interface Challenge {
+   id: string
+@@ -35,11 +36,11 @@ interface ChallengeCardProps {
+   onDecline?: (id: string) => void
+ }
+ 
+-const CHALLENGE_TYPES: Record<string, { label: string; icon: string; color: string }> = {
+-  discover_together: { label: "Discover Together", icon: "🔍", color: "text-blue-400" },
+-  rate_same_album: { label: "Rate Same Album", icon: "⚔️", color: "text-amber-400" },
+-  genre_swap: { label: "Genre Swap", icon: "🔄", color: "text-purple-400" },
+-  decade_dive: { label: "Decade Dive", icon: "📅", color: "text-emerald-400" },
++const CHALLENGE_TYPES: Record<string, { label: string; color: string; iconColor: string }> = {
++  discover_together: { label: "Discover Together", color: "text-blue-400", iconColor: "rgb(59, 130, 246)" },
++  rate_same_album: { label: "Rate Same Album", color: "text-amber-400", iconColor: "rgb(245, 158, 11)" },
++  genre_swap: { label: "Genre Swap", color: "text-purple-400", iconColor: "rgb(168, 85, 247)" },
++  decade_dive: { label: "Decade Dive", color: "text-emerald-400", iconColor: "rgb(16, 185, 129)" },
+ }
+ 
+ const STATUS_STYLES: Record<string, { bg: string; text: string }> = {
+@@ -78,7 +79,14 @@ export function ChallengeCard({ challenge, currentUserId, onAccept, onDecline }:
+       {/* Header */}
+       <div className="flex items-center justify-between px-4 py-2 border-b border-[--border]">
+         <div className="flex items-center gap-2">
+-          <span className={`text-lg ${typeInfo.color}`}>{typeInfo.icon}</span>
++          {CHALLENGE_TYPE_ICONS[challenge.challengeType as keyof typeof CHALLENGE_TYPE_ICONS] && (
++            <span className={`${typeInfo.color.replace('text-', 'bg-').replace('-400', '-500/10')} p-1`}>
++              {(() => {
++                const IconComponent = CHALLENGE_TYPE_ICONS[challenge.challengeType as keyof typeof CHALLENGE_TYPE_ICONS]
++                return <IconComponent size={16} color={typeInfo.iconColor} />
++              })()}
++            </span>
++          )}
+           <span className="text-xs font-medium">{typeInfo.label}</span>
+         </div>
+         <span className={`text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 ${statusStyle.bg} ${statusStyle.text}`}>
+diff --git a/src/components/connections/ConnectionCard.tsx b/src/components/connections/ConnectionCard.tsx
+index d27f690..d12f59c 100644
+--- a/src/components/connections/ConnectionCard.tsx
++++ b/src/components/connections/ConnectionCard.tsx
+@@ -4,6 +4,7 @@ import { useState } from "react"
+ import Link from "next/link"
+ import { DefaultAvatar } from "@/components/default-avatar"
+ import { SignatureComparisonMini } from "./SignatureComparison"
++import { MATCH_TYPE_ICONS } from "@/components/icons/network-icons"
+ import type { EnhancedTasteMatch, ListeningSignature } from "@/lib/tasteid"
+ 
+ interface ConnectionCardProps {
+@@ -15,13 +16,13 @@ interface ConnectionCardProps {
+   variant?: "card" | "compact"
+ }
+ 
+-const MATCH_TYPE_COLORS: Record<string, { bg: string; text: string; label: string }> = {
+-  taste_twin: { bg: "bg-emerald-500/10", text: "text-emerald-400", label: "Taste Twin" },
+-  network_resonance: { bg: "bg-blue-500/10", text: "text-blue-400", label: "Network Resonance" },
+-  opposite_attracts: { bg: "bg-amber-500/10", text: "text-amber-400", label: "Opposite Attracts" },
+-  explorer_guide: { bg: "bg-purple-500/10", text: "text-purple-400", label: "Explorer Guide" },
+-  complementary: { bg: "bg-indigo-500/10", text: "text-indigo-400", label: "Complementary" },
+-  genre_buddy: { bg: "bg-rose-500/10", text: "text-rose-400", label: "Genre Buddy" },
++const MATCH_TYPE_COLORS: Record<string, { bg: string; text: string; label: string; color: string }> = {
++  taste_twin: { bg: "bg-emerald-500/10", text: "text-emerald-400", label: "Taste Twin", color: "rgb(16, 185, 129)" },
++  network_resonance: { bg: "bg-blue-500/10", text: "text-blue-400", label: "Network Resonance", color: "rgb(59, 130, 246)" },
++  opposite_attracts: { bg: "bg-amber-500/10", text: "text-amber-400", label: "Opposite Attracts", color: "rgb(245, 158, 11)" },
++  explorer_guide: { bg: "bg-purple-500/10", text: "text-purple-400", label: "Explorer Guide", color: "rgb(168, 85, 247)" },
++  complementary: { bg: "bg-indigo-500/10", text: "text-indigo-400", label: "Complementary", color: "rgb(99, 102, 241)" },
++  genre_buddy: { bg: "bg-rose-500/10", text: "text-rose-400", label: "Genre Buddy", color: "rgb(244, 63, 94)" },
+ }
+ 
+ export function ConnectionCard({
+@@ -81,11 +82,21 @@ export function ConnectionCard({
+           <p className="text-sm font-semibold truncate">@{connection.username}</p>
+           <p className="text-[10px] text-[--muted] truncate">{connection.connectionReason}</p>
+         </div>
+-        <div className="text-right flex-shrink-0">
+-          <p className="text-lg font-bold">{connection.overallScore}%</p>
+-          <span className={`text-[9px] ${matchStyle.text} font-bold tracking-wide uppercase`}>
+-            {matchStyle.label}
+-          </span>
++        <div className="text-right flex-shrink-0 flex items-center gap-2">
++          {MATCH_TYPE_ICONS[connection.matchType] && (
++            <span className={`${matchStyle.bg} p-1`}>
++              {(() => {
++                const IconComponent = MATCH_TYPE_ICONS[connection.matchType]
++                return <IconComponent size={12} color={matchStyle.color} />
++              })()}
++            </span>
++          )}
++          <div>
++            <p className="text-lg font-bold">{connection.overallScore}%</p>
++            <span className={`text-[9px] ${matchStyle.text} font-bold tracking-wide uppercase`}>
++              {matchStyle.label}
++            </span>
++          </div>
+         </div>
+       </Link>
+     )
+@@ -101,9 +112,19 @@ export function ConnectionCard({
+     >
+       {/* Header with match type badge */}
+       <div className="flex items-center justify-between px-4 py-2 border-b border-[--border]">
+-        <span className={`text-[9px] ${matchStyle.text} font-bold tracking-[0.15em] uppercase px-2 py-0.5 ${matchStyle.bg}`}>
+-          {matchStyle.label}
+-        </span>
++        <div className="flex items-center gap-2">
++          {MATCH_TYPE_ICONS[connection.matchType] && (
++            <span className={`${matchStyle.bg} p-1`}>
++              {(() => {
++                const IconComponent = MATCH_TYPE_ICONS[connection.matchType]
++                return <IconComponent size={14} color={matchStyle.color} />
++              })()}
++            </span>
++          )}
++          <span className={`text-[9px] ${matchStyle.text} font-bold tracking-[0.15em] uppercase`}>
++            {matchStyle.label}
++          </span>
++        </div>
+         <span className="text-[10px] text-[--muted]">
+           {Math.round(connection.matchStrength * 100)}% confidence
+         </span>
+diff --git a/src/components/icons/network-icons.tsx b/src/components/icons/network-icons.tsx
+new file mode 100644
+index 0000000..351bdf6
+--- /dev/null
++++ b/src/components/icons/network-icons.tsx
+@@ -0,0 +1,449 @@
++"use client"
++
++/**
++ * Custom Network Icons - No emojis, pure SVG
++ * Designed for the Polarity taste matching system
++ */
++
++interface IconProps {
++  size?: number
++  className?: string
++  color?: string
++}
++
++// Discovery - Compass/explore icon
++export function DiscoveryIcon({ size = 20, className = "", color = "currentColor" }: IconProps) {
++  return (
++    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
++      <circle cx="12" cy="12" r="10" stroke={color} strokeWidth="1.5" />
++      <path
++        d="M12 2v2M12 20v2M2 12h2M20 12h2"
++        stroke={color}
++        strokeWidth="1.5"
++        strokeLinecap="round"
++      />
++      <path
++        d="M16.24 7.76l-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z"
++        fill={color}
++        fillOpacity="0.2"
++        stroke={color}
++        strokeWidth="1.5"
++        strokeLinejoin="round"
++      />
++      <circle cx="12" cy="12" r="2" fill={color} />
++    </svg>
++  )
++}
++
++// Comfort - Home/shelter icon
++export function ComfortIcon({ size = 20, className = "", color = "currentColor" }: IconProps) {
++  return (
++    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
++      <path
++        d="M3 10.5L12 3l9 7.5"
++        stroke={color}
++        strokeWidth="1.5"
++        strokeLinecap="round"
++        strokeLinejoin="round"
++      />
++      <path
++        d="M5 9v10a1 1 0 001 1h12a1 1 0 001-1V9"
++        stroke={color}
++        strokeWidth="1.5"
++        strokeLinecap="round"
++        strokeLinejoin="round"
++      />
++      <path
++        d="M9 20v-6a1 1 0 011-1h4a1 1 0 011 1v6"
++        stroke={color}
++        strokeWidth="1.5"
++        fill={color}
++        fillOpacity="0.15"
++      />
++    </svg>
++  )
++}
++
++// Deep Dive - Layers/depth icon
++export function DeepDiveIcon({ size = 20, className = "", color = "currentColor" }: IconProps) {
++  return (
++    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
++      <path
++        d="M12 3v18"
++        stroke={color}
++        strokeWidth="1.5"
++        strokeLinecap="round"
++        strokeDasharray="2 3"
++      />
++      <rect x="4" y="5" width="16" height="4" rx="1" stroke={color} strokeWidth="1.5" fill={color} fillOpacity="0.3" />
++      <rect x="6" y="11" width="12" height="4" rx="1" stroke={color} strokeWidth="1.5" fill={color} fillOpacity="0.2" />
++      <rect x="8" y="17" width="8" height="3" rx="1" stroke={color} strokeWidth="1.5" fill={color} fillOpacity="0.1" />
++    </svg>
++  )
++}
++
++// Reactive - Lightning/pulse icon
++export function ReactiveIcon({ size = 20, className = "", color = "currentColor" }: IconProps) {
++  return (
++    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
++      <path
++        d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"
++        fill={color}
++        fillOpacity="0.2"
++        stroke={color}
++        strokeWidth="1.5"
++        strokeLinecap="round"
++        strokeLinejoin="round"
++      />
++    </svg>
++  )
++}
++
++// Emotional - Heart wave icon
++export function EmotionalIcon({ size = 20, className = "", color = "currentColor" }: IconProps) {
++  return (
++    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
++      <path
++        d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
++        fill={color}
++        fillOpacity="0.15"
++        stroke={color}
++        strokeWidth="1.5"
++      />
++      <path
++        d="M6 12h3l1.5-3 2 6 1.5-3h4"
++        stroke={color}
++        strokeWidth="1.5"
++        strokeLinecap="round"
++        strokeLinejoin="round"
++      />
++    </svg>
++  )
++}
++
++// Social - Connected nodes icon
++export function SocialIcon({ size = 20, className = "", color = "currentColor" }: IconProps) {
++  return (
++    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
++      <circle cx="12" cy="5" r="3" stroke={color} strokeWidth="1.5" fill={color} fillOpacity="0.2" />
++      <circle cx="5" cy="18" r="3" stroke={color} strokeWidth="1.5" fill={color} fillOpacity="0.2" />
++      <circle cx="19" cy="18" r="3" stroke={color} strokeWidth="1.5" fill={color} fillOpacity="0.2" />
++      <path
++        d="M12 8v4M9 14l-2 2M15 14l2 2"
++        stroke={color}
++        strokeWidth="1.5"
++        strokeLinecap="round"
++      />
++      <circle cx="12" cy="14" r="2" fill={color} />
++    </svg>
++  )
++}
++
++// Aesthetic - Eye/vision icon
++export function AestheticIcon({ size = 20, className = "", color = "currentColor" }: IconProps) {
++  return (
++    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
++      <path
++        d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"
++        fill={color}
++        fillOpacity="0.1"
++        stroke={color}
++        strokeWidth="1.5"
++      />
++      <circle cx="12" cy="12" r="3" stroke={color} strokeWidth="1.5" fill={color} fillOpacity="0.3" />
++      <circle cx="12" cy="12" r="1" fill={color} />
++    </svg>
++  )
++}
++
++// Match Type Icons
++
++// Taste Twin - Mirror/reflection
++export function TasteTwinIcon({ size = 20, className = "", color = "currentColor" }: IconProps) {
++  return (
++    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
++      <circle cx="8" cy="10" r="5" stroke={color} strokeWidth="1.5" fill={color} fillOpacity="0.2" />
++      <circle cx="16" cy="10" r="5" stroke={color} strokeWidth="1.5" fill={color} fillOpacity="0.2" />
++      <path
++        d="M12 5v14"
++        stroke={color}
++        strokeWidth="1.5"
++        strokeLinecap="round"
++        strokeDasharray="2 2"
++      />
++      <circle cx="8" cy="10" r="1.5" fill={color} />
++      <circle cx="16" cy="10" r="1.5" fill={color} />
++    </svg>
++  )
++}
++
++// Opposite Attracts - Yin yang style
++export function OppositeAttractsIcon({ size = 20, className = "", color = "currentColor" }: IconProps) {
++  return (
++    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
++      <circle cx="12" cy="12" r="10" stroke={color} strokeWidth="1.5" />
++      <path
++        d="M12 2a10 10 0 010 20 5 5 0 010-10 5 5 0 000-10z"
++        fill={color}
++        fillOpacity="0.3"
++      />
++      <circle cx="12" cy="7" r="2" fill={color} />
++      <circle cx="12" cy="17" r="2" stroke={color} strokeWidth="1.5" />
++    </svg>
++  )
++}
++
++// Explorer Guide - Path/trail
++export function ExplorerGuideIcon({ size = 20, className = "", color = "currentColor" }: IconProps) {
++  return (
++    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
++      <path
++        d="M3 17l6-6 4 4 8-8"
++        stroke={color}
++        strokeWidth="1.5"
++        strokeLinecap="round"
++        strokeLinejoin="round"
++      />
++      <path
++        d="M14 7h7v7"
++        stroke={color}
++        strokeWidth="1.5"
++        strokeLinecap="round"
++        strokeLinejoin="round"
++      />
++      <circle cx="3" cy="17" r="2" fill={color} fillOpacity="0.3" stroke={color} strokeWidth="1" />
++      <circle cx="21" cy="7" r="2" fill={color} stroke={color} strokeWidth="1" />
++    </svg>
++  )
++}
++
++// Network Resonance - Wave interference
++export function NetworkResonanceIcon({ size = 20, className = "", color = "currentColor" }: IconProps) {
++  return (
++    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
++      <circle cx="7" cy="12" r="5" stroke={color} strokeWidth="1.5" strokeOpacity="0.5" />
++      <circle cx="7" cy="12" r="3" stroke={color} strokeWidth="1.5" strokeOpacity="0.7" />
++      <circle cx="17" cy="12" r="5" stroke={color} strokeWidth="1.5" strokeOpacity="0.5" />
++      <circle cx="17" cy="12" r="3" stroke={color} strokeWidth="1.5" strokeOpacity="0.7" />
++      <ellipse cx="12" cy="12" rx="2" ry="4" fill={color} fillOpacity="0.3" stroke={color} strokeWidth="1.5" />
++    </svg>
++  )
++}
++
++// Genre Buddy - Music note duo
++export function GenreBuddyIcon({ size = 20, className = "", color = "currentColor" }: IconProps) {
++  return (
++    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
++      <circle cx="7" cy="18" r="3" fill={color} fillOpacity="0.3" stroke={color} strokeWidth="1.5" />
++      <circle cx="17" cy="16" r="3" fill={color} fillOpacity="0.3" stroke={color} strokeWidth="1.5" />
++      <path d="M10 18V6l10-2v12" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
++      <path d="M10 10l10-2" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
++    </svg>
++  )
++}
++
++// Complementary - Puzzle pieces
++export function ComplementaryIcon({ size = 20, className = "", color = "currentColor" }: IconProps) {
++  return (
++    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
++      <path
++        d="M4 8h4v-2a2 2 0 114 0v2h4v4h2a2 2 0 110 4h-2v4H4V8z"
++        fill={color}
++        fillOpacity="0.15"
++        stroke={color}
++        strokeWidth="1.5"
++        strokeLinejoin="round"
++      />
++      <path
++        d="M20 8h-4v-2a2 2 0 10-4 0"
++        stroke={color}
++        strokeWidth="1.5"
++        strokeLinecap="round"
++        strokeOpacity="0.5"
++      />
++    </svg>
++  )
++}
++
++// Challenge Icons
++
++// Battle/Versus
++export function ChallengeIcon({ size = 20, className = "", color = "currentColor" }: IconProps) {
++  return (
++    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
++      <path
++        d="M6 4l-2 2 6 6-6 6 2 2 8-8-8-8z"
++        fill={color}
++        fillOpacity="0.3"
++        stroke={color}
++        strokeWidth="1.5"
++        strokeLinejoin="round"
++      />
++      <path
++        d="M18 4l2 2-6 6 6 6-2 2-8-8 8-8z"
++        fill={color}
++        fillOpacity="0.15"
++        stroke={color}
++        strokeWidth="1.5"
++        strokeLinejoin="round"
++      />
++    </svg>
++  )
++}
++
++// Discover Together - Binoculars
++export function DiscoverTogetherIcon({ size = 20, className = "", color = "currentColor" }: IconProps) {
++  return (
++    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
++      <circle cx="6" cy="14" r="4" stroke={color} strokeWidth="1.5" fill={color} fillOpacity="0.2" />
++      <circle cx="18" cy="14" r="4" stroke={color} strokeWidth="1.5" fill={color} fillOpacity="0.2" />
++      <path d="M10 14h4" stroke={color} strokeWidth="2" strokeLinecap="round" />
++      <path d="M6 10V6M18 10V6" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
++      <circle cx="6" cy="14" r="1.5" fill={color} />
++      <circle cx="18" cy="14" r="1.5" fill={color} />
++    </svg>
++  )
++}
++
++// Genre Swap - Refresh/exchange
++export function GenreSwapIcon({ size = 20, className = "", color = "currentColor" }: IconProps) {
++  return (
++    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
++      <path
++        d="M4 12a8 8 0 0114-5.3"
++        stroke={color}
++        strokeWidth="1.5"
++        strokeLinecap="round"
++      />
++      <path
++        d="M20 12a8 8 0 01-14 5.3"
++        stroke={color}
++        strokeWidth="1.5"
++        strokeLinecap="round"
++      />
++      <path d="M14 4l4 3-4 3" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill={color} fillOpacity="0.2" />
++      <path d="M10 20l-4-3 4-3" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill={color} fillOpacity="0.2" />
++    </svg>
++  )
++}
++
++// Decade Dive - Calendar/timeline
++export function DecadeDiveIcon({ size = 20, className = "", color = "currentColor" }: IconProps) {
++  return (
++    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
++      <rect x="3" y="4" width="18" height="18" rx="2" stroke={color} strokeWidth="1.5" />
++      <path d="M3 10h18" stroke={color} strokeWidth="1.5" />
++      <path d="M8 2v4M16 2v4" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
++      <rect x="6" y="13" width="4" height="3" rx="0.5" fill={color} fillOpacity="0.3" />
++      <rect x="14" y="13" width="4" height="3" rx="0.5" fill={color} fillOpacity="0.5" />
++      <rect x="6" y="17" width="4" height="3" rx="0.5" fill={color} fillOpacity="0.2" />
++    </svg>
++  )
++}
++
++// Rate Same Album - Target
++export function RateSameAlbumIcon({ size = 20, className = "", color = "currentColor" }: IconProps) {
++  return (
++    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
++      <circle cx="12" cy="12" r="10" stroke={color} strokeWidth="1.5" />
++      <circle cx="12" cy="12" r="6" stroke={color} strokeWidth="1.5" strokeOpacity="0.7" />
++      <circle cx="12" cy="12" r="2" fill={color} />
++      <path d="M12 2v4M12 18v4M2 12h4M18 12h4" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
++    </svg>
++  )
++}
++
++// BrainID/Cognitive icons
++
++// Brain network
++export function BrainNetworkIcon({ size = 20, className = "", color = "currentColor" }: IconProps) {
++  return (
++    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
++      <ellipse cx="12" cy="12" rx="9" ry="8" stroke={color} strokeWidth="1.5" />
++      <path
++        d="M12 4c-2 2-3 4-3 8s1 6 3 8"
++        stroke={color}
++        strokeWidth="1.5"
++        strokeOpacity="0.6"
++      />
++      <path
++        d="M12 4c2 2 3 4 3 8s-1 6-3 8"
++        stroke={color}
++        strokeWidth="1.5"
++        strokeOpacity="0.6"
++      />
++      <ellipse cx="12" cy="12" rx="9" ry="3" stroke={color} strokeWidth="1.5" strokeOpacity="0.5" />
++      <circle cx="7" cy="10" r="1.5" fill={color} />
++      <circle cx="17" cy="10" r="1.5" fill={color} />
++      <circle cx="12" cy="7" r="1.5" fill={color} />
++      <circle cx="10" cy="15" r="1.5" fill={color} fillOpacity="0.7" />
++      <circle cx="14" cy="15" r="1.5" fill={color} fillOpacity="0.7" />
++    </svg>
++  )
++}
++
++// Listening session - Headphones with wave
++export function ListeningSessionIcon({ size = 20, className = "", color = "currentColor" }: IconProps) {
++  return (
++    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
++      <path
++        d="M4 15v-3a8 8 0 1116 0v3"
++        stroke={color}
++        strokeWidth="1.5"
++        strokeLinecap="round"
++      />
++      <rect x="2" y="14" width="4" height="6" rx="1" fill={color} fillOpacity="0.3" stroke={color} strokeWidth="1.5" />
++      <rect x="18" y="14" width="4" height="6" rx="1" fill={color} fillOpacity="0.3" stroke={color} strokeWidth="1.5" />
++      <path
++        d="M9 12h1.5l1 -2 1 4 1-2H15"
++        stroke={color}
++        strokeWidth="1.5"
++        strokeLinecap="round"
++        strokeLinejoin="round"
++      />
++    </svg>
++  )
++}
++
++// Lock/Paywall
++export function LockIcon({ size = 20, className = "", color = "currentColor" }: IconProps) {
++  return (
++    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
++      <rect x="4" y="10" width="16" height="12" rx="2" fill={color} fillOpacity="0.2" stroke={color} strokeWidth="1.5" />
++      <path
++        d="M8 10V7a4 4 0 118 0v3"
++        stroke={color}
++        strokeWidth="1.5"
++        strokeLinecap="round"
++      />
++      <circle cx="12" cy="16" r="2" fill={color} />
++    </svg>
++  )
++}
++
++// Export all icons mapping
++export const NETWORK_ICONS = {
++  discovery: DiscoveryIcon,
++  comfort: ComfortIcon,
++  deep_dive: DeepDiveIcon,
++  reactive: ReactiveIcon,
++  emotional: EmotionalIcon,
++  social: SocialIcon,
++  aesthetic: AestheticIcon,
++}
++
++export const MATCH_TYPE_ICONS = {
++  taste_twin: TasteTwinIcon,
++  opposite_attracts: OppositeAttractsIcon,
++  explorer_guide: ExplorerGuideIcon,
++  network_resonance: NetworkResonanceIcon,
++  genre_buddy: GenreBuddyIcon,
++  complementary: ComplementaryIcon,
++}
++
++export const CHALLENGE_TYPE_ICONS = {
++  discover_together: DiscoverTogetherIcon,
++  rate_same_album: RateSameAlbumIcon,
++  genre_swap: GenreSwapIcon,
++  decade_dive: DecadeDiveIcon,
++}
+-- 
+2.50.1 (Apple Git-155)
+

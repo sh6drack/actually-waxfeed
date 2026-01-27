@@ -1,0 +1,43 @@
+From db9e41687fe0d787269c1e7a66186762ff7b6889 Mon Sep 17 00:00:00 2001
+From: sh6drack <sh6drack@users.noreply.github.com>
+Date: Mon, 26 Jan 2026 13:22:45 -0500
+Subject: [PATCH 47/50] fix: prevent premature redirect during onboarding
+
+Bug: After completing step 1 (username), session.update() would
+refresh the session with the new username. The useEffect checking
+for session.user.username would then immediately redirect to home,
+skipping steps 2-4 (photo, country, ratings).
+
+Fix: Removed auto-redirect based on username alone. Users can now
+complete all 4 onboarding steps without being redirected.
+
+The FirstTimeWelcome modal and header CTAs handle guiding users
+to onboarding when needed.
+
+Fixes: Profile pic step (step 2) being skipped
+Issue reported by: Nathan
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+---
+ src/app/onboarding/page.tsx | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/src/app/onboarding/page.tsx b/src/app/onboarding/page.tsx
+index 21847b6..39b353d 100644
+--- a/src/app/onboarding/page.tsx
++++ b/src/app/onboarding/page.tsx
+@@ -47,9 +47,8 @@ export default function OnboardingPage() {
+     if (status === "unauthenticated") {
+       router.push("/login")
+     }
+-    if (session?.user?.username) {
+-      router.push("/")
+-    }
++    // Don't auto-redirect during onboarding - let user complete all steps
++    // The FirstTimeWelcome modal and header CTAs will guide them here if needed
+   }, [session, status, router])
+ 
+   // Fetch albums when reaching step 4
+-- 
+2.50.1 (Apple Git-155)
+

@@ -1,0 +1,95 @@
+From 94db831f918426788ebc2448f50cdd7d3896f520 Mon Sep 17 00:00:00 2001
+From: Shadrack Annor <shadrack@mac.mynetworksettings.com>
+Date: Sat, 24 Jan 2026 12:34:18 -0500
+Subject: [PATCH 23/50] fix: correct album search API response handling in hot
+ take form
+
+- Fix response structure mismatch (API returns local/spotify, not albums)
+- Add isSpotifyOnly flag to track albums not yet in database
+- Import Spotify albums on submission before creating hot take
+- Filter duplicate albums between local and Spotify results
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+---
+ src/components/hot-take-form.tsx | 50 ++++++++++++++++++++++++++++++--
+ 1 file changed, 48 insertions(+), 2 deletions(-)
+
+diff --git a/src/components/hot-take-form.tsx b/src/components/hot-take-form.tsx
+index 3bc81be..9933cdc 100644
+--- a/src/components/hot-take-form.tsx
++++ b/src/components/hot-take-form.tsx
+@@ -9,6 +9,7 @@ interface Album {
+   title: string
+   artistName: string
+   coverArtUrl: string | null
++  isSpotifyOnly?: boolean // true if not yet in database
+ }
+ 
+ interface HotTakeFormProps {
+@@ -53,7 +54,23 @@ export function HotTakeForm({ album, onSubmit, onCancel }: HotTakeFormProps) {
+       const res = await fetch(`/api/albums/search?q=${encodeURIComponent(query)}&limit=5`)
+       if (res.ok) {
+         const data = await res.json()
+-        setSearchResults(data.data?.albums || [])
++        // Combine local and spotify results, prioritizing local (already in DB)
++        const local: Album[] = data.data?.local || []
++        const spotify = data.data?.spotify || []
++        // Get spotifyIds already in local results to avoid duplicates
++        const localSpotifyIds = new Set(local.map((a: Album) => a.spotifyId))
++        // Map spotify results to match Album interface, excluding duplicates
++        const spotifyMapped = spotify
++          .filter((s: { id: string }) => !localSpotifyIds.has(s.id))
++          .map((s: { id: string; name: string; artists: { name: string }[]; images: { url: string }[] }) => ({
++            id: s.id,
++            spotifyId: s.id,
++            title: s.name,
++            artistName: s.artists?.[0]?.name || 'Unknown Artist',
++            coverArtUrl: s.images?.[0]?.url || null,
++            isSpotifyOnly: true,
++          }))
++        setSearchResults([...local, ...spotifyMapped])
+       }
+     } catch {
+       // Silently fail search
+@@ -95,8 +112,37 @@ export function HotTakeForm({ album, onSubmit, onCancel }: HotTakeFormProps) {
+     setError(null)
+ 
+     try {
++      let albumId = selectedAlbum.id
++
++      // If album is from Spotify and not yet in DB, import it first
++      if (selectedAlbum.isSpotifyOnly) {
++        const importRes = await fetch("/api/albums/import", {
++          method: "POST",
++          headers: { "Content-Type": "application/json" },
++          body: JSON.stringify({ spotifyIds: [selectedAlbum.spotifyId] }),
++        })
++
++        if (!importRes.ok) {
++          throw new Error("Failed to import album")
++        }
++
++        // Fetch the album from DB to get the database ID
++        const lookupRes = await fetch(`/api/albums/search?q=${encodeURIComponent(selectedAlbum.title)}&source=local&limit=10`)
++        if (lookupRes.ok) {
++          const lookupData = await lookupRes.json()
++          const imported = lookupData.data?.local?.find((a: Album) => a.spotifyId === selectedAlbum.spotifyId)
++          if (imported) {
++            albumId = imported.id
++          } else {
++            throw new Error("Album import failed")
++          }
++        } else {
++          throw new Error("Failed to find imported album")
++        }
++      }
++
+       await onSubmit({
+-        albumId: selectedAlbum.id,
++        albumId,
+         stance,
+         content,
+       })
+-- 
+2.50.1 (Apple Git-155)
+

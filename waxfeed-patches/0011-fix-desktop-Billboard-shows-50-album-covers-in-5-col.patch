@@ -1,0 +1,143 @@
+From a5fce41fe6eed1a92c15d15f1aacc0a62ae8f8e1 Mon Sep 17 00:00:00 2001
+From: Shadrack Annor <shadrack@mac.mynetworksettings.com>
+Date: Sat, 24 Jan 2026 11:07:20 -0500
+Subject: [PATCH 11/50] fix: desktop Billboard shows 50 album covers in 5-col
+ grid
+
+- Desktop: 5-column grid with full album covers (was tiny list)
+- Rank badge top-left, rating badge bottom-right
+- Mobile: stays 3-column with 18 albums
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+---
+ src/app/trending/billboard-list.tsx | 81 ++++++++++++++---------------
+ 1 file changed, 40 insertions(+), 41 deletions(-)
+
+diff --git a/src/app/trending/billboard-list.tsx b/src/app/trending/billboard-list.tsx
+index d30a9b9..a294e27 100644
+--- a/src/app/trending/billboard-list.tsx
++++ b/src/app/trending/billboard-list.tsx
+@@ -124,29 +124,18 @@ export function BillboardList({ albums }: BillboardListProps) {
+         )}
+       </div>
+ 
+-      {/* Desktop List Layout - hidden on mobile */}
++      {/* Desktop Grid Layout - 5 columns, hidden on mobile */}
+       <div className="hidden md:block">
+-        <div className="space-y-0">
+-          {displayedAlbums.map((album, index) => (
++        <div className="grid grid-cols-5 gap-4">
++          {displayedAlbums.slice(0, desktopCount).map((album) => (
+             <Link
+               key={album.id}
+               href={`/album/${album.spotifyId}`}
+-              className="flex items-center gap-5 py-3 px-2 -mx-2 transition-colors no-underline group hover:bg-[--surface]"
+-              style={{
+-                borderBottom: index < displayedAlbums.length - 1 ? '1px solid var(--border)' : 'none'
+-              }}
++              className="group block"
+             >
+-              {/* Rank - monospace, tabular */}
+-              <span
+-                className="text-lg font-bold w-8 flex-shrink-0 tabular-nums text-right"
+-                style={{ color: 'var(--foreground)' }}
+-              >
+-                {album.billboardRank}
+-              </span>
+-
+-              {/* Cover */}
++              {/* Album artwork */}
+               <div
+-                className="w-12 h-12 flex-shrink-0 overflow-hidden"
++                className="relative aspect-square overflow-hidden"
+                 style={{
+                   border: '1px solid var(--border)',
+                   background: 'var(--surface)'
+@@ -154,17 +143,45 @@ export function BillboardList({ albums }: BillboardListProps) {
+               >
+                 {album.coverArtUrl && (
+                   <img
+-                    src={album.coverArtUrl}
++                    src={album.coverArtUrlLarge || album.coverArtUrl}
+                     alt=""
+-                    className="w-full h-full object-cover"
++                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                   />
+                 )}
++
++                {/* Rank badge - top left */}
++                <div
++                  className="absolute top-0 left-0 px-2 py-1"
++                  style={{
++                    background: 'var(--foreground)',
++                    color: 'var(--background)'
++                  }}
++                >
++                  <span className="text-xs font-bold tabular-nums">
++                    #{album.billboardRank}
++                  </span>
++                </div>
++
++                {/* Rating badge - bottom right */}
++                {album.averageRating !== null && (
++                  <div
++                    className="absolute bottom-0 right-0 px-2 py-1"
++                    style={{
++                      background: 'var(--foreground)',
++                      color: 'var(--background)'
++                    }}
++                  >
++                    <span className="text-xs font-bold tabular-nums">
++                      {album.averageRating.toFixed(1)}
++                    </span>
++                  </div>
++                )}
+               </div>
+ 
+-              {/* Album info */}
+-              <div className="flex-1 min-w-0">
++              {/* Info section */}
++              <div className="mt-2">
+                 <p
+-                  className="font-bold text-sm truncate group-hover:underline"
++                  className="text-sm font-semibold leading-tight truncate group-hover:underline"
+                   style={{ color: 'var(--foreground)' }}
+                 >
+                   {album.title}
+@@ -176,24 +193,6 @@ export function BillboardList({ albums }: BillboardListProps) {
+                   {album.artistName}
+                 </p>
+               </div>
+-
+-              {/* Rating & reviews */}
+-              <div className="text-right flex-shrink-0">
+-                {album.averageRating !== null && (
+-                  <p
+-                    className="font-bold text-sm tabular-nums"
+-                    style={{ color: 'var(--foreground)' }}
+-                  >
+-                    {album.averageRating.toFixed(1)}
+-                  </p>
+-                )}
+-                <p
+-                  className="text-[10px] tracking-wide uppercase mt-0.5"
+-                  style={{ color: 'var(--muted)' }}
+-                >
+-                  {album.totalReviews} {album.totalReviews === 1 ? "review" : "reviews"}
+-                </p>
+-              </div>
+             </Link>
+           ))}
+         </div>
+@@ -201,7 +200,7 @@ export function BillboardList({ albums }: BillboardListProps) {
+         {hasMore && (
+           <button
+             onClick={() => setIsExpanded(!isExpanded)}
+-            className="w-full mt-5 py-3 flex items-center justify-center gap-2 text-xs font-bold tracking-[0.1em] uppercase transition-colors hover:border-[--foreground] hover:text-[--foreground]"
++            className="w-full mt-6 py-3 flex items-center justify-center gap-2 text-xs font-bold tracking-[0.1em] uppercase transition-colors hover:border-[--foreground] hover:text-[--foreground]"
+             style={{
+               border: '1px solid var(--border)',
+               color: 'var(--muted)',
+-- 
+2.50.1 (Apple Git-155)
+

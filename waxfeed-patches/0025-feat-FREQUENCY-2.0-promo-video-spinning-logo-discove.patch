@@ -1,0 +1,3928 @@
+From 44ea1d2e7d7c7d21845edfe1685768ee270d04c0 Mon Sep 17 00:00:00 2001
+From: Shadrack Annor <shadrack@Shadracks-MacBook-Air-10.local>
+Date: Sun, 25 Jan 2026 17:35:38 -0500
+Subject: [PATCH 25/50] feat: FREQUENCY 2.0 promo video, spinning logo,
+ /discover/connections
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Added 30-second Remotion promo video with brutalist styling
+- Spinning MiniDisc logo with native SVG animation
+- New /discover/connections route for TasteID connections
+- Real Spotify album covers in RateScene
+- Complete storyboard: Hook → Struggle → Rate → Map → Proof → CTA
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+---
+ remotion/Root.tsx                             |  19 +
+ remotion/STORYBOARD-FREQUENCY2.md             |  91 ++++
+ remotion/WaxFeedFrequency2.tsx                | 100 +++++
+ remotion/components/WaxFeedBrand.tsx          | 263 +++++++++++
+ remotion/scenes/CTAScene.tsx                  | 279 ++++++++++++
+ remotion/scenes/CommunityScene.tsx            | 404 +++++++++++++++++
+ remotion/scenes/HookScene.tsx                 | 137 ++++++
+ remotion/scenes/JourneyScene.tsx              | 424 ++++++++++++++++++
+ remotion/scenes/MapScene.tsx                  | 198 ++++++++
+ remotion/scenes/PolarityScene.tsx             | 360 +++++++++++++++
+ remotion/scenes/ProofScene.tsx                | 182 ++++++++
+ remotion/scenes/RateScene.tsx                 | 272 +++++++++++
+ remotion/scenes/StruggleScene.tsx             | 160 +++++++
+ .../connections/connection-filters.tsx        |  47 ++
+ src/app/discover/connections/page.tsx         | 363 +++++++++++++++
+ src/components/waxfeed-logo.tsx               | 368 +++++----------
+ 16 files changed, 3402 insertions(+), 265 deletions(-)
+ create mode 100644 remotion/STORYBOARD-FREQUENCY2.md
+ create mode 100644 remotion/WaxFeedFrequency2.tsx
+ create mode 100644 remotion/components/WaxFeedBrand.tsx
+ create mode 100644 remotion/scenes/CTAScene.tsx
+ create mode 100644 remotion/scenes/CommunityScene.tsx
+ create mode 100644 remotion/scenes/HookScene.tsx
+ create mode 100644 remotion/scenes/JourneyScene.tsx
+ create mode 100644 remotion/scenes/MapScene.tsx
+ create mode 100644 remotion/scenes/PolarityScene.tsx
+ create mode 100644 remotion/scenes/ProofScene.tsx
+ create mode 100644 remotion/scenes/RateScene.tsx
+ create mode 100644 remotion/scenes/StruggleScene.tsx
+ create mode 100644 src/app/discover/connections/connection-filters.tsx
+ create mode 100644 src/app/discover/connections/page.tsx
+
+diff --git a/remotion/Root.tsx b/remotion/Root.tsx
+index 5d472d8..c49881b 100644
+--- a/remotion/Root.tsx
++++ b/remotion/Root.tsx
+@@ -2,11 +2,30 @@ import { Composition, Folder } from "remotion";
+ import { WaxFeedPromo } from "./WaxFeedPromo";
+ import { WaxFeedPromoSquare } from "./WaxFeedPromoSquare";
+ import { WaxFeedFrequency, WaxFeedFrequencySquare } from "./WaxFeedFrequency";
++import { WaxFeedFrequency2, WaxFeedFrequency2Vertical } from "./WaxFeedFrequency2";
+ import { WaxFeedShowcase, WaxFeedShowcaseSquare } from "./WaxFeedShowcase";
+ 
+ export const RemotionRoot = () => {
+   return (
+     <Folder name="WaxFeed">
++      {/* FREQUENCY 2.0 - Gen Z Cut: 30 seconds of pure dopamine */}
++      <Composition
++        id="WaxFeedFrequency2"
++        component={WaxFeedFrequency2}
++        durationInFrames={900}
++        fps={30}
++        width={1920}
++        height={1080}
++      />
++      <Composition
++        id="WaxFeedFrequency2Vertical"
++        component={WaxFeedFrequency2Vertical}
++        durationInFrames={900}
++        fps={30}
++        width={1080}
++        height={1920}
++      />
++
+       {/* FREQUENCY - Cinematic 90s promo with data visualization */}
+       <Composition
+         id="WaxFeedFrequency"
+diff --git a/remotion/STORYBOARD-FREQUENCY2.md b/remotion/STORYBOARD-FREQUENCY2.md
+new file mode 100644
+index 0000000..2756e92
+--- /dev/null
++++ b/remotion/STORYBOARD-FREQUENCY2.md
+@@ -0,0 +1,91 @@
++# FREQUENCY 2.0 - Storyboard
++
++## Target: Gen Z (TikTok/Reels/Shorts)
++## Duration: 30 seconds
++## Vibe: Fast, punchy, relatable, slightly unhinged
++
++---
++
++## THE HOOK (0-3s) - 90 frames
++**Visual:** Split screen of two people texting. One sends "what music are you into?"
++**Text overlay:** "THE DREADED QUESTION"
++**Energy:** Anxiety. Panic. We've all been there.
++**Why it works:** Instantly relatable. Everyone has fumbled this.
++
++---
++
++## THE STRUGGLE (3-6s) - 90 frames
++**Visual:** Rapid montage of:
++- Spotify Wrapped screenshots (blurred/generic)
++- "I listen to everything" text bubble
++- Friend's disappointed face
++- Awkward silence
++**Text overlay:** "you can't explain your taste"
++**Energy:** Cringe. Pain. Truth.
++
++---
++
++## THE RATE (6-10s) - 120 frames
++**Visual:** Album art appears. Thumb swipes a rating (clean UI animation).
++Rating: 8.5 ★
++Another album. Swipe. 6.0.
++Another. 9.5.
++Fast montage of ratings stacking up.
++**Text overlay:** "rate what you actually think"
++**Energy:** Satisfying. Decisive. No algorithm BS.
++
++---
++
++## THE MAP (10-14s) - 120 frames
++**Visual:** From the ratings, a taste fingerprint emerges.
++Genre radar chart building in real-time.
++Your archetype reveals: "THE CURATOR" or "THE EXPLORER"
++**Text overlay:** "your taste. mapped."
++**Energy:** Discovery. Self-knowledge. Cool data viz.
++
++---
++
++## THE MATCH (14-19s) - 150 frames
++**Visual:** Your taste profile connects with others.
++Lines drawing between you and compatible users.
++Match percentage: 94%
++Shared albums appearing between profiles.
++**Text overlay:** "find your music people"
++**Energy:** Connection. Community. Not alone anymore.
++
++---
++
++## THE PROOF (19-24s) - 150 frames
++**Visual:** Quick cuts of:
++- Review snippets from real users
++- "finally someone gets it" comment
++- Two users bonding over obscure album
++- Notification: "3 new taste matches"
++**Text overlay:** "12,000+ albums rated"
++**Energy:** Social proof. FOMO. Activity.
++
++---
++
++## THE CTA (24-30s) - 180 frames
++**Visual:** WaxFeed logo. Clean. Gold accent.
++App preview or URL.
++**Text overlay:** "rate albums. find your people."
++**Final frame:** "waxfeed.com" + socials
++**Energy:** Clear action. No confusion.
++
++---
++
++## AUDIO NOTES
++- Trending sound or original beat
++- Bass drop on THE RATE reveal
++- Satisfying "ding" sounds on ratings
++- Build to the match moment
++
++---
++
++## KEY DIFFERENCES FROM V1
++1. **Opens with RELATABLE SCENARIO** not abstract concept
++2. **Shows the PROBLEM first** (can't explain taste)
++3. **Product is the SOLUTION** not just features
++4. **Social proof** included
++5. **Clear story arc**: Problem → Solution → Result → Action
+diff --git a/remotion/WaxFeedFrequency2.tsx b/remotion/WaxFeedFrequency2.tsx
+new file mode 100644
+index 0000000..f92671c
+--- /dev/null
++++ b/remotion/WaxFeedFrequency2.tsx
+@@ -0,0 +1,100 @@
++import { AbsoluteFill, Sequence } from "remotion";
++import { HookScene } from "./scenes/HookScene";
++import { StruggleScene } from "./scenes/StruggleScene";
++import { RateScene } from "./scenes/RateScene";
++import { MapScene } from "./scenes/MapScene";
++import { MatchScene } from "./scenes/MatchScene";
++import { ProofScene } from "./scenes/ProofScene";
++import { CTAScene } from "./scenes/CTAScene";
++
++/**
++ * WaxFeed "FREQUENCY 2.0" - Gen Z Cut
++ *
++ * 30-second TikTok-ready promo (900 frames @ 30fps)
++ * Hook → Problem → Solution → Proof → CTA
++ *
++ * Scene Structure:
++ * 1. HOOK (0:00-0:03) - 90 frames - "what music are you into?" anxiety
++ * 2. STRUGGLE (0:03-0:06) - 90 frames - "I listen to everything" cringe
++ * 3. RATE (0:06-0:10) - 120 frames - Rating albums, satisfying swipes
++ * 4. MAP (0:10-0:14) - 120 frames - Taste fingerprint + archetype reveal
++ * 5. MATCH (0:14-0:19) - 150 frames - Finding your music people
++ * 6. PROOF (0:19-0:24) - 150 frames - Social proof + stats
++ * 7. CTA (0:24-0:30) - 180 frames - Logo + "waxfeed.com"
++ */
++
++export const WaxFeedFrequency2: React.FC = () => {
++  return (
++    <AbsoluteFill style={{ backgroundColor: "#0a0a0a" }}>
++      {/* Scene 1: THE HOOK - 3s */}
++      <Sequence from={0} durationInFrames={90}>
++        <HookScene />
++      </Sequence>
++
++      {/* Scene 2: THE STRUGGLE - 3s */}
++      <Sequence from={90} durationInFrames={90}>
++        <StruggleScene />
++      </Sequence>
++
++      {/* Scene 3: THE RATE - 4s */}
++      <Sequence from={180} durationInFrames={120}>
++        <RateScene />
++      </Sequence>
++
++      {/* Scene 4: THE MAP - 4s */}
++      <Sequence from={300} durationInFrames={120}>
++        <MapScene />
++      </Sequence>
++
++      {/* Scene 5: THE MATCH - 5s */}
++      <Sequence from={420} durationInFrames={150}>
++        <MatchScene />
++      </Sequence>
++
++      {/* Scene 6: THE PROOF - 5s */}
++      <Sequence from={570} durationInFrames={150}>
++        <ProofScene />
++      </Sequence>
++
++      {/* Scene 7: THE CTA - 6s */}
++      <Sequence from={720} durationInFrames={180}>
++        <CTAScene />
++      </Sequence>
++    </AbsoluteFill>
++  );
++};
++
++// Vertical variant for TikTok/Reels (9:16)
++export const WaxFeedFrequency2Vertical: React.FC = () => {
++  return (
++    <AbsoluteFill style={{ backgroundColor: "#0a0a0a" }}>
++      <Sequence from={0} durationInFrames={90}>
++        <HookScene width={1080} height={1920} />
++      </Sequence>
++
++      <Sequence from={90} durationInFrames={90}>
++        <StruggleScene width={1080} height={1920} />
++      </Sequence>
++
++      <Sequence from={180} durationInFrames={120}>
++        <RateScene width={1080} height={1920} />
++      </Sequence>
++
++      <Sequence from={300} durationInFrames={120}>
++        <MapScene width={1080} height={1920} />
++      </Sequence>
++
++      <Sequence from={420} durationInFrames={150}>
++        <MatchScene width={1080} height={1920} />
++      </Sequence>
++
++      <Sequence from={570} durationInFrames={150}>
++        <ProofScene width={1080} height={1920} />
++      </Sequence>
++
++      <Sequence from={720} durationInFrames={180}>
++        <CTAScene width={1080} height={1920} />
++      </Sequence>
++    </AbsoluteFill>
++  );
++};
+diff --git a/remotion/components/WaxFeedBrand.tsx b/remotion/components/WaxFeedBrand.tsx
+new file mode 100644
+index 0000000..b7e455d
+--- /dev/null
++++ b/remotion/components/WaxFeedBrand.tsx
+@@ -0,0 +1,263 @@
++import { useCurrentFrame, interpolate, spring, useVideoConfig, Img, staticFile } from "remotion";
++
++interface Props {
++  size?: number;
++  showTagline?: boolean;
++  showUrl?: boolean;
++  isVertical?: boolean;
++}
++
++/**
++ * WaxFeed Brand Component for Remotion
++ * Uses the real MiniDisc-style logo with iridescent vinyl
++ */
++export const WaxFeedBrand: React.FC<Props> = ({
++  size = 300,
++  showTagline = true,
++  showUrl = true,
++  isVertical = false,
++}) => {
++  const frame = useCurrentFrame();
++  const { fps } = useVideoConfig();
++
++  // Disc spin animation - 8 seconds for full rotation
++  const discRotation = (frame / fps) * 45; // 45 degrees per second
++
++  // Logo entrance
++  const logoScale = spring({ frame, fps, from: 0, to: 1, durationInFrames: 20 });
++  const logoOpacity = interpolate(frame, [0, 15], [0, 1], { extrapolateRight: "clamp" });
++
++  // Tagline entrance
++  const taglineOpacity = interpolate(frame, [20, 35], [0, 1], { extrapolateRight: "clamp" });
++  const taglineY = spring({ frame: frame - 20, fps, from: 30, to: 0, durationInFrames: 15 });
++
++  // URL entrance
++  const urlOpacity = interpolate(frame, [40, 55], [0, 1], { extrapolateRight: "clamp" });
++
++  // Glow pulse
++  const glowIntensity = 0.3 + Math.sin(frame * 0.1) * 0.1;
++
++  return (
++    <div
++      style={{
++        display: "flex",
++        flexDirection: "column",
++        alignItems: "center",
++        gap: isVertical ? 24 : 20,
++      }}
++    >
++      {/* Background glow */}
++      <div
++        style={{
++          position: "absolute",
++          width: size * 1.5,
++          height: size * 1.5,
++          borderRadius: "50%",
++          background: `radial-gradient(circle, rgba(255,215,0,${glowIntensity}) 0%, transparent 70%)`,
++          filter: "blur(60px)",
++          zIndex: -1,
++        }}
++      />
++
++      {/* Logo SVG - Full MiniDisc style */}
++      <div
++        style={{
++          opacity: logoOpacity,
++          transform: `scale(${logoScale})`,
++        }}
++      >
++        <svg
++          width={size}
++          height={size}
++          viewBox="0 0 500 500"
++        >
++          <defs>
++            {/* DISC SURFACE GRADIENTS */}
++            <linearGradient id="holoBase" x1="20%" y1="80%" x2="80%" y2="20%">
++              <stop offset="0%" stopColor="#e4a8c8"/>
++              <stop offset="12%" stopColor="#f0b8d8"/>
++              <stop offset="24%" stopColor="#d898c8"/>
++              <stop offset="36%" stopColor="#98d8b8"/>
++              <stop offset="48%" stopColor="#88c8d8"/>
++              <stop offset="60%" stopColor="#b898d8"/>
++              <stop offset="72%" stopColor="#d8a8c8"/>
++              <stop offset="84%" stopColor="#c8e8a8"/>
++              <stop offset="100%" stopColor="#e8c8d8"/>
++            </linearGradient>
++
++            <radialGradient id="iridescentSweep" cx="30%" cy="30%" r="80%">
++              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.5"/>
++              <stop offset="15%" stopColor="#ffb8e0" stopOpacity="0.6"/>
++              <stop offset="30%" stopColor="#b8ffb8" stopOpacity="0.4"/>
++              <stop offset="45%" stopColor="#b8d8ff" stopOpacity="0.35"/>
++              <stop offset="60%" stopColor="#e8b8ff" stopOpacity="0.4"/>
++              <stop offset="75%" stopColor="#ffe8b8" stopOpacity="0.3"/>
++              <stop offset="100%" stopColor="#ffb8c8" stopOpacity="0.2"/>
++            </radialGradient>
++
++            <linearGradient id="lightStreak" x1="0%" y1="0%" x2="100%" y2="100%">
++              <stop offset="0%" stopColor="#ffffff" stopOpacity="0"/>
++              <stop offset="35%" stopColor="#ffffff" stopOpacity="0"/>
++              <stop offset="45%" stopColor="#ffffff" stopOpacity="0.7"/>
++              <stop offset="50%" stopColor="#ffffff" stopOpacity="0.9"/>
++              <stop offset="55%" stopColor="#ffffff" stopOpacity="0.7"/>
++              <stop offset="65%" stopColor="#ffffff" stopOpacity="0"/>
++              <stop offset="100%" stopColor="#ffffff" stopOpacity="0"/>
++            </linearGradient>
++
++            <radialGradient id="hubMetal" cx="35%" cy="30%" r="70%">
++              <stop offset="0%" stopColor="#f8f8f8"/>
++              <stop offset="35%" stopColor="#d0d0d0"/>
++              <stop offset="75%" stopColor="#888888"/>
++              <stop offset="100%" stopColor="#686868"/>
++            </radialGradient>
++
++            <linearGradient id="caseMain" x1="0%" y1="0%" x2="100%" y2="100%">
++              <stop offset="0%" stopColor="#f6f6f6"/>
++              <stop offset="50%" stopColor="#e6e6e6"/>
++              <stop offset="100%" stopColor="#d4d4d4"/>
++            </linearGradient>
++
++            <linearGradient id="shutterBody" x1="0%" y1="0%" x2="100%" y2="100%">
++              <stop offset="0%" stopColor="#a078b0"/>
++              <stop offset="50%" stopColor="#c8a0d8"/>
++              <stop offset="100%" stopColor="#9870a8"/>
++            </linearGradient>
++
++            <filter id="mainShadow" x="-15%" y="-15%" width="135%" height="140%">
++              <feDropShadow dx="5" dy="8" stdDeviation="10" floodColor="#000000" floodOpacity="0.3"/>
++            </filter>
++          </defs>
++
++          {/* CASE */}
++          <g filter="url(#mainShadow)">
++            <rect x="28" y="28" width="444" height="444" rx="10" fill="url(#caseMain)"/>
++          </g>
++
++          {/* Case edges */}
++          <path d="M38,28 L462,28 Q472,28 472,38 L472,32 Q472,28 462,28 L38,28 Q28,28 28,38 L28,32" fill="#d0d0d0" opacity="0.5"/>
++          <path d="M38,472 L462,472 Q472,472 472,462 L472,468 Q472,472 462,472 L38,472 Q28,472 28,462 L28,468" fill="#000000" opacity="0.15"/>
++
++          {/* Inner well */}
++          <rect x="42" y="42" width="416" height="416" rx="6" fill="#e0e0e0"/>
++
++          {/* SPINNING DISC */}
++          <g style={{ transform: `rotate(${discRotation}deg)`, transformOrigin: '250px 250px' }}>
++            <circle cx="250" cy="250" r="175" fill="url(#holoBase)"/>
++            <circle cx="250" cy="250" r="175" fill="url(#iridescentSweep)"/>
++
++            {/* Data tracks */}
++            <g fill="none" strokeOpacity="0.08">
++              <circle cx="250" cy="250" r="168" stroke="#000" strokeWidth="12"/>
++              <circle cx="250" cy="250" r="145" stroke="#000" strokeWidth="8"/>
++              <circle cx="250" cy="250" r="128" stroke="#000" strokeWidth="6"/>
++              <circle cx="250" cy="250" r="112" stroke="#000" strokeWidth="5"/>
++              <circle cx="250" cy="250" r="95" stroke="#000" strokeWidth="4"/>
++              <circle cx="250" cy="250" r="78" stroke="#000" strokeWidth="3"/>
++              <circle cx="250" cy="250" r="62" stroke="#000" strokeWidth="2"/>
++            </g>
++
++            {/* Light streak */}
++            <circle cx="250" cy="250" r="175" fill="url(#lightStreak)"/>
++
++            {/* Center hub */}
++            <circle cx="250" cy="250" r="52" fill="url(#hubMetal)"/>
++            <circle cx="250" cy="250" r="40" fill="#a0a0a0"/>
++            <circle cx="250" cy="250" r="25" fill="#909090"/>
++            <circle cx="250" cy="250" r="12" fill="#787878"/>
++            <circle cx="250" cy="250" r="5" fill="#1c1c1c"/>
++
++            {/* "88" on disc */}
++            <text x="335" y="262"
++                  fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif"
++                  fontSize="34"
++                  fontWeight="700"
++                  fill="#1a1a1a"
++                  opacity="0.8"
++                  textAnchor="middle">
++              88
++            </text>
++          </g>
++
++          {/* SHUTTER */}
++          <rect x="358" y="152" width="78" height="196" rx="3" fill="url(#shutterBody)"/>
++
++          {/* Shutter lines */}
++          <g stroke="rgba(0,0,0,0.06)" strokeWidth="0.5">
++            {[165, 180, 195, 210, 225, 240, 255, 270, 285, 300, 315, 330].map(y => (
++              <line key={y} x1="360" y1={y} x2="434" y2={y}/>
++            ))}
++          </g>
++
++          {/* WAXFEED on shutter */}
++          <text x="397" y="262"
++                fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif"
++                fontSize="14"
++                fontWeight="700"
++                fill="#1a1a1a"
++                textAnchor="middle"
++                letterSpacing="2"
++                transform="rotate(-90 397 262)">
++            WAXFEED
++          </text>
++
++          {/* Corner screws */}
++          {[[58, 58], [442, 58], [58, 442], [442, 442]].map(([x, y], i) => (
++            <g key={i} transform={`translate(${x}, ${y})`}>
++              <circle r="10" fill="#d8d8d8"/>
++              <circle r="6" fill="#c8c8c8"/>
++              <circle r="2" fill="#a0a0a0"/>
++            </g>
++          ))}
++
++          {/* WF badge */}
++          <g transform="translate(68, 398)">
++            <rect width="36" height="28" fill="none" stroke="#606060" strokeWidth="1.5" rx="3"/>
++            <text x="18" y="19"
++                  fontFamily="Helvetica Neue, Arial"
++                  fontSize="12"
++                  fontWeight="700"
++                  fill="#505050"
++                  textAnchor="middle">
++              WF
++            </text>
++          </g>
++        </svg>
++      </div>
++
++      {/* Tagline */}
++      {showTagline && (
++        <p
++          style={{
++            color: "#888",
++            fontSize: isVertical ? 24 : 20,
++            fontFamily: "system-ui, -apple-system, sans-serif",
++            margin: 0,
++            opacity: taglineOpacity,
++            transform: `translateY(${taglineY}px)`,
++            letterSpacing: "0.02em",
++          }}
++        >
++          rate albums. find your people.
++        </p>
++      )}
++
++      {/* URL */}
++      {showUrl && (
++        <div style={{ opacity: urlOpacity, marginTop: isVertical ? 16 : 12 }}>
++          <span
++            style={{
++              color: "#ffd700",
++              fontSize: isVertical ? 32 : 26,
++              fontWeight: 700,
++              fontFamily: "system-ui, -apple-system, sans-serif",
++              letterSpacing: "0.05em",
++            }}
++          >
++            waxfeed.com
++          </span>
++        </div>
++      )}
++    </div>
++  );
++};
+diff --git a/remotion/scenes/CTAScene.tsx b/remotion/scenes/CTAScene.tsx
+new file mode 100644
+index 0000000..d121fe2
+--- /dev/null
++++ b/remotion/scenes/CTAScene.tsx
+@@ -0,0 +1,279 @@
++import { AbsoluteFill, useCurrentFrame, interpolate, spring, useVideoConfig } from "remotion";
++
++interface Props {
++  width?: number;
++  height?: number;
++}
++
++export const CTAScene: React.FC<Props> = ({ width = 1920, height = 1080 }) => {
++  const frame = useCurrentFrame();
++  const { fps } = useVideoConfig();
++  const isVertical = height > width;
++
++  // Disc spin - 45 degrees per second
++  const discRotation = (frame / fps) * 45;
++
++  // Logo entrance
++  const logoScale = spring({ frame, fps, from: 0, to: 1, durationInFrames: 20 });
++  const logoOpacity = interpolate(frame, [0, 15], [0, 1], { extrapolateRight: "clamp" });
++
++  // Tagline
++  const taglineOpacity = interpolate(frame, [25, 40], [0, 1], { extrapolateRight: "clamp" });
++  const taglineY = spring({ frame: frame - 25, fps, from: 30, to: 0, durationInFrames: 15 });
++
++  // URL
++  const urlOpacity = interpolate(frame, [50, 65], [0, 1], { extrapolateRight: "clamp" });
++
++  // Pulse effect
++  const pulseScale = 1 + Math.sin(frame * 0.12) * 0.015;
++
++  // Glow intensity
++  const glowIntensity = interpolate(frame, [0, 40, 80], [0, 0.4, 0.3]);
++
++  const logoSize = isVertical ? 280 : 220;
++
++  return (
++    <AbsoluteFill
++      style={{
++        backgroundColor: "#0a0a0a",
++        display: "flex",
++        flexDirection: "column",
++        alignItems: "center",
++        justifyContent: "center",
++        gap: isVertical ? 24 : 20,
++      }}
++    >
++      {/* Background glow */}
++      <div
++        style={{
++          position: "absolute",
++          width: logoSize * 1.8,
++          height: logoSize * 1.8,
++          borderRadius: "50%",
++          background: `radial-gradient(circle, rgba(255,215,0,${glowIntensity}) 0%, transparent 70%)`,
++          filter: "blur(80px)",
++        }}
++      />
++
++      {/* MiniDisc Logo */}
++      <div
++        style={{
++          opacity: logoOpacity,
++          transform: `scale(${logoScale * pulseScale})`,
++        }}
++      >
++        <svg width={logoSize} height={logoSize} viewBox="0 0 500 500">
++          <defs>
++            {/* DISC GRADIENTS */}
++            <linearGradient id="holoBase" x1="20%" y1="80%" x2="80%" y2="20%">
++              <stop offset="0%" stopColor="#e4a8c8"/>
++              <stop offset="12%" stopColor="#f0b8d8"/>
++              <stop offset="24%" stopColor="#d898c8"/>
++              <stop offset="36%" stopColor="#98d8b8"/>
++              <stop offset="48%" stopColor="#88c8d8"/>
++              <stop offset="60%" stopColor="#b898d8"/>
++              <stop offset="72%" stopColor="#d8a8c8"/>
++              <stop offset="84%" stopColor="#c8e8a8"/>
++              <stop offset="100%" stopColor="#e8c8d8"/>
++            </linearGradient>
++
++            <radialGradient id="iridescentSweep" cx="30%" cy="30%" r="80%">
++              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.5"/>
++              <stop offset="15%" stopColor="#ffb8e0" stopOpacity="0.6"/>
++              <stop offset="30%" stopColor="#b8ffb8" stopOpacity="0.4"/>
++              <stop offset="45%" stopColor="#b8d8ff" stopOpacity="0.35"/>
++              <stop offset="60%" stopColor="#e8b8ff" stopOpacity="0.4"/>
++              <stop offset="100%" stopColor="#ffb8c8" stopOpacity="0.2"/>
++            </radialGradient>
++
++            <linearGradient id="lightStreak" x1="0%" y1="0%" x2="100%" y2="100%">
++              <stop offset="0%" stopColor="#ffffff" stopOpacity="0"/>
++              <stop offset="40%" stopColor="#ffffff" stopOpacity="0"/>
++              <stop offset="48%" stopColor="#ffffff" stopOpacity="0.8"/>
++              <stop offset="52%" stopColor="#ffffff" stopOpacity="0.8"/>
++              <stop offset="60%" stopColor="#ffffff" stopOpacity="0"/>
++              <stop offset="100%" stopColor="#ffffff" stopOpacity="0"/>
++            </linearGradient>
++
++            <radialGradient id="hubMetal" cx="35%" cy="30%" r="70%">
++              <stop offset="0%" stopColor="#f8f8f8"/>
++              <stop offset="35%" stopColor="#d0d0d0"/>
++              <stop offset="75%" stopColor="#888888"/>
++              <stop offset="100%" stopColor="#686868"/>
++            </radialGradient>
++
++            <linearGradient id="caseMain" x1="0%" y1="0%" x2="100%" y2="100%">
++              <stop offset="0%" stopColor="#f6f6f6"/>
++              <stop offset="50%" stopColor="#e6e6e6"/>
++              <stop offset="100%" stopColor="#d4d4d4"/>
++            </linearGradient>
++
++            <linearGradient id="shutterBody" x1="0%" y1="0%" x2="100%" y2="100%">
++              <stop offset="0%" stopColor="#a078b0"/>
++              <stop offset="50%" stopColor="#c8a0d8"/>
++              <stop offset="100%" stopColor="#9870a8"/>
++            </linearGradient>
++
++            <filter id="caseShadow" x="-20%" y="-20%" width="145%" height="150%">
++              <feDropShadow dx="4" dy="6" stdDeviation="12" floodColor="#000000" floodOpacity="0.35"/>
++            </filter>
++          </defs>
++
++          {/* CASE */}
++          <g filter="url(#caseShadow)">
++            <rect x="28" y="28" width="444" height="444" rx="12" fill="url(#caseMain)"/>
++          </g>
++
++          {/* Case bevels */}
++          <path d="M40,28 L460,28 Q472,28 472,40 L472,34 Q472,28 460,28 L40,28 Q28,28 28,40 L28,34" fill="#e8e8e8"/>
++          <path d="M40,472 L460,472 Q472,472 472,460 L472,466 Q472,472 460,472 L40,472 Q28,472 28,460 L28,466" fill="#000000" opacity="0.12"/>
++
++          {/* Inner well */}
++          <rect x="44" y="44" width="412" height="412" rx="8" fill="#e2e2e2"/>
++
++          {/* SPINNING DISC */}
++          <g style={{ transform: `rotate(${discRotation}deg)`, transformOrigin: '250px 250px' }}>
++            {/* Holographic base */}
++            <circle cx="250" cy="250" r="175" fill="url(#holoBase)"/>
++            <circle cx="250" cy="250" r="175" fill="url(#iridescentSweep)"/>
++
++            {/* Data tracks */}
++            <g fill="none" strokeOpacity="0.07">
++              <circle cx="250" cy="250" r="168" stroke="#000" strokeWidth="12"/>
++              <circle cx="250" cy="250" r="148" stroke="#000" strokeWidth="8"/>
++              <circle cx="250" cy="250" r="130" stroke="#000" strokeWidth="6"/>
++              <circle cx="250" cy="250" r="114" stroke="#000" strokeWidth="5"/>
++              <circle cx="250" cy="250" r="98" stroke="#000" strokeWidth="4"/>
++              <circle cx="250" cy="250" r="82" stroke="#000" strokeWidth="3"/>
++              <circle cx="250" cy="250" r="66" stroke="#000" strokeWidth="2"/>
++            </g>
++
++            {/* Light streak reflection */}
++            <circle cx="250" cy="250" r="175" fill="url(#lightStreak)"/>
++
++            {/* Edge shadow */}
++            <circle cx="250" cy="250" r="175" fill="none" stroke="#000" strokeWidth="2" opacity="0.15"/>
++
++            {/* Center hub */}
++            <circle cx="250" cy="250" r="52" fill="url(#hubMetal)"/>
++            <circle cx="250" cy="250" r="42" fill="#b0b0b0"/>
++            <circle cx="250" cy="250" r="32" fill="#a0a0a0"/>
++            <circle cx="250" cy="250" r="22" fill="#909090"/>
++            <circle cx="250" cy="250" r="12" fill="#707070"/>
++            <circle cx="250" cy="250" r="5" fill="#1a1a1a"/>
++
++            {/* Hub highlight */}
++            <ellipse cx="235" cy="235" rx="15" ry="6" fill="#fff" opacity="0.5" transform="rotate(-45 235 235)"/>
++
++            {/* "88" marking */}
++            <text x="335" y="262"
++                  fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif"
++                  fontSize="32"
++                  fontWeight="700"
++                  fill="#1a1a1a"
++                  opacity="0.75"
++                  textAnchor="middle">
++              88
++            </text>
++          </g>
++
++          {/* SHUTTER */}
++          <rect x="356" y="150" width="82" height="200" rx="4" fill="url(#shutterBody)"/>
++
++          {/* Shutter texture lines */}
++          <g stroke="rgba(0,0,0,0.05)" strokeWidth="0.5">
++            {[162, 177, 192, 207, 222, 237, 252, 267, 282, 297, 312, 327, 342].map(y => (
++              <line key={y} x1="358" y1={y} x2="436" y2={y}/>
++            ))}
++          </g>
++
++          {/* WAXFEED text on shutter */}
++          <text x="397" y="260"
++                fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif"
++                fontSize="14"
++                fontWeight="700"
++                fill="#1a1a1a"
++                textAnchor="middle"
++                letterSpacing="2"
++                transform="rotate(-90 397 260)">
++            WAXFEED
++          </text>
++
++          {/* Corner screws */}
++          {[[58, 58], [442, 58], [58, 442], [442, 442]].map(([x, y], i) => (
++            <g key={i} transform={`translate(${x}, ${y})`}>
++              <circle r="10" fill="#d8d8d8"/>
++              <circle r="6" fill="#c0c0c0"/>
++              <circle r="2.5" fill="#a0a0a0"/>
++            </g>
++          ))}
++
++          {/* WF badge */}
++          <g transform="translate(68, 396)">
++            <rect width="38" height="30" rx="4" fill="none" stroke="#707070" strokeWidth="1.5"/>
++            <text x="19" y="20"
++                  fontFamily="Helvetica Neue, Arial"
++                  fontSize="13"
++                  fontWeight="700"
++                  fill="#606060"
++                  textAnchor="middle">
++              WF
++            </text>
++          </g>
++        </svg>
++      </div>
++
++      {/* Tagline */}
++      <p
++        style={{
++          color: "#888",
++          fontSize: isVertical ? 26 : 22,
++          fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++          margin: 0,
++          opacity: taglineOpacity,
++          transform: `translateY(${taglineY}px)`,
++          fontWeight: 400,
++          letterSpacing: "0.05em",
++        }}
++      >
++        rate albums. find your people.
++      </p>
++
++      {/* URL */}
++      <div style={{ opacity: urlOpacity, marginTop: isVertical ? 12 : 8 }}>
++        <span
++          style={{
++            color: "#ffd700",
++            fontSize: isVertical ? 36 : 28,
++            fontWeight: 700,
++            fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++            letterSpacing: "0.1em",
++            textTransform: "uppercase",
++          }}
++        >
++          waxfeed.com
++        </span>
++      </div>
++
++      {/* Social handle */}
++      <div
++        style={{
++          position: "absolute",
++          bottom: isVertical ? 60 : 40,
++          opacity: urlOpacity,
++        }}
++      >
++        <span
++          style={{
++            color: "#555",
++            fontSize: isVertical ? 18 : 15,
++            fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++            letterSpacing: "0.05em",
++          }}
++        >
++          @waxfeedapp
++        </span>
++      </div>
++    </AbsoluteFill>
++  );
++};
+diff --git a/remotion/scenes/CommunityScene.tsx b/remotion/scenes/CommunityScene.tsx
+new file mode 100644
+index 0000000..eb7590e
+--- /dev/null
++++ b/remotion/scenes/CommunityScene.tsx
+@@ -0,0 +1,404 @@
++import { AbsoluteFill, interpolate, useCurrentFrame, Easing, spring, useVideoConfig } from "remotion";
++import { COLORS } from "../lib/colors";
++
++// Scene: THE COMMUNITY
++// Visualizes the network of taste connections
++// Shows how users connect based on musical compatibility
++
++interface CommunitySceneProps {
++  width?: number;
++  height?: number;
++}
++
++// Sample community members
++const COMMUNITY_MEMBERS = [
++  { id: "you", username: "you", x: 0.5, y: 0.5, archetype: "Hip-Hop Head", icon: "🎤", isYou: true, color: "#ffd700" },
++  { id: "1", username: "jazzcat", x: 0.25, y: 0.35, archetype: "Jazz Explorer", icon: "🎷", compatibility: 85, color: "#00ff88" },
++  { id: "2", username: "soulsister", x: 0.72, y: 0.3, archetype: "Soul Searcher", icon: "💜", compatibility: 78, color: "#c44dff" },
++  { id: "3", username: "indiekid", x: 0.3, y: 0.68, archetype: "Indie Devotee", icon: "🎧", compatibility: 72, color: "#4ecdc4" },
++  { id: "4", username: "beatmaker", x: 0.7, y: 0.65, archetype: "Electronic Pioneer", icon: "🎹", compatibility: 68, color: "#45b7d1" },
++  { id: "5", username: "rockstar", x: 0.15, y: 0.5, archetype: "Rock Purist", icon: "🎸", compatibility: 55, color: "#ff9f43" },
++  { id: "6", username: "popking", x: 0.85, y: 0.48, archetype: "Pop Connoisseur", icon: "⭐", compatibility: 52, color: "#ffe66d" },
++];
++
++// Connection types with colors
++const CONNECTION_TYPES = {
++  taste_twin: { name: "Taste Twin", color: "#ffd700", minScore: 80 },
++  genre_buddy: { name: "Genre Buddy", color: "#00ff88", minScore: 60 },
++  explorer: { name: "Explorer", color: "#c44dff", minScore: 40 },
++};
++
++function getConnectionType(compatibility: number) {
++  if (compatibility >= 80) return CONNECTION_TYPES.taste_twin;
++  if (compatibility >= 60) return CONNECTION_TYPES.genre_buddy;
++  return CONNECTION_TYPES.explorer;
++}
++
++export function CommunityScene({ width = 1920, height = 1080 }: CommunitySceneProps) {
++  const frame = useCurrentFrame();
++  const { fps } = useVideoConfig();
++
++  const contentWidth = width * 0.8;
++  const contentHeight = height * 0.6;
++  const offsetX = width * 0.1;
++  const offsetY = height * 0.2;
++
++  // Phase 1: Title (frames 0-50)
++  const titleOpacity = interpolate(frame, [0, 40], [0, 1], {
++    extrapolateLeft: "clamp",
++    extrapolateRight: "clamp",
++  });
++
++  // Phase 2: Central "you" node appears (frames 30-80)
++  const youOpacity = interpolate(frame, [30, 70], [0, 1], {
++    extrapolateLeft: "clamp",
++    extrapolateRight: "clamp",
++  });
++
++  // Phase 3: Other nodes appear radially (frames 60-150)
++  const nodesProgress = interpolate(frame, [60, 150], [0, 1], {
++    extrapolateLeft: "clamp",
++    extrapolateRight: "clamp",
++    easing: Easing.bezier(0.25, 0.1, 0.25, 1),
++  });
++
++  // Phase 4: Connection lines draw (frames 120-220)
++  const connectionProgress = interpolate(frame, [120, 220], [0, 1], {
++    extrapolateLeft: "clamp",
++    extrapolateRight: "clamp",
++    easing: Easing.bezier(0.4, 0, 0.2, 1),
++  });
++
++  // Phase 5: Stats appear (frames 220-280)
++  const statsOpacity = interpolate(frame, [220, 270], [0, 1], {
++    extrapolateLeft: "clamp",
++    extrapolateRight: "clamp",
++  });
++
++  // Phase 6: Pulse animation (frames 280+)
++  const pulsePhase = (frame - 280) * 0.03;
++  const isPulsing = frame > 280;
++
++  // Get "you" position
++  const youMember = COMMUNITY_MEMBERS.find((m) => m.isYou)!;
++  const youX = offsetX + youMember.x * contentWidth;
++  const youY = offsetY + youMember.y * contentHeight;
++
++  return (
++    <AbsoluteFill
++      style={{
++        backgroundColor: COLORS.black,
++      }}
++    >
++      {/* Title */}
++      <div
++        style={{
++          position: "absolute",
++          top: 50,
++          left: 0,
++          right: 0,
++          textAlign: "center",
++          opacity: titleOpacity,
++        }}
++      >
++        <p
++          style={{
++            fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++            fontSize: 12,
++            fontWeight: 500,
++            color: COLORS.gray[500],
++            letterSpacing: "0.3em",
++            textTransform: "uppercase",
++            margin: 0,
++          }}
++        >
++          TASTE CONNECTIONS
++        </p>
++        <h2
++          style={{
++            fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++            fontSize: 48,
++            fontWeight: 700,
++            color: COLORS.white,
++            margin: "12px 0",
++            letterSpacing: "-0.02em",
++          }}
++        >
++          Your Community
++        </h2>
++      </div>
++
++      {/* Connection lines SVG */}
++      <svg
++        style={{
++          position: "absolute",
++          left: 0,
++          top: 0,
++          width: "100%",
++          height: "100%",
++          pointerEvents: "none",
++        }}
++      >
++        {/* Draw connections from "you" to others */}
++        {COMMUNITY_MEMBERS.filter((m) => !m.isYou).map((member, i) => {
++          const memberX = offsetX + member.x * contentWidth;
++          const memberY = offsetY + member.y * contentHeight;
++          const connectionType = getConnectionType(member.compatibility || 0);
++
++          // Stagger connection appearance
++          const connectionDelay = i * 15;
++          const lineProgress = interpolate(
++            frame,
++            [120 + connectionDelay, 200 + connectionDelay],
++            [0, 1],
++            { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
++          );
++
++          const lineLength = Math.sqrt(
++            Math.pow(memberX - youX, 2) + Math.pow(memberY - youY, 2)
++          );
++          const dashLength = lineLength * lineProgress;
++
++          // Pulse effect
++          const pulseWidth = isPulsing ? 2 + Math.sin(pulsePhase + i) * 0.5 : 2;
++
++          return (
++            <g key={member.id}>
++              {/* Connection line */}
++              <line
++                x1={youX}
++                y1={youY}
++                x2={memberX}
++                y2={memberY}
++                stroke={connectionType.color}
++                strokeWidth={pulseWidth}
++                strokeDasharray={`${dashLength} ${lineLength}`}
++                opacity={0.4 + lineProgress * 0.3}
++              />
++            </g>
++          );
++        })}
++      </svg>
++
++      {/* Community member nodes */}
++      {COMMUNITY_MEMBERS.map((member, i) => {
++        const memberX = offsetX + member.x * contentWidth;
++        const memberY = offsetY + member.y * contentHeight;
++
++        // For "you", use youOpacity; for others, stagger based on index
++        const nodeDelay = member.isYou ? 0 : (i - 1) * 15;
++        const nodeOpacity = member.isYou
++          ? youOpacity
++          : interpolate(frame, [60 + nodeDelay, 100 + nodeDelay], [0, 1], {
++              extrapolateLeft: "clamp",
++              extrapolateRight: "clamp",
++            });
++
++        const nodeScale = spring({
++          frame: frame - (member.isYou ? 30 : 60 + nodeDelay),
++          fps,
++          config: { damping: 12, stiffness: 100 },
++        });
++
++        // Pulse for "you" node
++        const youPulse = isPulsing && member.isYou ? 1 + Math.sin(pulsePhase * 2) * 0.05 : 1;
++
++        return (
++          <div
++            key={member.id}
++            style={{
++              position: "absolute",
++              left: memberX,
++              top: memberY,
++              transform: `translate(-50%, -50%) scale(${nodeScale * youPulse})`,
++              opacity: nodeOpacity,
++            }}
++          >
++            {/* Node circle */}
++            <div
++              style={{
++                width: member.isYou ? 80 : 60,
++                height: member.isYou ? 80 : 60,
++                borderRadius: "50%",
++                background: member.isYou
++                  ? `radial-gradient(circle at 30% 30%, ${member.color}, ${member.color}80)`
++                  : `radial-gradient(circle at 30% 30%, ${member.color}40, ${member.color}10)`,
++                border: `2px solid ${member.color}`,
++                display: "flex",
++                alignItems: "center",
++                justifyContent: "center",
++                boxShadow: member.isYou
++                  ? `0 0 30px ${member.color}60`
++                  : `0 0 15px ${member.color}30`,
++              }}
++            >
++              <span style={{ fontSize: member.isYou ? 32 : 24 }}>{member.icon}</span>
++            </div>
++
++            {/* Username label */}
++            <div
++              style={{
++                position: "absolute",
++                top: "100%",
++                left: "50%",
++                transform: "translateX(-50%)",
++                marginTop: 8,
++                textAlign: "center",
++                whiteSpace: "nowrap",
++              }}
++            >
++              <p
++                style={{
++                  fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++                  fontSize: 11,
++                  fontWeight: 600,
++                  color: member.isYou ? member.color : COLORS.white,
++                  margin: 0,
++                }}
++              >
++                @{member.username}
++              </p>
++              {!member.isYou && (
++                <p
++                  style={{
++                    fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++                    fontSize: 10,
++                    fontWeight: 500,
++                    color: getConnectionType(member.compatibility || 0).color,
++                    margin: "4px 0 0",
++                  }}
++                >
++                  {member.compatibility}% match
++                </p>
++              )}
++            </div>
++          </div>
++        );
++      })}
++
++      {/* Stats bar at bottom */}
++      <div
++        style={{
++          position: "absolute",
++          bottom: 60,
++          left: 0,
++          right: 0,
++          display: "flex",
++          justifyContent: "center",
++          gap: 60,
++          opacity: statsOpacity,
++        }}
++      >
++        <StatBadge
++          icon="👯"
++          label="Taste Twins"
++          count={2}
++          color={CONNECTION_TYPES.taste_twin.color}
++        />
++        <StatBadge
++          icon="🎵"
++          label="Genre Buddies"
++          count={4}
++          color={CONNECTION_TYPES.genre_buddy.color}
++        />
++        <StatBadge
++          icon="🧭"
++          label="Explorers"
++          count={12}
++          color={CONNECTION_TYPES.explorer.color}
++        />
++      </div>
++
++      {/* Legend */}
++      <div
++        style={{
++          position: "absolute",
++          bottom: 130,
++          left: 0,
++          right: 0,
++          display: "flex",
++          justifyContent: "center",
++          gap: 30,
++          opacity: statsOpacity,
++        }}
++      >
++        {Object.entries(CONNECTION_TYPES).map(([key, type]) => (
++          <div key={key} style={{ display: "flex", alignItems: "center", gap: 8 }}>
++            <div
++              style={{
++                width: 12,
++                height: 3,
++                backgroundColor: type.color,
++                borderRadius: 1,
++              }}
++            />
++            <span
++              style={{
++                fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++                fontSize: 10,
++                fontWeight: 500,
++                color: COLORS.gray[500],
++                letterSpacing: "0.05em",
++              }}
++            >
++              {type.name} ({type.minScore}%+)
++            </span>
++          </div>
++        ))}
++      </div>
++    </AbsoluteFill>
++  );
++}
++
++function StatBadge({
++  icon,
++  label,
++  count,
++  color,
++}: {
++  icon: string;
++  label: string;
++  count: number;
++  color: string;
++}) {
++  return (
++    <div
++      style={{
++        display: "flex",
++        alignItems: "center",
++        gap: 12,
++        padding: "10px 16px",
++        border: `1px solid ${color}40`,
++        backgroundColor: `${color}10`,
++      }}
++    >
++      <span style={{ fontSize: 20 }}>{icon}</span>
++      <div>
++        <p
++          style={{
++            fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++            fontSize: 10,
++            fontWeight: 500,
++            color: COLORS.gray[500],
++            letterSpacing: "0.1em",
++            textTransform: "uppercase",
++            margin: 0,
++          }}
++        >
++          {label}
++        </p>
++        <p
++          style={{
++            fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++            fontSize: 24,
++            fontWeight: 700,
++            color,
++            margin: "4px 0 0",
++          }}
++        >
++          {count}
++        </p>
++      </div>
++    </div>
++  );
++}
+diff --git a/remotion/scenes/HookScene.tsx b/remotion/scenes/HookScene.tsx
+new file mode 100644
+index 0000000..f97e89e
+--- /dev/null
++++ b/remotion/scenes/HookScene.tsx
+@@ -0,0 +1,137 @@
++import { AbsoluteFill, useCurrentFrame, interpolate, spring, useVideoConfig } from "remotion";
++
++interface Props {
++  width?: number;
++  height?: number;
++}
++
++export const HookScene: React.FC<Props> = ({ width = 1920, height = 1080 }) => {
++  const frame = useCurrentFrame();
++  const { fps } = useVideoConfig();
++  const isVertical = height > width;
++
++  // Message animations
++  const message1Opacity = interpolate(frame, [0, 8], [0, 1], { extrapolateRight: "clamp" });
++  const message1Y = spring({ frame, fps, from: 20, to: 0, durationInFrames: 12 });
++
++  const message2Opacity = interpolate(frame, [25, 33], [0, 1], { extrapolateRight: "clamp" });
++  const message2Y = spring({ frame: frame - 25, fps, from: 20, to: 0, durationInFrames: 12 });
++
++  // Title appears
++  const titleOpacity = interpolate(frame, [50, 60], [0, 1], { extrapolateRight: "clamp" });
++
++  // Glitch effect
++  const glitchX = frame > 55 ? Math.sin(frame * 3) * 2 : 0;
++
++  const fontSize = isVertical ? 24 : 18;
++  const titleFontSize = isVertical ? 42 : 32;
++
++  return (
++    <AbsoluteFill
++      style={{
++        backgroundColor: "#0a0a0a",
++        transform: `translateX(${glitchX}px)`,
++      }}
++    >
++      {/* Chat bubbles - brutalist style */}
++      <div
++        style={{
++          position: "absolute",
++          top: "50%",
++          left: "50%",
++          transform: "translate(-50%, -50%)",
++          display: "flex",
++          flexDirection: "column",
++          gap: 20,
++          width: isVertical ? "85%" : "45%",
++        }}
++      >
++        {/* Incoming message - sharp edges */}
++        <div
++          style={{
++            opacity: message1Opacity,
++            transform: `translateY(${message1Y}px)`,
++            alignSelf: "flex-start",
++          }}
++        >
++          <div
++            style={{
++              backgroundColor: "#1a1a1a",
++              border: "1px solid #333",
++              padding: "16px 20px",
++            }}
++          >
++            <p style={{
++              color: "#ededed",
++              fontSize,
++              margin: 0,
++              fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++              fontWeight: 400,
++            }}>
++              so what music are you into?
++            </p>
++          </div>
++        </div>
++
++        {/* Typing indicator */}
++        <div
++          style={{
++            opacity: message2Opacity,
++            transform: `translateY(${message2Y}px)`,
++            alignSelf: "flex-end",
++          }}
++        >
++          <div
++            style={{
++              backgroundColor: "#222",
++              border: "1px solid #444",
++              padding: "16px 24px",
++              display: "flex",
++              gap: 8,
++            }}
++          >
++            {[0, 1, 2].map((i) => (
++              <div
++                key={i}
++                style={{
++                  width: 6,
++                  height: 6,
++                  backgroundColor: "#666",
++                }}
++              />
++            ))}
++          </div>
++        </div>
++      </div>
++
++      {/* THE DREADED QUESTION - brutalist typography */}
++      <div
++        style={{
++          position: "absolute",
++          bottom: isVertical ? "18%" : "14%",
++          left: 0,
++          right: 0,
++          display: "flex",
++          justifyContent: "center",
++          opacity: titleOpacity,
++        }}
++      >
++        <h1
++          style={{
++            fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++            fontSize: titleFontSize,
++            fontWeight: 700,
++            color: "#ededed",
++            textTransform: "uppercase",
++            letterSpacing: "0.2em",
++            margin: 0,
++            borderBottom: "2px solid #ffd700",
++            paddingBottom: 8,
++          }}
++        >
++          THE DREADED QUESTION
++        </h1>
++      </div>
++    </AbsoluteFill>
++  );
++};
+diff --git a/remotion/scenes/JourneyScene.tsx b/remotion/scenes/JourneyScene.tsx
+new file mode 100644
+index 0000000..8c1df71
+--- /dev/null
++++ b/remotion/scenes/JourneyScene.tsx
+@@ -0,0 +1,424 @@
++import { AbsoluteFill, interpolate, useCurrentFrame, Easing, spring, useVideoConfig } from "remotion";
++import { COLORS } from "../lib/colors";
++
++// Scene: THE JOURNEY
++// Visualizes taste evolution over time - how your musical identity grows
++// Time-lapse of reviews, genre expansion, archetype evolution
++
++interface JourneySceneProps {
++  width?: number;
++  height?: number;
++}
++
++// Sample journey milestones
++const JOURNEY_MILESTONES = [
++  { month: "JAN", reviews: 5, genres: 2, archetype: null, color: COLORS.gray[600] },
++  { month: "FEB", reviews: 15, genres: 4, archetype: null, color: COLORS.gray[500] },
++  { month: "MAR", reviews: 25, genres: 6, archetype: "Hip-Hop Head", color: "#00ff88" },
++  { month: "APR", reviews: 40, genres: 8, archetype: "Hip-Hop Head", color: "#00ff88" },
++  { month: "MAY", reviews: 60, genres: 10, archetype: "Genre Fluid", color: "#c44dff" },
++  { month: "JUN", reviews: 85, genres: 12, archetype: "Genre Fluid", color: "#c44dff" },
++];
++
++// Genre discovery timeline
++const GENRE_DISCOVERIES = [
++  { name: "Hip-Hop", frame: 60, color: "#ff6b6b" },
++  { name: "R&B", frame: 90, color: "#4ecdc4" },
++  { name: "Jazz", frame: 130, color: "#ffe66d" },
++  { name: "Soul", frame: 160, color: "#c44dff" },
++  { name: "Electronic", frame: 200, color: "#45b7d1" },
++  { name: "Indie", frame: 240, color: "#ff9f43" },
++];
++
++export function JourneyScene({ width = 1920, height = 1080 }: JourneySceneProps) {
++  const frame = useCurrentFrame();
++  const { fps } = useVideoConfig();
++
++  // Phase 1: Title (frames 0-50)
++  const titleOpacity = interpolate(frame, [0, 40], [0, 1], {
++    extrapolateLeft: "clamp",
++    extrapolateRight: "clamp",
++  });
++
++  // Phase 2: Timeline reveals (frames 40-200)
++  const timelineProgress = interpolate(frame, [40, 200], [0, 1], {
++    extrapolateLeft: "clamp",
++    extrapolateRight: "clamp",
++    easing: Easing.bezier(0.25, 0.1, 0.25, 1),
++  });
++
++  // Phase 3: Stats count up (frames 150-280)
++  const statsProgress = interpolate(frame, [150, 280], [0, 1], {
++    extrapolateLeft: "clamp",
++    extrapolateRight: "clamp",
++    easing: Easing.bezier(0, 0, 0.2, 1),
++  });
++
++  // Phase 4: Archetype transformation (frames 280-360)
++  const transformProgress = interpolate(frame, [280, 360], [0, 1], {
++    extrapolateLeft: "clamp",
++    extrapolateRight: "clamp",
++    easing: Easing.bezier(0.4, 0, 0.2, 1),
++  });
++
++  // Current milestone based on progress
++  const currentMilestoneIndex = Math.floor(timelineProgress * (JOURNEY_MILESTONES.length - 1));
++  const currentMilestone = JOURNEY_MILESTONES[currentMilestoneIndex];
++
++  // Animated values
++  const displayReviews = Math.round(85 * statsProgress);
++  const displayGenres = Math.round(12 * statsProgress);
++
++  return (
++    <AbsoluteFill
++      style={{
++        backgroundColor: COLORS.black,
++        display: "flex",
++        alignItems: "center",
++        justifyContent: "center",
++      }}
++    >
++      {/* Title */}
++      <div
++        style={{
++          position: "absolute",
++          top: 50,
++          left: 0,
++          right: 0,
++          textAlign: "center",
++          opacity: titleOpacity,
++        }}
++      >
++        <p
++          style={{
++            fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++            fontSize: 12,
++            fontWeight: 500,
++            color: COLORS.gray[500],
++            letterSpacing: "0.3em",
++            textTransform: "uppercase",
++            margin: 0,
++          }}
++        >
++          YOUR TASTE EVOLUTION
++        </p>
++        <h2
++          style={{
++            fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++            fontSize: 48,
++            fontWeight: 700,
++            color: COLORS.white,
++            margin: "12px 0",
++            letterSpacing: "-0.02em",
++          }}
++        >
++          The Journey
++        </h2>
++      </div>
++
++      {/* Main timeline */}
++      <div
++        style={{
++          position: "absolute",
++          left: "10%",
++          right: "10%",
++          top: "40%",
++        }}
++      >
++        {/* Timeline base line */}
++        <div
++          style={{
++            position: "relative",
++            height: 4,
++            backgroundColor: COLORS.gray[800],
++            borderRadius: 2,
++          }}
++        >
++          {/* Progress fill */}
++          <div
++            style={{
++              position: "absolute",
++              left: 0,
++              top: 0,
++              height: "100%",
++              width: `${timelineProgress * 100}%`,
++              background: `linear-gradient(90deg, ${COLORS.gray[600]}, ${currentMilestone?.color || COLORS.white})`,
++              borderRadius: 2,
++            }}
++          />
++
++          {/* Milestone markers */}
++          {JOURNEY_MILESTONES.map((milestone, i) => {
++            const position = (i / (JOURNEY_MILESTONES.length - 1)) * 100;
++            const isReached = position / 100 <= timelineProgress;
++            const isActive = i === currentMilestoneIndex;
++
++            return (
++              <div
++                key={milestone.month}
++                style={{
++                  position: "absolute",
++                  left: `${position}%`,
++                  top: "50%",
++                  transform: "translate(-50%, -50%)",
++                }}
++              >
++                {/* Marker dot */}
++                <div
++                  style={{
++                    width: isActive ? 20 : 12,
++                    height: isActive ? 20 : 12,
++                    borderRadius: "50%",
++                    backgroundColor: isReached ? milestone.color : COLORS.gray[700],
++                    border: `2px solid ${isReached ? milestone.color : COLORS.gray[600]}`,
++                    boxShadow: isActive ? `0 0 20px ${milestone.color}80` : "none",
++                    transition: "all 0.2s ease-out",
++                  }}
++                />
++
++                {/* Month label */}
++                <p
++                  style={{
++                    position: "absolute",
++                    top: -30,
++                    left: "50%",
++                    transform: "translateX(-50%)",
++                    fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++                    fontSize: 10,
++                    fontWeight: 600,
++                    color: isReached ? COLORS.white : COLORS.gray[600],
++                    letterSpacing: "0.1em",
++                    whiteSpace: "nowrap",
++                    margin: 0,
++                  }}
++                >
++                  {milestone.month}
++                </p>
++
++                {/* Reviews count */}
++                <p
++                  style={{
++                    position: "absolute",
++                    top: 24,
++                    left: "50%",
++                    transform: "translateX(-50%)",
++                    fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++                    fontSize: 12,
++                    fontWeight: 500,
++                    color: isReached ? COLORS.gray[400] : COLORS.gray[700],
++                    whiteSpace: "nowrap",
++                    margin: 0,
++                  }}
++                >
++                  {isReached ? `${milestone.reviews} reviews` : ""}
++                </p>
++
++                {/* Archetype reveal */}
++                {milestone.archetype && isReached && (
++                  <div
++                    style={{
++                      position: "absolute",
++                      top: 50,
++                      left: "50%",
++                      transform: "translateX(-50%)",
++                      padding: "4px 8px",
++                      border: `1px solid ${milestone.color}`,
++                      backgroundColor: `${milestone.color}20`,
++                      whiteSpace: "nowrap",
++                    }}
++                  >
++                    <span
++                      style={{
++                        fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++                        fontSize: 10,
++                        fontWeight: 600,
++                        color: milestone.color,
++                        letterSpacing: "0.05em",
++                        textTransform: "uppercase",
++                      }}
++                    >
++                      {milestone.archetype}
++                    </span>
++                  </div>
++                )}
++              </div>
++            );
++          })}
++        </div>
++      </div>
++
++      {/* Genre discovery bubbles */}
++      <div
++        style={{
++          position: "absolute",
++          bottom: "25%",
++          left: 0,
++          right: 0,
++          display: "flex",
++          justifyContent: "center",
++          gap: 20,
++          flexWrap: "wrap",
++          padding: "0 10%",
++        }}
++      >
++        {GENRE_DISCOVERIES.map((genre) => {
++          const genreOpacity = interpolate(frame, [genre.frame, genre.frame + 30], [0, 1], {
++            extrapolateLeft: "clamp",
++            extrapolateRight: "clamp",
++          });
++
++          const genreScale = spring({
++            frame: frame - genre.frame,
++            fps,
++            config: { damping: 12, stiffness: 100 },
++          });
++
++          return (
++            <div
++              key={genre.name}
++              style={{
++                padding: "8px 16px",
++                borderRadius: 20,
++                border: `1px solid ${genre.color}`,
++                backgroundColor: `${genre.color}20`,
++                opacity: genreOpacity,
++                transform: `scale(${genreScale})`,
++              }}
++            >
++              <span
++                style={{
++                  fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++                  fontSize: 12,
++                  fontWeight: 600,
++                  color: genre.color,
++                  letterSpacing: "0.05em",
++                  textTransform: "uppercase",
++                }}
++              >
++                {genre.name}
++              </span>
++            </div>
++          );
++        })}
++      </div>
++
++      {/* Stats summary */}
++      <div
++        style={{
++          position: "absolute",
++          bottom: 60,
++          left: 0,
++          right: 0,
++          display: "flex",
++          justifyContent: "center",
++          gap: 60,
++        }}
++      >
++        <StatBox
++          label="REVIEWS"
++          value={displayReviews}
++          suffix=""
++          color={COLORS.white}
++          opacity={statsProgress}
++        />
++        <StatBox
++          label="GENRES"
++          value={displayGenres}
++          suffix=""
++          color="#c44dff"
++          opacity={statsProgress}
++        />
++        <StatBox
++          label="MONTHS"
++          value={6}
++          suffix=""
++          color="#00ff88"
++          opacity={statsProgress}
++        />
++      </div>
++
++      {/* Archetype transformation animation */}
++      {transformProgress > 0 && (
++        <div
++          style={{
++            position: "absolute",
++            right: "10%",
++            top: "50%",
++            transform: "translateY(-50%)",
++            textAlign: "center",
++            opacity: transformProgress,
++          }}
++        >
++          <p
++            style={{
++              fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++              fontSize: 10,
++              fontWeight: 500,
++              color: COLORS.gray[500],
++              letterSpacing: "0.2em",
++              textTransform: "uppercase",
++              margin: 0,
++            }}
++          >
++            CURRENT ARCHETYPE
++          </p>
++          <p
++            style={{
++              fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++              fontSize: 28,
++              fontWeight: 700,
++              color: "#c44dff",
++              margin: "12px 0 0",
++            }}
++          >
++            🌊 Genre Fluid
++          </p>
++        </div>
++      )}
++    </AbsoluteFill>
++  );
++}
++
++function StatBox({
++  label,
++  value,
++  suffix,
++  color,
++  opacity,
++}: {
++  label: string;
++  value: number;
++  suffix: string;
++  color: string;
++  opacity: number;
++}) {
++  return (
++    <div style={{ textAlign: "center", opacity }}>
++      <p
++        style={{
++          fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++          fontSize: 10,
++          fontWeight: 500,
++          color: COLORS.gray[500],
++          letterSpacing: "0.15em",
++          textTransform: "uppercase",
++          margin: 0,
++        }}
++      >
++        {label}
++      </p>
++      <p
++        style={{
++          fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++          fontSize: 48,
++          fontWeight: 700,
++          color,
++          margin: "8px 0 0",
++        }}
++      >
++        {value}
++        {suffix}
++      </p>
++    </div>
++  );
++}
+diff --git a/remotion/scenes/MapScene.tsx b/remotion/scenes/MapScene.tsx
+new file mode 100644
+index 0000000..5547dc8
+--- /dev/null
++++ b/remotion/scenes/MapScene.tsx
+@@ -0,0 +1,198 @@
++import { AbsoluteFill, useCurrentFrame, interpolate, spring, useVideoConfig } from "remotion";
++
++interface Props {
++  width?: number;
++  height?: number;
++}
++
++const GENRES = [
++  { name: "Hip-Hop", value: 0.9, angle: 0 },
++  { name: "R&B", value: 0.85, angle: 51 },
++  { name: "Pop", value: 0.6, angle: 102 },
++  { name: "Rock", value: 0.4, angle: 153 },
++  { name: "Electronic", value: 0.7, angle: 204 },
++  { name: "Jazz", value: 0.5, angle: 255 },
++  { name: "Soul", value: 0.75, angle: 306 },
++];
++
++export const MapScene: React.FC<Props> = ({ width = 1920, height = 1080 }) => {
++  const frame = useCurrentFrame();
++  const { fps } = useVideoConfig();
++  const isVertical = height > width;
++
++  // Radar chart builds up
++  const radarProgress = interpolate(frame, [0, 60], [0, 1], { extrapolateRight: "clamp" });
++
++  // Archetype reveal
++  const showArchetype = frame > 70;
++  const archetypeOpacity = interpolate(frame, [70, 85], [0, 1], { extrapolateRight: "clamp" });
++  const archetypeScale = spring({ frame: frame - 70, fps, from: 0.5, to: 1, durationInFrames: 20 });
++
++  // "your taste. mapped." text
++  const textOpacity = interpolate(frame, [90, 100], [0, 1], { extrapolateRight: "clamp" });
++
++  const centerX = 0;
++  const centerY = isVertical ? -80 : -40;
++  const radius = isVertical ? 140 : 120;
++
++  // Generate radar chart path
++  const generatePath = (progress: number) => {
++    const points = GENRES.map((genre, i) => {
++      const angleRad = (genre.angle - 90) * (Math.PI / 180);
++      const r = radius * genre.value * progress;
++      const x = centerX + Math.cos(angleRad) * r;
++      const y = centerY + Math.sin(angleRad) * r;
++      return `${i === 0 ? "M" : "L"} ${x} ${y}`;
++    });
++    return points.join(" ") + " Z";
++  };
++
++  return (
++    <AbsoluteFill
++      style={{
++        backgroundColor: "#0a0a0a",
++        display: "flex",
++        alignItems: "center",
++        justifyContent: "center",
++      }}
++    >
++      {/* Radar Chart */}
++      <svg
++        width={isVertical ? 400 : 350}
++        height={isVertical ? 400 : 350}
++        viewBox="-200 -200 400 400"
++        style={{ marginTop: isVertical ? -100 : -60 }}
++      >
++        {/* Grid circles */}
++        {[0.25, 0.5, 0.75, 1].map((r) => (
++          <circle
++            key={r}
++            cx={centerX}
++            cy={centerY}
++            r={radius * r}
++            fill="none"
++            stroke="#222"
++            strokeWidth={1}
++          />
++        ))}
++
++        {/* Axis lines */}
++        {GENRES.map((genre) => {
++          const angleRad = (genre.angle - 90) * (Math.PI / 180);
++          const x2 = centerX + Math.cos(angleRad) * radius;
++          const y2 = centerY + Math.sin(angleRad) * radius;
++          return (
++            <line
++              key={genre.name}
++              x1={centerX}
++              y1={centerY}
++              x2={x2}
++              y2={y2}
++              stroke="#333"
++              strokeWidth={1}
++            />
++          );
++        })}
++
++        {/* Data polygon */}
++        <path
++          d={generatePath(radarProgress)}
++          fill="rgba(255, 215, 0, 0.2)"
++          stroke="#ffd700"
++          strokeWidth={2}
++        />
++
++        {/* Genre labels */}
++        {GENRES.map((genre) => {
++          const angleRad = (genre.angle - 90) * (Math.PI / 180);
++          const labelRadius = radius + 30;
++          const x = centerX + Math.cos(angleRad) * labelRadius;
++          const y = centerY + Math.sin(angleRad) * labelRadius;
++          return (
++            <text
++              key={genre.name}
++              x={x}
++              y={y}
++              fill="#888"
++              fontSize={isVertical ? 14 : 12}
++              fontFamily="system-ui"
++              textAnchor="middle"
++              dominantBaseline="middle"
++              opacity={interpolate(frame, [20, 40], [0, 1], { extrapolateRight: "clamp" })}
++            >
++              {genre.name}
++            </text>
++          );
++        })}
++      </svg>
++
++      {/* Archetype reveal */}
++      {showArchetype && (
++        <div
++          style={{
++            position: "absolute",
++            top: isVertical ? "65%" : "68%",
++            left: 0,
++            right: 0,
++            display: "flex",
++            flexDirection: "column",
++            alignItems: "center",
++            gap: 8,
++            opacity: archetypeOpacity,
++            transform: `scale(${archetypeScale})`,
++          }}
++        >
++          <span
++            style={{
++              color: "#666",
++              fontSize: isVertical ? 14 : 12,
++              fontFamily: "system-ui",
++              textTransform: "uppercase",
++              letterSpacing: "0.2em",
++            }}
++          >
++            Your archetype
++          </span>
++          <h2
++            style={{
++              color: "#ffd700",
++              fontSize: isVertical ? 42 : 32,
++              fontFamily: "system-ui",
++              fontWeight: 900,
++              margin: 0,
++              textTransform: "uppercase",
++              letterSpacing: "0.1em",
++            }}
++          >
++            THE CURATOR
++          </h2>
++        </div>
++      )}
++
++      {/* "your taste. mapped." text */}
++      <div
++        style={{
++          position: "absolute",
++          bottom: isVertical ? "8%" : "10%",
++          left: 0,
++          right: 0,
++          display: "flex",
++          justifyContent: "center",
++          opacity: textOpacity,
++        }}
++      >
++        <h3
++          style={{
++            color: "#fff",
++            fontSize: isVertical ? 28 : 22,
++            fontFamily: "system-ui",
++            fontWeight: 500,
++            margin: 0,
++          }}
++        >
++          your taste. mapped.
++        </h3>
++      </div>
++    </AbsoluteFill>
++  );
++};
+diff --git a/remotion/scenes/PolarityScene.tsx b/remotion/scenes/PolarityScene.tsx
+new file mode 100644
+index 0000000..18b457c
+--- /dev/null
++++ b/remotion/scenes/PolarityScene.tsx
+@@ -0,0 +1,360 @@
++import { AbsoluteFill, interpolate, useCurrentFrame, Easing } from "remotion";
++import { COLORS } from "../lib/colors";
++
++// Scene: THE POLARITY
++// Visualizes the 7 Music Networks from Polarity 1.2
++// Shows how different listening modes activate like brain networks
++
++interface PolaritySceneProps {
++  width?: number;
++  height?: number;
++}
++
++const MUSIC_NETWORKS = [
++  { id: "discovery", name: "Discovery", icon: "🔍", color: "#00ff88", description: "Seeking new sounds" },
++  { id: "comfort", name: "Comfort", icon: "🏠", color: "#ff6b6b", description: "Returning to favorites" },
++  { id: "deep_dive", name: "Deep Dive", icon: "🎯", color: "#4ecdc4", description: "Album obsession" },
++  { id: "reactive", name: "Reactive", icon: "📡", color: "#ffe66d", description: "Trend-aware" },
++  { id: "emotional", name: "Emotional", icon: "💜", color: "#c44dff", description: "Feeling the music" },
++  { id: "social", name: "Social", icon: "👥", color: "#45b7d1", description: "Shared listening" },
++  { id: "aesthetic", name: "Aesthetic", icon: "🎨", color: "#ff9f43", description: "Visual discovery" },
++];
++
++// Sample network activation pattern
++const NETWORK_ACTIVATIONS = {
++  discovery: 0.85,
++  comfort: 0.45,
++  deep_dive: 0.72,
++  reactive: 0.35,
++  emotional: 0.68,
++  social: 0.52,
++  aesthetic: 0.61,
++};
++
++export function PolarityScene({ width = 1920, height = 1080 }: PolaritySceneProps) {
++  const frame = useCurrentFrame();
++  const centerX = width / 2;
++  const centerY = height / 2;
++  const radius = Math.min(width, height) * 0.32;
++
++  // Phase 1: Title appears (frames 0-60)
++  const titleOpacity = interpolate(frame, [0, 40], [0, 1], {
++    extrapolateLeft: "clamp",
++    extrapolateRight: "clamp",
++  });
++
++  // Phase 2: Networks emerge from center (frames 40-150)
++  const networkProgress = interpolate(frame, [40, 150], [0, 1], {
++    extrapolateLeft: "clamp",
++    extrapolateRight: "clamp",
++    easing: Easing.bezier(0.25, 0.1, 0.25, 1),
++  });
++
++  // Phase 3: Connections draw between networks (frames 150-250)
++  const connectionProgress = interpolate(frame, [150, 250], [0, 1], {
++    extrapolateLeft: "clamp",
++    extrapolateRight: "clamp",
++    easing: Easing.bezier(0.4, 0, 0.2, 1),
++  });
++
++  // Phase 4: Activation levels animate (frames 200-350)
++  const activationProgress = interpolate(frame, [200, 350], [0, 1], {
++    extrapolateLeft: "clamp",
++    extrapolateRight: "clamp",
++    easing: Easing.bezier(0, 0, 0.2, 1),
++  });
++
++  // Phase 5: Signature label appears (frames 350-400)
++  const signatureOpacity = interpolate(frame, [350, 390], [0, 1], {
++    extrapolateLeft: "clamp",
++    extrapolateRight: "clamp",
++  });
++
++  // Phase 6: Pulse animation (frames 380+)
++  const pulsePhase = (frame - 380) * 0.05;
++  const pulseScale = frame > 380 ? 1 + Math.sin(pulsePhase) * 0.02 : 1;
++
++  // Calculate network positions in a circle
++  const getNetworkPosition = (index: number, total: number) => {
++    const angle = (index / total) * Math.PI * 2 - Math.PI / 2;
++    const currentRadius = radius * networkProgress;
++    return {
++      x: centerX + Math.cos(angle) * currentRadius,
++      y: centerY + Math.sin(angle) * currentRadius,
++    };
++  };
++
++  return (
++    <AbsoluteFill
++      style={{
++        backgroundColor: COLORS.black,
++        display: "flex",
++        alignItems: "center",
++        justifyContent: "center",
++      }}
++    >
++      {/* Title */}
++      <div
++        style={{
++          position: "absolute",
++          top: 60,
++          left: 0,
++          right: 0,
++          textAlign: "center",
++          opacity: titleOpacity,
++        }}
++      >
++        <p
++          style={{
++            fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++            fontSize: 12,
++            fontWeight: 500,
++            color: COLORS.gray[500],
++            letterSpacing: "0.3em",
++            textTransform: "uppercase",
++            margin: 0,
++          }}
++        >
++          POLARITY 1.2
++        </p>
++        <h2
++          style={{
++            fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++            fontSize: 48,
++            fontWeight: 700,
++            color: COLORS.white,
++            margin: "16px 0 8px",
++            letterSpacing: "-0.02em",
++          }}
++        >
++          Music Networks
++        </h2>
++        <p
++          style={{
++            fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++            fontSize: 16,
++            fontWeight: 400,
++            color: COLORS.gray[400],
++            margin: 0,
++          }}
++        >
++          How you engage with music
++        </p>
++      </div>
++
++      {/* Connection lines */}
++      <svg
++        style={{
++          position: "absolute",
++          left: 0,
++          top: 0,
++          width: "100%",
++          height: "100%",
++          pointerEvents: "none",
++          transform: `scale(${pulseScale})`,
++          transformOrigin: "center",
++        }}
++      >
++        {/* Draw connections between adjacent networks */}
++        {MUSIC_NETWORKS.map((network, i) => {
++          const pos1 = getNetworkPosition(i, MUSIC_NETWORKS.length);
++          const nextIndex = (i + 1) % MUSIC_NETWORKS.length;
++          const pos2 = getNetworkPosition(nextIndex, MUSIC_NETWORKS.length);
++
++          const lineLength = Math.sqrt(
++            Math.pow(pos2.x - pos1.x, 2) + Math.pow(pos2.y - pos1.y, 2)
++          );
++          const dashLength = lineLength * connectionProgress;
++
++          return (
++            <line
++              key={`connection-${i}`}
++              x1={pos1.x}
++              y1={pos1.y}
++              x2={pos2.x}
++              y2={pos2.y}
++              stroke={COLORS.gray[700]}
++              strokeWidth="1"
++              strokeDasharray={`${dashLength} ${lineLength}`}
++              opacity={0.5}
++            />
++          );
++        })}
++
++        {/* Draw connections to center */}
++        {MUSIC_NETWORKS.map((network, i) => {
++          const pos = getNetworkPosition(i, MUSIC_NETWORKS.length);
++          const activation = NETWORK_ACTIVATIONS[network.id as keyof typeof NETWORK_ACTIVATIONS] || 0;
++          const animatedActivation = activation * activationProgress;
++
++          return (
++            <line
++              key={`center-${i}`}
++              x1={centerX}
++              y1={centerY}
++              x2={pos.x}
++              y2={pos.y}
++              stroke={network.color}
++              strokeWidth={2 + animatedActivation * 3}
++              opacity={0.3 + animatedActivation * 0.4}
++            />
++          );
++        })}
++      </svg>
++
++      {/* Center brain node */}
++      <div
++        style={{
++          position: "absolute",
++          left: centerX,
++          top: centerY,
++          transform: `translate(-50%, -50%) scale(${pulseScale})`,
++          opacity: networkProgress,
++        }}
++      >
++        <div
++          style={{
++            width: 80,
++            height: 80,
++            borderRadius: "50%",
++            background: `radial-gradient(circle at 30% 30%, ${COLORS.gray[700]}, ${COLORS.gray[900]})`,
++            border: `2px solid ${COLORS.gray[600]}`,
++            display: "flex",
++            alignItems: "center",
++            justifyContent: "center",
++            boxShadow: "0 0 40px rgba(255, 255, 255, 0.1)",
++          }}
++        >
++          <span style={{ fontSize: 32 }}>🧠</span>
++        </div>
++      </div>
++
++      {/* Network nodes */}
++      {MUSIC_NETWORKS.map((network, i) => {
++        const pos = getNetworkPosition(i, MUSIC_NETWORKS.length);
++        const activation = NETWORK_ACTIVATIONS[network.id as keyof typeof NETWORK_ACTIVATIONS] || 0;
++        const animatedActivation = activation * activationProgress;
++        const nodeDelay = i * 10;
++        const nodeOpacity = interpolate(frame, [40 + nodeDelay, 80 + nodeDelay], [0, 1], {
++          extrapolateLeft: "clamp",
++          extrapolateRight: "clamp",
++        });
++
++        return (
++          <div
++            key={network.id}
++            style={{
++              position: "absolute",
++              left: pos.x,
++              top: pos.y,
++              transform: `translate(-50%, -50%) scale(${0.8 + animatedActivation * 0.4})`,
++              opacity: nodeOpacity,
++            }}
++          >
++            {/* Node circle */}
++            <div
++              style={{
++                width: 60 + animatedActivation * 20,
++                height: 60 + animatedActivation * 20,
++                borderRadius: "50%",
++                background: `radial-gradient(circle at 30% 30%, ${network.color}40, ${network.color}10)`,
++                border: `2px solid ${network.color}`,
++                display: "flex",
++                alignItems: "center",
++                justifyContent: "center",
++                boxShadow: `0 0 ${20 + animatedActivation * 30}px ${network.color}40`,
++                transition: "all 0.1s ease-out",
++              }}
++            >
++              <span style={{ fontSize: 24 + animatedActivation * 8 }}>{network.icon}</span>
++            </div>
++
++            {/* Network label */}
++            <div
++              style={{
++                position: "absolute",
++                top: "100%",
++                left: "50%",
++                transform: "translateX(-50%)",
++                marginTop: 12,
++                textAlign: "center",
++                whiteSpace: "nowrap",
++              }}
++            >
++              <p
++                style={{
++                  fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++                  fontSize: 12,
++                  fontWeight: 600,
++                  color: network.color,
++                  letterSpacing: "0.05em",
++                  margin: 0,
++                  textTransform: "uppercase",
++                }}
++              >
++                {network.name}
++              </p>
++              <p
++                style={{
++                  fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++                  fontSize: 10,
++                  fontWeight: 400,
++                  color: COLORS.gray[500],
++                  margin: "4px 0 0",
++                }}
++              >
++                {Math.round(animatedActivation * 100)}%
++              </p>
++            </div>
++          </div>
++        );
++      })}
++
++      {/* Signature summary */}
++      <div
++        style={{
++          position: "absolute",
++          bottom: 60,
++          left: 0,
++          right: 0,
++          textAlign: "center",
++          opacity: signatureOpacity,
++        }}
++      >
++        <div
++          style={{
++            display: "inline-block",
++            padding: "12px 24px",
++            border: `1px solid ${COLORS.gray[700]}`,
++            backgroundColor: COLORS.gray[900],
++          }}
++        >
++          <p
++            style={{
++              fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++              fontSize: 10,
++              fontWeight: 500,
++              color: COLORS.gray[500],
++              letterSpacing: "0.2em",
++              textTransform: "uppercase",
++              margin: 0,
++            }}
++          >
++            YOUR LISTENING SIGNATURE
++          </p>
++          <p
++            style={{
++              fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++              fontSize: 20,
++              fontWeight: 700,
++              color: COLORS.white,
++              margin: "8px 0 0",
++            }}
++          >
++            🔍 Discovery Mode × 🎯 Deep Dive
++          </p>
++        </div>
++      </div>
++    </AbsoluteFill>
++  );
++}
+diff --git a/remotion/scenes/ProofScene.tsx b/remotion/scenes/ProofScene.tsx
+new file mode 100644
+index 0000000..0f556e6
+--- /dev/null
++++ b/remotion/scenes/ProofScene.tsx
+@@ -0,0 +1,182 @@
++import { AbsoluteFill, useCurrentFrame, interpolate, spring, useVideoConfig } from "remotion";
++
++interface Props {
++  width?: number;
++  height?: number;
++}
++
++const TESTIMONIALS = [
++  { text: "finally someone gets it", user: "@melodymaven" },
++  { text: "my music twin is in japan??", user: "@basshead_22" },
++  { text: "94% match is crazy", user: "@vinylvibes" },
++];
++
++const STATS = [
++  { value: "47K", label: "albums rated" },
++  { value: "12K", label: "taste matches" },
++  { value: "89%", label: "match accuracy" },
++];
++
++export const ProofScene: React.FC<Props> = ({ width = 1920, height = 1080 }) => {
++  const frame = useCurrentFrame();
++  const { fps } = useVideoConfig();
++  const isVertical = height > width;
++
++  // Testimonials fly in
++  const testimonial1Y = spring({ frame, fps, from: 100, to: 0, durationInFrames: 15 });
++  const testimonial1Opacity = interpolate(frame, [0, 10], [0, 1], { extrapolateRight: "clamp" });
++
++  const testimonial2Y = spring({ frame: frame - 15, fps, from: 100, to: 0, durationInFrames: 15 });
++  const testimonial2Opacity = interpolate(frame, [15, 25], [0, 1], { extrapolateRight: "clamp" });
++
++  const testimonial3Y = spring({ frame: frame - 30, fps, from: 100, to: 0, durationInFrames: 15 });
++  const testimonial3Opacity = interpolate(frame, [30, 40], [0, 1], { extrapolateRight: "clamp" });
++
++  // Stats counter animation
++  const showStats = frame > 60;
++  const statsOpacity = interpolate(frame, [60, 75], [0, 1], { extrapolateRight: "clamp" });
++
++  // Notification pop
++  const showNotification = frame > 100;
++  const notifScale = spring({ frame: frame - 100, fps, from: 0.5, to: 1, durationInFrames: 12 });
++  const notifOpacity = interpolate(frame, [100, 108], [0, 1], { extrapolateRight: "clamp" });
++
++  const testimonialStyles = [
++    { opacity: testimonial1Opacity, transform: `translateY(${testimonial1Y}px)` },
++    { opacity: testimonial2Opacity, transform: `translateY(${testimonial2Y}px)` },
++    { opacity: testimonial3Opacity, transform: `translateY(${testimonial3Y}px)` },
++  ];
++
++  return (
++    <AbsoluteFill style={{ backgroundColor: "#0a0a0a" }}>
++      {/* Testimonials */}
++      <div
++        style={{
++          position: "absolute",
++          top: isVertical ? "15%" : "20%",
++          left: 0,
++          right: 0,
++          display: "flex",
++          flexDirection: "column",
++          alignItems: "center",
++          gap: isVertical ? 16 : 12,
++          padding: "0 20px",
++        }}
++      >
++        {TESTIMONIALS.map((t, i) => (
++          <div
++            key={i}
++            style={{
++              ...testimonialStyles[i],
++              backgroundColor: "#1a1a1a",
++              padding: isVertical ? "16px 24px" : "12px 20px",
++              borderRadius: 12,
++              borderLeft: "3px solid #ffd700",
++              maxWidth: isVertical ? "90%" : "400px",
++            }}
++          >
++            <p
++              style={{
++                color: "#fff",
++                fontSize: isVertical ? 20 : 16,
++                fontFamily: "system-ui",
++                margin: 0,
++              }}
++            >
++              "{t.text}"
++            </p>
++            <span
++              style={{
++                color: "#666",
++                fontSize: isVertical ? 14 : 12,
++                fontFamily: "system-ui",
++              }}
++            >
++              {t.user}
++            </span>
++          </div>
++        ))}
++      </div>
++
++      {/* Stats */}
++      {showStats && (
++        <div
++          style={{
++            position: "absolute",
++            bottom: isVertical ? "25%" : "20%",
++            left: 0,
++            right: 0,
++            display: "flex",
++            justifyContent: "center",
++            gap: isVertical ? 40 : 60,
++            opacity: statsOpacity,
++          }}
++        >
++          {STATS.map((stat, i) => (
++            <div
++              key={i}
++              style={{
++                display: "flex",
++                flexDirection: "column",
++                alignItems: "center",
++              }}
++            >
++              <span
++                style={{
++                  color: "#ffd700",
++                  fontSize: isVertical ? 36 : 28,
++                  fontWeight: 900,
++                  fontFamily: "system-ui",
++                }}
++              >
++                {stat.value}
++              </span>
++              <span
++                style={{
++                  color: "#666",
++                  fontSize: isVertical ? 12 : 10,
++                  fontFamily: "system-ui",
++                  textTransform: "uppercase",
++                  letterSpacing: "0.1em",
++                }}
++              >
++                {stat.label}
++              </span>
++            </div>
++          ))}
++        </div>
++      )}
++
++      {/* Notification popup */}
++      {showNotification && (
++        <div
++          style={{
++            position: "absolute",
++            bottom: isVertical ? "10%" : "8%",
++            left: "50%",
++            transform: `translateX(-50%) scale(${notifScale})`,
++            opacity: notifOpacity,
++            backgroundColor: "#1db954",
++            padding: isVertical ? "14px 28px" : "10px 20px",
++            borderRadius: 50,
++            display: "flex",
++            alignItems: "center",
++            gap: 10,
++          }}
++        >
++          <span style={{ fontSize: 20 }}>🔔</span>
++          <span
++            style={{
++              color: "#000",
++              fontSize: isVertical ? 16 : 14,
++              fontWeight: 600,
++              fontFamily: "system-ui",
++            }}
++          >
++            3 new taste matches
++          </span>
++        </div>
++      )}
++    </AbsoluteFill>
++  );
++};
+diff --git a/remotion/scenes/RateScene.tsx b/remotion/scenes/RateScene.tsx
+new file mode 100644
+index 0000000..2ed0342
+--- /dev/null
++++ b/remotion/scenes/RateScene.tsx
+@@ -0,0 +1,272 @@
++import { AbsoluteFill, useCurrentFrame, interpolate, spring, useVideoConfig, Img } from "remotion";
++
++interface Props {
++  width?: number;
++  height?: number;
++}
++
++// Real albums with Spotify cover art (640x640)
++const ALBUMS = [
++  {
++    title: "DAMN.",
++    artist: "Kendrick Lamar",
++    rating: 9.5,
++    cover: "https://i.scdn.co/image/ab67616d0000b2738b52c6b9bc4e43d873869699",
++    color: "#c41e1e",
++  },
++  {
++    title: "Blonde",
++    artist: "Frank Ocean",
++    rating: 10,
++    cover: "https://i.scdn.co/image/ab67616d0000b273c5649add07ed3720be9d5526",
++    color: "#f5a623",
++  },
++  {
++    title: "IGOR",
++    artist: "Tyler, The Creator",
++    rating: 9.0,
++    cover: "https://i.scdn.co/image/ab67616d0000b2737005885df706891a3c182a57",
++    color: "#ff69b4",
++  },
++  {
++    title: "Ctrl",
++    artist: "SZA",
++    rating: 8.5,
++    cover: "https://i.scdn.co/image/ab67616d0000b2734c79d5ec52a6d0302f3add25",
++    color: "#2d5a27",
++  },
++  {
++    title: "good kid, m.A.A.d city",
++    artist: "Kendrick Lamar",
++    rating: 10,
++    cover: "https://i.scdn.co/image/ab67616d0000b273d28d2ebdedb220e479743797",
++    color: "#1a1a2e",
++  },
++];
++
++export const RateScene: React.FC<Props> = ({ width = 1920, height = 1080 }) => {
++  const frame = useCurrentFrame();
++  const { fps } = useVideoConfig();
++  const isVertical = height > width;
++
++  // Each album gets ~24 frames (0.8 seconds)
++  const albumIndex = Math.min(Math.floor(frame / 24), ALBUMS.length - 1);
++  const albumFrame = frame % 24;
++  const album = ALBUMS[albumIndex];
++
++  // Album entrance with punch
++  const albumScale = spring({ frame: albumFrame, fps, from: 0.7, to: 1, durationInFrames: 10, config: { damping: 12 } });
++  const albumOpacity = interpolate(albumFrame, [0, 4], [0, 1], { extrapolateRight: "clamp" });
++
++  // Rating swipe animation
++  const ratingProgress = interpolate(albumFrame, [6, 16], [0, album.rating / 10], { extrapolateRight: "clamp" });
++  const ratingOpacity = interpolate(albumFrame, [10, 14], [0, 1], { extrapolateRight: "clamp" });
++
++  // "rate what you actually think" text at end
++  const showEndText = frame > 100;
++  const endTextOpacity = interpolate(frame, [100, 110], [0, 1], { extrapolateRight: "clamp" });
++
++  const albumSize = isVertical ? 320 : 260;
++
++  return (
++    <AbsoluteFill style={{ backgroundColor: "#0a0a0a" }}>
++      {/* Glow behind album */}
++      <div
++        style={{
++          position: "absolute",
++          top: "50%",
++          left: "50%",
++          transform: "translate(-50%, -50%)",
++          width: albumSize * 1.5,
++          height: albumSize * 1.5,
++          background: `radial-gradient(circle, ${album.color}40 0%, transparent 70%)`,
++          filter: "blur(40px)",
++          opacity: albumOpacity,
++        }}
++      />
++
++      {/* Album Card */}
++      <div
++        style={{
++          position: "absolute",
++          top: "50%",
++          left: "50%",
++          transform: `translate(-50%, -55%) scale(${albumScale})`,
++          opacity: albumOpacity,
++          display: "flex",
++          flexDirection: "column",
++          alignItems: "center",
++          gap: isVertical ? 24 : 18,
++        }}
++      >
++        {/* Album Art */}
++        <div
++          style={{
++            width: albumSize,
++            height: albumSize,
++            overflow: "hidden",
++            boxShadow: `0 25px 80px ${album.color}50, 0 10px 30px rgba(0,0,0,0.5)`,
++            position: "relative",
++            border: "1px solid #333",
++          }}
++        >
++          <Img
++            src={album.cover}
++            style={{
++              width: "100%",
++              height: "100%",
++              objectFit: "cover",
++            }}
++          />
++          {/* Subtle shine overlay */}
++          <div
++            style={{
++              position: "absolute",
++              top: 0,
++              left: 0,
++              right: 0,
++              bottom: 0,
++              background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%)",
++            }}
++          />
++        </div>
++
++        {/* Album info */}
++        <div style={{ textAlign: "center" }}>
++          <h3
++            style={{
++              color: "#ededed",
++              fontSize: isVertical ? 28 : 22,
++              fontWeight: 700,
++              fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++              margin: 0,
++              marginBottom: 6,
++            }}
++          >
++            {album.title}
++          </h3>
++          <p
++            style={{
++              color: "#888",
++              fontSize: isVertical ? 18 : 15,
++              fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++              margin: 0,
++            }}
++          >
++            {album.artist}
++          </p>
++        </div>
++
++        {/* Rating bar */}
++        <div
++          style={{
++            width: albumSize,
++            height: 6,
++            backgroundColor: "#222",
++            overflow: "hidden",
++            marginTop: 8,
++          }}
++        >
++          <div
++            style={{
++              width: `${ratingProgress * 100}%`,
++              height: "100%",
++              backgroundColor: "#ffd700",
++              boxShadow: "0 0 20px #ffd70080",
++            }}
++          />
++        </div>
++
++        {/* Rating number */}
++        <div
++          style={{
++            opacity: ratingOpacity,
++            display: "flex",
++            alignItems: "baseline",
++            gap: 4,
++          }}
++        >
++          <span
++            style={{
++              color: "#ffd700",
++              fontSize: isVertical ? 72 : 56,
++              fontWeight: 900,
++              fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++              textShadow: "0 0 30px #ffd70060",
++            }}
++          >
++            {album.rating}
++          </span>
++          <span
++            style={{
++              color: "#555",
++              fontSize: isVertical ? 28 : 22,
++              fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++              fontWeight: 600,
++            }}
++          >
++            /10
++          </span>
++        </div>
++      </div>
++
++      {/* End text overlay */}
++      {showEndText && (
++        <div
++          style={{
++            position: "absolute",
++            bottom: isVertical ? "12%" : "10%",
++            left: 0,
++            right: 0,
++            display: "flex",
++            justifyContent: "center",
++            opacity: endTextOpacity,
++          }}
++        >
++          <h2
++            style={{
++              color: "#ededed",
++              fontSize: isVertical ? 32 : 26,
++              fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++              fontWeight: 700,
++              letterSpacing: "0.1em",
++              textTransform: "uppercase",
++            }}
++          >
++            rate what you actually think
++          </h2>
++        </div>
++      )}
++
++      {/* Rating count indicator */}
++      <div
++        style={{
++          position: "absolute",
++          top: isVertical ? 50 : 35,
++          right: isVertical ? 35 : 50,
++          display: "flex",
++          alignItems: "center",
++          gap: 8,
++        }}
++      >
++        <div
++          style={{
++            display: "flex",
++            gap: 4,
++          }}
++        >
++          {ALBUMS.map((_, i) => (
++            <div
++              key={i}
++              style={{
++                width: 8,
++                height: 8,
++                backgroundColor: i <= albumIndex ? "#ffd700" : "#333",
++              }}
++            />
++          ))}
++        </div>
++      </div>
++    </AbsoluteFill>
++  );
++};
+diff --git a/remotion/scenes/StruggleScene.tsx b/remotion/scenes/StruggleScene.tsx
+new file mode 100644
+index 0000000..029d711
+--- /dev/null
++++ b/remotion/scenes/StruggleScene.tsx
+@@ -0,0 +1,160 @@
++import { AbsoluteFill, useCurrentFrame, interpolate } from "remotion";
++
++interface Props {
++  width?: number;
++  height?: number;
++}
++
++export const StruggleScene: React.FC<Props> = ({ width = 1920, height = 1080 }) => {
++  const frame = useCurrentFrame();
++  const isVertical = height > width;
++
++  // Rapid cuts - each panel ~22 frames
++  const panel1 = frame < 22;
++  const panel2 = frame >= 22 && frame < 44;
++  const panel3 = frame >= 44 && frame < 66;
++  const panel4 = frame >= 66;
++
++  const fontSize = isVertical ? 28 : 22;
++
++  return (
++    <AbsoluteFill style={{ backgroundColor: "#0a0a0a" }}>
++      {/* Panel 1: "I listen to everything" */}
++      {panel1 && (
++        <AbsoluteFill
++          style={{
++            display: "flex",
++            alignItems: "center",
++            justifyContent: "center",
++          }}
++        >
++          <div
++            style={{
++              backgroundColor: "#1a1a1a",
++              border: "1px solid #333",
++              padding: "24px 36px",
++            }}
++          >
++            <p
++              style={{
++                color: "#888",
++                fontSize: fontSize + 2,
++                fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++                margin: 0,
++                fontStyle: "italic",
++              }}
++            >
++              "I listen to everything lol"
++            </p>
++          </div>
++        </AbsoluteFill>
++      )}
++
++      {/* Panel 2: Generic playlist names */}
++      {panel2 && (
++        <AbsoluteFill
++          style={{
++            display: "flex",
++            flexDirection: "column",
++            alignItems: "center",
++            justifyContent: "center",
++            gap: 8,
++          }}
++        >
++          {["Chill Vibes", "Sad Hours", "Workout", "idk"].map((name, i) => (
++            <div
++              key={name}
++              style={{
++                backgroundColor: "#111",
++                border: "1px solid #222",
++                padding: "10px 24px",
++                opacity: interpolate(frame - 22, [i * 4, i * 4 + 6], [0, 1], {
++                  extrapolateRight: "clamp",
++                }),
++              }}
++            >
++              <p
++                style={{
++                  color: "#666",
++                  fontSize: fontSize - 4,
++                  fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++                  margin: 0,
++                  textTransform: "lowercase",
++                }}
++              >
++                {name}
++              </p>
++            </div>
++          ))}
++        </AbsoluteFill>
++      )}
++
++      {/* Panel 3: Awkward silence */}
++      {panel3 && (
++        <AbsoluteFill
++          style={{
++            display: "flex",
++            alignItems: "center",
++            justifyContent: "center",
++          }}
++        >
++          <p
++            style={{
++              color: "#333",
++              fontSize: fontSize * 4,
++              fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++              letterSpacing: "0.5em",
++            }}
++          >
++            . . .
++          </p>
++        </AbsoluteFill>
++      )}
++
++      {/* Panel 4: The truth */}
++      {panel4 && (
++        <AbsoluteFill
++          style={{
++            display: "flex",
++            alignItems: "center",
++            justifyContent: "center",
++          }}
++        >
++          <h2
++            style={{
++              color: "#ededed",
++              fontSize: isVertical ? 36 : 28,
++              fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
++              fontWeight: 400,
++              textAlign: "center",
++              padding: "0 40px",
++              opacity: interpolate(frame - 66, [0, 10], [0, 1]),
++              textTransform: "lowercase",
++            }}
++          >
++            you can't explain your taste
++          </h2>
++        </AbsoluteFill>
++      )}
++
++      {/* Scan lines */}
++      <div
++        style={{
++          position: "absolute",
++          top: 0,
++          left: 0,
++          right: 0,
++          bottom: 0,
++          background: `repeating-linear-gradient(
++            0deg,
++            transparent,
++            transparent 2px,
++            rgba(0,0,0,0.03) 2px,
++            rgba(0,0,0,0.03) 4px
++          )`,
++          pointerEvents: "none",
++        }}
++      />
++    </AbsoluteFill>
++  );
++};
+diff --git a/src/app/discover/connections/connection-filters.tsx b/src/app/discover/connections/connection-filters.tsx
+new file mode 100644
+index 0000000..64b3590
+--- /dev/null
++++ b/src/app/discover/connections/connection-filters.tsx
+@@ -0,0 +1,47 @@
++"use client"
++
++import Link from "next/link"
++
++const FILTER_OPTIONS = [
++  { id: "all", label: "All", icon: null },
++  { id: "taste_twin", label: "Taste Twins", icon: "👯" },
++  { id: "complementary", label: "Opposite Attracts", icon: "🌀" },
++  { id: "explorer_guide", label: "Explorer Guides", icon: "🧭" },
++  { id: "genre_buddy", label: "Genre Buddies", icon: "🎵" },
++] as const
++
++interface ConnectionFiltersProps {
++  currentFilter: string
++  counts: Record<string, number>
++}
++
++export function ConnectionFilters({ currentFilter, counts }: ConnectionFiltersProps) {
++  return (
++    <div className="flex flex-wrap gap-2 mb-8">
++      {FILTER_OPTIONS.map((option) => {
++        const isActive = currentFilter === option.id
++        const count = counts[option.id] || 0
++
++        return (
++          <Link
++            key={option.id}
++            href={option.id === "all" ? "/discover/connections" : `/discover/connections?filter=${option.id}`}
++            className={`
++              flex items-center gap-2 px-4 py-2 border text-[11px] tracking-[0.1em] uppercase font-medium transition-colors
++              ${isActive
++                ? "border-white bg-white text-black"
++                : "border-[--border] text-[--muted] hover:border-white hover:text-white"
++              }
++            `}
++          >
++            {option.icon && <span className="text-sm">{option.icon}</span>}
++            <span>{option.label}</span>
++            <span className={`tabular-nums ${isActive ? "text-black/60" : "text-[--muted]"}`}>
++              {count}
++            </span>
++          </Link>
++        )
++      })}
++    </div>
++  )
++}
+diff --git a/src/app/discover/connections/page.tsx b/src/app/discover/connections/page.tsx
+new file mode 100644
+index 0000000..b243cdf
+--- /dev/null
++++ b/src/app/discover/connections/page.tsx
+@@ -0,0 +1,363 @@
++import { auth } from "@/lib/auth"
++import { redirect } from "next/navigation"
++import { prisma } from "@/lib/prisma"
++import Link from "next/link"
++import { getArchetypeInfo, computeTasteMatch } from "@/lib/tasteid"
++import { DefaultAvatar } from "@/components/default-avatar"
++import { ConnectionFilters } from "./connection-filters"
++
++export const dynamic = "force-dynamic"
++
++// Match type metadata
++const MATCH_TYPES = {
++  taste_twin: {
++    name: "Taste Twin",
++    icon: "👯",
++    color: "text-[#ffd700]",
++    borderColor: "border-[#ffd700]/30",
++    description: "80%+ compatibility - your musical soulmate",
++  },
++  genre_buddy: {
++    name: "Genre Buddy",
++    icon: "🎵",
++    color: "text-blue-400",
++    borderColor: "border-blue-400/30",
++    description: "Strong genre overlap",
++  },
++  complementary: {
++    name: "Opposite Attracts",
++    icon: "🌀",
++    color: "text-purple-400",
++    borderColor: "border-purple-400/30",
++    description: "Different tastes that could expand your horizons",
++  },
++  explorer_guide: {
++    name: "Explorer Guide",
++    icon: "🧭",
++    color: "text-emerald-400",
++    borderColor: "border-emerald-400/30",
++    description: "One explores, one guides - learn from each other",
++  },
++}
++
++interface TasteConnection {
++  userId: string
++  username: string
++  image: string | null
++  compatibility: number
++  sharedGenres: string[]
++  sharedArtists: string[]
++  archetype: string
++  matchType: keyof typeof MATCH_TYPES
++  genreOverlap: number
++  ratingAlignment: number
++}
++
++async function findTasteConnections(userId: string): Promise<TasteConnection[]> {
++  const userTaste = await prisma.tasteID.findUnique({
++    where: { userId },
++  })
++
++  if (!userTaste) return []
++
++  // Get all other TasteIDs with their users
++  const otherTastes = await prisma.tasteID.findMany({
++    where: { userId: { not: userId } },
++    include: {
++      user: {
++        select: {
++          id: true,
++          username: true,
++          image: true,
++        },
++      },
++    },
++    take: 50, // Get top 50 for performance
++  })
++
++  // Compute detailed matches for each
++  const connections: TasteConnection[] = []
++
++  for (const taste of otherTastes) {
++    if (!taste.user.username) continue
++
++    const match = await computeTasteMatch(userId, taste.userId)
++    if (!match) continue
++
++    connections.push({
++      userId: taste.userId,
++      username: taste.user.username,
++      image: taste.user.image,
++      compatibility: match.overallScore,
++      sharedGenres: match.sharedGenres,
++      sharedArtists: match.sharedArtists,
++      archetype: taste.primaryArchetype,
++      matchType: match.matchType as keyof typeof MATCH_TYPES,
++      genreOverlap: match.genreOverlap,
++      ratingAlignment: match.ratingAlignment,
++    })
++  }
++
++  // Sort by compatibility
++  return connections.sort((a, b) => b.compatibility - a.compatibility)
++}
++
++export default async function ConnectionsPage({
++  searchParams,
++}: {
++  searchParams: Promise<{ filter?: string }>
++}) {
++  const session = await auth()
++  const params = await searchParams
++
++  if (!session?.user?.id) {
++    redirect("/login?callbackUrl=/discover/connections")
++  }
++
++  // Get user's TasteID
++  const tasteId = await prisma.tasteID.findUnique({
++    where: { userId: session.user.id },
++  })
++
++  if (!tasteId) {
++    redirect("/taste-setup")
++  }
++
++  // Get user's review count
++  const reviewCount = await prisma.review.count({
++    where: { userId: session.user.id },
++  })
++
++  // Need 20 reviews for taste matching
++  if (reviewCount < 20) {
++    return (
++      <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
++        <div className="max-w-4xl mx-auto px-6 py-12">
++          <div className="border-2 border-dashed border-[--border] p-12 text-center">
++            <div className="text-6xl mb-6">🎵</div>
++            <h1 className="text-3xl font-bold mb-4">Need More Reviews</h1>
++            <p className="text-[--muted] mb-6 max-w-md mx-auto">
++              You need at least 20 reviews to find taste connections. You currently have{" "}
++              <span className="font-bold text-white">{reviewCount}</span> reviews.
++            </p>
++            <div className="mb-8">
++              <div className="w-full max-w-xs mx-auto h-2 bg-[--border] rounded-full overflow-hidden">
++                <div
++                  className="h-full bg-[#ffd700] transition-all duration-500"
++                  style={{ width: `${Math.min((reviewCount / 20) * 100, 100)}%` }}
++                />
++              </div>
++              <p className="text-[11px] text-[--muted] mt-2 tabular-nums">
++                {reviewCount} / 20 reviews
++              </p>
++            </div>
++            <Link
++              href="/search"
++              className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black text-[11px] tracking-[0.15em] uppercase font-medium hover:bg-[#e5e5e5] transition-colors"
++            >
++              Find Albums to Review
++              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
++                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
++              </svg>
++            </Link>
++          </div>
++        </div>
++      </div>
++    )
++  }
++
++  const allConnections = await findTasteConnections(session.user.id)
++  const userArchetype = getArchetypeInfo(tasteId.primaryArchetype)
++
++  // Filter connections based on URL param
++  const filter = params.filter || "all"
++  const connections =
++    filter === "all"
++      ? allConnections
++      : allConnections.filter((c) => c.matchType === filter)
++
++  // Count by type for filter badges
++  const typeCounts = {
++    all: allConnections.length,
++    taste_twin: allConnections.filter((c) => c.matchType === "taste_twin").length,
++    complementary: allConnections.filter((c) => c.matchType === "complementary").length,
++    explorer_guide: allConnections.filter((c) => c.matchType === "explorer_guide").length,
++    genre_buddy: allConnections.filter((c) => c.matchType === "genre_buddy").length,
++  }
++
++  return (
++    <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
++      <div className="max-w-5xl mx-auto px-6 py-12">
++        {/* Header */}
++        <div className="mb-12 pb-6 border-b border-[--border]">
++          <div className="flex items-center justify-between mb-6">
++            <div>
++              <p className="text-[10px] tracking-[0.4em] uppercase text-[#ffd700] mb-2">
++                Polarity Match Engine
++              </p>
++              <h1 className="text-4xl font-bold tracking-tight">Taste Connections</h1>
++            </div>
++            <Link
++              href="/discover"
++              className="px-4 py-2 border-2 border-[--border] text-[11px] tracking-[0.15em] uppercase font-medium hover:border-white hover:bg-white hover:text-black transition-colors"
++            >
++              Back
++            </Link>
++          </div>
++          <p className="text-[--muted] max-w-2xl">
++            Find people who share your musical DNA. Connections are computed using genre overlap,
++            artist preferences, and rating patterns.
++          </p>
++        </div>
++
++        {/* Your TasteID */}
++        <div className="mb-8 p-5 border border-[--border] flex items-center gap-4">
++          <div className="text-4xl">{userArchetype.icon}</div>
++          <div className="flex-1">
++            <div className="text-[10px] tracking-[0.2em] uppercase text-[--muted] mb-1">
++              Your Archetype
++            </div>
++            <div className="text-xl font-bold">{userArchetype.name}</div>
++          </div>
++          <Link
++            href={`/u/${session.user.username || session.user.id}/tasteid`}
++            className="text-[10px] tracking-[0.15em] uppercase text-[--muted] hover:text-white transition-colors"
++          >
++            View Full TasteID →
++          </Link>
++        </div>
++
++        {/* Filter Tabs */}
++        <ConnectionFilters currentFilter={filter} counts={typeCounts} />
++
++        {/* Connections Grid */}
++        {connections.length > 0 ? (
++          <div className="grid gap-4 md:grid-cols-2">
++            {connections.map((connection) => {
++              const matchMeta = MATCH_TYPES[connection.matchType] || MATCH_TYPES.genre_buddy
++              const archetypeInfo = getArchetypeInfo(connection.archetype)
++
++              return (
++                <Link
++                  key={connection.userId}
++                  href={`/u/${connection.username}`}
++                  className={`group border ${matchMeta.borderColor} hover:border-white p-5 transition-colors`}
++                >
++                  <div className="flex items-start gap-4">
++                    {/* Avatar */}
++                    <div className="w-14 h-14 border border-[--border] flex-shrink-0 overflow-hidden group-hover:border-white transition-colors">
++                      {connection.image ? (
++                        <img
++                          src={connection.image}
++                          alt={connection.username}
++                          className="w-full h-full object-cover"
++                        />
++                      ) : (
++                        <DefaultAvatar size="md" className="w-full h-full" />
++                      )}
++                    </div>
++
++                    {/* Info */}
++                    <div className="flex-1 min-w-0">
++                      <div className="flex items-center gap-2 mb-1">
++                        <span className="font-bold text-lg truncate">@{connection.username}</span>
++                        <span className={`text-sm ${matchMeta.color}`}>{matchMeta.icon}</span>
++                      </div>
++
++                      {/* Archetype */}
++                      <div className="text-sm text-[--muted] mb-3 flex items-center gap-2">
++                        <span>{archetypeInfo.icon}</span>
++                        <span className="uppercase text-[10px] tracking-wider">{archetypeInfo.name}</span>
++                      </div>
++
++                      {/* Match Type Badge */}
++                      <div className={`inline-flex items-center gap-1.5 text-[10px] px-2 py-1 border ${matchMeta.borderColor} ${matchMeta.color} uppercase tracking-wider mb-3`}>
++                        {matchMeta.name}
++                      </div>
++
++                      {/* Shared Genres */}
++                      {connection.sharedGenres.length > 0 && (
++                        <div className="flex gap-1.5 flex-wrap">
++                          {connection.sharedGenres.slice(0, 3).map((genre) => (
++                            <span
++                              key={genre}
++                              className="text-[9px] px-2 py-0.5 border border-[--border] text-[--muted] uppercase tracking-wider"
++                            >
++                              {genre}
++                            </span>
++                          ))}
++                          {connection.sharedGenres.length > 3 && (
++                            <span className="text-[9px] px-2 py-0.5 text-[--muted]">
++                              +{connection.sharedGenres.length - 3}
++                            </span>
++                          )}
++                        </div>
++                      )}
++                    </div>
++
++                    {/* Compatibility Score */}
++                    <div className="flex-shrink-0 text-center">
++                      <div className="text-3xl font-bold tabular-nums">{connection.compatibility}%</div>
++                      <div className="text-[9px] text-[--muted] uppercase tracking-wider">Match</div>
++                    </div>
++                  </div>
++
++                  {/* Stats Row */}
++                  <div className="mt-4 pt-4 border-t border-[--border] flex items-center gap-6 text-[10px] text-[--muted]">
++                    <div>
++                      <span className="font-semibold text-white">{connection.genreOverlap}%</span> genre overlap
++                    </div>
++                    <div>
++                      <span className="font-semibold text-white">{connection.ratingAlignment}%</span> rating alignment
++                    </div>
++                    {connection.sharedArtists.length > 0 && (
++                      <div>
++                        <span className="font-semibold text-white">{connection.sharedArtists.length}</span> shared artists
++                      </div>
++                    )}
++                  </div>
++                </Link>
++              )
++            })}
++          </div>
++        ) : (
++          <div className="border-2 border-dashed border-[--border] p-12 text-center">
++            <div className="text-4xl mb-4">🔍</div>
++            <h3 className="text-xl font-bold mb-2">
++              {filter === "all" ? "No connections found" : `No ${MATCH_TYPES[filter as keyof typeof MATCH_TYPES]?.name || filter} matches`}
++            </h3>
++            <p className="text-[--muted] mb-6 max-w-md mx-auto">
++              {filter === "all"
++                ? "Not enough users with TasteIDs to find matches. Check back soon!"
++                : "Try a different filter or check back as more users join."}
++            </p>
++            {filter !== "all" && (
++              <Link
++                href="/discover/connections"
++                className="text-[11px] tracking-[0.15em] uppercase text-[--muted] hover:text-white transition-colors"
++              >
++                View All Connections →
++              </Link>
++            )}
++          </div>
++        )}
++
++        {/* Tips Section */}
++        <div className="mt-12 pt-8 border-t border-[--border]">
++          <h3 className="text-[11px] tracking-[0.2em] uppercase text-[--muted] mb-4">
++            Understanding Match Types
++          </h3>
++          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
++            {Object.entries(MATCH_TYPES).map(([key, meta]) => (
++              <div key={key} className={`p-4 border ${meta.borderColor}`}>
++                <div className="text-2xl mb-2">{meta.icon}</div>
++                <div className={`font-bold mb-1 ${meta.color}`}>{meta.name}</div>
++                <p className="text-[11px] text-[--muted]">{meta.description}</p>
++              </div>
++            ))}
++          </div>
++        </div>
++      </div>
++    </div>
++  )
++}
+diff --git a/src/components/waxfeed-logo.tsx b/src/components/waxfeed-logo.tsx
+index f0cb870..633e108 100644
+--- a/src/components/waxfeed-logo.tsx
++++ b/src/components/waxfeed-logo.tsx
+@@ -1,15 +1,23 @@
+ "use client"
+ 
+-export function WaxfeedLogo({ className = "", size = "md" }: { className?: string; size?: "sm" | "md" | "lg" }) {
++interface Props {
++  className?: string
++  size?: "sm" | "md" | "lg" | "xl" | "hero"
++  spinning?: boolean
++}
++
++export function WaxfeedLogo({ className = "", size = "md", spinning = true }: Props) {
+   const sizes = {
+     sm: 24,
+     md: 32,
+     lg: 48,
++    xl: 64,
++    hero: 200,
+   }
+ 
+   const dimension = sizes[size]
++  const uniqueId = `waxfeed-${Math.random().toString(36).slice(2, 9)}`
+ 
+-  // Full MiniDisc-style logo - only the iridescent vinyl disc spins
+   return (
+     <svg
+       width={dimension}
+@@ -19,7 +27,7 @@ export function WaxfeedLogo({ className = "", size = "md" }: { className?: strin
+     >
+       <defs>
+         {/* DISC SURFACE GRADIENTS */}
+-        <linearGradient id="holoBase" x1="20%" y1="80%" x2="80%" y2="20%">
++        <linearGradient id={`${uniqueId}-holoBase`} x1="20%" y1="80%" x2="80%" y2="20%">
+           <stop offset="0%" stopColor="#e4a8c8"/>
+           <stop offset="12%" stopColor="#f0b8d8"/>
+           <stop offset="24%" stopColor="#d898c8"/>
+@@ -31,7 +39,7 @@ export function WaxfeedLogo({ className = "", size = "md" }: { className?: strin
+           <stop offset="100%" stopColor="#e8c8d8"/>
+         </linearGradient>
+ 
+-        <radialGradient id="iridescentSweep" cx="30%" cy="30%" r="80%">
++        <radialGradient id={`${uniqueId}-iridescentSweep`} cx="30%" cy="30%" r="80%">
+           <stop offset="0%" stopColor="#ffffff" stopOpacity="0.5"/>
+           <stop offset="15%" stopColor="#ffb8e0" stopOpacity="0.6"/>
+           <stop offset="30%" stopColor="#b8ffb8" stopOpacity="0.4"/>
+@@ -41,299 +49,115 @@ export function WaxfeedLogo({ className = "", size = "md" }: { className?: strin
+           <stop offset="100%" stopColor="#ffb8c8" stopOpacity="0.2"/>
+         </radialGradient>
+ 
+-        <radialGradient id="iridescentSweep2" cx="70%" cy="70%" r="60%">
+-          <stop offset="0%" stopColor="#c8ffe8" stopOpacity="0.3"/>
+-          <stop offset="30%" stopColor="#ffc8e8" stopOpacity="0.25"/>
+-          <stop offset="60%" stopColor="#c8c8ff" stopOpacity="0.2"/>
+-          <stop offset="100%" stopColor="#ffe8c8" stopOpacity="0.15"/>
+-        </radialGradient>
+-
+-        <linearGradient id="lightStreak" x1="0%" y1="0%" x2="100%" y2="100%">
++        <linearGradient id={`${uniqueId}-lightStreak`} x1="0%" y1="0%" x2="100%" y2="100%">
+           <stop offset="0%" stopColor="#ffffff" stopOpacity="0"/>
+-          <stop offset="35%" stopColor="#ffffff" stopOpacity="0"/>
+-          <stop offset="45%" stopColor="#ffffff" stopOpacity="0.7"/>
+-          <stop offset="50%" stopColor="#ffffff" stopOpacity="0.9"/>
+-          <stop offset="55%" stopColor="#ffffff" stopOpacity="0.7"/>
+-          <stop offset="65%" stopColor="#ffffff" stopOpacity="0"/>
++          <stop offset="40%" stopColor="#ffffff" stopOpacity="0"/>
++          <stop offset="48%" stopColor="#ffffff" stopOpacity="0.8"/>
++          <stop offset="52%" stopColor="#ffffff" stopOpacity="0.8"/>
++          <stop offset="60%" stopColor="#ffffff" stopOpacity="0"/>
+           <stop offset="100%" stopColor="#ffffff" stopOpacity="0"/>
+         </linearGradient>
+ 
+-        <radialGradient id="discEdgeDepth" cx="50%" cy="50%" r="50%">
+-          <stop offset="88%" stopColor="#000000" stopOpacity="0"/>
+-          <stop offset="94%" stopColor="#000000" stopOpacity="0.1"/>
+-          <stop offset="97%" stopColor="#000000" stopOpacity="0.2"/>
+-          <stop offset="100%" stopColor="#000000" stopOpacity="0.35"/>
+-        </radialGradient>
+-
+-        {/* CENTER HUB GRADIENTS */}
+-        <radialGradient id="hubMetal" cx="35%" cy="30%" r="70%">
++        <radialGradient id={`${uniqueId}-hubMetal`} cx="35%" cy="30%" r="70%">
+           <stop offset="0%" stopColor="#f8f8f8"/>
+-          <stop offset="15%" stopColor="#e8e8e8"/>
+           <stop offset="35%" stopColor="#d0d0d0"/>
+-          <stop offset="55%" stopColor="#a8a8a8"/>
+           <stop offset="75%" stopColor="#888888"/>
+           <stop offset="100%" stopColor="#686868"/>
+         </radialGradient>
+ 
+-        <radialGradient id="ringMetal1" cx="40%" cy="35%" r="60%">
+-          <stop offset="0%" stopColor="#d8d8d8"/>
+-          <stop offset="50%" stopColor="#a0a0a0"/>
+-          <stop offset="100%" stopColor="#707070"/>
+-        </radialGradient>
+-
+-        <radialGradient id="ringMetal2" cx="45%" cy="40%" r="55%">
+-          <stop offset="0%" stopColor="#c0c0c0"/>
+-          <stop offset="50%" stopColor="#909090"/>
+-          <stop offset="100%" stopColor="#606060"/>
+-        </radialGradient>
+-
+-        <radialGradient id="spindleClamp" cx="40%" cy="35%" r="65%">
+-          <stop offset="0%" stopColor="#e0e0e0"/>
+-          <stop offset="30%" stopColor="#b8b8b8"/>
+-          <stop offset="60%" stopColor="#909090"/>
+-          <stop offset="100%" stopColor="#585858"/>
+-        </radialGradient>
+-
+-        {/* CASE GRADIENTS - original clear plastic */}
+-        <linearGradient id="caseMain" x1="0%" y1="0%" x2="100%" y2="100%">
++        <linearGradient id={`${uniqueId}-caseMain`} x1="0%" y1="0%" x2="100%" y2="100%">
+           <stop offset="0%" stopColor="#f6f6f6"/>
+-          <stop offset="25%" stopColor="#efefef"/>
+           <stop offset="50%" stopColor="#e6e6e6"/>
+-          <stop offset="75%" stopColor="#dedede"/>
+           <stop offset="100%" stopColor="#d4d4d4"/>
+         </linearGradient>
+ 
+-        <radialGradient id="caseWell" cx="50%" cy="50%" r="50%">
+-          <stop offset="0%" stopColor="#e8e8e8"/>
+-          <stop offset="70%" stopColor="#e0e0e0"/>
+-          <stop offset="100%" stopColor="#c8c8c8"/>
+-        </radialGradient>
+-
+-        <linearGradient id="wallLeft" x1="0%" y1="0%" x2="100%" y2="0%">
+-          <stop offset="0%" stopColor="#e8e8e8"/>
+-          <stop offset="50%" stopColor="#d8d8d8"/>
+-          <stop offset="100%" stopColor="#c0c0c0"/>
+-        </linearGradient>
+-
+-        <linearGradient id="wallRight" x1="0%" y1="0%" x2="100%" y2="0%">
+-          <stop offset="0%" stopColor="#c8c8c8"/>
+-          <stop offset="50%" stopColor="#b8b8b8"/>
+-          <stop offset="100%" stopColor="#a8a8a8"/>
+-        </linearGradient>
+-
+-        <linearGradient id="wallTop" x1="0%" y1="0%" x2="0%" y2="100%">
+-          <stop offset="0%" stopColor="#f0f0f0"/>
+-          <stop offset="50%" stopColor="#e0e0e0"/>
+-          <stop offset="100%" stopColor="#d0d0d0"/>
+-        </linearGradient>
+-
+-        <linearGradient id="wallBottom" x1="0%" y1="0%" x2="0%" y2="100%">
+-          <stop offset="0%" stopColor="#c0c0c0"/>
+-          <stop offset="50%" stopColor="#b0b0b0"/>
+-          <stop offset="100%" stopColor="#a0a0a0"/>
+-        </linearGradient>
+-
+-        {/* SHUTTER GRADIENTS */}
+-        <linearGradient id="shutterBody" x1="0%" y1="0%" x2="100%" y2="100%">
++        <linearGradient id={`${uniqueId}-shutterBody`} x1="0%" y1="0%" x2="100%" y2="100%">
+           <stop offset="0%" stopColor="#a078b0"/>
+-          <stop offset="20%" stopColor="#b890c8"/>
+-          <stop offset="40%" stopColor="#c8a0d8"/>
+-          <stop offset="60%" stopColor="#c8a0d8"/>
+-          <stop offset="80%" stopColor="#b890c8"/>
++          <stop offset="50%" stopColor="#c8a0d8"/>
+           <stop offset="100%" stopColor="#9870a8"/>
+         </linearGradient>
+ 
+-        <linearGradient id="shutterHighlight" x1="0%" y1="0%" x2="100%" y2="0%">
+-          <stop offset="0%" stopColor="#d8c0e8"/>
+-          <stop offset="50%" stopColor="#c8b0d8"/>
+-          <stop offset="100%" stopColor="#b8a0c8"/>
+-        </linearGradient>
+-
+-        {/* FILTERS */}
+-        <filter id="mainShadow" x="-15%" y="-15%" width="135%" height="140%">
++        <filter id={`${uniqueId}-shadow`} x="-15%" y="-15%" width="135%" height="140%">
+           <feDropShadow dx="5" dy="8" stdDeviation="10" floodColor="#000000" floodOpacity="0.3"/>
+         </filter>
+       </defs>
+ 
+-      {/* CASE STRUCTURE */}
+-      <g filter="url(#mainShadow)">
+-        <rect x="28" y="28" width="444" height="444" rx="10" fill="url(#caseMain)"/>
++      {/* CASE */}
++      <g filter={`url(#${uniqueId}-shadow)`}>
++        <rect x="28" y="28" width="444" height="444" rx="10" fill={`url(#${uniqueId}-caseMain)`}/>
+       </g>
+ 
+-      {/* Case outer bevel - NO WHITE BORDERS - using subtle dark tones */}
++      {/* Case bevels */}
+       <path d="M38,28 L462,28 Q472,28 472,38 L472,32 Q472,28 462,28 L38,28 Q28,28 28,38 L28,32" fill="#d0d0d0" opacity="0.5"/>
+-      <path d="M28,38 L28,462 Q28,472 38,472 L32,472 Q28,472 28,462 L28,38 Q28,28 38,28 L32,28" fill="#c8c8c8" opacity="0.4"/>
+       <path d="M38,472 L462,472 Q472,472 472,462 L472,468 Q472,472 462,472 L38,472 Q28,472 28,462 L28,468" fill="#000000" opacity="0.15"/>
+-      <path d="M472,38 L472,462 Q472,472 462,472 L468,472 Q472,472 472,462 L472,38 Q472,28 462,28 L468,28" fill="#000000" opacity="0.12"/>
+ 
+-      {/* Inner case well */}
+-      <rect x="42" y="42" width="416" height="416" rx="6" fill="url(#caseWell)"/>
+-
+-      {/* Inner well shadow edges */}
+-      <rect x="42" y="42" width="416" height="8" fill="url(#wallTop)" rx="3"/>
+-      <rect x="42" y="42" width="8" height="416" fill="url(#wallLeft)" rx="3"/>
+-      <rect x="42" y="450" width="416" height="8" fill="url(#wallBottom)" rx="3"/>
+-      <rect x="450" y="42" width="8" height="416" fill="url(#wallRight)" rx="3"/>
+-
+-      {/* Case wall ridges */}
+-      <rect x="35" y="80" width="4" height="340" fill="#d8d8d8" rx="1"/>
+-      <rect x="35" y="80" width="1" height="340" fill="#e8e8e8"/>
+-      <rect x="461" y="80" width="4" height="340" fill="#c0c0c0" rx="1"/>
+-      <rect x="464" y="80" width="1" height="340" fill="#a8a8a8"/>
+-      <rect x="80" y="35" width="340" height="4" fill="#e0e0e0" rx="1"/>
+-      <rect x="80" y="35" width="340" height="1" fill="#f0f0f0"/>
+-      <rect x="80" y="461" width="340" height="4" fill="#b0b0b0" rx="1"/>
+-      <rect x="80" y="464" width="340" height="1" fill="#a0a0a0"/>
+-
+-      {/* CORNER SCREW MOUNTS */}
+-      <g transform="translate(58, 58)">
+-        <circle cx="0" cy="0" r="12" fill="#e4e4e4"/>
+-        <circle cx="0" cy="0" r="10" fill="#d8d8d8"/>
+-        <circle cx="0" cy="0" r="8" fill="#e0e0e0"/>
+-        <circle cx="0" cy="0" r="6" fill="#c8c8c8"/>
+-        <circle cx="0" cy="0" r="4" fill="#b8b8b8"/>
+-        <circle cx="0" cy="0" r="2" fill="#a0a0a0"/>
+-        <ellipse cx="-3" cy="-3" rx="3" ry="2" fill="#ffffff" opacity="0.6" transform="rotate(-45)"/>
+-      </g>
+-
+-      <g transform="translate(442, 58)">
+-        <circle cx="0" cy="0" r="12" fill="#e0e0e0"/>
+-        <circle cx="0" cy="0" r="10" fill="#d4d4d4"/>
+-        <circle cx="0" cy="0" r="8" fill="#dcdcdc"/>
+-        <circle cx="0" cy="0" r="6" fill="#c4c4c4"/>
+-        <circle cx="0" cy="0" r="4" fill="#b4b4b4"/>
+-        <circle cx="0" cy="0" r="2" fill="#9c9c9c"/>
+-        <ellipse cx="-3" cy="-3" rx="3" ry="2" fill="#ffffff" opacity="0.5" transform="rotate(-45)"/>
+-      </g>
+-
+-      <g transform="translate(58, 442)">
+-        <circle cx="0" cy="0" r="12" fill="#d8d8d8"/>
+-        <circle cx="0" cy="0" r="10" fill="#cccccc"/>
+-        <circle cx="0" cy="0" r="8" fill="#d4d4d4"/>
+-        <circle cx="0" cy="0" r="6" fill="#bcbcbc"/>
+-        <circle cx="0" cy="0" r="4" fill="#acacac"/>
+-        <circle cx="0" cy="0" r="2" fill="#949494"/>
+-        <ellipse cx="-2" cy="-2" rx="2.5" ry="1.5" fill="#ffffff" opacity="0.4" transform="rotate(-45)"/>
+-      </g>
+-
+-      <g transform="translate(442, 442)">
+-        <circle cx="0" cy="0" r="12" fill="#d4d4d4"/>
+-        <circle cx="0" cy="0" r="10" fill="#c8c8c8"/>
+-        <circle cx="0" cy="0" r="8" fill="#d0d0d0"/>
+-        <circle cx="0" cy="0" r="6" fill="#b8b8b8"/>
+-        <circle cx="0" cy="0" r="4" fill="#a8a8a8"/>
+-        <circle cx="0" cy="0" r="2" fill="#909090"/>
+-        <ellipse cx="-2" cy="-2" rx="2.5" ry="1.5" fill="#ffffff" opacity="0.35" transform="rotate(-45)"/>
+-      </g>
+-
+-      {/* ENTIRE VINYL DISC - spins around its center like a real record */}
+-      <g className="animate-spin-slow" style={{ transformOrigin: '250px 250px' }}>
+-        {/* Disc base with holographic surface */}
+-        <circle cx="250" cy="250" r="175" fill="url(#holoBase)"/>
+-
+-        {/* Iridescent color sweeps */}
+-        <circle cx="250" cy="250" r="175" fill="url(#iridescentSweep)"/>
+-        <circle cx="250" cy="250" r="175" fill="url(#iridescentSweep2)"/>
+-
+-        {/* Data track rings */}
+-        <g fill="none" strokeOpacity="0.08">
++      {/* Inner well */}
++      <rect x="42" y="42" width="416" height="416" rx="6" fill="#e0e0e0"/>
++
++      {/* SPINNING DISC */}
++      <g>
++        {spinning && (
++          <animateTransform
++            attributeName="transform"
++            attributeType="XML"
++            type="rotate"
++            from="0 250 250"
++            to="360 250 250"
++            dur="8s"
++            repeatCount="indefinite"
++          />
++        )}
++
++        {/* Holographic base */}
++        <circle cx="250" cy="250" r="175" fill={`url(#${uniqueId}-holoBase)`}/>
++        <circle cx="250" cy="250" r="175" fill={`url(#${uniqueId}-iridescentSweep)`}/>
++
++        {/* Data tracks */}
++        <g fill="none" strokeOpacity="0.07">
+           <circle cx="250" cy="250" r="168" stroke="#000" strokeWidth="12"/>
+-          <circle cx="250" cy="250" r="150" stroke="#fff" strokeWidth="1"/>
+-          <circle cx="250" cy="250" r="145" stroke="#000" strokeWidth="8"/>
+-          <circle cx="250" cy="250" r="132" stroke="#fff" strokeWidth="0.5"/>
+-          <circle cx="250" cy="250" r="128" stroke="#000" strokeWidth="6"/>
+-          <circle cx="250" cy="250" r="118" stroke="#fff" strokeWidth="0.5"/>
+-          <circle cx="250" cy="250" r="112" stroke="#000" strokeWidth="5"/>
+-          <circle cx="250" cy="250" r="102" stroke="#fff" strokeWidth="0.5"/>
+-          <circle cx="250" cy="250" r="95" stroke="#000" strokeWidth="4"/>
+-          <circle cx="250" cy="250" r="85" stroke="#fff" strokeWidth="0.5"/>
+-          <circle cx="250" cy="250" r="78" stroke="#000" strokeWidth="3"/>
+-          <circle cx="250" cy="250" r="68" stroke="#fff" strokeWidth="0.5"/>
+-          <circle cx="250" cy="250" r="62" stroke="#000" strokeWidth="2"/>
++          <circle cx="250" cy="250" r="148" stroke="#000" strokeWidth="8"/>
++          <circle cx="250" cy="250" r="130" stroke="#000" strokeWidth="6"/>
++          <circle cx="250" cy="250" r="114" stroke="#000" strokeWidth="5"/>
++          <circle cx="250" cy="250" r="98" stroke="#000" strokeWidth="4"/>
++          <circle cx="250" cy="250" r="82" stroke="#000" strokeWidth="3"/>
++          <circle cx="250" cy="250" r="66" stroke="#000" strokeWidth="2"/>
+         </g>
+ 
+-        {/* Light streak reflection */}
+-        <circle cx="250" cy="250" r="175" fill="url(#lightStreak)"/>
+-
+-        {/* Edge depth/shadow */}
+-        <circle cx="250" cy="250" r="175" fill="url(#discEdgeDepth)"/>
+-
+-        {/* Disc rim highlight */}
+-        <circle cx="250" cy="250" r="174" fill="none" stroke="#ffffff" strokeWidth="1.5" opacity="0.5"
+-                strokeDasharray="300 250" strokeDashoffset="50"/>
+-
+-        {/* Disc rim shadow */}
+-        <circle cx="250" cy="250" r="175" fill="none" stroke="#000000" strokeWidth="1" opacity="0.25"
+-                strokeDasharray="300 250" strokeDashoffset="-200"/>
+-
+-        {/* CENTER HUB/LABEL - part of the disc, spins with it */}
+-        <circle cx="250" cy="250" r="52" fill="url(#hubMetal)"/>
+-        <circle cx="250" cy="250" r="52" fill="none" stroke="#888" strokeWidth="0.5"/>
+-
+-        <circle cx="250" cy="250" r="48" fill="none" stroke="#666" strokeWidth="2"/>
+-        <circle cx="250" cy="250" r="47" fill="url(#ringMetal1)"/>
+-
+-        <circle cx="250" cy="250" r="42" fill="none" stroke="#555" strokeWidth="1.5"/>
+-        <circle cx="250" cy="250" r="40" fill="url(#ringMetal2)"/>
+-
+-        <circle cx="250" cy="250" r="35" fill="none" stroke="#666" strokeWidth="1"/>
+-        <circle cx="250" cy="250" r="33" fill="#a8a8a8"/>
++        {/* Light streak */}
++        <circle cx="250" cy="250" r="175" fill={`url(#${uniqueId}-lightStreak)`}/>
+ 
+-        <circle cx="250" cy="250" r="28" fill="none" stroke="#505050" strokeWidth="2"/>
+-        <circle cx="250" cy="250" r="25" fill="url(#spindleClamp)"/>
++        {/* Edge shadow */}
++        <circle cx="250" cy="250" r="175" fill="none" stroke="#000" strokeWidth="1.5" opacity="0.2"/>
+ 
+-        <circle cx="250" cy="250" r="20" fill="none" stroke="#606060" strokeWidth="1.5"/>
+-        <circle cx="250" cy="250" r="17" fill="#909090"/>
++        {/* Center hub */}
++        <circle cx="250" cy="250" r="52" fill={`url(#${uniqueId}-hubMetal)`}/>
++        <circle cx="250" cy="250" r="42" fill="#b0b0b0"/>
++        <circle cx="250" cy="250" r="32" fill="#a0a0a0"/>
++        <circle cx="250" cy="250" r="22" fill="#909090"/>
++        <circle cx="250" cy="250" r="12" fill="#707070"/>
++        <circle cx="250" cy="250" r="5" fill="#1a1a1a"/>
+ 
+-        <circle cx="250" cy="250" r="12" fill="none" stroke="#484848" strokeWidth="2"/>
+-        <circle cx="250" cy="250" r="9" fill="#787878"/>
++        {/* Hub highlight */}
++        <ellipse cx="235" cy="235" rx="15" ry="6" fill="#fff" opacity="0.5" transform="rotate(-45 235 235)"/>
+ 
+-        {/* Center hole */}
+-        <circle cx="250" cy="250" r="5" fill="#1c1c1c"/>
+-        <circle cx="250" cy="250" r="3.5" fill="#282828"/>
+-        <circle cx="250" cy="250" r="2" fill="#101010"/>
+-
+-        {/* Hub specular highlights */}
+-        <ellipse cx="235" cy="232" rx="18" ry="8" fill="#ffffff" opacity="0.6" transform="rotate(-50 235 232)"/>
+-        <ellipse cx="242" cy="240" rx="8" ry="4" fill="#ffffff" opacity="0.8" transform="rotate(-50 242 240)"/>
+-        <ellipse cx="260" cy="262" rx="6" ry="3" fill="#ffffff" opacity="0.25" transform="rotate(40 260 262)"/>
+-
+-        {/* "88" printed on disc surface */}
++        {/* "88" marking */}
+         <text x="335" y="262"
+               fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif"
+-              fontSize="34"
++              fontSize="32"
+               fontWeight="700"
+               fill="#1a1a1a"
+-              opacity="0.8"
++              opacity="0.75"
+               textAnchor="middle">
+           88
+         </text>
+-
+-        {/* Small technical text */}
+-        <g opacity="0.4" fill="#333">
+-          <text x="205" y="320"
+-                fontFamily="Helvetica, Arial, sans-serif"
+-                fontSize="5"
+-                letterSpacing="0.5"
+-                transform="rotate(-20 205 320)">
+-            RECORDABLE
+-          </text>
+-          <text x="170" y="300"
+-                fontFamily="Helvetica, Arial, sans-serif"
+-                fontSize="4.5"
+-                letterSpacing="0.3"
+-                transform="rotate(-35 170 300)">
+-            74 / 2892
+-          </text>
+-        </g>
+       </g>
+ 
+-      {/* SHUTTER MECHANISM - static */}
+-      <rect x="358" y="152" width="78" height="196" rx="3" fill="#000000" opacity="0.15" transform="translate(3,4)"/>
+-      <rect x="358" y="152" width="78" height="196" rx="3" fill="url(#shutterBody)"/>
++      {/* SHUTTER */}
++      <rect x="358" y="152" width="78" height="196" rx="3" fill="#000" opacity="0.15" transform="translate(3,4)"/>
++      <rect x="358" y="152" width="78" height="196" rx="3" fill={`url(#${uniqueId}-shutterBody)`}/>
+ 
+-      {/* Shutter surface texture */}
+-      <g stroke="rgba(0,0,0,0.06)" strokeWidth="0.5">
++      {/* Shutter lines */}
++      <g stroke="rgba(0,0,0,0.05)" strokeWidth="0.5">
+         <line x1="360" y1="165" x2="434" y2="165"/>
+         <line x1="360" y1="180" x2="434" y2="180"/>
+         <line x1="360" y1="195" x2="434" y2="195"/>
+@@ -348,13 +172,7 @@ export function WaxfeedLogo({ className = "", size = "md" }: { className?: strin
+         <line x1="360" y1="330" x2="434" y2="330"/>
+       </g>
+ 
+-      {/* Shutter edges */}
+-      <rect x="358" y="152" width="3" height="196" fill="url(#shutterHighlight)" rx="1"/>
+-      <rect x="433" y="152" width="3" height="196" fill="#785888" opacity="0.3" rx="1"/>
+-      <rect x="358" y="152" width="78" height="2" fill="#d8c0e8" opacity="0.5" rx="1"/>
+-      <rect x="358" y="346" width="78" height="2" fill="#786088" opacity="0.3" rx="1"/>
+-
+-      {/* WAXFEED on shutter */}
++      {/* WAXFEED text */}
+       <text x="397" y="262"
+             fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif"
+             fontSize="14"
+@@ -366,12 +184,33 @@ export function WaxfeedLogo({ className = "", size = "md" }: { className?: strin
+         WAXFEED
+       </text>
+ 
+-      {/* WF LOGO */}
++      {/* Corner screws */}
++      <g transform="translate(58, 58)">
++        <circle r="10" fill="#d8d8d8"/>
++        <circle r="6" fill="#c0c0c0"/>
++        <circle r="2.5" fill="#a0a0a0"/>
++      </g>
++      <g transform="translate(442, 58)">
++        <circle r="10" fill="#d8d8d8"/>
++        <circle r="6" fill="#c0c0c0"/>
++        <circle r="2.5" fill="#a0a0a0"/>
++      </g>
++      <g transform="translate(58, 442)">
++        <circle r="10" fill="#d8d8d8"/>
++        <circle r="6" fill="#c0c0c0"/>
++        <circle r="2.5" fill="#a0a0a0"/>
++      </g>
++      <g transform="translate(442, 442)">
++        <circle r="10" fill="#d8d8d8"/>
++        <circle r="6" fill="#c0c0c0"/>
++        <circle r="2.5" fill="#a0a0a0"/>
++      </g>
++
++      {/* WF badge */}
+       <g transform="translate(68, 398)">
+-        <rect x="0" y="0" width="36" height="28" fill="none" stroke="#606060" strokeWidth="1.5" rx="3"/>
+-        <rect x="2" y="2" width="32" height="24" fill="none" stroke="#808080" strokeWidth="0.5" rx="2"/>
++        <rect width="36" height="28" rx="3" fill="none" stroke="#606060" strokeWidth="1.5"/>
+         <text x="18" y="19"
+-              fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif"
++              fontFamily="Helvetica Neue, Arial"
+               fontSize="12"
+               fontWeight="700"
+               fill="#505050"
+@@ -380,10 +219,9 @@ export function WaxfeedLogo({ className = "", size = "md" }: { className?: strin
+         </text>
+       </g>
+ 
+-      {/* CASE SURFACE REFLECTIONS - subtle, no white borders */}
++      {/* Case reflections */}
+       <polygon points="28,140 140,28 200,28 28,220" fill="#ffffff" opacity="0.08"/>
+       <polygon points="28,280 60,28 80,28 28,310" fill="#ffffff" opacity="0.04"/>
+-      <polygon points="400,472 472,390 472,430 440,472" fill="#ffffff" opacity="0.03"/>
+     </svg>
+   )
+ }
+-- 
+2.50.1 (Apple Git-155)
+

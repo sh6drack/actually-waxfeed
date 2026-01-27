@@ -1,0 +1,34 @@
+From 40a0efff27e123021a5d795de79ac0d63a52d5b6 Mon Sep 17 00:00:00 2001
+From: Nathan Amankwah <nathanamankwah@nathans-air.home>
+Date: Tue, 27 Jan 2026 02:43:53 -0500
+Subject: [PATCH 50/50] fix: hydration error in logo by using React useId()
+
+---
+ src/components/waxfeed-logo.tsx | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/src/components/waxfeed-logo.tsx b/src/components/waxfeed-logo.tsx
+index d85fbdd..bccae87 100644
+--- a/src/components/waxfeed-logo.tsx
++++ b/src/components/waxfeed-logo.tsx
+@@ -1,5 +1,7 @@
+ "use client"
+ 
++import { useId } from 'react'
++
+ interface Props {
+   className?: string
+   size?: "sm" | "md" | "lg" | "xl" | "hero"
+@@ -16,7 +18,8 @@ export function WaxfeedLogo({ className = "", size = "md", spinning = true }: Pr
+   }
+ 
+   const dimension = sizes[size]
+-  const uniqueId = `waxfeed-${Math.random().toString(36).slice(2, 9)}`
++  const reactId = useId()
++  const uniqueId = `waxfeed-${reactId.replace(/:/g, '')}`
+ 
+   return (
+     <svg
+-- 
+2.50.1 (Apple Git-155)
+

@@ -1,0 +1,56 @@
+From 80f06e40bcc1d4367115baf521ecfa794e322db8 Mon Sep 17 00:00:00 2001
+From: Shadrack Annor <shadrack@Shadracks-MacBook-Air-10.local>
+Date: Sun, 25 Jan 2026 17:45:11 -0500
+Subject: [PATCH 29/50] fix: use CSS animation for disc rotation instead of SVG
+ animateTransform
+
+---
+ src/components/waxfeed-logo.tsx | 25 +++++++++++++------------
+ 1 file changed, 13 insertions(+), 12 deletions(-)
+
+diff --git a/src/components/waxfeed-logo.tsx b/src/components/waxfeed-logo.tsx
+index 633e108..764b37c 100644
+--- a/src/components/waxfeed-logo.tsx
++++ b/src/components/waxfeed-logo.tsx
+@@ -25,6 +25,18 @@ export function WaxfeedLogo({ className = "", size = "md", spinning = true }: Pr
+       viewBox="0 0 500 500"
+       className={className}
+     >
++      <style>
++        {`
++          @keyframes spin-disc {
++            from { transform: rotate(0deg); }
++            to { transform: rotate(360deg); }
++          }
++          .spinning-disc {
++            transform-origin: 250px 250px;
++            animation: spin-disc 8s linear infinite;
++          }
++        `}
++      </style>
+       <defs>
+         {/* DISC SURFACE GRADIENTS */}
+         <linearGradient id={`${uniqueId}-holoBase`} x1="20%" y1="80%" x2="80%" y2="20%">
+@@ -95,18 +107,7 @@ export function WaxfeedLogo({ className = "", size = "md", spinning = true }: Pr
+       <rect x="42" y="42" width="416" height="416" rx="6" fill="#e0e0e0"/>
+ 
+       {/* SPINNING DISC */}
+-      <g>
+-        {spinning && (
+-          <animateTransform
+-            attributeName="transform"
+-            attributeType="XML"
+-            type="rotate"
+-            from="0 250 250"
+-            to="360 250 250"
+-            dur="8s"
+-            repeatCount="indefinite"
+-          />
+-        )}
++      <g className={spinning ? "spinning-disc" : ""}>
+ 
+         {/* Holographic base */}
+         <circle cx="250" cy="250" r="175" fill={`url(#${uniqueId}-holoBase)`}/>
+-- 
+2.50.1 (Apple Git-155)
+

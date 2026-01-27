@@ -1,0 +1,796 @@
+From 3d5c71a02fed02fe9a065e113fcff76fd02907ad Mon Sep 17 00:00:00 2001
+From: sh6drack <sh6drack@users.noreply.github.com>
+Date: Sun, 25 Jan 2026 18:53:40 -0500
+Subject: [PATCH 36/50] feat: add Quick Rate Mode - Tinder-style album swipe
+ reviews
+
+- Add /discover/swipe page with swipe gestures (left=skip, right=like, up=love)
+- Add /api/albums/swipe endpoint for fetching unrated albums
+- Update reviews API to support isQuickRate mode (bypasses First Spin text requirement)
+- Update connections page to show dynamic "X More Reviews Needed" message
+- Add Quick Rate button to discover page header
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+---
+ package-lock.json                     |  43 +++
+ package.json                          |   1 +
+ src/app/api/albums/swipe/route.ts     |  71 ++++
+ src/app/api/reviews/route.ts          |  22 +-
+ src/app/discover/connections/page.tsx |  40 ++-
+ src/app/discover/page.tsx             |  19 +-
+ src/app/discover/swipe/page.tsx       | 445 ++++++++++++++++++++++++++
+ 7 files changed, 617 insertions(+), 24 deletions(-)
+ create mode 100644 src/app/api/albums/swipe/route.ts
+ create mode 100644 src/app/discover/swipe/page.tsx
+
+diff --git a/package-lock.json b/package-lock.json
+index b89287d..45433c1 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -21,6 +21,7 @@
+         "cheerio": "^1.1.2",
+         "cloudinary": "^2.8.0",
+         "date-fns": "^4.1.0",
++        "framer-motion": "^12.29.0",
+         "next": "^16.0.10",
+         "next-auth": "^5.0.0-beta.30",
+         "pdfkit": "^0.17.2",
+@@ -6727,6 +6728,33 @@
+         "node": ">=0.8"
+       }
+     },
++    "node_modules/framer-motion": {
++      "version": "12.29.0",
++      "resolved": "https://registry.npmjs.org/framer-motion/-/framer-motion-12.29.0.tgz",
++      "integrity": "sha512-1gEFGXHYV2BD42ZPTFmSU9buehppU+bCuOnHU0AD18DKh9j4DuTx47MvqY5ax+NNWRtK32qIcJf1UxKo1WwjWg==",
++      "license": "MIT",
++      "dependencies": {
++        "motion-dom": "^12.29.0",
++        "motion-utils": "^12.27.2",
++        "tslib": "^2.4.0"
++      },
++      "peerDependencies": {
++        "@emotion/is-prop-valid": "*",
++        "react": "^18.0.0 || ^19.0.0",
++        "react-dom": "^18.0.0 || ^19.0.0"
++      },
++      "peerDependenciesMeta": {
++        "@emotion/is-prop-valid": {
++          "optional": true
++        },
++        "react": {
++          "optional": true
++        },
++        "react-dom": {
++          "optional": true
++        }
++      }
++    },
+     "node_modules/fs-constants": {
+       "version": "1.0.0",
+       "resolved": "https://registry.npmjs.org/fs-constants/-/fs-constants-1.0.0.tgz",
+@@ -8605,6 +8633,21 @@
+       "dev": true,
+       "license": "MIT"
+     },
++    "node_modules/motion-dom": {
++      "version": "12.29.0",
++      "resolved": "https://registry.npmjs.org/motion-dom/-/motion-dom-12.29.0.tgz",
++      "integrity": "sha512-3eiz9bb32yvY8Q6XNM4AwkSOBPgU//EIKTZwsSWgA9uzbPBhZJeScCVcBuwwYVqhfamewpv7ZNmVKTGp5qnzkA==",
++      "license": "MIT",
++      "dependencies": {
++        "motion-utils": "^12.27.2"
++      }
++    },
++    "node_modules/motion-utils": {
++      "version": "12.27.2",
++      "resolved": "https://registry.npmjs.org/motion-utils/-/motion-utils-12.27.2.tgz",
++      "integrity": "sha512-B55gcoL85Mcdt2IEStY5EEAsrMSVE2sI14xQ/uAdPL+mfQxhKKFaEag9JmfxedJOR4vZpBGoPeC/Gm13I/4g5Q==",
++      "license": "MIT"
++    },
+     "node_modules/ms": {
+       "version": "2.1.3",
+       "resolved": "https://registry.npmjs.org/ms/-/ms-2.1.3.tgz",
+diff --git a/package.json b/package.json
+index 193bb49..e2678fd 100644
+--- a/package.json
++++ b/package.json
+@@ -33,6 +33,7 @@
+     "cheerio": "^1.1.2",
+     "cloudinary": "^2.8.0",
+     "date-fns": "^4.1.0",
++    "framer-motion": "^12.29.0",
+     "next": "^16.0.10",
+     "next-auth": "^5.0.0-beta.30",
+     "pdfkit": "^0.17.2",
+diff --git a/src/app/api/albums/swipe/route.ts b/src/app/api/albums/swipe/route.ts
+new file mode 100644
+index 0000000..12b4be2
+--- /dev/null
++++ b/src/app/api/albums/swipe/route.ts
+@@ -0,0 +1,71 @@
++import { NextRequest } from 'next/server'
++import { successResponse, errorResponse, requireAuth } from '@/lib/api-utils'
++import { prisma } from '@/lib/prisma'
++
++// GET /api/albums/swipe - Get random unrated albums for swipe mode
++export async function GET(request: NextRequest) {
++  try {
++    const user = await requireAuth()
++    const { searchParams } = new URL(request.url)
++    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 50)
++
++    // Get IDs of albums the user has already reviewed
++    const reviewedAlbumIds = await prisma.review.findMany({
++      where: { userId: user.id },
++      select: { albumId: true },
++    })
++
++    const reviewedIds = new Set(reviewedAlbumIds.map(r => r.albumId))
++
++    // Get random albums the user hasn't reviewed
++    // Using a subquery approach for better performance
++    const totalUnrated = await prisma.album.count({
++      where: {
++        id: { notIn: Array.from(reviewedIds) },
++        coverArtUrl: { not: null }, // Only albums with cover art
++      },
++    })
++
++    if (totalUnrated === 0) {
++      return successResponse([])
++    }
++
++    // Get random offset for variety
++    const maxOffset = Math.max(0, totalUnrated - limit)
++    const randomOffset = Math.floor(Math.random() * (maxOffset + 1))
++
++    const albums = await prisma.album.findMany({
++      where: {
++        id: { notIn: Array.from(reviewedIds) },
++        coverArtUrl: { not: null },
++      },
++      select: {
++        id: true,
++        title: true,
++        artistName: true,
++        coverArtUrl: true,
++        coverArtUrlLarge: true,
++        releaseDate: true,
++        genres: true,
++      },
++      skip: randomOffset,
++      take: limit,
++      orderBy: {
++        // Mix of popularity and randomness
++        totalReviews: 'desc',
++      },
++    })
++
++    // Shuffle the results for more randomness
++    const shuffled = albums.sort(() => Math.random() - 0.5)
++
++    return successResponse(shuffled)
++
++  } catch (error) {
++    if (error instanceof Error && error.message === 'UNAUTHORIZED') {
++      return errorResponse('Authentication required', 401)
++    }
++    console.error('Error getting swipe albums:', error)
++    return errorResponse('Failed to get albums', 500)
++  }
++}
+diff --git a/src/app/api/reviews/route.ts b/src/app/api/reviews/route.ts
+index 30e4266..7fd942f 100644
+--- a/src/app/api/reviews/route.ts
++++ b/src/app/api/reviews/route.ts
+@@ -14,6 +14,7 @@ const createReviewSchema = z.object({
+   albumId: z.string().min(1),
+   rating: z.number().min(0).max(10),
+   text: z.string().max(5000).optional(),
++  isQuickRate: z.boolean().optional(), // Quick rate mode (swipe) - no text required, no First Spin
+ })
+ 
+ // GET /api/reviews - List reviews (trending, recent, etc.)
+@@ -112,7 +113,7 @@ export async function POST(request: NextRequest) {
+       return errorResponse(validation.error.errors[0].message, 400)
+     }
+ 
+-    const { albumId, rating, text } = validation.data
++    const { albumId, rating, text, isQuickRate } = validation.data
+ 
+     // Check album exists
+     const album = await prisma.album.findUnique({ where: { id: albumId } })
+@@ -137,10 +138,11 @@ export async function POST(request: NextRequest) {
+ 
+     // ANTI-GAMING: First 100 reviews MUST have written text
+     // This prevents people from spamming empty reviews just to get Gold/Silver/Bronze Spins
++    // Exception: Quick rate mode (swipe) bypasses this but doesn't qualify for First Spin badges
+     const MIN_REVIEW_LENGTH = 20 // At least 20 characters
+     const FIRST_SPIN_THRESHOLD = 100
+ 
+-    if (reviewPosition <= FIRST_SPIN_THRESHOLD) {
++    if (reviewPosition <= FIRST_SPIN_THRESHOLD && !isQuickRate) {
+       if (!text || text.trim().length < MIN_REVIEW_LENGTH) {
+         return errorResponse(
+           `The first ${FIRST_SPIN_THRESHOLD} reviews must include a written review (at least ${MIN_REVIEW_LENGTH} characters). ` +
+@@ -268,17 +270,23 @@ export async function POST(request: NextRequest) {
+       })
+     }
+ 
+-    return successResponse({ 
+-      ...review, 
+-      reviewPosition,
+-      waxEarned: 5,
+-      firstSpinMessage: reviewPosition <= 10 
++    // Quick rates don't qualify for First Spin badges
++    const firstSpinMessage = isQuickRate ? null : (
++      reviewPosition <= 10
+         ? `You're reviewer #${reviewPosition}! If this album trends, you'll earn a Gold Spin.`
+         : reviewPosition <= 50
+           ? `You're reviewer #${reviewPosition}! If this album trends, you'll earn a Silver Spin.`
+           : reviewPosition <= 100
+             ? `You're reviewer #${reviewPosition}! If this album trends, you'll earn a Bronze Spin.`
+             : null
++    )
++
++    return successResponse({
++      ...review,
++      reviewPosition,
++      waxEarned: 5,
++      isQuickRate: !!isQuickRate,
++      firstSpinMessage,
+     }, 201)
+   } catch (error) {
+     if (error instanceof Error && error.message === 'UNAUTHORIZED') {
+diff --git a/src/app/discover/connections/page.tsx b/src/app/discover/connections/page.tsx
+index b243cdf..b763c3b 100644
+--- a/src/app/discover/connections/page.tsx
++++ b/src/app/discover/connections/page.tsx
+@@ -129,19 +129,22 @@ export default async function ConnectionsPage({
+   })
+ 
+   // Need 20 reviews for taste matching
++  const reviewsNeeded = Math.max(0, 20 - reviewCount)
+   if (reviewCount < 20) {
+     return (
+       <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
+         <div className="max-w-4xl mx-auto px-6 py-12">
+           <div className="border-2 border-dashed border-[--border] p-12 text-center">
+             <div className="text-6xl mb-6">🎵</div>
+-            <h1 className="text-3xl font-bold mb-4">Need More Reviews</h1>
++            <h1 className="text-3xl font-bold mb-4">
++              {reviewsNeeded} More Review{reviewsNeeded !== 1 ? 's' : ''} Needed
++            </h1>
+             <p className="text-[--muted] mb-6 max-w-md mx-auto">
+-              You need at least 20 reviews to find taste connections. You currently have{" "}
+-              <span className="font-bold text-white">{reviewCount}</span> reviews.
++              Rate at least <span className="font-bold text-[#ffd700]">20 albums</span> to unlock Taste Connections.
++              The more you review, the better your matches.
+             </p>
+             <div className="mb-8">
+-              <div className="w-full max-w-xs mx-auto h-2 bg-[--border] rounded-full overflow-hidden">
++              <div className="w-full max-w-xs mx-auto h-2 bg-[--border] overflow-hidden">
+                 <div
+                   className="h-full bg-[#ffd700] transition-all duration-500"
+                   style={{ width: `${Math.min((reviewCount / 20) * 100, 100)}%` }}
+@@ -151,15 +154,26 @@ export default async function ConnectionsPage({
+                 {reviewCount} / 20 reviews
+               </p>
+             </div>
+-            <Link
+-              href="/search"
+-              className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black text-[11px] tracking-[0.15em] uppercase font-medium hover:bg-[#e5e5e5] transition-colors"
+-            >
+-              Find Albums to Review
+-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+-                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+-              </svg>
+-            </Link>
++            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
++              <Link
++                href="/discover/swipe"
++                className="inline-flex items-center gap-2 px-6 py-3 bg-[#ffd700] text-black text-[11px] tracking-[0.15em] uppercase font-medium hover:bg-[#ffed4a] transition-colors"
++              >
++                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
++                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
++                </svg>
++                Quick Rate Mode
++              </Link>
++              <Link
++                href="/search"
++                className="inline-flex items-center gap-2 px-6 py-3 border border-[--border] text-[11px] tracking-[0.15em] uppercase font-medium hover:border-white hover:text-white transition-colors"
++              >
++                Search Albums
++                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
++                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
++                </svg>
++              </Link>
++            </div>
+           </div>
+         </div>
+       </div>
+diff --git a/src/app/discover/page.tsx b/src/app/discover/page.tsx
+index 9fe06d6..45967d2 100644
+--- a/src/app/discover/page.tsx
++++ b/src/app/discover/page.tsx
+@@ -194,10 +194,21 @@ export default async function DiscoverPage() {
+             </div>
+             <div className="lg:col-span-4 lg:text-right">
+               {session ? (
+-                <div className="inline-block border border-[--border] p-4">
+-                  <p className="text-[10px] tracking-[0.2em] uppercase text-[--muted] mb-2">Your Stats</p>
+-                  <p className="text-2xl font-bold tabular-nums">{userReviewCount}</p>
+-                  <p className="text-xs text-[--muted]">reviews logged</p>
++                <div className="inline-flex flex-col gap-3 items-end">
++                  <div className="inline-block border border-[--border] p-4">
++                    <p className="text-[10px] tracking-[0.2em] uppercase text-[--muted] mb-2">Your Stats</p>
++                    <p className="text-2xl font-bold tabular-nums">{userReviewCount}</p>
++                    <p className="text-xs text-[--muted]">reviews logged</p>
++                  </div>
++                  <Link
++                    href="/discover/swipe"
++                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#ffd700] text-black text-[10px] tracking-[0.15em] uppercase font-bold hover:bg-[#ffed4a] transition group"
++                  >
++                    <span>Quick Rate</span>
++                    <svg className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
++                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
++                    </svg>
++                  </Link>
+                 </div>
+               ) : (
+                 <Link 
+diff --git a/src/app/discover/swipe/page.tsx b/src/app/discover/swipe/page.tsx
+new file mode 100644
+index 0000000..9b38c17
+--- /dev/null
++++ b/src/app/discover/swipe/page.tsx
+@@ -0,0 +1,445 @@
++'use client'
++
++import { useState, useEffect, useCallback } from 'react'
++import { useSession } from 'next-auth/react'
++import { useRouter } from 'next/navigation'
++import Link from 'next/link'
++import { motion, AnimatePresence, PanInfo } from 'framer-motion'
++
++interface Album {
++  id: string
++  title: string
++  artistName: string
++  coverArtUrl: string | null
++  coverArtUrlLarge: string | null
++  releaseDate: string | null
++  genres: string[]
++}
++
++type Rating = 1 | 2 | 3 | 4 | 5
++
++export default function SwipePage() {
++  const { data: session, status } = useSession()
++  const router = useRouter()
++  const [albums, setAlbums] = useState<Album[]>([])
++  const [currentIndex, setCurrentIndex] = useState(0)
++  const [loading, setLoading] = useState(true)
++  const [ratedCount, setRatedCount] = useState(0)
++  const [sessionRatings, setSessionRatings] = useState<{ albumId: string; rating: Rating }[]>([])
++  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | 'up' | null>(null)
++  const [showTutorial, setShowTutorial] = useState(true)
++
++  useEffect(() => {
++    if (status === 'unauthenticated') {
++      router.push('/login?callbackUrl=/discover/swipe')
++    }
++  }, [status, router])
++
++  useEffect(() => {
++    if (session) {
++      fetchAlbums()
++    }
++  }, [session])
++
++  const fetchAlbums = async () => {
++    try {
++      setLoading(true)
++      const res = await fetch('/api/albums/swipe?limit=20')
++      const data = await res.json()
++      if (data.success) {
++        setAlbums(data.data || [])
++      }
++    } catch (error) {
++      console.error('Failed to fetch albums:', error)
++    } finally {
++      setLoading(false)
++    }
++  }
++
++  const submitRating = async (albumId: string, rating: Rating) => {
++    try {
++      const res = await fetch('/api/reviews', {
++        method: 'POST',
++        headers: { 'Content-Type': 'application/json' },
++        body: JSON.stringify({
++          albumId,
++          rating,
++          text: '', // Quick rate mode - no text review
++          isQuickRate: true,
++        }),
++      })
++      const data = await res.json()
++      if (data.success) {
++        setRatedCount((prev) => prev + 1)
++        setSessionRatings((prev) => [...prev, { albumId, rating }])
++      }
++    } catch (error) {
++      console.error('Failed to submit rating:', error)
++    }
++  }
++
++  const handleSwipe = useCallback(
++    (direction: 'left' | 'right' | 'up') => {
++      if (currentIndex >= albums.length) return
++
++      const album = albums[currentIndex]
++      let rating: Rating
++
++      switch (direction) {
++        case 'left':
++          rating = 2 // Skip/meh
++          break
++        case 'right':
++          rating = 4 // Like
++          break
++        case 'up':
++          rating = 5 // Love
++          break
++      }
++
++      setSwipeDirection(direction)
++      submitRating(album.id, rating)
++
++      setTimeout(() => {
++        setSwipeDirection(null)
++        setCurrentIndex((prev) => prev + 1)
++      }, 300)
++    },
++    [currentIndex, albums]
++  )
++
++  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
++    const threshold = 100
++    const velocityThreshold = 500
++
++    if (info.offset.y < -threshold || info.velocity.y < -velocityThreshold) {
++      handleSwipe('up')
++    } else if (info.offset.x > threshold || info.velocity.x > velocityThreshold) {
++      handleSwipe('right')
++    } else if (info.offset.x < -threshold || info.velocity.x < -velocityThreshold) {
++      handleSwipe('left')
++    }
++  }
++
++  const handleKeyDown = useCallback(
++    (e: KeyboardEvent) => {
++      if (e.key === 'ArrowLeft') handleSwipe('left')
++      if (e.key === 'ArrowRight') handleSwipe('right')
++      if (e.key === 'ArrowUp') handleSwipe('up')
++    },
++    [handleSwipe]
++  )
++
++  useEffect(() => {
++    window.addEventListener('keydown', handleKeyDown)
++    return () => window.removeEventListener('keydown', handleKeyDown)
++  }, [handleKeyDown])
++
++  if (status === 'loading' || loading) {
++    return (
++      <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a]">
++        <div className="flex flex-col items-center gap-3 animate-fade-in">
++          <div className="w-10 h-10 border-2 border-[--muted] border-t-[#ffd700] animate-spin" />
++          <span className="text-xs tracking-[0.2em] uppercase text-[--muted]">Loading albums</span>
++        </div>
++      </div>
++    )
++  }
++
++  if (!session) {
++    return null
++  }
++
++  const currentAlbum = albums[currentIndex]
++  const isFinished = currentIndex >= albums.length
++
++  return (
++    <div className="min-h-screen bg-[#0a0a0a] text-white overflow-hidden">
++      {/* Header */}
++      <div className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-sm border-b border-[--border]">
++        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
++          <Link
++            href="/discover"
++            className="text-[--muted] hover:text-white transition-colors"
++          >
++            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
++              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
++            </svg>
++          </Link>
++          <div className="text-center">
++            <p className="text-[10px] tracking-[0.3em] uppercase text-[#ffd700]">Quick Rate</p>
++            <p className="text-xs text-[--muted]">{ratedCount} rated this session</p>
++          </div>
++          <button
++            onClick={() => setShowTutorial(true)}
++            className="text-[--muted] hover:text-white transition-colors"
++          >
++            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
++              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
++            </svg>
++          </button>
++        </div>
++      </div>
++
++      {/* Tutorial Overlay */}
++      <AnimatePresence>
++        {showTutorial && (
++          <motion.div
++            initial={{ opacity: 0 }}
++            animate={{ opacity: 1 }}
++            exit={{ opacity: 0 }}
++            className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-6"
++            onClick={() => setShowTutorial(false)}
++          >
++            <motion.div
++              initial={{ scale: 0.9, opacity: 0 }}
++              animate={{ scale: 1, opacity: 1 }}
++              exit={{ scale: 0.9, opacity: 0 }}
++              className="max-w-sm w-full p-8 border border-[--border] bg-[#0a0a0a] text-center"
++              onClick={(e) => e.stopPropagation()}
++            >
++              <h2 className="text-2xl font-bold mb-6">How to Rate</h2>
++              <div className="space-y-6 mb-8">
++                <div className="flex items-center gap-4">
++                  <div className="w-14 h-14 flex items-center justify-center border border-[#ffd700] text-[#ffd700]">
++                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
++                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
++                    </svg>
++                  </div>
++                  <div className="text-left">
++                    <p className="font-bold text-[#ffd700]">Swipe Up</p>
++                    <p className="text-sm text-[--muted]">Love it! (5 stars)</p>
++                  </div>
++                </div>
++                <div className="flex items-center gap-4">
++                  <div className="w-14 h-14 flex items-center justify-center border border-green-500 text-green-500">
++                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
++                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
++                    </svg>
++                  </div>
++                  <div className="text-left">
++                    <p className="font-bold text-green-500">Swipe Right</p>
++                    <p className="text-sm text-[--muted]">Like it (4 stars)</p>
++                  </div>
++                </div>
++                <div className="flex items-center gap-4">
++                  <div className="w-14 h-14 flex items-center justify-center border border-red-500 text-red-500">
++                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
++                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
++                    </svg>
++                  </div>
++                  <div className="text-left">
++                    <p className="font-bold text-red-500">Swipe Left</p>
++                    <p className="text-sm text-[--muted]">Skip / Not for me (2 stars)</p>
++                  </div>
++                </div>
++              </div>
++              <p className="text-xs text-[--muted] mb-6">
++                Or use arrow keys: ← → ↑
++              </p>
++              <button
++                onClick={() => setShowTutorial(false)}
++                className="w-full py-3 bg-[#ffd700] text-black font-bold text-sm tracking-wide uppercase hover:bg-[#ffed4a] transition-colors"
++              >
++                Start Rating
++              </button>
++            </motion.div>
++          </motion.div>
++        )}
++      </AnimatePresence>
++
++      {/* Main Content */}
++      <div className="pt-20 pb-32 px-4 flex items-center justify-center min-h-screen">
++        {isFinished ? (
++          <motion.div
++            initial={{ opacity: 0, y: 20 }}
++            animate={{ opacity: 1, y: 0 }}
++            className="max-w-sm w-full text-center p-8 border border-[--border]"
++          >
++            <div className="text-6xl mb-6">🎉</div>
++            <h2 className="text-2xl font-bold mb-4">Session Complete!</h2>
++            <p className="text-[--muted] mb-2">You rated</p>
++            <p className="text-5xl font-bold text-[#ffd700] mb-6 tabular-nums">{ratedCount}</p>
++            <p className="text-[--muted] mb-8">albums this session</p>
++            <div className="space-y-3">
++              <button
++                onClick={() => {
++                  setCurrentIndex(0)
++                  fetchAlbums()
++                }}
++                className="w-full py-3 bg-[#ffd700] text-black font-bold text-sm tracking-wide uppercase hover:bg-[#ffed4a] transition-colors"
++              >
++                Keep Going
++              </button>
++              <Link
++                href="/discover/connections"
++                className="block w-full py-3 border border-[--border] font-bold text-sm tracking-wide uppercase hover:border-white transition-colors"
++              >
++                Check Connections
++              </Link>
++            </div>
++          </motion.div>
++        ) : currentAlbum ? (
++          <div className="relative w-full max-w-sm">
++            {/* Cards Stack */}
++            <div className="relative h-[500px]">
++              {/* Next card preview */}
++              {albums[currentIndex + 1] && (
++                <div className="absolute inset-0 scale-95 opacity-50">
++                  <div className="w-full h-full border border-[--border] bg-[#111] p-4">
++                    {albums[currentIndex + 1].coverArtUrlLarge && (
++                      <img
++                        src={albums[currentIndex + 1].coverArtUrlLarge!}
++                        alt=""
++                        className="w-full aspect-square object-cover"
++                      />
++                    )}
++                  </div>
++                </div>
++              )}
++
++              {/* Current card */}
++              <AnimatePresence mode="wait">
++                <motion.div
++                  key={currentAlbum.id}
++                  initial={{ scale: 0.95, opacity: 0 }}
++                  animate={{
++                    scale: 1,
++                    opacity: 1,
++                    x: swipeDirection === 'left' ? -300 : swipeDirection === 'right' ? 300 : 0,
++                    y: swipeDirection === 'up' ? -300 : 0,
++                    rotate: swipeDirection === 'left' ? -15 : swipeDirection === 'right' ? 15 : 0,
++                  }}
++                  exit={{
++                    x: swipeDirection === 'left' ? -500 : swipeDirection === 'right' ? 500 : 0,
++                    y: swipeDirection === 'up' ? -500 : 0,
++                    opacity: 0,
++                  }}
++                  transition={{ type: 'spring', damping: 20, stiffness: 300 }}
++                  drag
++                  dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
++                  dragElastic={1}
++                  onDragEnd={handleDragEnd}
++                  className="absolute inset-0 cursor-grab active:cursor-grabbing"
++                >
++                  <div className="w-full h-full border-2 border-[--border] bg-[#0a0a0a] overflow-hidden">
++                    {/* Album Art */}
++                    <div className="relative">
++                      {currentAlbum.coverArtUrlLarge ? (
++                        <img
++                          src={currentAlbum.coverArtUrlLarge}
++                          alt={currentAlbum.title}
++                          className="w-full aspect-square object-cover"
++                          draggable={false}
++                        />
++                      ) : (
++                        <div className="w-full aspect-square bg-[--muted]/10 flex items-center justify-center">
++                          <svg className="w-20 h-20 text-[--muted]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
++                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
++                          </svg>
++                        </div>
++                      )}
++
++                      {/* Swipe indicators */}
++                      <motion.div
++                        className="absolute inset-0 bg-green-500/20 flex items-center justify-center"
++                        initial={{ opacity: 0 }}
++                        animate={{ opacity: swipeDirection === 'right' ? 1 : 0 }}
++                      >
++                        <span className="text-6xl font-bold text-green-500">LIKE</span>
++                      </motion.div>
++                      <motion.div
++                        className="absolute inset-0 bg-red-500/20 flex items-center justify-center"
++                        initial={{ opacity: 0 }}
++                        animate={{ opacity: swipeDirection === 'left' ? 1 : 0 }}
++                      >
++                        <span className="text-6xl font-bold text-red-500">SKIP</span>
++                      </motion.div>
++                      <motion.div
++                        className="absolute inset-0 bg-[#ffd700]/20 flex items-center justify-center"
++                        initial={{ opacity: 0 }}
++                        animate={{ opacity: swipeDirection === 'up' ? 1 : 0 }}
++                      >
++                        <span className="text-6xl font-bold text-[#ffd700]">LOVE</span>
++                      </motion.div>
++                    </div>
++
++                    {/* Album Info */}
++                    <div className="p-5">
++                      <h2 className="text-xl font-bold truncate mb-1">{currentAlbum.title}</h2>
++                      <p className="text-[--muted] truncate mb-3">{currentAlbum.artistName}</p>
++                      {currentAlbum.genres && currentAlbum.genres.length > 0 && (
++                        <div className="flex flex-wrap gap-2">
++                          {currentAlbum.genres.slice(0, 3).map((genre) => (
++                            <span
++                              key={genre}
++                              className="text-[10px] px-2 py-1 border border-[--border] text-[--muted] uppercase tracking-wider"
++                            >
++                              {genre}
++                            </span>
++                          ))}
++                        </div>
++                      )}
++                    </div>
++                  </div>
++                </motion.div>
++              </AnimatePresence>
++            </div>
++
++            {/* Action Buttons */}
++            <div className="flex items-center justify-center gap-6 mt-6">
++              <button
++                onClick={() => handleSwipe('left')}
++                className="w-16 h-16 flex items-center justify-center border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition-colors"
++              >
++                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
++                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
++                </svg>
++              </button>
++              <button
++                onClick={() => handleSwipe('up')}
++                className="w-20 h-20 flex items-center justify-center border-2 border-[#ffd700] text-[#ffd700] hover:bg-[#ffd700] hover:text-black transition-colors"
++              >
++                <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
++                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
++                </svg>
++              </button>
++              <button
++                onClick={() => handleSwipe('right')}
++                className="w-16 h-16 flex items-center justify-center border-2 border-green-500 text-green-500 hover:bg-green-500 hover:text-white transition-colors"
++              >
++                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
++                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
++                </svg>
++              </button>
++            </div>
++
++            {/* Progress */}
++            <div className="mt-8 text-center">
++              <p className="text-xs text-[--muted] tabular-nums">
++                {currentIndex + 1} / {albums.length}
++              </p>
++              <div className="w-full h-1 bg-[--border] mt-2 overflow-hidden">
++                <div
++                  className="h-full bg-[#ffd700] transition-all duration-300"
++                  style={{ width: `${((currentIndex + 1) / albums.length) * 100}%` }}
++                />
++              </div>
++            </div>
++          </div>
++        ) : (
++          <div className="text-center p-8">
++            <div className="text-4xl mb-4">📀</div>
++            <p className="text-[--muted]">No more albums to rate right now.</p>
++            <button
++              onClick={fetchAlbums}
++              className="mt-4 px-6 py-2 border border-[--border] text-sm hover:border-white transition-colors"
++            >
++              Load More
++            </button>
++          </div>
++        )}
++      </div>
++    </div>
++  )
++}
+-- 
+2.50.1 (Apple Git-155)
+

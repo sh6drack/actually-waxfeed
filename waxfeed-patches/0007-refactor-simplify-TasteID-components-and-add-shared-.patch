@@ -1,0 +1,1781 @@
+From f9bb4b1bb1cbae280b06b1b9b417d0f7f87645c0 Mon Sep 17 00:00:00 2001
+From: Shadrack Annor <shadrack@mac.mynetworksettings.com>
+Date: Sat, 24 Jan 2026 10:40:23 -0500
+Subject: [PATCH 07/50] refactor: simplify TasteID components and add shared
+ types
+
+- Add centralized types.ts with shared colors and utilities
+- Remove code duplication across TasteID components
+- Consolidate color constants (NETWORK_COLORS, TREND_COLORS, etc.)
+- Add getScoreLevel, getNetworkColor, getTrendDisplay utilities
+- Simplify mood-recommendations.ts with better type imports
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+---
+ .../tasteid/ListeningModeIndicator.tsx        |  95 +++++---
+ src/components/tasteid/MusicNetworks.tsx      | 226 +++++++++---------
+ src/components/tasteid/PatternBadges.tsx      | 152 ++++++------
+ src/components/tasteid/PolarityScore.tsx      | 183 +++++++-------
+ src/components/tasteid/TasteConsolidation.tsx | 131 +++++-----
+ src/components/tasteid/index.ts               |  47 +++-
+ src/components/tasteid/types.ts               |  91 +++++++
+ src/lib/mood-recommendations.ts               | 172 ++++---------
+ 8 files changed, 571 insertions(+), 526 deletions(-)
+ create mode 100644 src/components/tasteid/types.ts
+
+diff --git a/src/components/tasteid/ListeningModeIndicator.tsx b/src/components/tasteid/ListeningModeIndicator.tsx
+index d2c41f0..13ad1d7 100644
+--- a/src/components/tasteid/ListeningModeIndicator.tsx
++++ b/src/components/tasteid/ListeningModeIndicator.tsx
+@@ -1,60 +1,88 @@
+ "use client"
+ 
+-import { useMemo } from "react"
+-import { MUSIC_NETWORKS, MusicNetworkKey } from "./MusicNetworks"
++import React, { useMemo } from "react"
++import { MUSIC_NETWORKS, type MusicNetworkId } from "@/lib/tasteid"
++import { NETWORK_COLORS, type NetworkKey } from "./types"
++
++// Accept both uppercase (MusicNetworkId) and lowercase (NetworkKey) formats
++type NetworkActivationsInput =
++  | Partial<Record<NetworkKey, number>>
++  | Partial<Record<MusicNetworkId, number>>
+ 
+ interface ListeningModeIndicatorProps {
+-  networkActivations: Partial<Record<MusicNetworkKey, number>>
++  networkActivations: NetworkActivationsInput
+   className?: string
+ }
+ 
+-// Determine dominant listening mode from network activations
+-function getDominantMode(activations: Partial<Record<MusicNetworkKey, number>>): {
+-  mode: MusicNetworkKey
++// Mode-specific suggestions
++const MODE_SUGGESTIONS: Record<NetworkKey, string> = {
++  discovery: "Try something outside your usual genres",
++  comfort: "Revisit an album you haven't played in a while",
++  deep_dive: "Explore another album from an artist you love",
++  reactive: "Check out this week's new releases",
++  emotional: "Find something that matches your current mood",
++  social: "See what your friends are listening to",
++  aesthetic: "Discover albums with iconic cover art",
++}
++
++interface DominantMode {
++  mode: NetworkKey
+   value: number
+   label: string
+   suggestion: string
+   icon: string
+   color: string
+-} {
+-  let maxMode: MusicNetworkKey = "COMFORT"
++}
++
++/**
++ * Normalize network activations to lowercase keys
++ */
++function normalizeActivations(input: NetworkActivationsInput): Partial<Record<NetworkKey, number>> {
++  const result: Partial<Record<NetworkKey, number>> = {}
++
++  for (const [key, value] of Object.entries(input)) {
++    if (value !== undefined) {
++      const normalizedKey = key.toLowerCase() as NetworkKey
++      result[normalizedKey] = value
++    }
++  }
++
++  return result
++}
++
++function getDominantMode(activations: Partial<Record<NetworkKey, number>>): DominantMode {
++  let maxMode: NetworkKey = "comfort"
+   let maxValue = 0
+ 
+-  Object.entries(activations).forEach(([key, value]) => {
++  for (const [key, value] of Object.entries(activations)) {
+     if (value !== undefined && value > maxValue) {
+       maxValue = value
+-      maxMode = key as MusicNetworkKey
++      maxMode = key as NetworkKey
+     }
+-  })
+-
+-  const network = MUSIC_NETWORKS[maxMode]
+-
+-  // Mode-specific suggestions based on the architecture doc
+-  const suggestions: Record<MusicNetworkKey, string> = {
+-    DISCOVERY: "Try something outside your usual genres",
+-    COMFORT: "Revisit an album you haven't played in a while",
+-    DEEP_DIVE: "Explore another album from an artist you love",
+-    REACTIVE: "Check out this week's new releases",
+-    EMOTIONAL: "Find something that matches your current mood",
+-    SOCIAL: "See what your friends are listening to",
+-    AESTHETIC: "Discover albums with iconic cover art",
+   }
+ 
++  const networkKey = maxMode.toUpperCase() as keyof typeof MUSIC_NETWORKS
++  const network = MUSIC_NETWORKS[networkKey]
++
+   return {
+     mode: maxMode,
+     value: maxValue,
+-    label: network.name,
+-    suggestion: suggestions[maxMode],
+-    icon: network.icon,
+-    color: network.color,
++    label: network?.name.replace(" Mode", "") || maxMode,
++    suggestion: MODE_SUGGESTIONS[maxMode],
++    icon: network?.icon || "\uD83C\uDFB5",
++    color: NETWORK_COLORS[maxMode],
+   }
+ }
+ 
+ export function ListeningModeIndicator({
+   networkActivations,
+   className = "",
+-}: ListeningModeIndicatorProps) {
+-  const dominant = useMemo(() => getDominantMode(networkActivations), [networkActivations])
++}: ListeningModeIndicatorProps): React.ReactElement {
++  const normalizedActivations = useMemo(
++    () => normalizeActivations(networkActivations),
++    [networkActivations]
++  )
++  const dominant = useMemo(() => getDominantMode(normalizedActivations), [normalizedActivations])
+ 
+   return (
+     <div className={`border border-border p-4 ${className}`}>
+@@ -84,12 +112,15 @@ export function ListeningModeIndicator({
+   )
+ }
+ 
+-// Compact badge version
+ export function ListeningModeBadge({
+   networkActivations,
+   className = "",
+-}: ListeningModeIndicatorProps) {
+-  const dominant = useMemo(() => getDominantMode(networkActivations), [networkActivations])
++}: ListeningModeIndicatorProps): React.ReactElement {
++  const normalizedActivations = useMemo(
++    () => normalizeActivations(networkActivations),
++    [networkActivations]
++  )
++  const dominant = useMemo(() => getDominantMode(normalizedActivations), [normalizedActivations])
+ 
+   return (
+     <span
+diff --git a/src/components/tasteid/MusicNetworks.tsx b/src/components/tasteid/MusicNetworks.tsx
+index 1bb923a..932ca6d 100644
+--- a/src/components/tasteid/MusicNetworks.tsx
++++ b/src/components/tasteid/MusicNetworks.tsx
+@@ -1,86 +1,105 @@
+ "use client"
+ 
+-import { useMemo } from "react"
++import React, { useMemo } from "react"
++import { MUSIC_NETWORKS, type MusicNetworkId } from "@/lib/tasteid"
++import { NETWORK_COLORS, type NetworkKey } from "./types"
+ 
+-// TasteID 7 Music Networks - adapted from Yeo 7-Network cognitive model
+-// Maps listening behavior to 7 distinct modes of musical engagement
+-export const MUSIC_NETWORKS = {
+-  DISCOVERY: {
++// Re-export for backward compatibility
++export { MUSIC_NETWORKS } from "@/lib/tasteid"
++export type { MusicNetworkId as MusicNetworkKey } from "@/lib/tasteid"
++
++// Accept both uppercase (MusicNetworkId) and lowercase (NetworkKey) formats
++type NetworkActivationsInput =
++  | Partial<Record<NetworkKey, number>>
++  | Partial<Record<MusicNetworkId, number>>
++
++/**
++ * Normalize network activations to lowercase keys
++ */
++function normalizeActivations(input: NetworkActivationsInput): Partial<Record<NetworkKey, number>> {
++  const result: Partial<Record<NetworkKey, number>> = {}
++
++  for (const [key, value] of Object.entries(input)) {
++    if (value !== undefined) {
++      const normalizedKey = key.toLowerCase() as NetworkKey
++      result[normalizedKey] = value
++    }
++  }
++
++  return result
++}
++
++// Extended network info for visualization (adds colors and visual properties)
++const NETWORK_DISPLAY_INFO: Record<NetworkKey, {
++  name: string
++  abbrev: string
++  color: string
++  typicalRange: string
++  signals: string[]
++}> = {
++  discovery: {
+     name: "Discovery",
+     abbrev: "FP",
+-    yeoNetwork: "Frontoparietal",
+-    color: "#60a5fa", // blue
+-    icon: "🔍",
+-    description: "New artist exploration, genre breadth",
++    color: NETWORK_COLORS.discovery,
+     typicalRange: "15-30%",
+-    signals: ["First-time artist reviews", "Genre diversity", "Low artist repeat rate"]
++    signals: ["First-time artist reviews", "Genre diversity", "Low artist repeat rate"],
+   },
+-  COMFORT: {
++  comfort: {
+     name: "Comfort",
+     abbrev: "DMN",
+-    yeoNetwork: "Default Mode",
+-    color: "#a78bfa", // violet
+-    icon: "🏠",
+-    description: "Returning to known favorites",
++    color: NETWORK_COLORS.comfort,
+     typicalRange: "18-32%",
+-    signals: ["Re-listens to favorites", "Artist loyalty", "Genre consistency"]
++    signals: ["Re-listens to favorites", "Artist loyalty", "Genre consistency"],
+   },
+-  DEEP_DIVE: {
++  deep_dive: {
+     name: "Deep Dive",
+     abbrev: "DA",
+-    yeoNetwork: "Dorsal Attention",
+-    color: "#34d399", // emerald
+-    icon: "💿",
+-    description: "Artist catalog exploration depth",
++    color: NETWORK_COLORS.deep_dive,
+     typicalRange: "8-20%",
+-    signals: ["Multiple albums from same artist", "Chronological exploration", "Discography patterns"]
++    signals: ["Multiple albums from same artist", "Chronological exploration", "Discography patterns"],
+   },
+-  REACTIVE: {
++  reactive: {
+     name: "Reactive",
+     abbrev: "VA",
+-    yeoNetwork: "Ventral Attention",
+-    color: "#fbbf24", // amber
+-    icon: "⚡",
+-    description: "Response to new releases, trends",
++    color: NETWORK_COLORS.reactive,
+     typicalRange: "10-22%",
+-    signals: ["New release reviews", "Trending album activity", "Current chart engagement"]
++    signals: ["New release reviews", "Trending album activity", "Current chart engagement"],
+   },
+-  EMOTIONAL: {
++  emotional: {
+     name: "Emotional",
+     abbrev: "LIM",
+-    yeoNetwork: "Limbic",
+-    color: "#f87171", // red
+-    icon: "💜",
+-    description: "Rating variance, strong reactions",
++    color: NETWORK_COLORS.emotional,
+     typicalRange: "8-20%",
+-    signals: ["Rating variance", "Strong written reactions", "Polarized scores"]
++    signals: ["Rating variance", "Strong written reactions", "Polarized scores"],
+   },
+-  SOCIAL: {
++  social: {
+     name: "Social",
+     abbrev: "SMN",
+-    yeoNetwork: "Somatomotor",
+-    color: "#fb923c", // orange
+-    icon: "🤝",
+-    description: "Community engagement, sharing",
++    color: NETWORK_COLORS.social,
+     typicalRange: "3-12%",
+-    signals: ["List collaborations", "Comment activity", "Friend interactions"]
++    signals: ["List collaborations", "Comment activity", "Friend interactions"],
+   },
+-  AESTHETIC: {
++  aesthetic: {
+     name: "Aesthetic",
+     abbrev: "VIS",
+-    yeoNetwork: "Visual",
+-    color: "#818cf8", // indigo
+-    icon: "🎨",
+-    description: "Visual/presentation attention",
++    color: NETWORK_COLORS.aesthetic,
+     typicalRange: "2-10%",
+-    signals: ["Album art attention", "Visual curation", "Presentation focus"]
++    signals: ["Album art attention", "Visual curation", "Presentation focus"],
+   },
+-} as const
++}
+ 
+-export type MusicNetworkKey = keyof typeof MUSIC_NETWORKS
++const NETWORK_ICONS: Record<NetworkKey, string> = {
++  discovery: "\uD83D\uDD0D",
++  comfort: "\uD83C\uDFE0",
++  deep_dive: "\uD83D\uDCBF",
++  reactive: "\u26A1",
++  emotional: "\uD83D\uDC9C",
++  social: "\uD83E\uDD1D",
++  aesthetic: "\uD83C\uDFA8",
++}
+ 
+ interface MusicNetworksVisualizationProps {
+-  networkActivations: Partial<Record<MusicNetworkKey, number>> // 0-1 values
++  networkActivations: NetworkActivationsInput
+   size?: number
+   className?: string
+   showLabels?: boolean
+@@ -93,25 +112,29 @@ export function MusicNetworksVisualization({
+   className = "",
+   showLabels = true,
+   interactive = true,
+-}: MusicNetworksVisualizationProps) {
+-  // Map to array with all network data
++}: MusicNetworksVisualizationProps): React.ReactElement {
++  const normalizedActivations = useMemo(
++    () => normalizeActivations(networkActivations),
++    [networkActivations]
++  )
++
+   const networks = useMemo(() => {
+-    const keys = Object.keys(MUSIC_NETWORKS) as MusicNetworkKey[]
++    const keys = Object.keys(NETWORK_DISPLAY_INFO) as NetworkKey[]
+     return keys.map(key => ({
+       key,
+-      ...MUSIC_NETWORKS[key],
+-      value: networkActivations[key] ?? 0,
++      ...NETWORK_DISPLAY_INFO[key],
++      icon: NETWORK_ICONS[key],
++      value: normalizedActivations[key] ?? 0,
+     }))
+-  }, [networkActivations])
++  }, [normalizedActivations])
+ 
+   const numPoints = networks.length
+   const center = size / 2
+-  const maxRadius = (size / 2) * 0.65 // Leave room for labels
++  const maxRadius = (size / 2) * 0.65
+ 
+-  // Calculate points for each network
+   const angleStep = (2 * Math.PI) / numPoints
+   const networkPoints = networks.map((network, i) => {
+-    const angle = angleStep * i - Math.PI / 2 // Start from top
++    const angle = angleStep * i - Math.PI / 2
+     const radius = network.value * maxRadius
+ 
+     return {
+@@ -126,12 +149,10 @@ export function MusicNetworksVisualization({
+     }
+   })
+ 
+-  // Create filled polygon path for the activation shape
+   const polygonPath = networkPoints.map((p, i) =>
+     `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`
+   ).join(" ") + " Z"
+ 
+-  // Concentric rings for scale
+   const rings = [0.25, 0.5, 0.75, 1].map((scale) => {
+     const ringPoints = Array.from({ length: numPoints }, (_, i) => {
+       const angle = angleStep * i - Math.PI / 2
+@@ -145,14 +166,11 @@ export function MusicNetworksVisualization({
+     <div className={`relative ${className}`} style={{ width: size, height: size }}>
+       <svg width={size} height={size} className="font-mono">
+         <defs>
+-          {/* Gradient for the listening signature shape */}
+           <linearGradient id="signatureGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+-            <stop offset="0%" stopColor="#60a5fa" stopOpacity="0.3" />
+-            <stop offset="50%" stopColor="#a78bfa" stopOpacity="0.2" />
+-            <stop offset="100%" stopColor="#34d399" stopOpacity="0.3" />
++            <stop offset="0%" stopColor={NETWORK_COLORS.discovery} stopOpacity="0.3" />
++            <stop offset="50%" stopColor={NETWORK_COLORS.comfort} stopOpacity="0.2" />
++            <stop offset="100%" stopColor={NETWORK_COLORS.deep_dive} stopOpacity="0.3" />
+           </linearGradient>
+-
+-          {/* Glow effect */}
+           <filter id="signatureGlow" x="-50%" y="-50%" width="200%" height="200%">
+             <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+             <feMerge>
+@@ -162,7 +180,6 @@ export function MusicNetworksVisualization({
+           </filter>
+         </defs>
+ 
+-        {/* Background rings */}
+         {rings.map((points, i) => (
+           <polygon
+             key={i}
+@@ -175,7 +192,6 @@ export function MusicNetworksVisualization({
+           />
+         ))}
+ 
+-        {/* Axis lines */}
+         {networkPoints.map((p, i) => (
+           <line
+             key={i}
+@@ -189,7 +205,6 @@ export function MusicNetworksVisualization({
+           />
+         ))}
+ 
+-        {/* Main activation polygon with gradient */}
+         <path
+           d={polygonPath}
+           fill="url(#signatureGradient)"
+@@ -199,18 +214,9 @@ export function MusicNetworksVisualization({
+           filter="url(#signatureGlow)"
+         />
+ 
+-        {/* Individual network dots with their specific colors */}
+         {networkPoints.map((p, i) => (
+           <g key={i}>
+-            {/* Outer glow */}
+-            <circle
+-              cx={p.x}
+-              cy={p.y}
+-              r="8"
+-              fill={p.color}
+-              fillOpacity="0.3"
+-            />
+-            {/* Main dot */}
++            <circle cx={p.x} cy={p.y} r="8" fill={p.color} fillOpacity="0.3" />
+             <circle
+               cx={p.x}
+               cy={p.y}
+@@ -223,9 +229,7 @@ export function MusicNetworksVisualization({
+           </g>
+         ))}
+ 
+-        {/* Labels */}
+         {showLabels && networkPoints.map((p, i) => {
+-          // Determine text anchor based on position
+           let textAnchor: "start" | "middle" | "end" = "middle"
+           if (p.labelX < center - 15) textAnchor = "end"
+           if (p.labelX > center + 15) textAnchor = "start"
+@@ -243,14 +247,13 @@ export function MusicNetworksVisualization({
+               >
+                 {p.name}
+               </text>
+-              {/* Show percentage */}
+               <text
+                 x={p.labelX}
+                 y={p.labelY + 12}
+                 textAnchor={textAnchor}
+                 dominantBaseline="middle"
+                 className="text-[8px]"
+-                fill="var(--muted)"
++                fill="var(--muted-foreground)"
+               >
+                 {Math.round(p.value * 100)}%
+               </text>
+@@ -258,14 +261,13 @@ export function MusicNetworksVisualization({
+           )
+         })}
+ 
+-        {/* Center label */}
+         <text
+           x={center}
+           y={center - 8}
+           textAnchor="middle"
+           dominantBaseline="middle"
+           className="text-[8px] uppercase tracking-widest"
+-          fill="var(--muted)"
++          fill="var(--muted-foreground)"
+         >
+           LISTENING
+         </text>
+@@ -284,16 +286,15 @@ export function MusicNetworksVisualization({
+   )
+ }
+ 
+-// Compact version for inline display
+ export function MusicNetworksMini({
+   networkActivations,
+   size = 80,
+   className = "",
+ }: {
+-  networkActivations: Partial<Record<MusicNetworkKey, number>>
++  networkActivations: NetworkActivationsInput
+   size?: number
+   className?: string
+-}) {
++}): React.ReactElement {
+   return (
+     <MusicNetworksVisualization
+       networkActivations={networkActivations}
+@@ -305,13 +306,12 @@ export function MusicNetworksMini({
+   )
+ }
+ 
+-// Network legend component
+ export function MusicNetworksLegend({
+-  showYeoMapping = false
++  showYeoMapping = false,
+ }: {
+   showYeoMapping?: boolean
+-}) {
+-  const networks = Object.entries(MUSIC_NETWORKS) as [MusicNetworkKey, typeof MUSIC_NETWORKS[MusicNetworkKey]][]
++}): React.ReactElement {
++  const networks = Object.entries(NETWORK_DISPLAY_INFO) as [NetworkKey, typeof NETWORK_DISPLAY_INFO[NetworkKey]][]
+ 
+   return (
+     <div className="space-y-2">
+@@ -319,36 +319,38 @@ export function MusicNetworksLegend({
+         7 Music Networks
+       </p>
+       <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+-        {networks.map(([key, network]) => (
+-          <div key={key} className="flex items-start gap-2">
+-            <div
+-              className="w-3 h-3 flex-shrink-0 mt-0.5"
+-              style={{ backgroundColor: network.color }}
+-            />
+-            <div className="min-w-0">
+-              <p className="text-xs font-bold truncate">
+-                {network.icon} {network.name}
+-              </p>
+-              <p className="text-[10px] text-muted-foreground truncate">{network.typicalRange}</p>
+-              {showYeoMapping && (
+-                <p className="text-[9px] text-muted-foreground/70 mt-0.5">
+-                  {network.abbrev} → {network.yeoNetwork}
++        {networks.map(([key, network]) => {
++          const libNetwork = MUSIC_NETWORKS[key.toUpperCase() as keyof typeof MUSIC_NETWORKS]
++          return (
++            <div key={key} className="flex items-start gap-2">
++              <div
++                className="w-3 h-3 flex-shrink-0 mt-0.5"
++                style={{ backgroundColor: network.color }}
++              />
++              <div className="min-w-0">
++                <p className="text-xs font-bold truncate">
++                  {NETWORK_ICONS[key]} {network.name}
+                 </p>
+-              )}
++                <p className="text-[10px] text-muted-foreground truncate">{network.typicalRange}</p>
++                {showYeoMapping && libNetwork && (
++                  <p className="text-[9px] text-muted-foreground/70 mt-0.5">
++                    {network.abbrev} {"\u2192"} {libNetwork.yeoAnalog}
++                  </p>
++                )}
++              </div>
+             </div>
+-          </div>
+-        ))}
++          )
++        })}
+       </div>
+     </div>
+   )
+ }
+ 
+-// Loading skeleton
+-export function MusicNetworksSkeleton({ size = 280 }: { size?: number }) {
++export function MusicNetworksSkeleton({ size = 280 }: { size?: number }): React.ReactElement {
+   return (
+     <div
+       className="bg-muted/20 animate-pulse"
+-      style={{ width: size, height: size, borderRadius: '50%' }}
++      style={{ width: size, height: size, borderRadius: "50%" }}
+     />
+   )
+ }
+diff --git a/src/components/tasteid/PatternBadges.tsx b/src/components/tasteid/PatternBadges.tsx
+index fe37cfe..03b080c 100644
+--- a/src/components/tasteid/PatternBadges.tsx
++++ b/src/components/tasteid/PatternBadges.tsx
+@@ -1,13 +1,26 @@
+ "use client"
+ 
+-// TasteID Pattern Detection - from the architecture doc
+-// These patterns unlock as users review more albums
++import React from "react"
++import { PATTERN_CATEGORY_COLORS } from "./types"
++
++// Pattern categories for organization
++export type PatternCategory = "signature" | "rating" | "engagement"
++
++// Pattern definition
++interface Pattern {
++  id: string
++  name: string
++  description: string
++  category: PatternCategory
++  minReviews: number
++}
+ 
+-export const TASTEID_PATTERNS = {
++// TasteID Pattern Detection - patterns that unlock as users review more albums
++export const TASTEID_PATTERNS: Record<string, Pattern> = {
+   // Signature-Based Patterns
+   DISCOVERY_COMFORT_OSCILLATION: {
+     id: "discovery_comfort_oscillation",
+-    name: "Discovery↔Comfort Oscillation",
++    name: "Discovery\u2194Comfort Oscillation",
+     description: "Healthy balance between exploring new music and returning to favorites",
+     category: "signature",
+     minReviews: 10,
+@@ -38,21 +51,21 @@ export const TASTEID_PATTERNS = {
+   CRITICAL_EAR: {
+     id: "critical_ear",
+     name: "Critical Ear",
+-    description: "Average rating below 5.5 — high standards",
++    description: "Average rating below 5.5 \u2014 high standards",
+     category: "rating",
+     minReviews: 15,
+   },
+   MUSIC_OPTIMIST: {
+     id: "music_optimist",
+     name: "Music Optimist",
+-    description: "Average rating above 7.5 — finds joy everywhere",
++    description: "Average rating above 7.5 \u2014 finds joy everywhere",
+     category: "rating",
+     minReviews: 15,
+   },
+   POLARIZED_TASTE: {
+     id: "polarized_taste",
+     name: "Polarized Taste",
+-    description: "Bimodal ratings — loves it or hates it",
++    description: "Bimodal ratings \u2014 loves it or hates it",
+     category: "rating",
+     minReviews: 20,
+   },
+@@ -93,25 +106,23 @@ export const TASTEID_PATTERNS = {
+     category: "engagement",
+     minReviews: 15,
+   },
+-} as const
++}
+ 
+ export type PatternKey = keyof typeof TASTEID_PATTERNS
+ 
++function getCategoryColor(category: PatternCategory): string {
++  return PATTERN_CATEGORY_COLORS[category]
++}
++
+ interface PatternBadgeProps {
+   pattern: PatternKey
+   unlocked?: boolean
+   className?: string
+ }
+ 
+-const CATEGORY_COLORS = {
+-  signature: "#60a5fa", // blue
+-  rating: "#a78bfa", // violet
+-  engagement: "#34d399", // emerald
+-}
+-
+-export function PatternBadge({ pattern, unlocked = true, className = "" }: PatternBadgeProps) {
++export function PatternBadge({ pattern, unlocked = true, className = "" }: PatternBadgeProps): React.ReactElement {
+   const patternData = TASTEID_PATTERNS[pattern]
+-  const color = CATEGORY_COLORS[patternData.category]
++  const color = getCategoryColor(patternData.category)
+ 
+   if (!unlocked) {
+     return (
+@@ -125,10 +136,7 @@ export function PatternBadge({ pattern, unlocked = true, className = "" }: Patte
+   }
+ 
+   return (
+-    <div
+-      className={`border p-3 ${className}`}
+-      style={{ borderColor: color }}
+-    >
++    <div className={`border p-3 ${className}`} style={{ borderColor: color }}>
+       <p className="text-xs font-bold" style={{ color }}>
+         {patternData.name}
+       </p>
+@@ -143,75 +151,70 @@ interface PatternGridProps {
+   className?: string
+ }
+ 
+-export function PatternGrid({ unlockedPatterns, totalReviews, className = "" }: PatternGridProps) {
++function PatternCategorySection({
++  title,
++  patterns,
++  unlockedSet,
++}: {
++  title: string
++  patterns: PatternKey[]
++  unlockedSet: Set<string>
++}): React.ReactElement {
++  return (
++    <div className="mb-6">
++      <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
++        {title}
++      </p>
++      <div className="grid grid-cols-2 gap-2">
++        {patterns.map(pattern => (
++          <PatternBadge
++            key={pattern}
++            pattern={pattern}
++            unlocked={unlockedSet.has(pattern)}
++          />
++        ))}
++      </div>
++    </div>
++  )
++}
++
++export function PatternGrid({ unlockedPatterns, totalReviews, className = "" }: PatternGridProps): React.ReactElement {
+   const allPatterns = Object.keys(TASTEID_PATTERNS) as PatternKey[]
+   const unlockedSet = new Set(unlockedPatterns)
+ 
+-  // Group by category
+   const signaturePatterns = allPatterns.filter(p => TASTEID_PATTERNS[p].category === "signature")
+   const ratingPatterns = allPatterns.filter(p => TASTEID_PATTERNS[p].category === "rating")
+   const engagementPatterns = allPatterns.filter(p => TASTEID_PATTERNS[p].category === "engagement")
+ 
++  const progressPercent = (unlockedPatterns.length / allPatterns.length) * 100
++
+   return (
+     <div className={className}>
+-      {/* Signature Patterns */}
+-      <div className="mb-6">
+-        <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
+-          Signature Patterns
+-        </p>
+-        <div className="grid grid-cols-2 gap-2">
+-          {signaturePatterns.map(pattern => (
+-            <PatternBadge
+-              key={pattern}
+-              pattern={pattern}
+-              unlocked={unlockedSet.has(pattern)}
+-            />
+-          ))}
+-        </div>
+-      </div>
+-
+-      {/* Rating Patterns */}
+-      <div className="mb-6">
+-        <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
+-          Rating Patterns
+-        </p>
+-        <div className="grid grid-cols-2 gap-2">
+-          {ratingPatterns.map(pattern => (
+-            <PatternBadge
+-              key={pattern}
+-              pattern={pattern}
+-              unlocked={unlockedSet.has(pattern)}
+-            />
+-          ))}
+-        </div>
+-      </div>
+-
+-      {/* Engagement Patterns */}
+-      <div>
+-        <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
+-          Engagement Patterns
+-        </p>
+-        <div className="grid grid-cols-2 gap-2">
+-          {engagementPatterns.map(pattern => (
+-            <PatternBadge
+-              key={pattern}
+-              pattern={pattern}
+-              unlocked={unlockedSet.has(pattern)}
+-            />
+-          ))}
+-        </div>
+-      </div>
++      <PatternCategorySection
++        title="Signature Patterns"
++        patterns={signaturePatterns}
++        unlockedSet={unlockedSet}
++      />
++      <PatternCategorySection
++        title="Rating Patterns"
++        patterns={ratingPatterns}
++        unlockedSet={unlockedSet}
++      />
++      <PatternCategorySection
++        title="Engagement Patterns"
++        patterns={engagementPatterns}
++        unlockedSet={unlockedSet}
++      />
+ 
+-      {/* Progress indicator */}
+       <div className="mt-6 pt-4 border-t border-border">
+         <div className="flex justify-between text-xs text-muted-foreground">
+           <span>{unlockedPatterns.length} / {allPatterns.length} patterns unlocked</span>
+           <span>{totalReviews} reviews</span>
+         </div>
+-        <div className="mt-2 h-1 bg-[--border] overflow-hidden">
++        <div className="mt-2 h-1 bg-border overflow-hidden">
+           <div
+             className="h-full bg-foreground transition-all"
+-            style={{ width: `${(unlockedPatterns.length / allPatterns.length) * 100}%` }}
++            style={{ width: `${progressPercent}%` }}
+           />
+         </div>
+       </div>
+@@ -219,15 +222,14 @@ export function PatternGrid({ unlockedPatterns, totalReviews, className = "" }:
+   )
+ }
+ 
+-// Compact inline display of unlocked patterns
+-export function PatternList({ patterns, className = "" }: { patterns: PatternKey[], className?: string }) {
++export function PatternList({ patterns, className = "" }: { patterns: PatternKey[]; className?: string }): React.ReactElement | null {
+   if (patterns.length === 0) return null
+ 
+   return (
+     <div className={`flex flex-wrap gap-2 ${className}`}>
+       {patterns.map(pattern => {
+         const data = TASTEID_PATTERNS[pattern]
+-        const color = CATEGORY_COLORS[data.category]
++        const color = getCategoryColor(data.category)
+         return (
+           <span
+             key={pattern}
+diff --git a/src/components/tasteid/PolarityScore.tsx b/src/components/tasteid/PolarityScore.tsx
+index 48385b1..3d7a278 100644
+--- a/src/components/tasteid/PolarityScore.tsx
++++ b/src/components/tasteid/PolarityScore.tsx
+@@ -1,10 +1,10 @@
+ "use client"
+ 
+-// TasteID Polarity Score 2.0
+-// The enhanced Polarity Score combines multiple dimensions into a single identity strength metric
++import React from "react"
++import { SCORE_LEVELS, getScoreLevel } from "./types"
+ 
+ interface PolarityScoreProps {
+-  score: number // 0-1
++  score: number
+   signatureStrength?: number
+   patternDiversity?: number
+   consolidationScore?: number
+@@ -14,16 +14,51 @@ interface PolarityScoreProps {
+   showBreakdown?: boolean
+ }
+ 
+-// Score interpretation thresholds from the doc
+-const SCORE_LEVELS = [
+-  { threshold: 0.8, label: "Highly Distinct", description: "Unmistakable listening identity", color: "#22c55e" },
+-  { threshold: 0.6, label: "Well-Defined", description: "Clear patterns and preferences", color: "#60a5fa" },
+-  { threshold: 0.4, label: "Emerging", description: "Patterns forming, more data helpful", color: "#fbbf24" },
+-  { threshold: 0, label: "Nascent", description: "Early stage, keep reviewing", color: "#a78bfa" },
+-]
++// Component weights for the formula
++const COMPONENT_WEIGHTS = {
++  signatureStrength: 0.25,
++  patternDiversity: 0.20,
++  consolidationScore: 0.20,
++  uniquenessScore: 0.20,
++  engagementDepth: 0.15,
++} as const
+ 
+-function getScoreLevel(score: number) {
+-  return SCORE_LEVELS.find(level => score >= level.threshold) || SCORE_LEVELS[SCORE_LEVELS.length - 1]
++const COMPONENT_LABELS: Record<keyof typeof COMPONENT_WEIGHTS, { label: string; description: string }> = {
++  signatureStrength: { label: "Signature Strength", description: "Network activation clarity" },
++  patternDiversity: { label: "Pattern Diversity", description: "Number of detected patterns" },
++  consolidationScore: { label: "Consolidation", description: "Taste stability" },
++  uniquenessScore: { label: "Uniqueness", description: "Deviation from typical" },
++  engagementDepth: { label: "Engagement Depth", description: "Review depth & length" },
++}
++
++function ScoreRow({
++  label,
++  value,
++  weight,
++  description,
++}: {
++  label: string
++  value: number
++  weight: number
++  description: string
++}): React.ReactElement {
++  return (
++    <div className="flex items-center justify-between">
++      <div className="flex items-center gap-2">
++        <span className="text-muted-foreground/70">{label}</span>
++        <span className="text-[9px] text-muted-foreground">{"\u00d7"}{weight}</span>
++      </div>
++      <div className="flex items-center gap-2">
++        <div className="w-16 h-1 bg-border overflow-hidden">
++          <div
++            className="h-full bg-foreground"
++            style={{ width: `${value * 100}%` }}
++          />
++        </div>
++        <span className="w-8 text-right text-muted-foreground">{Math.round(value * 100)}</span>
++      </div>
++    </div>
++  )
+ }
+ 
+ export function PolarityScore({
+@@ -35,10 +70,18 @@ export function PolarityScore({
+   engagementDepth,
+   className = "",
+   showBreakdown = true,
+-}: PolarityScoreProps) {
++}: PolarityScoreProps): React.ReactElement {
+   const level = getScoreLevel(score)
+   const displayScore = Math.round(score * 100)
+ 
++  const components = {
++    signatureStrength,
++    patternDiversity,
++    consolidationScore,
++    uniquenessScore,
++    engagementDepth,
++  }
++
+   return (
+     <div className={`border border-border p-4 ${className}`}>
+       <div className="flex items-center justify-between mb-4">
+@@ -60,72 +103,41 @@ export function PolarityScore({
+         </div>
+       </div>
+ 
+-      {/* Score bar */}
+       <div className="mb-4">
+         <div className="h-2 bg-border overflow-hidden">
+           <div
+             className="h-full transition-all duration-500"
+-            style={{
+-              width: `${displayScore}%`,
+-              backgroundColor: level.color,
+-            }}
++            style={{ width: `${displayScore}%`, backgroundColor: level.color }}
+           />
+         </div>
+         <p className="text-xs text-muted-foreground/70 mt-2">{level.description}</p>
+       </div>
+ 
+-      {/* Score breakdown */}
+       {showBreakdown && (
+         <div className="pt-4 border-t border-border">
+           <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-3">
+             Formula Components
+           </p>
+           <div className="space-y-2 text-xs">
+-            {signatureStrength !== undefined && (
+-              <ScoreRow
+-                label="Signature Strength"
+-                value={signatureStrength}
+-                weight={0.25}
+-                description="Network activation clarity"
+-              />
+-            )}
+-            {patternDiversity !== undefined && (
+-              <ScoreRow
+-                label="Pattern Diversity"
+-                value={patternDiversity}
+-                weight={0.20}
+-                description="Number of detected patterns"
+-              />
+-            )}
+-            {consolidationScore !== undefined && (
+-              <ScoreRow
+-                label="Consolidation"
+-                value={consolidationScore}
+-                weight={0.20}
+-                description="Taste stability"
+-              />
+-            )}
+-            {uniquenessScore !== undefined && (
+-              <ScoreRow
+-                label="Uniqueness"
+-                value={uniquenessScore}
+-                weight={0.20}
+-                description="Deviation from typical"
+-              />
+-            )}
+-            {engagementDepth !== undefined && (
+-              <ScoreRow
+-                label="Engagement Depth"
+-                value={engagementDepth}
+-                weight={0.15}
+-                description="Review depth & length"
+-              />
+-            )}
++            {(Object.keys(COMPONENT_WEIGHTS) as Array<keyof typeof COMPONENT_WEIGHTS>).map(key => {
++              const value = components[key]
++              if (value === undefined) return null
++
++              const { label, description } = COMPONENT_LABELS[key]
++              return (
++                <ScoreRow
++                  key={key}
++                  label={label}
++                  value={value}
++                  weight={COMPONENT_WEIGHTS[key]}
++                  description={description}
++                />
++              )
++            })}
+           </div>
+         </div>
+       )}
+ 
+-      {/* Score interpretation legend */}
+       <div className="mt-4 pt-4 border-t border-border">
+         <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-3">
+           Score Interpretation
+@@ -133,12 +145,9 @@ export function PolarityScore({
+         <div className="grid grid-cols-2 gap-2">
+           {SCORE_LEVELS.map((lvl, i) => (
+             <div key={i} className="flex items-center gap-2">
+-              <div
+-                className="w-2 h-2"
+-                style={{ backgroundColor: lvl.color }}
+-              />
++              <div className="w-2 h-2" style={{ backgroundColor: lvl.color }} />
+               <span className="text-xs text-muted-foreground">
+-                {lvl.threshold * 100}+ — {lvl.label}
++                {lvl.threshold * 100}+ {"\u2014"} {lvl.label}
+               </span>
+             </div>
+           ))}
+@@ -148,38 +157,7 @@ export function PolarityScore({
+   )
+ }
+ 
+-function ScoreRow({
+-  label,
+-  value,
+-  weight,
+-  description,
+-}: {
+-  label: string
+-  value: number
+-  weight: number
+-  description: string
+-}) {
+-  return (
+-    <div className="flex items-center justify-between">
+-      <div className="flex items-center gap-2">
+-        <span className="text-muted-foreground/70">{label}</span>
+-        <span className="text-[9px] text-muted-foreground">×{weight}</span>
+-      </div>
+-      <div className="flex items-center gap-2">
+-        <div className="w-16 h-1 bg-border overflow-hidden">
+-          <div
+-            className="h-full bg-foreground"
+-            style={{ width: `${value * 100}%` }}
+-          />
+-        </div>
+-        <span className="w-8 text-right text-muted-foreground">{Math.round(value * 100)}</span>
+-      </div>
+-    </div>
+-  )
+-}
+-
+-// Compact inline Polarity Score
+-export function PolarityScoreBadge({ score, className = "" }: { score: number, className?: string }) {
++export function PolarityScoreBadge({ score, className = "" }: { score: number; className?: string }): React.ReactElement {
+   const level = getScoreLevel(score)
+   const displayScore = Math.round(score * 100)
+ 
+@@ -196,7 +174,6 @@ export function PolarityScoreBadge({ score, className = "" }: { score: number, c
+   )
+ }
+ 
+-// Calculate Polarity Score 2.0 from components
+ export function calculatePolarityScore({
+   signatureStrength,
+   patternDiversity,
+@@ -211,10 +188,10 @@ export function calculatePolarityScore({
+   engagementDepth: number
+ }): number {
+   return (
+-    (signatureStrength * 0.25) +
+-    (patternDiversity * 0.20) +
+-    (consolidationScore * 0.20) +
+-    (uniquenessScore * 0.20) +
+-    (engagementDepth * 0.15)
++    signatureStrength * COMPONENT_WEIGHTS.signatureStrength +
++    patternDiversity * COMPONENT_WEIGHTS.patternDiversity +
++    consolidationScore * COMPONENT_WEIGHTS.consolidationScore +
++    uniquenessScore * COMPONENT_WEIGHTS.uniquenessScore +
++    engagementDepth * COMPONENT_WEIGHTS.engagementDepth
+   )
+ }
+diff --git a/src/components/tasteid/TasteConsolidation.tsx b/src/components/tasteid/TasteConsolidation.tsx
+index b41e2e3..8ef4845 100644
+--- a/src/components/tasteid/TasteConsolidation.tsx
++++ b/src/components/tasteid/TasteConsolidation.tsx
+@@ -1,7 +1,7 @@
+ "use client"
+ 
+-// TasteID Taste Consolidation - tracks "sticky" vs "fading" tastes
+-// Inspired by memory consolidation in neuroscience
++import React from "react"
++import { TREND_COLORS, getTrendDisplay } from "./types"
+ 
+ export type ConsolidationTrend = "strengthening" | "fading" | "stable"
+ 
+@@ -19,19 +19,52 @@ interface TasteConsolidationProps {
+   className?: string
+ }
+ 
+-const TREND_COLORS = {
+-  strengthening: "#22c55e", // green
+-  fading: "#f87171", // red
+-  stable: "#60a5fa", // blue
++function ConsolidationRow({ taste }: { taste: ConsolidatedTaste }): React.ReactElement {
++  const color = TREND_COLORS[taste.trend]
++  const diff = taste.recentAvg - taste.olderAvg
++  const diffColor = diff > 0 ? TREND_COLORS.strengthening : diff < 0 ? TREND_COLORS.fading : TREND_COLORS.stable
++
++  return (
++    <div className="flex items-center justify-between p-2 border border-border">
++      <div className="flex items-center gap-3">
++        <span className="text-[9px] font-bold w-24" style={{ color }}>
++          {getTrendDisplay(taste.trend)}
++        </span>
++        <span className="text-sm font-medium">{taste.name}</span>
++      </div>
++      <div className="flex items-center gap-4 text-xs text-muted-foreground">
++        <span>Recent: {taste.recentAvg.toFixed(1)}</span>
++        <span>Older: {taste.olderAvg.toFixed(1)}</span>
++        <span style={{ color: diffColor }}>
++          {diff > 0 ? "+" : ""}{diff.toFixed(1)}
++        </span>
++      </div>
++    </div>
++  )
+ }
+ 
+-const TREND_LABELS = {
+-  strengthening: "↑ STRENGTHENING",
+-  fading: "↓ FADING",
+-  stable: "→ STABLE",
++function TasteSection({
++  title,
++  tastes,
++}: {
++  title: string
++  tastes: ConsolidatedTaste[]
++}): React.ReactElement | null {
++  if (tastes.length === 0) return null
++
++  return (
++    <div className="mb-6">
++      <p className="text-xs font-bold mb-3">{title}</p>
++      <div className="space-y-2">
++        {tastes.map((taste, i) => (
++          <ConsolidationRow key={i} taste={taste} />
++        ))}
++      </div>
++    </div>
++  )
+ }
+ 
+-export function TasteConsolidation({ consolidatedTastes, className = "" }: TasteConsolidationProps) {
++export function TasteConsolidation({ consolidatedTastes, className = "" }: TasteConsolidationProps): React.ReactElement {
+   const genres = consolidatedTastes.filter(t => t.type === "genre")
+   const artists = consolidatedTastes.filter(t => t.type === "artist")
+ 
+@@ -46,7 +79,6 @@ export function TasteConsolidation({ consolidatedTastes, className = "" }: Taste
+         </p>
+       </div>
+ 
+-      {/* How it works */}
+       <div className="mb-6 p-3 border border-border bg-muted/10">
+         <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-2">How it works</p>
+         <p className="text-xs text-muted-foreground/70">
+@@ -54,41 +86,20 @@ export function TasteConsolidation({ consolidatedTastes, className = "" }: Taste
+           that appear consistently with good ratings are "consolidated."
+         </p>
+         <div className="flex gap-4 mt-3">
+-          {(["strengthening", "fading", "stable"] as ConsolidationTrend[]).map(trend => (
++          {(["strengthening", "fading", "stable"] as const).map(trend => (
+             <span
+               key={trend}
+               className="text-[9px] font-bold"
+               style={{ color: TREND_COLORS[trend] }}
+             >
+-              {TREND_LABELS[trend]}
++              {getTrendDisplay(trend)}
+             </span>
+           ))}
+         </div>
+       </div>
+ 
+-      {/* Consolidated Genres */}
+-      {genres.length > 0 && (
+-        <div className="mb-6">
+-          <p className="text-xs font-bold mb-3">Genres</p>
+-          <div className="space-y-2">
+-            {genres.map((taste, i) => (
+-              <ConsolidationRow key={i} taste={taste} />
+-            ))}
+-          </div>
+-        </div>
+-      )}
+-
+-      {/* Consolidated Artists */}
+-      {artists.length > 0 && (
+-        <div>
+-          <p className="text-xs font-bold mb-3">Artists</p>
+-          <div className="space-y-2">
+-            {artists.map((taste, i) => (
+-              <ConsolidationRow key={i} taste={taste} />
+-            ))}
+-          </div>
+-        </div>
+-      )}
++      <TasteSection title="Genres" tastes={genres} />
++      <TasteSection title="Artists" tastes={artists} />
+ 
+       {consolidatedTastes.length === 0 && (
+         <div className="text-center py-8 text-muted-foreground">
+@@ -97,19 +108,18 @@ export function TasteConsolidation({ consolidatedTastes, className = "" }: Taste
+         </div>
+       )}
+ 
+-      {/* Thresholds explanation */}
+       <div className="mt-6 pt-4 border-t border-border">
+         <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-3">
+           Consolidation Thresholds
+         </p>
+         <div className="grid grid-cols-2 gap-y-2 text-xs">
+-          <span className="text-muted-foreground">≥2</span>
++          <span className="text-muted-foreground">{"\u2265"}2</span>
+           <span className="text-muted-foreground/70">Reviews per period for genre</span>
+-          <span className="text-muted-foreground">≥3</span>
++          <span className="text-muted-foreground">{"\u2265"}3</span>
+           <span className="text-muted-foreground/70">Total reviews for artist</span>
+-          <span className="text-muted-foreground">≥6</span>
++          <span className="text-muted-foreground">{"\u2265"}6</span>
+           <span className="text-muted-foreground/70">Avg rating for consolidated</span>
+-          <span className="text-muted-foreground">±0.5</span>
++          <span className="text-muted-foreground">{"\u00b1"}0.5</span>
+           <span className="text-muted-foreground/70">Rating diff for trend</span>
+         </div>
+       </div>
+@@ -117,52 +127,25 @@ export function TasteConsolidation({ consolidatedTastes, className = "" }: Taste
+   )
+ }
+ 
+-function ConsolidationRow({ taste }: { taste: ConsolidatedTaste }) {
+-  const color = TREND_COLORS[taste.trend]
+-  const diff = taste.recentAvg - taste.olderAvg
+-
+-  return (
+-    <div className="flex items-center justify-between p-2 border border-border">
+-      <div className="flex items-center gap-3">
+-        <span
+-          className="text-[9px] font-bold w-24"
+-          style={{ color }}
+-        >
+-          {TREND_LABELS[taste.trend]}
+-        </span>
+-        <span className="text-sm font-medium">{taste.name}</span>
+-      </div>
+-      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+-        <span>Recent: {taste.recentAvg.toFixed(1)}</span>
+-        <span>Older: {taste.olderAvg.toFixed(1)}</span>
+-        <span style={{ color: diff > 0 ? "#22c55e" : diff < 0 ? "#f87171" : "#60a5fa" }}>
+-          {diff > 0 ? "+" : ""}{diff.toFixed(1)}
+-        </span>
+-      </div>
+-    </div>
+-  )
+-}
+-
+-// Compact summary of consolidation status
+ export function ConsolidationSummary({
+   strengthening,
+   fading,
+-  stable
++  stable,
+ }: {
+   strengthening: number
+   fading: number
+   stable: number
+-}) {
++}): React.ReactElement {
+   return (
+     <div className="flex items-center gap-4 text-xs">
+       <span style={{ color: TREND_COLORS.strengthening }}>
+-        ↑ {strengthening}
++        {"\u2191"} {strengthening}
+       </span>
+       <span style={{ color: TREND_COLORS.stable }}>
+-        → {stable}
++        {"\u2192"} {stable}
+       </span>
+       <span style={{ color: TREND_COLORS.fading }}>
+-        ↓ {fading}
++        {"\u2193"} {fading}
+       </span>
+     </div>
+   )
+diff --git a/src/components/tasteid/index.ts b/src/components/tasteid/index.ts
+index 8db8570..4e7a5bb 100644
+--- a/src/components/tasteid/index.ts
++++ b/src/components/tasteid/index.ts
+@@ -1,15 +1,36 @@
+-// TasteID Components - Powered by Polarity 1.2
+-// How WaxFeed understands your music taste
++/**
++ * TasteID Components - Powered by Polarity 1.2
++ * How WaxFeed understands your music taste
++ */
+ 
+-export { ArchetypeBadge, ArchetypeBadgeSkeleton } from './ArchetypeBadge'
+-export { GenreRadarChart, GenreRadarChartSkeleton } from './GenreRadarChart'
+-export { CompatibilityMeter, CompatibilityMeterSkeleton } from './CompatibilityMeter'
+-export { TasteIDCard, TasteIDCardSkeleton } from './TasteIDCard'
+-export { TasteComparison, TasteComparisonSkeleton } from './TasteComparison'
+-export { ArtistDNAStrip, ArtistDNAStripSkeleton } from './ArtistDNAStrip'
+-export { TasteCardShare } from './TasteCardShare'
++// Shared types and constants
++export {
++  NETWORK_COLORS,
++  PATTERN_CATEGORY_COLORS,
++  TREND_COLORS,
++  SCORE_LEVEL_COLORS,
++  SCORE_LEVELS,
++  VISUALIZATION_SIZES,
++  TREND_LABELS,
++  getScoreLevel,
++  getNetworkColor,
++  getTrendDisplay,
++  type NetworkKey,
++  type ListeningSignature,
++  type MusicNetworkId,
++  type ConsolidatedTaste,
++} from "./types"
++
++// Core TasteID components (original)
++export { ArchetypeBadge, ArchetypeBadgeSkeleton } from "./ArchetypeBadge"
++export { GenreRadarChart, GenreRadarChartSkeleton } from "./GenreRadarChart"
++export { CompatibilityMeter, CompatibilityMeterSkeleton } from "./CompatibilityMeter"
++export { TasteIDCard, TasteIDCardSkeleton } from "./TasteIDCard"
++export { TasteComparison, TasteComparisonSkeleton } from "./TasteComparison"
++export { ArtistDNAStrip, ArtistDNAStripSkeleton } from "./ArtistDNAStrip"
++export { TasteCardShare } from "./TasteCardShare"
+ 
+-// New TasteID components based on Polarity 1.2 architecture
++// Polarity 1.2 Music Networks
+ export {
+   MusicNetworksVisualization,
+   MusicNetworksMini,
+@@ -19,24 +40,30 @@ export {
+   type MusicNetworkKey,
+ } from "./MusicNetworks"
+ 
++// Listening Mode
+ export {
+   ListeningModeIndicator,
+   ListeningModeBadge,
+ } from "./ListeningModeIndicator"
+ 
++// Pattern Detection
+ export {
+   PatternBadge,
+   PatternGrid,
+   PatternList,
+   TASTEID_PATTERNS,
+   type PatternKey,
++  type PatternCategory,
+ } from "./PatternBadges"
+ 
++// Taste Consolidation
+ export {
+   TasteConsolidation,
+   ConsolidationSummary,
++  type ConsolidationTrend,
+ } from "./TasteConsolidation"
+ 
++// Polarity Score
+ export {
+   PolarityScore,
+   PolarityScoreBadge,
+diff --git a/src/components/tasteid/types.ts b/src/components/tasteid/types.ts
+new file mode 100644
+index 0000000..779e9df
+--- /dev/null
++++ b/src/components/tasteid/types.ts
+@@ -0,0 +1,91 @@
++/**
++ * Shared types and constants for TasteID components
++ * These are re-exported from the main tasteid lib for component use
++ */
++
++import type { ListeningSignature } from "@/lib/tasteid"
++
++// Re-export core types from tasteid lib
++export type { ListeningSignature, MusicNetworkId, ConsolidatedTaste } from "@/lib/tasteid"
++
++// Network key type for component props (maps to ListeningSignature keys)
++export type NetworkKey = keyof ListeningSignature
++
++// Shared color palette for TasteID components
++// Uses semantic names that map to the 7 Music Networks
++export const NETWORK_COLORS = {
++  discovery: "#60a5fa", // blue
++  comfort: "#a78bfa", // violet
++  deep_dive: "#34d399", // emerald
++  reactive: "#fbbf24", // amber
++  emotional: "#f87171", // red
++  social: "#fb923c", // orange
++  aesthetic: "#818cf8", // indigo
++} as const
++
++// Pattern category colors
++export const PATTERN_CATEGORY_COLORS = {
++  signature: "#60a5fa", // blue
++  rating: "#a78bfa", // violet
++  engagement: "#34d399", // emerald
++} as const
++
++// Trend colors for consolidation
++export const TREND_COLORS = {
++  strengthening: "#22c55e", // green
++  fading: "#f87171", // red
++  stable: "#60a5fa", // blue
++} as const
++
++// Score level colors for polarity score
++export const SCORE_LEVEL_COLORS = {
++  high: "#22c55e", // green (80+)
++  good: "#60a5fa", // blue (60+)
++  emerging: "#fbbf24", // amber (40+)
++  nascent: "#a78bfa", // violet (0+)
++} as const
++
++// Common component size presets
++export const VISUALIZATION_SIZES = {
++  mini: 80,
++  small: 160,
++  medium: 280,
++  large: 400,
++} as const
++
++// Trend label display strings
++export const TREND_LABELS = {
++  strengthening: "STRENGTHENING",
++  fading: "FADING",
++  stable: "STABLE",
++} as const
++
++// Score level thresholds and labels
++export const SCORE_LEVELS = [
++  { threshold: 0.8, label: "Highly Distinct", description: "Unmistakable listening identity", color: SCORE_LEVEL_COLORS.high },
++  { threshold: 0.6, label: "Well-Defined", description: "Clear patterns and preferences", color: SCORE_LEVEL_COLORS.good },
++  { threshold: 0.4, label: "Emerging", description: "Patterns forming, more data helpful", color: SCORE_LEVEL_COLORS.emerging },
++  { threshold: 0, label: "Nascent", description: "Early stage, keep reviewing", color: SCORE_LEVEL_COLORS.nascent },
++] as const
++
++/**
++ * Get score level based on polarity score value
++ */
++export function getScoreLevel(score: number): typeof SCORE_LEVELS[number] {
++  return SCORE_LEVELS.find(level => score >= level.threshold) || SCORE_LEVELS[SCORE_LEVELS.length - 1]
++}
++
++/**
++ * Get network color by network id
++ */
++export function getNetworkColor(networkId: NetworkKey): string {
++  return NETWORK_COLORS[networkId] || NETWORK_COLORS.discovery
++}
++
++/**
++ * Get trend display with arrow prefix
++ */
++export function getTrendDisplay(trend: keyof typeof TREND_LABELS): string {
++  const arrows = { strengthening: "\u2191", fading: "\u2193", stable: "\u2192" }
++  return `${arrows[trend]} ${TREND_LABELS[trend]}`
++}
+diff --git a/src/lib/mood-recommendations.ts b/src/lib/mood-recommendations.ts
+index ffdbe87..83171cf 100644
+--- a/src/lib/mood-recommendations.ts
++++ b/src/lib/mood-recommendations.ts
+@@ -1,7 +1,7 @@
+ import { prisma } from "@/lib/prisma"
+-import { ListeningSignature } from "@/lib/tasteid"
++import type { ListeningSignature } from "@/lib/tasteid"
+ 
+-// Mood types based on TasteID Music Networks
++// Mood types derived from TasteID Music Networks
+ export type ListeningMood = "comfort" | "discovery" | "depth" | "reactive" | "emotional"
+ 
+ interface MoodRecommendation {
+@@ -18,37 +18,52 @@ interface MoodRecommendation {
+   moodMatch: number
+ }
+ 
+-// Derive the current listening mood from a user's listening signature
++// Map listening signature keys to mood types
++const SIGNATURE_TO_MOOD: Record<string, ListeningMood> = {
++  discovery: "discovery",
++  comfort: "comfort",
++  deep_dive: "depth",
++  reactive: "reactive",
++  emotional: "emotional",
++}
++
++/**
++ * Derive the current listening mood from a user's listening signature
++ */
+ export function deriveCognitiveState(signature: ListeningSignature): ListeningMood {
+-  // Find the dominant mode
+   let maxMode: ListeningMood = "comfort"
+   let maxValue = 0
+ 
+-  const moodMap: Record<string, ListeningMood> = {
+-    discovery: "discovery",
+-    comfort: "comfort",
+-    deep_dive: "depth",
+-    reactive: "reactive",
+-    emotional: "emotional",
+-  }
+-
+-  Object.entries(signature).forEach(([key, value]) => {
+-    if (moodMap[key] && value > maxValue) {
++  for (const [key, value] of Object.entries(signature)) {
++    const mood = SIGNATURE_TO_MOOD[key]
++    if (mood && value > maxValue) {
+       maxValue = value
+-      maxMode = moodMap[key]
++      maxMode = mood
+     }
+-  })
++  }
+ 
+   return maxMode
+ }
+ 
+-// Get mood-aware recommendations based on current listening state
++// Album selection fields for queries
++const ALBUM_SELECT = {
++  id: true,
++  spotifyId: true,
++  title: true,
++  artistName: true,
++  coverArtUrl: true,
++  averageRating: true,
++  genres: true,
++} as const
++
++/**
++ * Get mood-aware recommendations based on current listening state
++ */
+ export async function getMoodAwareRecommendations(
+   userId: string,
+   mood: ListeningMood,
+   limit: number = 6
+ ): Promise<MoodRecommendation[]> {
+-  // Get the user's taste profile
+   const user = await prisma.user.findUnique({
+     where: { id: userId },
+     include: {
+@@ -67,9 +82,7 @@ export async function getMoodAwareRecommendations(
+           albumId: true,
+           rating: true,
+           album: {
+-            select: {
+-              artistName: true,
+-            },
++            select: { artistName: true },
+           },
+         },
+       },
+@@ -84,53 +97,15 @@ export async function getMoodAwareRecommendations(
+   const favoriteArtists = user.tasteId.topArtists || []
+   const topGenres = user.tasteId.topGenres || []
+ 
+-  // Different recommendation strategies based on mood
+-  let albums: MoodRecommendation[] = []
+-
+-  switch (mood) {
+-    case "comfort":
+-      // Recommend albums from favorite artists they haven't reviewed
+-      albums = await getComfortRecommendations(
+-        favoriteArtists,
+-        reviewedAlbumIds,
+-        limit
+-      )
+-      break
+-
+-    case "discovery":
+-      // Recommend albums from unfamiliar genres or new artists
+-      albums = await getDiscoveryRecommendations(
+-        topGenres,
+-        reviewedAlbumIds,
+-        limit
+-      )
+-      break
+-
+-    case "depth":
+-      // Recommend deeper cuts from artists they've reviewed positively
+-      albums = await getDepthRecommendations(
+-        user.reviews,
+-        reviewedAlbumIds,
+-        limit
+-      )
+-      break
+-
+-    case "reactive":
+-      // Recommend new releases and trending albums
+-      albums = await getReactiveRecommendations(reviewedAlbumIds, limit)
+-      break
+-
+-    case "emotional":
+-      // Recommend highly-rated albums that match emotional resonance
+-      albums = await getEmotionalRecommendations(
+-        topGenres,
+-        reviewedAlbumIds,
+-        limit
+-      )
+-      break
++  const moodHandlers: Record<ListeningMood, () => Promise<MoodRecommendation[]>> = {
++    comfort: () => getComfortRecommendations(favoriteArtists, reviewedAlbumIds, limit),
++    discovery: () => getDiscoveryRecommendations(topGenres, reviewedAlbumIds, limit),
++    depth: () => getDepthRecommendations(user.reviews, reviewedAlbumIds, limit),
++    reactive: () => getReactiveRecommendations(reviewedAlbumIds, limit),
++    emotional: () => getEmotionalRecommendations(topGenres, reviewedAlbumIds, limit),
+   }
+ 
+-  return albums
++  return moodHandlers[mood]()
+ }
+ 
+ async function getComfortRecommendations(
+@@ -145,15 +120,7 @@ async function getComfortRecommendations(
+     },
+     take: limit * 2,
+     orderBy: { averageRating: "desc" },
+-    select: {
+-      id: true,
+-      spotifyId: true,
+-      title: true,
+-      artistName: true,
+-      coverArtUrl: true,
+-      averageRating: true,
+-      genres: true,
+-    },
++    select: ALBUM_SELECT,
+   })
+ 
+   return albums.slice(0, limit).map((album) => ({
+@@ -168,7 +135,6 @@ async function getDiscoveryRecommendations(
+   excludeIds: Set<string>,
+   limit: number
+ ): Promise<MoodRecommendation[]> {
+-  // Find albums in adjacent genres
+   const albums = await prisma.album.findMany({
+     where: {
+       id: { notIn: Array.from(excludeIds) },
+@@ -176,18 +142,10 @@ async function getDiscoveryRecommendations(
+     },
+     take: limit * 3,
+     orderBy: { averageRating: "desc" },
+-    select: {
+-      id: true,
+-      spotifyId: true,
+-      title: true,
+-      artistName: true,
+-      coverArtUrl: true,
+-      averageRating: true,
+-      genres: true,
+-    },
++    select: ALBUM_SELECT,
+   })
+ 
+-  // Filter to albums that aren't in their top genres
++  // Filter to albums that are NOT in their top genres
+   const discoveryAlbums = albums.filter((album) => {
+     const albumGenres = album.genres || []
+     return !topGenres.some((g) => albumGenres.includes(g))
+@@ -195,7 +153,7 @@ async function getDiscoveryRecommendations(
+ 
+   return discoveryAlbums.slice(0, limit).map((album) => ({
+     album,
+-    reason: `Expand your horizons`,
++    reason: "Expand your horizons",
+     moodMatch: 0.85,
+   }))
+ }
+@@ -217,16 +175,8 @@ async function getDepthRecommendations(
+       id: { notIn: Array.from(excludeIds) },
+     },
+     take: limit * 2,
+-    orderBy: { releaseDate: "asc" }, // Get earlier albums
+-    select: {
+-      id: true,
+-      spotifyId: true,
+-      title: true,
+-      artistName: true,
+-      coverArtUrl: true,
+-      averageRating: true,
+-      genres: true,
+-    },
++    orderBy: { releaseDate: "asc" },
++    select: ALBUM_SELECT,
+   })
+ 
+   return albums.slice(0, limit).map((album) => ({
+@@ -240,7 +190,6 @@ async function getReactiveRecommendations(
+   excludeIds: Set<string>,
+   limit: number
+ ): Promise<MoodRecommendation[]> {
+-  // Get recently released albums
+   const sixMonthsAgo = new Date()
+   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
+ 
+@@ -251,20 +200,12 @@ async function getReactiveRecommendations(
+     },
+     take: limit * 2,
+     orderBy: { releaseDate: "desc" },
+-    select: {
+-      id: true,
+-      spotifyId: true,
+-      title: true,
+-      artistName: true,
+-      coverArtUrl: true,
+-      averageRating: true,
+-      genres: true,
+-    },
++    select: ALBUM_SELECT,
+   })
+ 
+   return albums.slice(0, limit).map((album) => ({
+     album,
+-    reason: `Fresh release`,
++    reason: "Fresh release",
+     moodMatch: 0.92,
+   }))
+ }
+@@ -274,7 +215,6 @@ async function getEmotionalRecommendations(
+   excludeIds: Set<string>,
+   limit: number
+ ): Promise<MoodRecommendation[]> {
+-  // Get highly-rated albums in their favorite genres
+   const albums = await prisma.album.findMany({
+     where: {
+       id: { notIn: Array.from(excludeIds) },
+@@ -282,18 +222,10 @@ async function getEmotionalRecommendations(
+     },
+     take: limit * 3,
+     orderBy: { averageRating: "desc" },
+-    select: {
+-      id: true,
+-      spotifyId: true,
+-      title: true,
+-      artistName: true,
+-      coverArtUrl: true,
+-      averageRating: true,
+-      genres: true,
+-    },
++    select: ALBUM_SELECT,
+   })
+ 
+-  // Prefer albums in their favorite genres
++  // Sort to prefer albums in their favorite genres
+   const sortedAlbums = albums.sort((a, b) => {
+     const aMatch = (a.genres || []).some((g) => topGenres.includes(g)) ? 1 : 0
+     const bMatch = (b.genres || []).some((g) => topGenres.includes(g)) ? 1 : 0
+@@ -302,7 +234,7 @@ async function getEmotionalRecommendations(
+ 
+   return sortedAlbums.slice(0, limit).map((album) => ({
+     album,
+-    reason: `Emotionally resonant`,
++    reason: "Emotionally resonant",
+     moodMatch: 0.95,
+   }))
+ }
+-- 
+2.50.1 (Apple Git-155)
+

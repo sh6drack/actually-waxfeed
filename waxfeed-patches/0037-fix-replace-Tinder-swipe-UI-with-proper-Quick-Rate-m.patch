@@ -1,0 +1,592 @@
+From 5d1c05ed53506c2a27f699fa38a6ada6da3566ce Mon Sep 17 00:00:00 2001
+From: sh6drack <sh6drack@users.noreply.github.com>
+Date: Sun, 25 Jan 2026 18:56:38 -0500
+Subject: [PATCH 37/50] fix: replace Tinder swipe UI with proper Quick Rate
+ mode
+
+- Standard 0-10 rating slider (RatingSlider component)
+- Skip button for albums you don't know
+- Keyboard shortcuts (Enter to rate, S to skip)
+- Clean, focused UI without swipe gimmicks
+- Session stats tracking rated/skipped counts
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+---
+ src/app/discover/swipe/page.tsx | 444 +++++++++++---------------------
+ 1 file changed, 149 insertions(+), 295 deletions(-)
+
+diff --git a/src/app/discover/swipe/page.tsx b/src/app/discover/swipe/page.tsx
+index 9b38c17..52fafdd 100644
+--- a/src/app/discover/swipe/page.tsx
++++ b/src/app/discover/swipe/page.tsx
+@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
+ import { useSession } from 'next-auth/react'
+ import { useRouter } from 'next/navigation'
+ import Link from 'next/link'
+-import { motion, AnimatePresence, PanInfo } from 'framer-motion'
++import { RatingSlider } from '@/components/rating-slider'
+ 
+ interface Album {
+   id: string
+@@ -16,18 +16,17 @@ interface Album {
+   genres: string[]
+ }
+ 
+-type Rating = 1 | 2 | 3 | 4 | 5
+-
+-export default function SwipePage() {
++export default function QuickRatePage() {
+   const { data: session, status } = useSession()
+   const router = useRouter()
+   const [albums, setAlbums] = useState<Album[]>([])
+   const [currentIndex, setCurrentIndex] = useState(0)
+   const [loading, setLoading] = useState(true)
++  const [submitting, setSubmitting] = useState(false)
++  const [rating, setRating] = useState(5)
+   const [ratedCount, setRatedCount] = useState(0)
+-  const [sessionRatings, setSessionRatings] = useState<{ albumId: string; rating: Rating }[]>([])
+-  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | 'up' | null>(null)
+-  const [showTutorial, setShowTutorial] = useState(true)
++  const [skippedCount, setSkippedCount] = useState(0)
++  const [error, setError] = useState<string | null>(null)
+ 
+   useEffect(() => {
+     if (status === 'unauthenticated') {
+@@ -44,90 +43,80 @@ export default function SwipePage() {
+   const fetchAlbums = async () => {
+     try {
+       setLoading(true)
++      setError(null)
+       const res = await fetch('/api/albums/swipe?limit=20')
+       const data = await res.json()
+       if (data.success) {
+         setAlbums(data.data || [])
++        setCurrentIndex(0)
++      } else {
++        setError(data.error || 'Failed to load albums')
+       }
+-    } catch (error) {
+-      console.error('Failed to fetch albums:', error)
++    } catch (err) {
++      console.error('Failed to fetch albums:', err)
++      setError('Failed to load albums')
+     } finally {
+       setLoading(false)
+     }
+   }
+ 
+-  const submitRating = async (albumId: string, rating: Rating) => {
++  const submitRating = async () => {
++    if (currentIndex >= albums.length) return
++
++    const album = albums[currentIndex]
++    setSubmitting(true)
++    setError(null)
++
+     try {
+       const res = await fetch('/api/reviews', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({
+-          albumId,
++          albumId: album.id,
+           rating,
+-          text: '', // Quick rate mode - no text review
++          text: '',
+           isQuickRate: true,
+         }),
+       })
+       const data = await res.json()
++
+       if (data.success) {
+         setRatedCount((prev) => prev + 1)
+-        setSessionRatings((prev) => [...prev, { albumId, rating }])
++        nextAlbum()
++      } else {
++        setError(data.error || 'Failed to submit rating')
+       }
+-    } catch (error) {
+-      console.error('Failed to submit rating:', error)
++    } catch (err) {
++      console.error('Failed to submit rating:', err)
++      setError('Failed to submit rating')
++    } finally {
++      setSubmitting(false)
+     }
+   }
+ 
+-  const handleSwipe = useCallback(
+-    (direction: 'left' | 'right' | 'up') => {
+-      if (currentIndex >= albums.length) return
+-
+-      const album = albums[currentIndex]
+-      let rating: Rating
+-
+-      switch (direction) {
+-        case 'left':
+-          rating = 2 // Skip/meh
+-          break
+-        case 'right':
+-          rating = 4 // Like
+-          break
+-        case 'up':
+-          rating = 5 // Love
+-          break
+-      }
+-
+-      setSwipeDirection(direction)
+-      submitRating(album.id, rating)
+-
+-      setTimeout(() => {
+-        setSwipeDirection(null)
+-        setCurrentIndex((prev) => prev + 1)
+-      }, 300)
+-    },
+-    [currentIndex, albums]
+-  )
+-
+-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+-    const threshold = 100
+-    const velocityThreshold = 500
++  const skip = () => {
++    setSkippedCount((prev) => prev + 1)
++    nextAlbum()
++  }
+ 
+-    if (info.offset.y < -threshold || info.velocity.y < -velocityThreshold) {
+-      handleSwipe('up')
+-    } else if (info.offset.x > threshold || info.velocity.x > velocityThreshold) {
+-      handleSwipe('right')
+-    } else if (info.offset.x < -threshold || info.velocity.x < -velocityThreshold) {
+-      handleSwipe('left')
+-    }
++  const nextAlbum = () => {
++    setRating(5) // Reset rating for next album
++    setError(null)
++    setCurrentIndex((prev) => prev + 1)
+   }
+ 
+   const handleKeyDown = useCallback(
+     (e: KeyboardEvent) => {
+-      if (e.key === 'ArrowLeft') handleSwipe('left')
+-      if (e.key === 'ArrowRight') handleSwipe('right')
+-      if (e.key === 'ArrowUp') handleSwipe('up')
++      if (submitting) return
++      if (e.key === 'Enter') {
++        e.preventDefault()
++        submitRating()
++      }
++      if (e.key === 's' || e.key === 'S') {
++        skip()
++      }
+     },
+-    [handleSwipe]
++    [submitRating, skip, submitting]
+   )
+ 
+   useEffect(() => {
+@@ -137,8 +126,8 @@ export default function SwipePage() {
+ 
+   if (status === 'loading' || loading) {
+     return (
+-      <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a]">
+-        <div className="flex flex-col items-center gap-3 animate-fade-in">
++      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--background)' }}>
++        <div className="flex flex-col items-center gap-3">
+           <div className="w-10 h-10 border-2 border-[--muted] border-t-[#ffd700] animate-spin" />
+           <span className="text-xs tracking-[0.2em] uppercase text-[--muted]">Loading albums</span>
+         </div>
+@@ -154,272 +143,137 @@ export default function SwipePage() {
+   const isFinished = currentIndex >= albums.length
+ 
+   return (
+-    <div className="min-h-screen bg-[#0a0a0a] text-white overflow-hidden">
++    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
+       {/* Header */}
+-      <div className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-sm border-b border-[--border]">
+-        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
++      <header className="border-b border-[--border]">
++        <div className="max-w-2xl mx-auto px-6 py-4 flex items-center justify-between">
+           <Link
+             href="/discover"
+-            className="text-[--muted] hover:text-white transition-colors"
++            className="text-[--muted] hover:text-white transition-colors flex items-center gap-2"
+           >
+-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
++            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
++              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+             </svg>
++            <span className="text-xs tracking-[0.15em] uppercase">Back</span>
+           </Link>
+           <div className="text-center">
+             <p className="text-[10px] tracking-[0.3em] uppercase text-[#ffd700]">Quick Rate</p>
+-            <p className="text-xs text-[--muted]">{ratedCount} rated this session</p>
++            <p className="text-xs text-[--muted]">Train your taste profile</p>
++          </div>
++          <div className="text-right">
++            <p className="text-lg font-bold tabular-nums">{ratedCount}</p>
++            <p className="text-[10px] text-[--muted] uppercase">rated</p>
+           </div>
+-          <button
+-            onClick={() => setShowTutorial(true)}
+-            className="text-[--muted] hover:text-white transition-colors"
+-          >
+-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+-            </svg>
+-          </button>
+         </div>
+-      </div>
+-
+-      {/* Tutorial Overlay */}
+-      <AnimatePresence>
+-        {showTutorial && (
+-          <motion.div
+-            initial={{ opacity: 0 }}
+-            animate={{ opacity: 1 }}
+-            exit={{ opacity: 0 }}
+-            className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-6"
+-            onClick={() => setShowTutorial(false)}
+-          >
+-            <motion.div
+-              initial={{ scale: 0.9, opacity: 0 }}
+-              animate={{ scale: 1, opacity: 1 }}
+-              exit={{ scale: 0.9, opacity: 0 }}
+-              className="max-w-sm w-full p-8 border border-[--border] bg-[#0a0a0a] text-center"
+-              onClick={(e) => e.stopPropagation()}
+-            >
+-              <h2 className="text-2xl font-bold mb-6">How to Rate</h2>
+-              <div className="space-y-6 mb-8">
+-                <div className="flex items-center gap-4">
+-                  <div className="w-14 h-14 flex items-center justify-center border border-[#ffd700] text-[#ffd700]">
+-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+-                    </svg>
+-                  </div>
+-                  <div className="text-left">
+-                    <p className="font-bold text-[#ffd700]">Swipe Up</p>
+-                    <p className="text-sm text-[--muted]">Love it! (5 stars)</p>
+-                  </div>
+-                </div>
+-                <div className="flex items-center gap-4">
+-                  <div className="w-14 h-14 flex items-center justify-center border border-green-500 text-green-500">
+-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+-                    </svg>
+-                  </div>
+-                  <div className="text-left">
+-                    <p className="font-bold text-green-500">Swipe Right</p>
+-                    <p className="text-sm text-[--muted]">Like it (4 stars)</p>
+-                  </div>
+-                </div>
+-                <div className="flex items-center gap-4">
+-                  <div className="w-14 h-14 flex items-center justify-center border border-red-500 text-red-500">
+-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+-                    </svg>
+-                  </div>
+-                  <div className="text-left">
+-                    <p className="font-bold text-red-500">Swipe Left</p>
+-                    <p className="text-sm text-[--muted]">Skip / Not for me (2 stars)</p>
+-                  </div>
+-                </div>
+-              </div>
+-              <p className="text-xs text-[--muted] mb-6">
+-                Or use arrow keys: ← → ↑
+-              </p>
+-              <button
+-                onClick={() => setShowTutorial(false)}
+-                className="w-full py-3 bg-[#ffd700] text-black font-bold text-sm tracking-wide uppercase hover:bg-[#ffed4a] transition-colors"
+-              >
+-                Start Rating
+-              </button>
+-            </motion.div>
+-          </motion.div>
+-        )}
+-      </AnimatePresence>
++      </header>
+ 
+       {/* Main Content */}
+-      <div className="pt-20 pb-32 px-4 flex items-center justify-center min-h-screen">
++      <main className="max-w-2xl mx-auto px-6 py-8">
+         {isFinished ? (
+-          <motion.div
+-            initial={{ opacity: 0, y: 20 }}
+-            animate={{ opacity: 1, y: 0 }}
+-            className="max-w-sm w-full text-center p-8 border border-[--border]"
+-          >
+-            <div className="text-6xl mb-6">🎉</div>
+-            <h2 className="text-2xl font-bold mb-4">Session Complete!</h2>
++          <div className="text-center py-12">
++            <div className="w-20 h-20 mx-auto mb-6 flex items-center justify-center border-2 border-[#ffd700]">
++              <span className="text-4xl">✓</span>
++            </div>
++            <h2 className="text-2xl font-bold mb-2">Session Complete</h2>
+             <p className="text-[--muted] mb-2">You rated</p>
+-            <p className="text-5xl font-bold text-[#ffd700] mb-6 tabular-nums">{ratedCount}</p>
+-            <p className="text-[--muted] mb-8">albums this session</p>
+-            <div className="space-y-3">
++            <p className="text-5xl font-bold text-[#ffd700] mb-2 tabular-nums">{ratedCount}</p>
++            <p className="text-[--muted] mb-1">albums</p>
++            {skippedCount > 0 && (
++              <p className="text-sm text-[--muted] mb-8">({skippedCount} skipped)</p>
++            )}
++            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8">
+               <button
+                 onClick={() => {
+-                  setCurrentIndex(0)
++                  setRatedCount(0)
++                  setSkippedCount(0)
+                   fetchAlbums()
+                 }}
+-                className="w-full py-3 bg-[#ffd700] text-black font-bold text-sm tracking-wide uppercase hover:bg-[#ffed4a] transition-colors"
++                className="px-6 py-3 bg-[#ffd700] text-black font-bold text-sm tracking-wide uppercase hover:bg-[#ffed4a] transition-colors"
+               >
+                 Keep Going
+               </button>
+               <Link
+                 href="/discover/connections"
+-                className="block w-full py-3 border border-[--border] font-bold text-sm tracking-wide uppercase hover:border-white transition-colors"
++                className="px-6 py-3 border border-[--border] font-medium text-sm tracking-wide uppercase hover:border-white transition-colors"
+               >
+                 Check Connections
+               </Link>
+             </div>
+-          </motion.div>
++          </div>
+         ) : currentAlbum ? (
+-          <div className="relative w-full max-w-sm">
+-            {/* Cards Stack */}
+-            <div className="relative h-[500px]">
+-              {/* Next card preview */}
+-              {albums[currentIndex + 1] && (
+-                <div className="absolute inset-0 scale-95 opacity-50">
+-                  <div className="w-full h-full border border-[--border] bg-[#111] p-4">
+-                    {albums[currentIndex + 1].coverArtUrlLarge && (
+-                      <img
+-                        src={albums[currentIndex + 1].coverArtUrlLarge!}
+-                        alt=""
+-                        className="w-full aspect-square object-cover"
+-                      />
+-                    )}
++          <div className="space-y-8">
++            {/* Album Card */}
++            <div className="border border-[--border]">
++              <div className="aspect-square relative overflow-hidden">
++                {currentAlbum.coverArtUrlLarge || currentAlbum.coverArtUrl ? (
++                  <img
++                    src={currentAlbum.coverArtUrlLarge || currentAlbum.coverArtUrl!}
++                    alt={currentAlbum.title}
++                    className="w-full h-full object-cover"
++                  />
++                ) : (
++                  <div className="w-full h-full bg-[--muted]/10 flex items-center justify-center">
++                    <svg className="w-20 h-20 text-[--muted]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
++                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
++                    </svg>
+                   </div>
+-                </div>
+-              )}
+-
+-              {/* Current card */}
+-              <AnimatePresence mode="wait">
+-                <motion.div
+-                  key={currentAlbum.id}
+-                  initial={{ scale: 0.95, opacity: 0 }}
+-                  animate={{
+-                    scale: 1,
+-                    opacity: 1,
+-                    x: swipeDirection === 'left' ? -300 : swipeDirection === 'right' ? 300 : 0,
+-                    y: swipeDirection === 'up' ? -300 : 0,
+-                    rotate: swipeDirection === 'left' ? -15 : swipeDirection === 'right' ? 15 : 0,
+-                  }}
+-                  exit={{
+-                    x: swipeDirection === 'left' ? -500 : swipeDirection === 'right' ? 500 : 0,
+-                    y: swipeDirection === 'up' ? -500 : 0,
+-                    opacity: 0,
+-                  }}
+-                  transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+-                  drag
+-                  dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+-                  dragElastic={1}
+-                  onDragEnd={handleDragEnd}
+-                  className="absolute inset-0 cursor-grab active:cursor-grabbing"
+-                >
+-                  <div className="w-full h-full border-2 border-[--border] bg-[#0a0a0a] overflow-hidden">
+-                    {/* Album Art */}
+-                    <div className="relative">
+-                      {currentAlbum.coverArtUrlLarge ? (
+-                        <img
+-                          src={currentAlbum.coverArtUrlLarge}
+-                          alt={currentAlbum.title}
+-                          className="w-full aspect-square object-cover"
+-                          draggable={false}
+-                        />
+-                      ) : (
+-                        <div className="w-full aspect-square bg-[--muted]/10 flex items-center justify-center">
+-                          <svg className="w-20 h-20 text-[--muted]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+-                          </svg>
+-                        </div>
+-                      )}
+-
+-                      {/* Swipe indicators */}
+-                      <motion.div
+-                        className="absolute inset-0 bg-green-500/20 flex items-center justify-center"
+-                        initial={{ opacity: 0 }}
+-                        animate={{ opacity: swipeDirection === 'right' ? 1 : 0 }}
+-                      >
+-                        <span className="text-6xl font-bold text-green-500">LIKE</span>
+-                      </motion.div>
+-                      <motion.div
+-                        className="absolute inset-0 bg-red-500/20 flex items-center justify-center"
+-                        initial={{ opacity: 0 }}
+-                        animate={{ opacity: swipeDirection === 'left' ? 1 : 0 }}
+-                      >
+-                        <span className="text-6xl font-bold text-red-500">SKIP</span>
+-                      </motion.div>
+-                      <motion.div
+-                        className="absolute inset-0 bg-[#ffd700]/20 flex items-center justify-center"
+-                        initial={{ opacity: 0 }}
+-                        animate={{ opacity: swipeDirection === 'up' ? 1 : 0 }}
++                )}
++              </div>
++              <div className="p-6">
++                <h2 className="text-xl font-bold mb-1">{currentAlbum.title}</h2>
++                <p className="text-[--muted] mb-4">{currentAlbum.artistName}</p>
++                {currentAlbum.genres && currentAlbum.genres.length > 0 && (
++                  <div className="flex flex-wrap gap-2">
++                    {currentAlbum.genres.slice(0, 4).map((genre) => (
++                      <span
++                        key={genre}
++                        className="text-[10px] px-2 py-1 border border-[--border] text-[--muted] uppercase tracking-wider"
+                       >
+-                        <span className="text-6xl font-bold text-[#ffd700]">LOVE</span>
+-                      </motion.div>
+-                    </div>
+-
+-                    {/* Album Info */}
+-                    <div className="p-5">
+-                      <h2 className="text-xl font-bold truncate mb-1">{currentAlbum.title}</h2>
+-                      <p className="text-[--muted] truncate mb-3">{currentAlbum.artistName}</p>
+-                      {currentAlbum.genres && currentAlbum.genres.length > 0 && (
+-                        <div className="flex flex-wrap gap-2">
+-                          {currentAlbum.genres.slice(0, 3).map((genre) => (
+-                            <span
+-                              key={genre}
+-                              className="text-[10px] px-2 py-1 border border-[--border] text-[--muted] uppercase tracking-wider"
+-                            >
+-                              {genre}
+-                            </span>
+-                          ))}
+-                        </div>
+-                      )}
+-                    </div>
++                        {genre}
++                      </span>
++                    ))}
+                   </div>
+-                </motion.div>
+-              </AnimatePresence>
++                )}
++              </div>
+             </div>
+ 
+-            {/* Action Buttons */}
+-            <div className="flex items-center justify-center gap-6 mt-6">
+-              <button
+-                onClick={() => handleSwipe('left')}
+-                className="w-16 h-16 flex items-center justify-center border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition-colors"
+-              >
+-                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+-                </svg>
+-              </button>
+-              <button
+-                onClick={() => handleSwipe('up')}
+-                className="w-20 h-20 flex items-center justify-center border-2 border-[#ffd700] text-[#ffd700] hover:bg-[#ffd700] hover:text-black transition-colors"
+-              >
+-                <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
+-                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+-                </svg>
+-              </button>
+-              <button
+-                onClick={() => handleSwipe('right')}
+-                className="w-16 h-16 flex items-center justify-center border-2 border-green-500 text-green-500 hover:bg-green-500 hover:text-white transition-colors"
+-              >
+-                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+-                </svg>
+-              </button>
++            {/* Rating Section */}
++            <div className="space-y-6">
++              <RatingSlider value={rating} onChange={setRating} disabled={submitting} />
++
++              {error && (
++                <p className="text-red-500 text-sm text-center">{error}</p>
++              )}
++
++              <div className="flex items-center gap-4">
++                <button
++                  onClick={skip}
++                  disabled={submitting}
++                  className="flex-1 py-4 border border-[--border] text-[--muted] font-medium text-sm tracking-wide uppercase hover:border-white hover:text-white transition-colors disabled:opacity-50"
++                >
++                  Skip
++                </button>
++                <button
++                  onClick={submitRating}
++                  disabled={submitting}
++                  className="flex-1 py-4 bg-[#ffd700] text-black font-bold text-sm tracking-wide uppercase hover:bg-[#ffed4a] transition-colors disabled:opacity-50"
++                >
++                  {submitting ? 'Saving...' : 'Rate'}
++                </button>
++              </div>
++
++              <p className="text-center text-xs text-[--muted]">
++                Press <kbd className="px-1.5 py-0.5 border border-[--border] text-[10px]">Enter</kbd> to rate · <kbd className="px-1.5 py-0.5 border border-[--border] text-[10px]">S</kbd> to skip
++              </p>
+             </div>
+ 
+             {/* Progress */}
+-            <div className="mt-8 text-center">
+-              <p className="text-xs text-[--muted] tabular-nums">
+-                {currentIndex + 1} / {albums.length}
+-              </p>
+-              <div className="w-full h-1 bg-[--border] mt-2 overflow-hidden">
++            <div className="pt-4 border-t border-[--border]">
++              <div className="flex items-center justify-between text-xs text-[--muted] mb-2">
++                <span>{currentIndex + 1} of {albums.length}</span>
++                <span>{ratedCount} rated · {skippedCount} skipped</span>
++              </div>
++              <div className="w-full h-1 bg-[--border] overflow-hidden">
+                 <div
+                   className="h-full bg-[#ffd700] transition-all duration-300"
+                   style={{ width: `${((currentIndex + 1) / albums.length) * 100}%` }}
+@@ -428,18 +282,18 @@ export default function SwipePage() {
+             </div>
+           </div>
+         ) : (
+-          <div className="text-center p-8">
++          <div className="text-center py-12">
+             <div className="text-4xl mb-4">📀</div>
+-            <p className="text-[--muted]">No more albums to rate right now.</p>
++            <p className="text-[--muted] mb-4">No more albums to rate right now.</p>
+             <button
+               onClick={fetchAlbums}
+-              className="mt-4 px-6 py-2 border border-[--border] text-sm hover:border-white transition-colors"
++              className="px-6 py-3 border border-[--border] text-sm hover:border-white transition-colors"
+             >
+               Load More
+             </button>
+           </div>
+         )}
+-      </div>
++      </main>
+     </div>
+   )
+ }
+-- 
+2.50.1 (Apple Git-155)
+

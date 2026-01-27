@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { ArchetypeBadge } from "./ArchetypeBadge"
 import { GenreRadarChart } from "./GenreRadarChart"
+import { getCurrentTier, getProgressToNextTier, TASTEID_TIERS } from "@/lib/tasteid-tiers"
 
 interface TasteIDCardProps {
   username: string
@@ -103,6 +104,9 @@ export function TasteIDCard({
         <MetricBlock label="AVG RATING" value={averageRating.toFixed(1)} />
       </div>
 
+      {/* Tier Progress */}
+      <TierProgressBar reviewCount={reviewCount} />
+
       {/* Footer */}
       <div className="pt-2 border-t border-border flex justify-between items-center">
         <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
@@ -135,6 +139,69 @@ function MetricBlock({ label, value }: { label: string; value: string }) {
         {label}
       </div>
       <div className="text-sm font-bold text-foreground">{value}</div>
+    </div>
+  )
+}
+
+function TierProgressBar({ reviewCount }: { reviewCount: number }) {
+  const { progress, ratingsToNext, currentTier, nextTier } = getProgressToNextTier(reviewCount)
+  
+  return (
+    <div className="pt-3 border-t border-border space-y-2">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span style={{ color: currentTier.color }}>{currentTier.icon}</span>
+          <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: currentTier.color }}>
+            {currentTier.name}
+          </span>
+        </div>
+        {nextTier && (
+          <span className="text-[10px] text-muted-foreground">
+            {ratingsToNext} to {nextTier.icon} {nextTier.name}
+          </span>
+        )}
+      </div>
+      
+      {/* Progress bar */}
+      <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+        <div 
+          className="absolute inset-y-0 left-0 transition-all duration-500 rounded-full"
+          style={{ 
+            width: `${progress}%`,
+            background: `linear-gradient(90deg, ${currentTier.color}, ${nextTier?.color || currentTier.color})`
+          }}
+        />
+        {/* Tier markers */}
+        {TASTEID_TIERS.slice(1, -1).map((tier, i) => {
+          const position = ((tier.minRatings - currentTier.minRatings) / (nextTier ? nextTier.minRatings - currentTier.minRatings : 100)) * 100
+          if (position <= 0 || position >= 100) return null
+          return (
+            <div 
+              key={tier.id}
+              className="absolute top-0 bottom-0 w-0.5 bg-border"
+              style={{ left: `${position}%` }}
+            />
+          )
+        })}
+      </div>
+      
+      {/* Mini tier icons */}
+      <div className="flex justify-between">
+        {TASTEID_TIERS.slice(1).map((tier) => {
+          const isActive = tier.id === currentTier.id
+          const isPast = tier.minRatings < currentTier.minRatings
+          return (
+            <div
+              key={tier.id}
+              className="text-center"
+              style={{ opacity: isPast || isActive ? 1 : 0.3 }}
+              title={`${tier.name}: ${tier.minRatings}+ ratings`}
+            >
+              <span className="text-[10px]">{tier.icon}</span>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }

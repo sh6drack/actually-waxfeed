@@ -1,0 +1,239 @@
+From 4e8057df23ec9e4e3aeb89e607e255070570d6d9 Mon Sep 17 00:00:00 2001
+From: Shadrack Annor <shadrack@Shadracks-MacBook-Air-10.local>
+Date: Sun, 25 Jan 2026 17:39:45 -0500
+Subject: [PATCH 27/50] fix: replace hardcoded dark colors with CSS variables
+ for light/dark mode support
+
+- Replace bg-[#0a0a0a] with bg-[--background]
+- Replace text-white with text-[--foreground]
+- Replace border-[#222] with border-[--border]
+- Ensures all polished pages work correctly in both themes
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+---
+ src/app/badge/[id]/copy-button.tsx         | 4 ++--
+ src/app/badge/[id]/page.tsx                | 6 +++---
+ src/app/logo-preview/page.tsx              | 2 +-
+ src/app/messages/[conversationId]/page.tsx | 4 ++--
+ src/app/rooms/[albumId]/page.tsx           | 4 ++--
+ src/app/rooms/page.tsx                     | 4 ++--
+ src/app/stations/page.tsx                  | 2 +-
+ src/app/stations/station-form.tsx          | 6 +++---
+ src/components/hot-take-card.tsx           | 2 +-
+ src/components/hot-take-form.tsx           | 2 +-
+ src/components/track-player.tsx            | 2 +-
+ 11 files changed, 19 insertions(+), 19 deletions(-)
+
+diff --git a/src/app/badge/[id]/copy-button.tsx b/src/app/badge/[id]/copy-button.tsx
+index b359369..9120e90 100644
+--- a/src/app/badge/[id]/copy-button.tsx
++++ b/src/app/badge/[id]/copy-button.tsx
+@@ -18,10 +18,10 @@ export function CopyButton({ url }: { url: string }) {
+   return (
+     <button
+       onClick={handleCopy}
+-      className={`px-4 py-3.5 text-white border text-[11px] tracking-[0.1em] uppercase font-bold transition-all flex items-center gap-2 ${
++      className={`px-4 py-3.5 text-[--foreground] border text-[11px] tracking-[0.1em] uppercase font-bold transition-all flex items-center gap-2 ${
+         copied
+           ? 'bg-green-500/10 border-green-500/50 text-green-400'
+-          : 'bg-[#0a0a0a] border-[--border] hover:border-[#ffd700]/50 hover:bg-[#ffd700]/5'
++          : 'bg-[--background] border-[--border] hover:border-[#ffd700]/50 hover:bg-[#ffd700]/5'
+       }`}
+     >
+       {copied ? (
+diff --git a/src/app/badge/[id]/page.tsx b/src/app/badge/[id]/page.tsx
+index 86b367c..dff77e8 100644
+--- a/src/app/badge/[id]/page.tsx
++++ b/src/app/badge/[id]/page.tsx
+@@ -104,7 +104,7 @@ export default async function BadgePage({ params }: Props) {
+   const threadsUrl = `https://threads.net/intent/post?text=${encodeURIComponent(shareText + " " + badgeUrl)}`
+ 
+   return (
+-    <div className="min-h-screen bg-[#0a0a0a]">
++    <div className="min-h-screen bg-[--background]">
+       <div className="max-w-2xl mx-auto px-4 py-12">
+         {/* Back navigation */}
+         <div className="mb-8 animate-fade-in">
+@@ -213,7 +213,7 @@ export default async function BadgePage({ params }: Props) {
+                 href={twitterUrl}
+                 target="_blank"
+                 rel="noopener noreferrer"
+-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 bg-[#0a0a0a] text-white border border-[--border] hover:border-[#ffd700]/50 hover:bg-[#ffd700]/5 transition-all text-[11px] tracking-[0.1em] uppercase font-bold"
++                className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 bg-[--background] text-[--foreground] border border-[--border] hover:border-[#ffd700]/50 hover:bg-[#ffd700]/5 transition-all text-[11px] tracking-[0.1em] uppercase font-bold"
+               >
+                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+@@ -224,7 +224,7 @@ export default async function BadgePage({ params }: Props) {
+                 href={threadsUrl}
+                 target="_blank"
+                 rel="noopener noreferrer"
+-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 bg-[#0a0a0a] text-white border border-[--border] hover:border-[#ffd700]/50 hover:bg-[#ffd700]/5 transition-all text-[11px] tracking-[0.1em] uppercase font-bold"
++                className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 bg-[--background] text-[--foreground] border border-[--border] hover:border-[#ffd700]/50 hover:bg-[#ffd700]/5 transition-all text-[11px] tracking-[0.1em] uppercase font-bold"
+               >
+                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                   <path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.5 12.068V12c.012-6.627 4.668-11.478 10.792-11.493h.028c3.186.008 6.063 1.252 8.102 3.499 1.945 2.146 3.005 5.065 3.078 8.067l-2.186.053c-.062-2.535-.936-4.93-2.533-6.691-1.673-1.847-3.975-2.858-6.48-2.865-4.931.013-8.578 3.985-8.588 9.362v.062c0 2.96.693 5.335 2.064 7.067 1.493 1.884 3.76 2.893 6.732 2.933h.007c2.487 0 4.613-.887 6.173-2.581.79-.858 1.368-1.94 1.769-3.315l2.127.523c-.51 1.742-1.269 3.141-2.313 4.274-2.024 2.195-4.82 3.327-8.105 3.327z"/>
+diff --git a/src/app/logo-preview/page.tsx b/src/app/logo-preview/page.tsx
+index ee2d783..6999033 100644
+--- a/src/app/logo-preview/page.tsx
++++ b/src/app/logo-preview/page.tsx
+@@ -15,7 +15,7 @@ const RecordPlayer3D = dynamic(
+ 
+ export default function LogoPreviewPage() {
+   return (
+-    <div className="min-h-screen bg-[#0a0a0a] p-8">
++    <div className="min-h-screen bg-[--background] p-8">
+       <h1 className="text-3xl font-bold mb-8">Logo Versions</h1>
+ 
+       {/* Official Logo */}
+diff --git a/src/app/messages/[conversationId]/page.tsx b/src/app/messages/[conversationId]/page.tsx
+index 05b0747..541a701 100644
+--- a/src/app/messages/[conversationId]/page.tsx
++++ b/src/app/messages/[conversationId]/page.tsx
+@@ -20,7 +20,7 @@ export default function ConversationPage() {
+ 
+   if (status === 'loading') {
+     return (
+-      <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a]">
++      <div className="min-h-screen flex items-center justify-center bg-[--background]">
+         <div className="flex flex-col items-center gap-3 animate-fade-in">
+           <div className="w-8 h-8 border-2 border-[--muted] border-t-[#ffd700] animate-spin" />
+           <span className="text-xs tracking-[0.2em] uppercase text-[--muted]">Loading conversation</span>
+@@ -34,7 +34,7 @@ export default function ConversationPage() {
+   }
+ 
+   return (
+-    <div className="min-h-screen flex flex-col bg-[#0a0a0a]">
++    <div className="min-h-screen flex flex-col bg-[--background]">
+       {/* Back navigation */}
+       <div className="px-6 py-4 border-b border-[--border] animate-fade-in">
+         <Link
+diff --git a/src/app/rooms/[albumId]/page.tsx b/src/app/rooms/[albumId]/page.tsx
+index e9c371b..f09ff87 100644
+--- a/src/app/rooms/[albumId]/page.tsx
++++ b/src/app/rooms/[albumId]/page.tsx
+@@ -20,7 +20,7 @@ export default function AlbumRoomPage() {
+ 
+   if (status === 'loading') {
+     return (
+-      <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a]">
++      <div className="min-h-screen flex items-center justify-center bg-[--background]">
+         <div className="flex flex-col items-center gap-3 animate-fade-in">
+           <div className="w-8 h-8 border-2 border-[--muted] border-t-[#ffd700] animate-spin" />
+           <span className="text-xs tracking-[0.2em] uppercase text-[--muted]">Loading room</span>
+@@ -34,7 +34,7 @@ export default function AlbumRoomPage() {
+   }
+ 
+   return (
+-    <div className="min-h-screen flex flex-col bg-[#0a0a0a]">
++    <div className="min-h-screen flex flex-col bg-[--background]">
+       {/* Back navigation */}
+       <div className="px-6 py-4 border-b border-[--border] animate-fade-in">
+         <Link
+diff --git a/src/app/rooms/page.tsx b/src/app/rooms/page.tsx
+index a85257f..7613faa 100644
+--- a/src/app/rooms/page.tsx
++++ b/src/app/rooms/page.tsx
+@@ -18,7 +18,7 @@ export default function RoomsPage() {
+ 
+   if (status === 'loading') {
+     return (
+-      <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a]">
++      <div className="min-h-screen flex items-center justify-center bg-[--background]">
+         <div className="flex flex-col items-center gap-3 animate-fade-in">
+           <div className="w-8 h-8 border-2 border-[--muted] border-t-[#ffd700] animate-spin" />
+           <span className="text-xs tracking-[0.2em] uppercase text-[--muted]">Loading rooms</span>
+@@ -32,7 +32,7 @@ export default function RoomsPage() {
+   }
+ 
+   return (
+-    <div className="min-h-screen bg-[#0a0a0a]">
++    <div className="min-h-screen bg-[--background]">
+       <div className="max-w-4xl mx-auto">
+         {/* Header */}
+         <div className="px-6 pt-10 pb-8 border-b border-[--border] animate-fade-in">
+diff --git a/src/app/stations/page.tsx b/src/app/stations/page.tsx
+index fda695f..75cae64 100644
+--- a/src/app/stations/page.tsx
++++ b/src/app/stations/page.tsx
+@@ -31,7 +31,7 @@ export default async function StationsPage() {
+   const stats = await getStationStats()
+ 
+   return (
+-    <div className="min-h-screen bg-[#0a0a0a]" style={{ color: 'var(--foreground)' }}>
++    <div className="min-h-screen bg-[--background] text-[--foreground]">
+       {/* Hero */}
+       <section className="border-b border-[--border] animate-fade-in">
+         <div className="max-w-4xl mx-auto px-6 py-20 lg:py-28">
+diff --git a/src/app/stations/station-form.tsx b/src/app/stations/station-form.tsx
+index ecf2dc6..f4d9dbe 100644
+--- a/src/app/stations/station-form.tsx
++++ b/src/app/stations/station-form.tsx
+@@ -67,7 +67,7 @@ export function StationApplicationForm() {
+           placeholder="e.g., WRVU"
+           required
+           disabled={loading}
+-          className="w-full px-4 py-3.5 text-base bg-[#0a0a0a] border border-[--border] text-[--foreground] placeholder:text-[--muted]/50 focus:outline-none focus:border-[#ffd700] focus:bg-[#ffd700]/5 transition-all disabled:opacity-50"
++          className="w-full px-4 py-3.5 text-base bg-[--background] border border-[--border] text-[--foreground] placeholder:text-[--muted]/50 focus:outline-none focus:border-[#ffd700] focus:bg-[#ffd700]/5 transition-all disabled:opacity-50"
+         />
+       </div>
+       <div className="animate-fade-in" style={{ animationDelay: '50ms' }}>
+@@ -78,7 +78,7 @@ export function StationApplicationForm() {
+           onChange={(e) => setUniversity(e.target.value)}
+           placeholder="e.g., Vanderbilt University"
+           disabled={loading}
+-          className="w-full px-4 py-3.5 text-base bg-[#0a0a0a] border border-[--border] text-[--foreground] placeholder:text-[--muted]/50 focus:outline-none focus:border-[#ffd700] focus:bg-[#ffd700]/5 transition-all disabled:opacity-50"
++          className="w-full px-4 py-3.5 text-base bg-[--background] border border-[--border] text-[--foreground] placeholder:text-[--muted]/50 focus:outline-none focus:border-[#ffd700] focus:bg-[#ffd700]/5 transition-all disabled:opacity-50"
+         />
+       </div>
+       <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
+@@ -92,7 +92,7 @@ export function StationApplicationForm() {
+           placeholder="md@station.edu"
+           required
+           disabled={loading}
+-          className="w-full px-4 py-3.5 text-base bg-[#0a0a0a] border border-[--border] text-[--foreground] placeholder:text-[--muted]/50 focus:outline-none focus:border-[#ffd700] focus:bg-[#ffd700]/5 transition-all disabled:opacity-50"
++          className="w-full px-4 py-3.5 text-base bg-[--background] border border-[--border] text-[--foreground] placeholder:text-[--muted]/50 focus:outline-none focus:border-[#ffd700] focus:bg-[#ffd700]/5 transition-all disabled:opacity-50"
+         />
+       </div>
+ 
+diff --git a/src/components/hot-take-card.tsx b/src/components/hot-take-card.tsx
+index bfced76..11c0532 100644
+--- a/src/components/hot-take-card.tsx
++++ b/src/components/hot-take-card.tsx
+@@ -165,7 +165,7 @@ export function HotTakeCard({ hotTake, onVote, compact = false }: HotTakeCardPro
+   }
+ 
+   return (
+-    <article className="border border-[#222] bg-[#0a0a0a]">
++    <article className="border border-[--border] bg-[--background]">
+       {/* Header bar */}
+       <div className="flex items-center justify-between px-6 py-3 border-b border-[#222]">
+         <div className="flex items-center gap-4">
+diff --git a/src/components/hot-take-form.tsx b/src/components/hot-take-form.tsx
+index 9933cdc..378e3b9 100644
+--- a/src/components/hot-take-form.tsx
++++ b/src/components/hot-take-form.tsx
+@@ -197,7 +197,7 @@ export function HotTakeForm({ album, onSubmit, onCancel }: HotTakeFormProps) {
+ 
+               {/* Search results dropdown */}
+               {(searchResults.length > 0 || isSearching) && (
+-                <div className="absolute top-full left-0 right-0 mt-1 border border-[#333] bg-[#0a0a0a] z-10 max-h-64 overflow-y-auto">
++                <div className="absolute top-full left-0 right-0 mt-1 border border-[--border] bg-[--background] z-10 max-h-64 overflow-y-auto">
+                   {isSearching ? (
+                     <div className="p-4 text-center text-[#666] text-sm">Searching...</div>
+                   ) : (
+diff --git a/src/components/track-player.tsx b/src/components/track-player.tsx
+index 203be35..2b59f13 100644
+--- a/src/components/track-player.tsx
++++ b/src/components/track-player.tsx
+@@ -168,7 +168,7 @@ export function TrackPlayer({ tracks, albumId, albumTitle, artistName, coverArtU
+   const tracksWithPreviews = tracks.filter(t => t.previewUrl)
+ 
+   return (
+-    <div className="border border-[--border] bg-[#0a0a0a] animate-fade-in">
++    <div className="border border-[--border] bg-[--background] animate-fade-in">
+       <audio ref={audioRef} className="hidden" />
+ 
+       {/* Header with Progress */}
+-- 
+2.50.1 (Apple Git-155)
+

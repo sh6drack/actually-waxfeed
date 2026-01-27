@@ -1,0 +1,29 @@
+From 230f6496ee68d30dab9d64521684b58339df08a9 Mon Sep 17 00:00:00 2001
+From: Shadrack Annor <shadrack@mac.mynetworksettings.com>
+Date: Sat, 24 Jan 2026 10:48:57 -0500
+Subject: [PATCH 08/50] fix: main page mobile view - 3 albums per row, limit to
+ 20
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+---
+ src/app/page.tsx | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 88133fa..c678409 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -256,8 +256,8 @@ export default async function Home() {
+             </div>
+ 
+             {/* Album grid - grows to fill space */}
+-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 flex-1">
+-              {billboardAlbums.map((album) => (
++            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-4 flex-1">
++              {billboardAlbums.slice(0, 20).map((album) => (
+                 <Link
+                   key={album.id}
+                   href={`/album/${album.spotifyId}`}
+-- 
+2.50.1 (Apple Git-155)
+

@@ -1,0 +1,25 @@
+From 5e30452b4b010d317c4c9ab1b1f488638bd26747 Mon Sep 17 00:00:00 2001
+From: Shadrack Annor <shadrack@Shadracks-MacBook-Air-10.local>
+Date: Sun, 25 Jan 2026 17:48:11 -0500
+Subject: [PATCH 31/50] fix: update contact email to polarity@polarity-lab.com
+
+---
+ src/app/settings/page.tsx | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/app/settings/page.tsx b/src/app/settings/page.tsx
+index d3d5eca..af4e277 100644
+--- a/src/app/settings/page.tsx
++++ b/src/app/settings/page.tsx
+@@ -329,7 +329,7 @@ export default function SettingsPage() {
+       <section className="mt-16 pt-8 border-t border-[--border]">
+         <h2 className="text-xl font-bold mb-6 text-red-500">Danger Zone</h2>
+         <p className="text-sm text-[--muted] mb-4">
+-          Contact scrolling@waxfeed.com to delete your account.
++          Contact polarity@polarity-lab.com to delete your account.
+         </p>
+       </section>
+     </div>
+-- 
+2.50.1 (Apple Git-155)
+

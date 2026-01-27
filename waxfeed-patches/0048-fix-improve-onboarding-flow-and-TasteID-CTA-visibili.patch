@@ -1,0 +1,217 @@
+From 8c3132acf3b72d01e4a31d738e57c32fb0ff28e1 Mon Sep 17 00:00:00 2001
+From: Nathan Amankwah <nathanamankwah@nathans-air.home>
+Date: Tue, 27 Jan 2026 02:22:13 -0500
+Subject: [PATCH 48/50] fix: improve onboarding flow and TasteID CTA visibility
+
+- Fix album swipe API for onboarding to prioritize Billboard albums
+- Add fallback to get any albums with cover art if not enough Billboard
+- Update header to show TasteID CTA for users without TasteID (not just missing username)
+- Add hasTasteID and reviewCount to wax balance API response
+- Mobile menu now shows progress (X/20) for TasteID completion
+---
+ src/app/api/albums/swipe/route.ts | 41 ++++++++++++++++++++++-------
+ src/components/header.tsx         | 25 +++++++++++-------
+ src/lib/wax-engine.ts             | 43 ++++++++++++++++++-------------
+ 3 files changed, 73 insertions(+), 36 deletions(-)
+
+diff --git a/src/app/api/albums/swipe/route.ts b/src/app/api/albums/swipe/route.ts
+index a54a5b9..f3cba67 100644
+--- a/src/app/api/albums/swipe/route.ts
++++ b/src/app/api/albums/swipe/route.ts
+@@ -17,14 +17,14 @@ export async function GET(request: NextRequest) {
+     })
+     const reviewedIds = reviewedAlbumIds.map(r => r.albumId)
+ 
+-    // For onboarding, return popular/well-reviewed albums for broader appeal
++    // For onboarding, return popular albums for broader appeal
+     if (isOnboarding) {
+-      const popularAlbums = await prisma.album.findMany({
++      // First try: Get Billboard charting albums (most recognizable)
++      let popularAlbums = await prisma.album.findMany({
+         where: {
+           id: { notIn: reviewedIds },
+           coverArtUrl: { not: null },
+-          totalReviews: { gte: 3 },
+-          averageRating: { gte: 6 },
++          billboardRank: { not: null },
+         },
+         select: {
+           id: true,
+@@ -35,13 +35,36 @@ export async function GET(request: NextRequest) {
+           releaseDate: true,
+           genres: true,
+         },
+-        take: limit * 2, // Get extra for shuffling
+-        orderBy: [
+-          { totalReviews: 'desc' },
+-          { averageRating: 'desc' },
+-        ],
++        take: limit * 2,
++        orderBy: { billboardRank: 'asc' },
+       })
+ 
++      // Fallback: If not enough Billboard albums, get any albums with cover art
++      if (popularAlbums.length < limit) {
++        const fallbackAlbums = await prisma.album.findMany({
++          where: {
++            id: { notIn: [...reviewedIds, ...popularAlbums.map(a => a.id)] },
++            coverArtUrl: { not: null },
++            albumType: { not: 'single' },
++          },
++          select: {
++            id: true,
++            title: true,
++            artistName: true,
++            coverArtUrl: true,
++            coverArtUrlLarge: true,
++            releaseDate: true,
++            genres: true,
++          },
++          take: (limit * 2) - popularAlbums.length,
++          orderBy: [
++            { totalReviews: 'desc' },
++            { releaseDate: 'desc' },
++          ],
++        })
++        popularAlbums = [...popularAlbums, ...fallbackAlbums]
++      }
++
+       // Shuffle and return
+       const shuffled = popularAlbums
+         .sort(() => Math.random() - 0.5)
+diff --git a/src/components/header.tsx b/src/components/header.tsx
+index e6de31e..87a7d22 100644
+--- a/src/components/header.tsx
++++ b/src/components/header.tsx
+@@ -15,6 +15,8 @@ type WaxStats = {
+   silverSpinCount: number
+   bronzeSpinCount: number
+   tier: string
++  hasTasteID?: boolean
++  reviewCount?: number
+ }
+ 
+ export function Header() {
+@@ -27,7 +29,7 @@ export function Header() {
+   const [unreadMessages, setUnreadMessages] = useState(0)
+   const dropdownRef = useRef<HTMLDivElement>(null)
+ 
+-  // Fetch Wax stats
++  // Fetch Wax stats and TasteID status
+   useEffect(() => {
+     const fetchWax = async () => {
+       if (!session?.user) return
+@@ -42,6 +44,8 @@ export function Header() {
+             silverSpinCount: data.data.silverSpinCount || 0,
+             bronzeSpinCount: data.data.bronzeSpinCount || 0,
+             tier: data.data.tier || 'FREE',
++            hasTasteID: data.data.hasTasteID || false,
++            reviewCount: data.data.reviewCount || 0,
+           })
+         }
+       } catch (error) {
+@@ -137,13 +141,13 @@ export function Header() {
+           >
+             REVIEW
+           </Link>
+-          {/* TasteID CTA - only for logged in users without username (incomplete onboarding) */}
+-          {session && !session.user?.username && (
++          {/* TasteID CTA - for logged in users without TasteID or incomplete onboarding */}
++          {session && ((!session.user?.username) || (waxStats && !waxStats.hasTasteID && (waxStats.reviewCount || 0) < 20)) && (
+             <Link
+-              href="/onboarding"
++              href={session.user?.username ? "/quick-rate" : "/onboarding"}
+               className="px-3 py-1.5 no-underline transition-all border-2 border-[#ffd700] text-[#ffd700] hover:bg-[#ffd700] hover:text-black"
+             >
+-              CREATE TASTEID
++              {session.user?.username ? "🎮 BUILD TASTEID" : "CREATE TASTEID"}
+             </Link>
+           )}
+           <Link href="/trending" className="no-underline hover:opacity-60 transition-opacity">
+@@ -450,15 +454,18 @@ export function Header() {
+             </div>
+           </form>
+ 
+-          {/* TasteID CTA in mobile - prominent if user doesn't have username */}
+-          {session && !session.user?.username && (
++          {/* TasteID CTA in mobile - prominent if user doesn't have TasteID or incomplete onboarding */}
++          {session && ((!session.user?.username) || (waxStats && !waxStats.hasTasteID && (waxStats.reviewCount || 0) < 20)) && (
+             <div className="px-4 pt-4 pb-2">
+               <Link
+-                href="/onboarding"
++                href={session.user?.username ? "/quick-rate" : "/onboarding"}
+                 className="block w-full px-4 py-4 text-center text-sm font-bold no-underline border-2 border-[#ffd700] text-[#ffd700] hover:bg-[#ffd700] hover:text-black transition-colors"
+                 onClick={() => setMobileMenuOpen(false)}
+               >
+-                🎮 CREATE YOUR TASTEID
++                {session.user?.username 
++                  ? `🎮 BUILD YOUR TASTEID (${waxStats?.reviewCount || 0}/20)`
++                  : "🎮 CREATE YOUR TASTEID"
++                }
+               </Link>
+             </div>
+           )}
+diff --git a/src/lib/wax-engine.ts b/src/lib/wax-engine.ts
+index 03372a7..5ce868d 100644
+--- a/src/lib/wax-engine.ts
++++ b/src/lib/wax-engine.ts
+@@ -431,24 +431,28 @@ export function canAwardWaxType(
+ // ============================================
+ 
+ export async function getWalletStats(userId: string) {
+-  const user = await prisma.user.findUnique({
+-    where: { id: userId },
+-    select: {
+-      waxBalance: true,
+-      lifetimeWaxEarned: true,
+-      lifetimeWaxSpent: true,
+-      weeklyWaxEarned: true,
+-      weeklyResetAt: true,
+-      subscriptionTier: true,
+-      currentStreak: true,
+-      dailyClaimedAt: true,
+-      // First Spin stats
+-      tastemakeScore: true,
+-      goldSpinCount: true,
+-      silverSpinCount: true,
+-      bronzeSpinCount: true,
+-    }
+-  })
++  const [user, reviewCount, tasteIdExists] = await Promise.all([
++    prisma.user.findUnique({
++      where: { id: userId },
++      select: {
++        waxBalance: true,
++        lifetimeWaxEarned: true,
++        lifetimeWaxSpent: true,
++        weeklyWaxEarned: true,
++        weeklyResetAt: true,
++        subscriptionTier: true,
++        currentStreak: true,
++        dailyClaimedAt: true,
++        // First Spin stats
++        tastemakeScore: true,
++        goldSpinCount: true,
++        silverSpinCount: true,
++        bronzeSpinCount: true,
++      }
++    }),
++    prisma.review.count({ where: { userId } }),
++    prisma.tasteID.findUnique({ where: { userId }, select: { id: true } }),
++  ])
+ 
+   if (!user) {
+     throw new Error('User not found')
+@@ -492,6 +496,9 @@ export async function getWalletStats(userId: string) {
+     goldSpinCount: user.goldSpinCount ?? 0,
+     silverSpinCount: user.silverSpinCount ?? 0,
+     bronzeSpinCount: user.bronzeSpinCount ?? 0,
++    // TasteID status
++    hasTasteID: !!tasteIdExists,
++    reviewCount,
+   }
+ }
+ 
+-- 
+2.50.1 (Apple Git-155)
+

@@ -1,0 +1,62 @@
+From 680b44308cb5911a91ac1c14e0491ab7d17c6cd6 Mon Sep 17 00:00:00 2001
+From: sh6drack <sh6drack@users.noreply.github.com>
+Date: Sun, 25 Jan 2026 22:45:13 -0500
+Subject: [PATCH 40/50] fix: improve Spotify import button visibility and error
+ handling
+
+- Button now always visible at bottom of Spotify album cards (was hover-only)
+- Styled with gold accent for better visibility
+- Added proper API response handling with error alerts
+- Shows "Importing..." state while in progress
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+---
+ src/app/search/page.tsx | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/src/app/search/page.tsx b/src/app/search/page.tsx
+index 6274535..24ae1b7 100644
+--- a/src/app/search/page.tsx
++++ b/src/app/search/page.tsx
+@@ -98,15 +98,25 @@ function SearchContent() {
+   const importAlbum = async (spotifyId: string) => {
+     setImporting(spotifyId)
+     try {
+-      await fetch("/api/albums/import", {
++      const res = await fetch("/api/albums/import", {
+         method: "POST",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({ spotifyIds: [spotifyId] }),
+       })
++      const data = await res.json()
++
++      if (!res.ok || !data.success) {
++        console.error("Import failed:", data.error || data)
++        alert(data.error || "Failed to import album")
++        setImporting(null)
++        return
++      }
++
+       // Refresh search to show imported album
+       await search(query)
+     } catch (error) {
+       console.error("Import error:", error)
++      alert("Failed to import album. Please try again.")
+     }
+     setImporting(null)
+   }
+@@ -224,9 +234,9 @@ function SearchContent() {
+                             <button
+                               onClick={() => importAlbum(album.id)}
+                               disabled={importing === album.id}
+-                              className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm font-bold"
++                              className="absolute bottom-0 left-0 right-0 bg-[#ffd700] text-black py-2 text-xs font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors disabled:opacity-50"
+                             >
+-                              {importing === album.id ? "Importing..." : "Import to Waxfeed"}
++                              {importing === album.id ? "Importing..." : "+ Import"}
+                             </button>
+                           )}
+                         </div>
+-- 
+2.50.1 (Apple Git-155)
+

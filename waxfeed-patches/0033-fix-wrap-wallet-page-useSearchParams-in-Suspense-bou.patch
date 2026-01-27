@@ -1,0 +1,56 @@
+From c1dfebe27ad99d61ee2bbf55ef5b0c41a8464027 Mon Sep 17 00:00:00 2001
+From: sh6drack <sh6drack@users.noreply.github.com>
+Date: Sun, 25 Jan 2026 18:03:10 -0500
+Subject: [PATCH 33/50] fix: wrap wallet page useSearchParams in Suspense
+ boundary
+
+Next.js 16 requires useSearchParams to be wrapped in a Suspense boundary
+for static optimization. This was causing the production build to fail.
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+---
+ src/app/wallet/page.tsx | 20 +++++++++++++++++++-
+ 1 file changed, 19 insertions(+), 1 deletion(-)
+
+diff --git a/src/app/wallet/page.tsx b/src/app/wallet/page.tsx
+index 71e832f..3816088 100644
+--- a/src/app/wallet/page.tsx
++++ b/src/app/wallet/page.tsx
+@@ -2,7 +2,7 @@
+ 
+ import { useSession } from "next-auth/react"
+ import { useRouter, useSearchParams } from "next/navigation"
+-import { useState, useEffect } from "react"
++import { useState, useEffect, Suspense } from "react"
+ import { formatDistanceToNow } from "date-fns"
+ import Link from "next/link"
+ 
+@@ -34,7 +34,25 @@ type Transaction = {
+   createdAt: string
+ }
+ 
++function WalletLoading() {
++  return (
++    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
++      <div className="max-w-7xl mx-auto px-6 py-12">
++        <p className="text-[--muted]">Loading...</p>
++      </div>
++    </div>
++  )
++}
++
+ export default function WalletPage() {
++  return (
++    <Suspense fallback={<WalletLoading />}>
++      <WalletContent />
++    </Suspense>
++  )
++}
++
++function WalletContent() {
+   const { data: session, status } = useSession()
+   const router = useRouter()
+   const searchParams = useSearchParams()
+-- 
+2.50.1 (Apple Git-155)
+

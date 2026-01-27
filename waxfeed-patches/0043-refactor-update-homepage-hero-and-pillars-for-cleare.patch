@@ -1,0 +1,116 @@
+From 0ca3fc326778a34da67fb0572dc2906176e89f9b Mon Sep 17 00:00:00 2001
+From: sh6drack <sh6drack@users.noreply.github.com>
+Date: Mon, 26 Jan 2026 12:19:23 -0500
+Subject: [PATCH 43/50] refactor: update homepage hero and pillars for clearer
+ marketing
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Change tagline to "Called it first? Get the credit." (more direct)
+- Update hero subtitle to emphasize 3 pillars upfront
+- Redesign "How It Works" → "What Makes WaxFeed Different"
+- Clearly highlight 3 value propositions:
+  1. Prove You Were First (Gamification - badges, timestamps)
+  2. Find Your Music People (Connect - TasteID, social)
+  3. Discover Real Gems (Personalized recommendations)
+- Add icons for each pillar for visual clarity
+- Make badge earning and social connection more prominent
+
+Based on feedback to make marketing more direct and marketable.
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+---
+ src/app/page.tsx | 45 +++++++++++++++++++++++++++------------------
+ 1 file changed, 27 insertions(+), 18 deletions(-)
+
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 67ce74d..a9a62c0 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -179,16 +179,16 @@ export default async function Home() {
+         <div className="max-w-7xl mx-auto px-6 py-16 lg:py-24">
+           <div className="max-w-3xl">
+             <p className="text-[10px] tracking-[0.3em] uppercase text-[#ffd700] mb-4 font-bold">
+-              The only music platform that proves your taste
++              Timestamp Your Taste. Earn Badges. Find Your People.
+             </p>
+             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-[-0.02em] leading-tight mb-6">
+-              Everyone says "I liked them before they blew up."
++              Called it first?
+               <br />
+-              <span className="text-[--muted]">WaxFeed lets you prove it.</span>
++              <span className="text-[--muted]">Get the credit.</span>
+             </h1>
+             <p className="text-base lg:text-lg text-[--muted] mb-8 max-w-xl">
+-              Review albums. Get timestamped. When they trend, you get credit.
+-              Your position is recorded forever: "#7 to review this album."
++              Review albums early. When they blow up, earn badges and climb leaderboards.
++              Connect with listeners who share your taste.
+             </p>
+             
+             <div className="flex flex-col sm:flex-row gap-4 mb-8">
+@@ -252,38 +252,47 @@ export default async function Home() {
+         />
+       )}
+ 
+-      {/* How It Works - 3 Steps */}
++      {/* The 3 Pillars - What Makes WaxFeed Different */}
+       <section className="border-b border-[--border] bg-white/[0.02]">
+         <div className="max-w-7xl mx-auto px-6 py-12">
+           <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-8">
+-            How It Works
++            What Makes WaxFeed Different
+           </p>
+           <div className="grid md:grid-cols-3 gap-8">
++            {/* Pillar 1: Gamification - You Were First */}
+             <div>
+-              <div className="w-10 h-10 border border-white flex items-center justify-center mb-4">
+-                <span className="text-lg font-bold">1</span>
++              <div className="w-10 h-10 border border-[#ffd700] flex items-center justify-center mb-4 text-[#ffd700]">
++                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
++                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
++                </svg>
+               </div>
+-              <p className="font-bold mb-2">Review an album</p>
++              <p className="font-bold mb-2 text-[#ffd700]">Prove You Were First</p>
+               <p className="text-sm text-[--muted]">
+-                Your review position is recorded. "You were #23 to review this album."
++                Review early. When albums blow up, earn Gold, Silver, or Bronze Spin badges. Your position is recorded forever: "#7 to review this album."
+               </p>
+             </div>
++            {/* Pillar 2: Connect - Find Your Music People */}
+             <div>
+               <div className="w-10 h-10 border border-white flex items-center justify-center mb-4">
+-                <span className="text-lg font-bold">2</span>
++                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
++                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
++                </svg>
+               </div>
+-              <p className="font-bold mb-2">Album trends</p>
++              <p className="font-bold mb-2">Find Your Music People</p>
+               <p className="text-sm text-[--muted]">
+-                When it hits 100+ reviews, charts, or blows up—the system checks who called it early.
++                TasteID analyzes your reviews and connects you with listeners who share your taste. Build your circle, discover friends through music.
+               </p>
+             </div>
++            {/* Pillar 3: Discover - Albums You'll Actually Love */}
+             <div>
+-              <div className="w-10 h-10 border border-[#ffd700] flex items-center justify-center mb-4 text-[#ffd700]">
+-                <span className="text-lg font-bold">3</span>
++              <div className="w-10 h-10 border border-white flex items-center justify-center mb-4">
++                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
++                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
++                </svg>
+               </div>
+-              <p className="font-bold mb-2">You get credit</p>
++              <p className="font-bold mb-2">Discover Real Gems</p>
+               <p className="text-sm text-[--muted]">
+-                Gold Spin (first 10), Silver Spin (first 50), or Bronze Spin (first 100). Proof forever.
++                Personalized recommendations based on your TasteID. See what albums are about to trend. Find the next big thing before everyone else.
+               </p>
+             </div>
+           </div>
+-- 
+2.50.1 (Apple Git-155)
+

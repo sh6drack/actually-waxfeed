@@ -1,0 +1,426 @@
+From fdb4b1f59806f4e7296f09e2084da1d4c76909c2 Mon Sep 17 00:00:00 2001
+From: Shadrack Annor <shadrack@Shadracks-MacBook-Air-10.local>
+Date: Sun, 25 Jan 2026 17:46:06 -0500
+Subject: [PATCH 30/50] feat: add Polarity 1.2 system aesthetic with techy UI
+ elements
+
+- Add PolaritySystem component with corner brackets, coordinates, status bar
+- Include subtle grid overlay and scanline effects
+- Add system status indicators with live time display
+- Create PolarityLoader and DataReadout utility components
+- Add tech-themed CSS utilities (glitch, flicker, neon effects)
+- Update layout to use new immersive system interface
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+---
+ src/app/globals.css                | 121 +++++++++++++++
+ src/app/layout.tsx                 |   9 +-
+ src/components/polarity-system.tsx | 238 +++++++++++++++++++++++++++++
+ 3 files changed, 362 insertions(+), 6 deletions(-)
+ create mode 100644 src/components/polarity-system.tsx
+
+diff --git a/src/app/globals.css b/src/app/globals.css
+index 2611bf7..8625281 100644
+--- a/src/app/globals.css
++++ b/src/app/globals.css
+@@ -410,3 +410,124 @@ img[src=""] {
+     transform: translateY(0);
+   }
+ }
++
++/* ═══════════════════════════════════════════════════════════════
++   POLARITY 1.2 SYSTEM AESTHETIC
++   ═══════════════════════════════════════════════════════════════ */
++
++/* System monospace font */
++.font-system {
++  font-family: "SF Mono", "Fira Code", "JetBrains Mono", Monaco, Consolas, monospace;
++  font-feature-settings: "tnum" 1, "ss01" 1;
++}
++
++/* Technical data display */
++.data-readout {
++  font-family: "SF Mono", Monaco, monospace;
++  font-variant-numeric: tabular-nums;
++  letter-spacing: 0.05em;
++}
++
++/* Glitch effect for special moments */
++@keyframes glitch {
++  0% { transform: translate(0); }
++  20% { transform: translate(-2px, 2px); }
++  40% { transform: translate(-2px, -2px); }
++  60% { transform: translate(2px, 2px); }
++  80% { transform: translate(2px, -2px); }
++  100% { transform: translate(0); }
++}
++
++.animate-glitch {
++  animation: glitch 0.3s ease infinite;
++}
++
++/* Flicker effect */
++@keyframes flicker {
++  0%, 100% { opacity: 1; }
++  41% { opacity: 1; }
++  42% { opacity: 0.8; }
++  43% { opacity: 1; }
++  45% { opacity: 0.3; }
++  46% { opacity: 1; }
++}
++
++.animate-flicker {
++  animation: flicker 3s linear infinite;
++}
++
++/* Technical border frame */
++.tech-frame {
++  position: relative;
++}
++
++.tech-frame::before {
++  content: "";
++  position: absolute;
++  top: -4px;
++  left: -4px;
++  width: 12px;
++  height: 12px;
++  border-left: 1px solid var(--foreground);
++  border-top: 1px solid var(--foreground);
++  opacity: 0.3;
++}
++
++.tech-frame::after {
++  content: "";
++  position: absolute;
++  bottom: -4px;
++  right: -4px;
++  width: 12px;
++  height: 12px;
++  border-right: 1px solid var(--foreground);
++  border-bottom: 1px solid var(--foreground);
++  opacity: 0.3;
++}
++
++/* Status indicator pulse */
++@keyframes status-pulse {
++  0%, 100% { box-shadow: 0 0 0 0 currentColor; }
++  50% { box-shadow: 0 0 0 4px transparent; }
++}
++
++.status-indicator {
++  animation: status-pulse 2s ease-in-out infinite;
++}
++
++/* Typing cursor blink */
++@keyframes cursor-blink {
++  0%, 50% { opacity: 1; }
++  51%, 100% { opacity: 0; }
++}
++
++.cursor-blink::after {
++  content: "▋";
++  animation: cursor-blink 1s step-end infinite;
++  margin-left: 2px;
++  color: var(--foreground);
++  opacity: 0.5;
++}
++
++/* Neon glow for accent elements */
++.neon-gold {
++  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5), 0 0 20px rgba(255, 215, 0, 0.3);
++}
++
++.neon-border-gold {
++  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3), inset 0 0 10px rgba(255, 215, 0, 0.1);
++}
++
++/* System status colors */
++.status-nominal { color: #22c55e; }
++.status-active { color: #ffd700; }
++.status-warning { color: #f59e0b; }
++.status-error { color: #ef4444; }
++
++/* Coordinates display */
++.coords {
++  font-family: "SF Mono", Monaco, monospace;
++  font-size: 9px;
++  letter-spacing: 0.1em;
++  opacity: 0.3;
++}
+diff --git a/src/app/layout.tsx b/src/app/layout.tsx
+index 1e099e3..8ad30bd 100644
+--- a/src/app/layout.tsx
++++ b/src/app/layout.tsx
+@@ -4,6 +4,7 @@ import { SessionProvider } from "@/components/session-provider";
+ import { ThemeProvider } from "@/components/theme-provider";
+ import { Header } from "@/components/header";
+ import { CustomCursor } from "@/components/custom-cursor";
++import { PolaritySystem } from "@/components/polarity-system";
+ import { Analytics } from "@vercel/analytics/next";
+ 
+ export const metadata: Metadata = {
+@@ -37,14 +38,10 @@ export default function RootLayout({
+           <ThemeProvider>
+             <CustomCursor />
+             <Header />
+-            <main className="pt-16">
++            <main className="pt-16 pb-12">
+               {children}
+             </main>
+-            <footer className="fixed bottom-3 right-4 z-40">
+-              <span className="text-[10px] tracking-[0.2em] uppercase text-foreground/30 font-medium">
+-                powered by polarity 1.2
+-              </span>
+-            </footer>
++            <PolaritySystem />
+             <Analytics />
+           </ThemeProvider>
+         </SessionProvider>
+diff --git a/src/components/polarity-system.tsx b/src/components/polarity-system.tsx
+new file mode 100644
+index 0000000..d4b136f
+--- /dev/null
++++ b/src/components/polarity-system.tsx
+@@ -0,0 +1,238 @@
++"use client"
++
++import { useState, useEffect } from "react"
++
++export function PolaritySystem() {
++  const [time, setTime] = useState<string>("")
++  const [coords, setCoords] = useState({ x: 0, y: 0 })
++  const [systemStatus, setSystemStatus] = useState("NOMINAL")
++
++  useEffect(() => {
++    // Update time
++    const updateTime = () => {
++      const now = new Date()
++      setTime(now.toLocaleTimeString("en-US", {
++        hour12: false,
++        hour: "2-digit",
++        minute: "2-digit",
++        second: "2-digit"
++      }))
++    }
++    updateTime()
++    const interval = setInterval(updateTime, 1000)
++
++    // Track mouse position for coordinates
++    const handleMouseMove = (e: MouseEvent) => {
++      setCoords({ x: e.clientX, y: e.clientY })
++    }
++    window.addEventListener("mousemove", handleMouseMove)
++
++    // Random system status flicker
++    const statusInterval = setInterval(() => {
++      const statuses = ["NOMINAL", "ACTIVE", "SYNCING", "NOMINAL", "NOMINAL"]
++      setSystemStatus(statuses[Math.floor(Math.random() * statuses.length)])
++    }, 5000)
++
++    return () => {
++      clearInterval(interval)
++      clearInterval(statusInterval)
++      window.removeEventListener("mousemove", handleMouseMove)
++    }
++  }, [])
++
++  return (
++    <>
++      {/* Corner Brackets */}
++      <div className="fixed top-4 left-4 w-8 h-8 border-l-2 border-t-2 border-[--foreground]/10 pointer-events-none z-40" />
++      <div className="fixed top-4 right-4 w-8 h-8 border-r-2 border-t-2 border-[--foreground]/10 pointer-events-none z-40" />
++      <div className="fixed bottom-4 left-4 w-8 h-8 border-l-2 border-b-2 border-[--foreground]/10 pointer-events-none z-40" />
++      <div className="fixed bottom-4 right-4 w-8 h-8 border-r-2 border-b-2 border-[--foreground]/10 pointer-events-none z-40" />
++
++      {/* System Status Bar - Bottom */}
++      <footer className="fixed bottom-0 left-0 right-0 z-40 pointer-events-none">
++        <div className="flex items-center justify-between px-6 py-3">
++          {/* Left: Coordinates */}
++          <div className="hidden md:flex items-center gap-4 font-mono text-[9px] tracking-wider text-[--foreground]/20">
++            <span>X:{coords.x.toString().padStart(4, "0")}</span>
++            <span className="text-[--foreground]/10">|</span>
++            <span>Y:{coords.y.toString().padStart(4, "0")}</span>
++          </div>
++
++          {/* Center: Polarity Branding */}
++          <div className="flex items-center gap-3 mx-auto">
++            <div className="flex items-center gap-2">
++              <div className="relative">
++                <div className="w-1.5 h-1.5 bg-green-500 animate-pulse" />
++                <div className="absolute inset-0 w-1.5 h-1.5 bg-green-500/50 animate-ping" />
++              </div>
++              <span className="font-mono text-[9px] tracking-[0.3em] uppercase text-[--foreground]/30">
++                polarity
++              </span>
++              <span className="font-mono text-[9px] text-[--foreground]/50 tabular-nums">
++                1.2
++              </span>
++            </div>
++            <span className="text-[--foreground]/10 hidden sm:inline">|</span>
++            <span className="font-mono text-[9px] tracking-wider text-[--foreground]/20 hidden sm:inline">
++              {systemStatus}
++            </span>
++          </div>
++
++          {/* Right: Time */}
++          <div className="hidden md:block font-mono text-[9px] tracking-wider text-[--foreground]/20 tabular-nums">
++            {time}
++          </div>
++        </div>
++      </footer>
++
++      {/* Subtle grid overlay (very faint) */}
++      <div
++        className="fixed inset-0 pointer-events-none z-30 opacity-[0.015]"
++        style={{
++          backgroundImage: `
++            linear-gradient(var(--foreground) 1px, transparent 1px),
++            linear-gradient(90deg, var(--foreground) 1px, transparent 1px)
++          `,
++          backgroundSize: "60px 60px"
++        }}
++      />
++
++      {/* Scanline effect (ultra subtle) */}
++      <div
++        className="fixed inset-0 pointer-events-none z-30 opacity-[0.02]"
++        style={{
++          backgroundImage: `repeating-linear-gradient(
++            0deg,
++            transparent,
++            transparent 2px,
++            var(--foreground) 2px,
++            var(--foreground) 4px
++          )`
++        }}
++      />
++    </>
++  )
++}
++
++// Minimal version for pages that need less visual noise
++export function PolarityBadge() {
++  return (
++    <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-[--foreground]/10 bg-[--background]">
++      <div className="w-1 h-1 bg-green-500 animate-pulse" />
++      <span className="font-mono text-[8px] tracking-[0.2em] uppercase text-[--foreground]/40">
++        polarity 1.2
++      </span>
++    </div>
++  )
++}
++
++// Loading screen with Polarity branding
++export function PolarityLoader({ text = "INITIALIZING" }: { text?: string }) {
++  const [dots, setDots] = useState("")
++
++  useEffect(() => {
++    const interval = setInterval(() => {
++      setDots(prev => prev.length >= 3 ? "" : prev + ".")
++    }, 400)
++    return () => clearInterval(interval)
++  }, [])
++
++  return (
++    <div className="min-h-screen flex flex-col items-center justify-center bg-[--background]">
++      {/* Corner brackets */}
++      <div className="fixed top-6 left-6 w-12 h-12 border-l border-t border-[--foreground]/20" />
++      <div className="fixed top-6 right-6 w-12 h-12 border-r border-t border-[--foreground]/20" />
++      <div className="fixed bottom-6 left-6 w-12 h-12 border-l border-b border-[--foreground]/20" />
++      <div className="fixed bottom-6 right-6 w-12 h-12 border-r border-b border-[--foreground]/20" />
++
++      <div className="flex flex-col items-center gap-6 animate-fade-in">
++        {/* Spinning loader */}
++        <div className="relative">
++          <div className="w-16 h-16 border border-[--foreground]/20" />
++          <div className="absolute inset-2 border border-[--foreground]/10 animate-spin" style={{ animationDuration: "3s" }} />
++          <div className="absolute inset-4 border border-[#ffd700]/30 animate-spin" style={{ animationDuration: "2s", animationDirection: "reverse" }} />
++          <div className="absolute inset-0 flex items-center justify-center">
++            <div className="w-2 h-2 bg-[#ffd700] animate-pulse" />
++          </div>
++        </div>
++
++        {/* Status text */}
++        <div className="flex flex-col items-center gap-2">
++          <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-[--foreground]/50">
++            {text}<span className="inline-block w-6">{dots}</span>
++          </span>
++          <div className="flex items-center gap-2">
++            <div className="w-1 h-1 bg-green-500 animate-pulse" />
++            <span className="font-mono text-[8px] tracking-[0.2em] uppercase text-[--foreground]/30">
++              polarity 1.2
++            </span>
++          </div>
++        </div>
++      </div>
++    </div>
++  )
++}
++
++// Data readout component for stats/numbers
++export function DataReadout({
++  label,
++  value,
++  unit,
++  highlight = false
++}: {
++  label: string
++  value: string | number
++  unit?: string
++  highlight?: boolean
++}) {
++  return (
++    <div className="flex flex-col gap-1">
++      <span className="font-mono text-[8px] tracking-[0.2em] uppercase text-[--foreground]/40">
++        {label}
++      </span>
++      <div className="flex items-baseline gap-1">
++        <span className={`font-mono text-2xl tabular-nums font-bold ${highlight ? "text-[#ffd700]" : "text-[--foreground]"}`}>
++          {value}
++        </span>
++        {unit && (
++          <span className="font-mono text-[10px] uppercase text-[--foreground]/50">
++            {unit}
++          </span>
++        )}
++      </div>
++    </div>
++  )
++}
++
++// Section header with technical styling
++export function SectionHeader({
++  tag,
++  title,
++  subtitle
++}: {
++  tag?: string
++  title: string
++  subtitle?: string
++}) {
++  return (
++    <div className="flex flex-col gap-2 animate-fade-in">
++      {tag && (
++        <div className="flex items-center gap-2">
++          <div className="w-1.5 h-1.5 bg-[#ffd700]" />
++          <span className="font-mono text-[9px] tracking-[0.3em] uppercase text-[--foreground]/50">
++            {tag}
++          </span>
++          <div className="flex-1 h-px bg-[--border]" />
++        </div>
++      )}
++      <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
++        {title}
++      </h2>
++      {subtitle && (
++        <p className="text-sm text-[--muted] leading-relaxed max-w-lg">
++          {subtitle}
++        </p>
++      )}
++    </div>
++  )
++}
+-- 
+2.50.1 (Apple Git-155)
+

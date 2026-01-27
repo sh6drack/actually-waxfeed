@@ -1,0 +1,27 @@
+From edc34b0a6b8053bb19726c6cb58266b1e11ab975 Mon Sep 17 00:00:00 2001
+From: Shadrack Annor <shadrack@mac.mynetworksettings.com>
+Date: Sat, 24 Jan 2026 12:05:07 -0500
+Subject: [PATCH 17/50] fix: add items-start to prevent flex stretch on split
+ layout
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+---
+ src/app/page.tsx | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 9e28523..f510aad 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -246,7 +246,7 @@ export default async function Home() {
+ 
+       {/* Main Split Layout */}
+       <div className="max-w-7xl mx-auto">
+-        <div className="flex flex-col lg:flex-row">
++        <div className="flex flex-col lg:flex-row lg:items-start">
+           {/* LEFT: Trending */}
+           <section className="lg:w-1/2 px-6 py-12 lg:py-16 lg:border-r border-[--border]">
+             <div className="flex items-baseline justify-between mb-8">
+-- 
+2.50.1 (Apple Git-155)
+

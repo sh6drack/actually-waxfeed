@@ -3,29 +3,15 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
+import { 
+  getCurrentTier, 
+  getProgressToNextTier,
+  TASTEID_TIERS 
+} from '@/lib/tasteid-tiers'
 
 interface TasteIDCompletionBannerProps {
   reviewCount: number
   hasTasteID: boolean
-}
-
-// TasteID accuracy tiers based on rating count
-const ACCURACY_TIERS = [
-  { min: 0, max: 19, label: 'Locked', accuracy: 0, color: '#666' },
-  { min: 20, max: 49, label: 'Emerging', accuracy: 60, color: '#ffd700' },
-  { min: 50, max: 99, label: 'Developing', accuracy: 75, color: '#ffd700' },
-  { min: 100, max: 199, label: 'Refined', accuracy: 85, color: '#00ff88' },
-  { min: 200, max: 499, label: 'Deep', accuracy: 92, color: '#00ff88' },
-  { min: 500, max: Infinity, label: 'Crystallized', accuracy: 98, color: '#00ffff' },
-]
-
-function getAccuracyTier(count: number) {
-  return ACCURACY_TIERS.find(tier => count >= tier.min && count <= tier.max) || ACCURACY_TIERS[0]
-}
-
-function getNextTier(count: number) {
-  const currentIndex = ACCURACY_TIERS.findIndex(tier => count >= tier.min && count <= tier.max)
-  return currentIndex < ACCURACY_TIERS.length - 1 ? ACCURACY_TIERS[currentIndex + 1] : null
 }
 
 export function TasteIDCompletionBanner({ reviewCount, hasTasteID }: TasteIDCompletionBannerProps) {
@@ -63,126 +49,110 @@ export function TasteIDCompletionBanner({ reviewCount, hasTasteID }: TasteIDComp
   }
 
   const isUnlocked = reviewCount >= 20
-  const currentTier = getAccuracyTier(reviewCount)
-  const nextTier = getNextTier(reviewCount)
-  const ratingsToNextTier = nextTier ? nextTier.min - reviewCount : 0
+  const { progress, ratingsToNext, currentTier, nextTier } = getProgressToNextTier(reviewCount)
   const unlockProgress = Math.min(100, (reviewCount / 20) * 100)
 
   return (
     <div className="border-b border-[--border] bg-gradient-to-r from-[#ffd700]/10 to-transparent">
-      <div className="max-w-7xl mx-auto px-6 py-6">
-        <div className="flex items-start gap-4">
-          {/* Icon */}
-          <div className={`flex-shrink-0 w-10 h-10 border-2 flex items-center justify-center`} style={{ borderColor: currentTier.color }}>
-            {isUnlocked ? (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke={currentTier.color} strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            ) : (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke={currentTier.color} strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            )}
+      <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="flex items-center gap-4">
+          {/* Icon with progress ring */}
+          <div className="relative flex-shrink-0">
+            <svg width="48" height="48" className="-rotate-90">
+              <circle
+                cx="24" cy="24" r="20"
+                fill="none"
+                stroke="#333"
+                strokeWidth="4"
+              />
+              <circle
+                cx="24" cy="24" r="20"
+                fill="none"
+                stroke={currentTier.color}
+                strokeWidth="4"
+                strokeDasharray={125.6}
+                strokeDashoffset={125.6 - (progress / 100) * 125.6}
+                strokeLinecap="round"
+                className="transition-all duration-500"
+              />
+            </svg>
+            <span className="absolute inset-0 flex items-center justify-center text-lg">
+              {currentTier.icon}
+            </span>
           </div>
 
           {/* Content */}
           <div className="flex-1 min-w-0">
-            {!isUnlocked ? (
-              <>
-                <h3 className="text-base font-bold mb-1">
-                  Unlock Your TasteID
-                </h3>
-                <p className="text-sm text-[--muted] mb-3">
-                  Rate {20 - reviewCount} more album{20 - reviewCount === 1 ? '' : 's'} to unlock your musical fingerprint. 
-                  The more you rate, the smarter it gets.
-                </p>
-                <div className="mb-3">
-                  <div className="flex justify-between text-xs text-[--muted] mb-1">
-                    <span>{reviewCount} / 20 to unlock</span>
-                    <span>{Math.round(unlockProgress)}%</span>
-                  </div>
-                  <div className="h-1.5 bg-[--border] rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-[#ffd700] transition-all duration-300"
-                      style={{ width: `${unlockProgress}%` }}
-                    />
-                  </div>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="flex items-center gap-3 mb-1">
-                  <h3 className="text-base font-bold">Your TasteID</h3>
-                  <span 
-                    className="text-xs px-2 py-0.5 font-bold uppercase tracking-wider"
-                    style={{ backgroundColor: currentTier.color, color: '#000' }}
-                  >
-                    {currentTier.label}
-                  </span>
-                  <span className="text-xs text-[--muted]">
-                    {currentTier.accuracy}% accuracy
-                  </span>
-                </div>
-                <p className="text-sm text-[--muted] mb-3">
-                  {nextTier ? (
-                    <>
-                      Rate {ratingsToNextTier} more album{ratingsToNextTier === 1 ? '' : 's'} to reach <strong style={{ color: nextTier.color }}>{nextTier.label}</strong> tier ({nextTier.accuracy}% accuracy).
-                      Your taste profile evolves with every rating.
-                    </>
-                  ) : (
-                    <>
-                      Maximum accuracy achieved. Your taste profile is highly refined.
-                      Keep rating to maintain peak accuracy.
-                    </>
-                  )}
-                </p>
-              </>
-            )}
-
-            {/* CTA Buttons */}
-            <div className="flex flex-wrap gap-3">
-              {!isUnlocked ? (
-                <Link
-                  href="/quick-rate"
-                  className="px-4 py-2 bg-[#ffd700] text-black text-xs uppercase tracking-wider font-bold hover:bg-[#ffed4a] transition-colors"
-                >
-                  {reviewCount === 0 ? 'Start Rating' : 'Continue Rating'}
-                </Link>
-              ) : (
-                <>
-                  <Link
-                    href="/tasteid/me"
-                    className="px-4 py-2 bg-[#ffd700] text-black text-xs uppercase tracking-wider font-bold hover:bg-[#ffed4a] transition-colors"
-                  >
-                    View TasteID
-                  </Link>
-                  <Link
-                    href="/quick-rate"
-                    className="px-4 py-2 border border-[#ffd700] text-[#ffd700] text-xs uppercase tracking-wider font-bold hover:bg-[#ffd700] hover:text-black transition-colors"
-                  >
-                    Keep Building
-                  </Link>
-                </>
-              )}
-              <button
-                onClick={handleDismiss}
-                className="px-4 py-2 border border-[--border] text-xs uppercase tracking-wider hover:border-white transition-colors"
+            <div className="flex items-center gap-3 mb-1">
+              <h3 className="text-sm font-bold">Your TasteID</h3>
+              <span 
+                className="text-[10px] px-2 py-0.5 font-bold uppercase tracking-wider"
+                style={{ backgroundColor: currentTier.color, color: '#000' }}
               >
-                Dismiss
-              </button>
+                {currentTier.name}
+              </span>
+              <span className="text-xs text-[--muted]">
+                {currentTier.maxConfidence}% accuracy
+              </span>
             </div>
+            
+            <p className="text-xs text-[--muted]">
+              {!isUnlocked ? (
+                <>Rate {20 - reviewCount} more to unlock your TasteID</>
+              ) : nextTier ? (
+                <>Rate {ratingsToNext} more albums to reach <strong style={{ color: nextTier.color }}>{nextTier.name}</strong> tier ({nextTier.maxConfidence}% accuracy). Your taste profile evolves with every rating.</>
+              ) : (
+                <>Maximum accuracy achieved. Your taste profile is elite.</>
+              )}
+            </p>
           </div>
 
-          {/* Close button */}
-          <button
-            onClick={handleDismiss}
-            className="flex-shrink-0 text-[--muted] hover:text-white transition-colors"
-            aria-label="Dismiss"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          {/* Mini tier progress */}
+          <div className="hidden md:flex items-center gap-1">
+            {TASTEID_TIERS.slice(1).map((tier) => {
+              const isActive = tier.id === currentTier.id
+              const isPast = tier.minRatings < currentTier.minRatings
+              return (
+                <div
+                  key={tier.id}
+                  className="w-8 h-8 flex items-center justify-center transition-all"
+                  style={{
+                    backgroundColor: isActive ? `${tier.color}30` : 'transparent',
+                    border: isActive ? `2px solid ${tier.color}` : '1px solid #333',
+                    opacity: isPast || isActive ? 1 : 0.3
+                  }}
+                  title={`${tier.name}: ${tier.minRatings}+ ratings`}
+                >
+                  <span className="text-xs">{tier.icon}</span>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="flex gap-2">
+            <Link
+              href="/tasteid/me"
+              className="px-4 py-2 bg-[#ffd700] text-black text-xs uppercase tracking-wider font-bold hover:bg-[#ffed4a] transition-colors"
+            >
+              View TasteID
+            </Link>
+            <Link
+              href="/quick-rate"
+              className="px-4 py-2 border border-[#ffd700] text-[#ffd700] text-xs uppercase tracking-wider font-bold hover:bg-[#ffd700] hover:text-black transition-colors"
+            >
+              Keep Building
+            </Link>
+            <button
+              onClick={handleDismiss}
+              className="px-3 py-2 text-[--muted] hover:text-white transition-colors"
+              aria-label="Dismiss"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>

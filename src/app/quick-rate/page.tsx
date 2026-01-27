@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useState, useEffect, useCallback, useRef } from "react"
 import { RatingSlider } from "@/components/rating-slider"
+import { getCurrentTier, getProgressToNextTier, TASTEID_TIERS } from "@/lib/tasteid-tiers"
 
 const BATCH_SIZE = 20
 
@@ -137,6 +138,7 @@ export default function QuickRatePage() {
   const [playingTrackId, setPlayingTrackId] = useState<string | null>(null)
   const [albumTracks, setAlbumTracks] = useState<Track[]>([])
   const [loadingTracks, setLoadingTracks] = useState(false)
+  const [milestoneReached, setMilestoneReached] = useState<typeof TASTEID_TIERS[0] | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   
   // Derived state - only calculate when we have real data
@@ -293,24 +295,32 @@ export default function QuickRatePage() {
       const data = await res.json()
 
       if (data.success) {
-        const newCount = (ratedCount ?? 0) + 1
+        const oldCount = ratedCount ?? 0
+        const newCount = oldCount + 1
         setRatedCount(newCount)
         setSessionRatedCount((prev) => prev + 1)
         
-        // Show unlock celebration when hitting 20 (but DON'T redirect - keep rating!)
-        if (newCount === TASTEID_UNLOCK) {
+        // Check for tier changes
+        const oldTier = getCurrentTier(oldCount)
+        const newTier = getCurrentTier(newCount)
+        
+        // Show celebration for tier upgrade!
+        if (newTier.id !== oldTier.id && newTier.minRatings > 0) {
+          setMilestoneReached(newTier)
+          setTimeout(() => setMilestoneReached(null), 4000)
+        }
+        // Show unlock celebration when hitting 20
+        else if (newCount === TASTEID_UNLOCK) {
           setShowCompletion(true)
-          // Auto-hide after 3 seconds and continue rating
           setTimeout(() => setShowCompletion(false), 3000)
         }
         
         // Recompute TasteID in background every 5 ratings (keeps it fresh!)
         if (newCount >= TASTEID_UNLOCK && newCount % 5 === 0) {
-          // Fire and forget - don't await
           fetch('/api/tasteid/compute', { method: 'POST' })
             .then(res => res.json())
             .then(data => console.log('[TasteID] Background recompute:', data?.data?.tasteId?.primaryArchetype))
-            .catch(() => {}) // Silent fail
+            .catch(() => {})
         }
         
         nextAlbum()
@@ -447,15 +457,8 @@ export default function QuickRatePage() {
                 </span>
               </div>
               
-              {/* Progress bar - only show if not unlocked */}
-              {!isUnlocked && (
-                <div className="h-2 bg-[#333] rounded-full overflow-hidden">
-                  <div
-                    className="h-full transition-all duration-300 bg-[#ffd700]"
-                    style={{ width: `${unlockProgress}%` }}
-                  />
-                </div>
-              )}
+              {/* Tier Progress Bar - always show */}
+              <TierProgressBar ratingCount={actualRatedCount} />
               
               {skippedCount > 0 && (
                 <p className="text-[10px] text-[#666] mt-1 text-right">
@@ -484,6 +487,45 @@ export default function QuickRatePage() {
                 className="ml-4 text-[#666] hover:text-white"
               >
                 ✕
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Tier Milestone Celebration */}
+        {milestoneReached && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 animate-in fade-in duration-300">
+            <div 
+              className="text-center p-8 border-4 max-w-md animate-in zoom-in duration-500"
+              style={{ borderColor: milestoneReached.color, backgroundColor: `${milestoneReached.color}10` }}
+            >
+              <div className="text-6xl mb-4 animate-bounce">{milestoneReached.icon}</div>
+              <h2 className="text-2xl font-black mb-2" style={{ color: milestoneReached.color }}>
+                TIER UNLOCKED!
+              </h2>
+              <h3 className="text-3xl font-bold mb-4">{milestoneReached.name}</h3>
+              <p className="text-[#888] mb-4">{milestoneReached.description}</p>
+              <div className="space-y-2 text-sm">
+                <p className="text-[#666] uppercase tracking-wider text-xs">New perks unlocked:</p>
+                {milestoneReached.perks.map((perk, i) => (
+                  <div key={i} className="flex items-center justify-center gap-2" style={{ color: milestoneReached.color }}>
+                    <span>✓</span>
+                    <span>{perk}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-[#666] mt-4">
+                Max accuracy: {milestoneReached.maxConfidence}%
+              </p>
+              <button
+                onClick={() => setMilestoneReached(null)}
+                className="mt-6 px-6 py-2 font-bold uppercase tracking-wider transition-colors"
+                style={{ 
+                  backgroundColor: milestoneReached.color, 
+                  color: '#000',
+                }}
+              >
+                Continue Rating
               </button>
             </div>
           </div>
@@ -695,6 +737,60 @@ export default function QuickRatePage() {
             </button>
           </div>
         )}
+      </div>
+    </div>
+  )
+}
+
+// Inline Tier Progress Bar for Quick Rate
+function TierProgressBar({ ratingCount }: { ratingCount: number }) {
+  const { progress, ratingsToNext, currentTier, nextTier } = getProgressToNextTier(ratingCount)
+  
+  return (
+    <div className="space-y-1">
+      {/* Tier info */}
+      <div className="flex items-center justify-between text-[10px]">
+        <div className="flex items-center gap-2">
+          <span style={{ color: currentTier.color }}>{currentTier.icon}</span>
+          <span className="font-bold uppercase tracking-wider" style={{ color: currentTier.color }}>
+            {currentTier.name}
+          </span>
+          <span className="text-[#666]">{currentTier.maxConfidence}% accuracy</span>
+        </div>
+        {nextTier && (
+          <span className="text-[#888]">
+            {ratingsToNext} to {nextTier.icon}
+          </span>
+        )}
+      </div>
+      
+      {/* Progress bar */}
+      <div className="relative h-2 bg-[#222] rounded-full overflow-hidden">
+        <div 
+          className="absolute inset-y-0 left-0 transition-all duration-500 rounded-full"
+          style={{ 
+            width: `${progress}%`,
+            background: `linear-gradient(90deg, ${currentTier.color}, ${nextTier?.color || currentTier.color})`
+          }}
+        />
+      </div>
+      
+      {/* Tier markers */}
+      <div className="flex justify-between px-1">
+        {TASTEID_TIERS.slice(1).map((tier) => {
+          const isActive = tier.id === currentTier.id
+          const isPast = tier.minRatings < currentTier.minRatings
+          return (
+            <div
+              key={tier.id}
+              className="text-center transition-opacity"
+              style={{ opacity: isPast || isActive ? 1 : 0.3 }}
+              title={`${tier.name}: ${tier.minRatings}+ ratings`}
+            >
+              <span className="text-[10px]">{tier.icon}</span>
+            </div>
+          )
+        })}
       </div>
     </div>
   )
