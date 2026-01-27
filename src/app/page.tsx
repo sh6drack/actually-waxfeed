@@ -54,7 +54,7 @@ async function getStats() {
 
 // Get current user's full status for personalized homepage
 async function getUserStatus(userId: string) {
-  const [user, reviewCount, firstSpinCount] = await Promise.all([
+  const [user, reviewCount, firstSpinCount, userRecentReviews] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       select: { 
@@ -71,6 +71,14 @@ async function getUserStatus(userId: string) {
         userId, 
         reviewPosition: { lte: 100 } 
       } 
+    }),
+    prisma.review.findMany({
+      where: { userId },
+      take: 5,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        album: { select: { id: true, spotifyId: true, title: true, artistName: true, coverArtUrl: true } }
+      }
     })
   ])
   
@@ -86,6 +94,7 @@ async function getUserStatus(userId: string) {
     tasteIDProgress,
     firstSpinCount,
     memberSince: user?.createdAt,
+    recentReviews: userRecentReviews,
   }
 }
 
@@ -97,7 +106,7 @@ export default async function Home() {
     getStats(),
     session?.user?.id ? getUserStatus(session.user.id) : Promise.resolve({ 
       username: '', image: null, waxBalance: 0, reviewCount: 0, hasTasteID: false, 
-      archetype: null, tasteIDProgress: 0, firstSpinCount: 0, memberSince: null 
+      archetype: null, tasteIDProgress: 0, firstSpinCount: 0, memberSince: null, recentReviews: [] 
     }),
   ])
 
@@ -197,51 +206,104 @@ export default async function Home() {
 
       {/* HERO - Clear Value Proposition */}
       <section className="border-b border-[var(--border)]">
-        <div className="w-full px-6 lg:px-12 xl:px-20 py-12 lg:py-16">
-          <div className="max-w-3xl">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-8 lg:py-12">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
             {session ? (
               /* Personalized hero for logged in users */
               <>
-                <p className="text-sm tracking-widest uppercase text-[#ffd700] mb-4 font-medium">
-                  Welcome Back
-                </p>
-                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-6">
-                  {userStatus.reviewCount < 5 ? (
-                    <>Keep rating to unlock your TasteID</>
-                  ) : userStatus.reviewCount < 25 ? (
-                    <>{25 - userStatus.reviewCount} more ratings to complete TasteID</>
-                  ) : !userStatus.hasTasteID ? (
-                    <>Your TasteID is ready!</>
-                  ) : (
-                    <>Find your next obsession</>
+                {/* Left - Tagline + Progress */}
+                <div>
+                  <p className="text-xs tracking-[0.3em] uppercase text-[#ffd700] mb-3 font-medium">
+                    {userStatus.archetype ? userStatus.archetype : 'Building Your Profile'}
+                  </p>
+                  <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight mb-4">
+                    {userStatus.hasTasteID ? (
+                      <>Your taste is <span className="text-[#ffd700]">proven</span>. Keep discovering.</>
+                    ) : userStatus.reviewCount < 10 ? (
+                      <>Rate {10 - userStatus.reviewCount} more to unlock insights</>
+                    ) : (
+                      <>{25 - userStatus.reviewCount} ratings until your TasteID</>
+                    )}
+                  </h1>
+                  
+                  {/* TasteID Progress Bar */}
+                  {!userStatus.hasTasteID && (
+                    <div className="mb-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs text-[var(--muted)] uppercase tracking-wider">TasteID Progress</span>
+                        <span className="text-xs font-bold">{userStatus.reviewCount}/25 ratings</span>
+                      </div>
+                      <div className="h-3 bg-[var(--border)] overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-[#ffd700] to-[#ffed4a] transition-all duration-500"
+                          style={{ width: `${userStatus.tasteIDProgress}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-[var(--muted)] mt-2">
+                        {userStatus.tasteIDProgress < 40 && "Keep going! Your unique taste profile is forming."}
+                        {userStatus.tasteIDProgress >= 40 && userStatus.tasteIDProgress < 80 && "Great progress! Your musical identity is taking shape."}
+                        {userStatus.tasteIDProgress >= 80 && "Almost there! Your TasteID is nearly complete."}
+                      </p>
+                    </div>
                   )}
-                </h1>
-                <p className="text-lg text-[var(--muted)] mb-8 max-w-xl leading-relaxed">
-                  {userStatus.reviewCount < 25 ? (
-                    <>Every rating brings you closer to your unique TasteID and earns you WAX.</>
+                  
+                  <div className="flex flex-wrap gap-3">
+                    <Link
+                      href="/quick-rate"
+                      className="px-5 py-2.5 bg-[#ffd700] text-black text-xs font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors"
+                    >
+                      {userStatus.hasTasteID ? 'Rate Albums' : 'Continue Building'}
+                    </Link>
+                    <Link
+                      href="/discover/connections"
+                      className="px-5 py-2.5 border border-[var(--border)] text-xs font-bold uppercase tracking-wider hover:border-[var(--foreground)] transition-colors"
+                    >
+                      Find Your People
+                    </Link>
+                  </div>
+                </div>
+                
+                {/* Right - Recent Activity */}
+                <div className="border border-[var(--border)] p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xs tracking-[0.2em] uppercase text-[var(--muted)]">Your Recent Ratings</h3>
+                    <Link href={`/u/${userStatus.username}`} className="text-xs text-[#ffd700] hover:underline">
+                      View All →
+                    </Link>
+                  </div>
+                  
+                  {userStatus.recentReviews && userStatus.recentReviews.length > 0 ? (
+                    <div className="space-y-2">
+                      {userStatus.recentReviews.slice(0, 4).map((review: any) => (
+                        <Link
+                          key={review.id}
+                          href={`/album/${review.album.spotifyId}`}
+                          className="flex items-center gap-3 p-2 hover:bg-[var(--surface)] transition-colors -mx-2"
+                        >
+                          <div className="w-10 h-10 flex-shrink-0 bg-[var(--surface)]">
+                            {review.album.coverArtUrl && (
+                              <img src={review.album.coverArtUrl} alt="" className="w-full h-full object-cover" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{review.album.title}</p>
+                            <p className="text-xs text-[var(--muted)] truncate">{review.album.artistName}</p>
+                          </div>
+                          <span className="text-[#ffd700] font-bold text-sm">{review.rating.toFixed(1)}</span>
+                        </Link>
+                      ))}
+                    </div>
                   ) : (
-                    <>Discover new music, connect with similar taste, and be the first to find what's next.</>
+                    <div className="text-center py-6">
+                      <p className="text-sm text-[var(--muted)] mb-3">No ratings yet</p>
+                      <Link
+                        href="/quick-rate"
+                        className="text-xs text-[#ffd700] font-bold uppercase tracking-wider hover:underline"
+                      >
+                        Start Rating →
+                      </Link>
+                    </div>
                   )}
-                </p>
-                <div className="flex flex-wrap gap-4">
-                  <Link
-                    href="/quick-rate"
-                    className="px-6 py-3 bg-[#ffd700] text-black text-sm font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors"
-                  >
-                    {userStatus.hasTasteID ? 'Keep Rating' : 'Build TasteID'}
-                  </Link>
-                  <Link
-                    href="/discover"
-                    className="px-6 py-3 border border-[var(--border)] text-sm font-bold uppercase tracking-wider hover:border-[var(--foreground)] transition-colors"
-                  >
-                    Discover
-                  </Link>
-                  <Link
-                    href="/discover/connections"
-                    className="px-6 py-3 border border-[var(--border)] text-sm font-bold uppercase tracking-wider hover:border-[var(--foreground)] transition-colors"
-                  >
-                    Find Connections
-                  </Link>
                 </div>
               </>
             ) : (
