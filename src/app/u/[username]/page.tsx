@@ -21,6 +21,7 @@ import {
 } from "@/components/icons"
 import { TasteIDCard } from "@/components/tasteid"
 import { getArchetypeInfo } from "@/lib/tasteid"
+import { getCurrentTier, getKeepBuildingMessage } from "@/lib/tasteid-tiers"
 
 interface Props {
   params: Promise<{ username: string }>
@@ -550,6 +551,27 @@ export default async function ProfilePage({ params }: Props) {
                 showRadar
                 compact
               />
+              {/* TasteID is never complete - always show progress */}
+              {isOwnProfile && (
+                <div className="mt-3 p-3 border border-[var(--border)] bg-[var(--surface)]">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] tracking-[0.2em] uppercase text-[var(--muted)]">
+                        {getCurrentTier(user.tasteId.reviewCount).name} Tier
+                      </p>
+                      <p className="text-xs text-[var(--muted-dim)]">
+                        {getKeepBuildingMessage(user.tasteId.reviewCount)}
+                      </p>
+                    </div>
+                    <Link
+                      href="/quick-rate"
+                      className="px-3 py-1.5 bg-[#ffd700] text-black text-[10px] font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors"
+                    >
+                      Keep Building
+                    </Link>
+                  </div>
+                </div>
+              )}
             </section>
           )}
 
