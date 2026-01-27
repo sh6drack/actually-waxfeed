@@ -35,7 +35,10 @@ async function getRecentReviews() {
   return prisma.review.findMany({
     take: 15,
     where: {
-      text: { not: null },  // Filter out rating-only quick rates
+      AND: [
+        { text: { not: null } },
+        { text: { not: '' } },
+      ]
     },
     orderBy: { createdAt: "desc" },
     include: {

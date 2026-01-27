@@ -33,7 +33,10 @@ async function getTrendingReviews() {
     take: 15,
     where: {
       createdAt: { gte: sevenDaysAgo },
-      text: { not: null },  // Only show reviews with actual text
+      AND: [
+        { text: { not: null } },
+        { text: { not: '' } },
+      ]
     },
     orderBy: [{ likeCount: "desc" }, { replyCount: "desc" }, { createdAt: "desc" }],
     include: {
