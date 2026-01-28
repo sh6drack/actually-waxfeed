@@ -1,9 +1,10 @@
 import { ImageResponse } from 'next/og'
 import { prisma } from '@/lib/prisma'
 import { getArchetypeInfo } from '@/lib/tasteid'
+import { getCurrentTier } from '@/lib/tasteid-tiers'
 
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ username: string }> }
 ) {
   const { username } = await params
@@ -11,8 +12,18 @@ export async function GET(
   try {
     const user = await prisma.user.findUnique({
       where: { username },
-      include: {
-        tasteId: true,
+      select: {
+        username: true,
+        tasteId: {
+          select: {
+            primaryArchetype: true,
+            topGenres: true,
+            adventurenessScore: true,
+            polarityScore: true,
+            averageRating: true,
+            reviewCount: true,
+          },
+        },
       },
     })
 
@@ -20,260 +31,178 @@ export async function GET(
       return new Response('TasteID not found', { status: 404 })
     }
 
-    const tasteId = user.tasteId
-    const archetype = getArchetypeInfo(tasteId.primaryArchetype)
-    const topGenres = tasteId.topGenres.slice(0, 3)
-
-    // Get base URL for logo
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://wax-feed.com'
+    const archetype = getArchetypeInfo(user.tasteId.primaryArchetype)
+    const tier = getCurrentTier(user.tasteId.reviewCount)
 
     return new ImageResponse(
       (
         <div
           style={{
-            height: '100%',
-            width: '100%',
             display: 'flex',
             flexDirection: 'column',
+            width: '100%',
+            height: '100%',
             backgroundColor: '#0a0a0a',
-            padding: 60,
-            fontFamily: 'system-ui, sans-serif',
-            position: 'relative',
-            overflow: 'hidden',
+            color: '#fff',
+            fontFamily: 'system-ui, -apple-system, sans-serif',
+            padding: '48px',
           }}
         >
-          {/* Iridescent gradient accent - top right */}
+          {/* Header */}
           <div
             style={{
-              position: 'absolute',
-              top: -100,
-              right: -100,
-              width: 400,
-              height: 400,
-              background: 'radial-gradient(circle, rgba(147,51,234,0.3) 0%, rgba(59,130,246,0.2) 40%, transparent 70%)',
-              borderRadius: '50%',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              marginBottom: '32px',
             }}
-          />
-
-          {/* Iridescent gradient accent - bottom left */}
-          <div
-            style={{
-              position: 'absolute',
-              bottom: -150,
-              left: -150,
-              width: 500,
-              height: 500,
-              background: 'radial-gradient(circle, rgba(236,72,153,0.2) 0%, rgba(147,51,234,0.15) 40%, transparent 70%)',
-              borderRadius: '50%',
-            }}
-          />
-
-          {/* Main content */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 50, zIndex: 1 }}>
-            {/* Left side - Disc logo with user avatar */}
-            <div
-              style={{
-                width: 220,
-                height: 220,
-                borderRadius: '50%',
-                background: 'linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 100%)',
-                border: '3px solid #333',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative',
-                boxShadow: '0 0 60px rgba(147,51,234,0.2), inset 0 0 30px rgba(0,0,0,0.5)',
-              }}
-            >
-              {/* Vinyl grooves effect */}
-              <div
+          >
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span
                 style={{
-                  position: 'absolute',
-                  width: '90%',
-                  height: '90%',
-                  borderRadius: '50%',
-                  border: '1px solid rgba(255,255,255,0.05)',
-                }}
-              />
-              <div
-                style={{
-                  position: 'absolute',
-                  width: '70%',
-                  height: '70%',
-                  borderRadius: '50%',
-                  border: '1px solid rgba(255,255,255,0.03)',
-                }}
-              />
-              {/* Center - user avatar or archetype icon */}
-              <div
-                style={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #333 0%, #1a1a1a 100%)',
-                  border: '2px solid #444',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 40,
-                }}
-              >
-                {archetype?.icon || '🎵'}
-              </div>
-            </div>
-
-            {/* Right side - User info */}
-            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: 12 }}>
-              {/* Label */}
-              <div
-                style={{
-                  fontSize: 14,
-                  fontWeight: 600,
+                  fontSize: '14px',
                   color: '#666',
-                  letterSpacing: 3,
+                  letterSpacing: '0.2em',
                   textTransform: 'uppercase',
                 }}
               >
                 TASTEID
-              </div>
-
-              {/* Username */}
-              <div
-                style={{
-                  fontSize: 52,
-                  fontWeight: 700,
-                  color: '#fff',
-                  letterSpacing: -1,
-                }}
-              >
+              </span>
+              <span style={{ fontSize: '36px', fontWeight: 'bold' }}>
                 @{user.username}
-              </div>
-
-              {/* Archetype badge */}
-              <div
+              </span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+              <span
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  marginTop: 8,
+                  fontSize: '20px',
+                  fontWeight: 'bold',
+                  letterSpacing: '0.1em',
                 }}
               >
-                <div
-                  style={{
-                    fontSize: 28,
-                    fontWeight: 700,
-                    color: '#fff',
-                    padding: '8px 20px',
-                    border: '2px solid #fff',
-                    textTransform: 'uppercase',
-                    letterSpacing: 1,
-                  }}
-                >
-                  {archetype?.name || tasteId.primaryArchetype}
-                </div>
-              </div>
-
-              {/* Stats row */}
-              <div
+                WAXFEED
+              </span>
+              {/* Tier badge */}
+              <span
                 style={{
-                  display: 'flex',
-                  gap: 32,
-                  marginTop: 16,
+                  marginTop: '8px',
+                  padding: '4px 12px',
+                  backgroundColor: tier.color,
+                  color: '#000',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
                 }}
               >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <div style={{ fontSize: 14, color: '#666', textTransform: 'uppercase', letterSpacing: 2 }}>
-                    POLARITY
-                  </div>
-                  <div style={{ fontSize: 36, fontWeight: 700, color: '#fff' }}>
-                    {tasteId.polarityScore.toFixed(2)}
-                  </div>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <div style={{ fontSize: 14, color: '#666', textTransform: 'uppercase', letterSpacing: 2 }}>
-                    REVIEWS
-                  </div>
-                  <div style={{ fontSize: 36, fontWeight: 700, color: '#fff' }}>
-                    {tasteId.reviewCount}
-                  </div>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <div style={{ fontSize: 14, color: '#666', textTransform: 'uppercase', letterSpacing: 2 }}>
-                    ADVENTURENESS
-                  </div>
-                  <div style={{ fontSize: 36, fontWeight: 700, color: '#fff' }}>
-                    {Math.round(tasteId.adventurenessScore * 100)}%
-                  </div>
-                </div>
-              </div>
+                {tier.name} • {tier.maxConfidence}%
+              </span>
             </div>
           </div>
 
-          {/* Top genres */}
-          <div style={{ display: 'flex', gap: 12, marginTop: 40, zIndex: 1 }}>
-            {topGenres.map((genre, i) => (
-              <div
-                key={genre}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  padding: '10px 20px',
-                  border: '2px solid #333',
-                  background: i === 0 ? 'rgba(255,255,255,0.05)' : 'transparent',
-                }}
-              >
-                <span style={{ fontSize: 16, color: '#666' }}>#{i + 1}</span>
-                <span style={{ fontSize: 20, fontWeight: 600, color: '#fff', textTransform: 'uppercase' }}>
-                  {genre}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {/* Footer */}
+          {/* Archetype */}
           <div
             style={{
-              marginTop: 'auto',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'space-between',
-              zIndex: 1,
+              gap: '20px',
+              marginBottom: '32px',
+              padding: '28px',
+              border: '3px solid #fff',
+              backgroundColor: '#111',
             }}
           >
-            {/* WAXFEED branding */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              {/* Simplified disc icon */}
-              <div
+            <span style={{ fontSize: '56px' }}>{archetype.icon}</span>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span
                 style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #222 0%, #111 100%)',
-                  border: '2px solid #333',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  position: 'relative',
+                  fontSize: '32px',
+                  fontWeight: 'bold',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
                 }}
               >
-                <div
-                  style={{
-                    width: 16,
-                    height: 16,
-                    borderRadius: '50%',
-                    background: '#fff',
-                  }}
-                />
-              </div>
-              <div style={{ fontSize: 28, fontWeight: 700, color: '#fff', letterSpacing: -0.5 }}>
-                WAXFEED
-              </div>
+                {archetype.name}
+              </span>
+              <span style={{ fontSize: '18px', color: '#888', marginTop: '4px' }}>
+                {archetype.description}
+              </span>
             </div>
+          </div>
 
-            {/* CTA */}
-            <div style={{ fontSize: 18, color: '#666' }}>
-              wax-feed.com/u/{user.username}/tasteid
+          {/* Top Genres */}
+          <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '24px' }}>
+            <span
+              style={{
+                fontSize: '12px',
+                color: '#666',
+                letterSpacing: '0.2em',
+                textTransform: 'uppercase',
+                marginBottom: '12px',
+              }}
+            >
+              TOP GENRES
+            </span>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              {user.tasteId.topGenres.slice(0, 5).map((genre, i) => (
+                <span
+                  key={i}
+                  style={{
+                    padding: '10px 20px',
+                    border: '2px solid #444',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                  }}
+                >
+                  {genre}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div
+            style={{
+              display: 'flex',
+              gap: '40px',
+              marginTop: 'auto',
+              paddingTop: '24px',
+              borderTop: '2px solid #333',
+            }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: '32px', fontWeight: 'bold', color: '#00ff88' }}>
+                {Math.round(user.tasteId.adventurenessScore * 100)}%
+              </span>
+              <span style={{ fontSize: '12px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                ADVENTURENESS
+              </span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: '32px', fontWeight: 'bold', color: '#00bfff' }}>
+                {user.tasteId.polarityScore.toFixed(2)}
+              </span>
+              <span style={{ fontSize: '12px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                POLARITY
+              </span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: '32px', fontWeight: 'bold', color: '#ffd700' }}>
+                {user.tasteId.averageRating.toFixed(1)}
+              </span>
+              <span style={{ fontSize: '12px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                AVG RATING
+              </span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: '32px', fontWeight: 'bold' }}>
+                {user.tasteId.reviewCount}
+              </span>
+              <span style={{ fontSize: '12px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                RATINGS
+              </span>
             </div>
           </div>
         </div>

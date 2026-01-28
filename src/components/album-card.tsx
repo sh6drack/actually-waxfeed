@@ -9,6 +9,7 @@ interface AlbumCardProps {
   title: string
   artistName: string
   coverArtUrl?: string | null
+  releaseDate?: string | Date | null
   averageRating?: number | null
   totalReviews?: number
   size?: "sm" | "md" | "lg"
@@ -20,10 +21,14 @@ export const AlbumCard = memo(function AlbumCard({
   title,
   artistName,
   coverArtUrl,
+  releaseDate,
   averageRating,
   totalReviews,
   size = "md"
 }: AlbumCardProps) {
+  const year = releaseDate
+    ? new Date(releaseDate).getFullYear()
+    : null
   const sizeClasses = {
     sm: "w-full",
     md: "w-40",
@@ -51,7 +56,9 @@ export const AlbumCard = memo(function AlbumCard({
         </div>
         <div className="mt-1.5">
           <p className="text-xs font-medium truncate leading-tight">{title}</p>
-          <p className="text-[--muted-dim] text-xs truncate leading-tight">{artistName}</p>
+          <p className="text-[--muted-dim] text-xs truncate leading-tight">
+            {artistName}{year && ` · ${year}`}
+          </p>
         </div>
       </div>
     </Link>

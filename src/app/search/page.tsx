@@ -20,6 +20,7 @@ interface LocalAlbum {
   title: string
   artistName: string
   coverArtUrl: string | null
+  releaseDate: string | null
   averageRating: number | null
   totalReviews: number
 }
@@ -188,6 +189,7 @@ function SearchContent() {
                     title={album.title}
                     artistName={album.artistName}
                     coverArtUrl={album.coverArtUrl}
+                    releaseDate={album.releaseDate}
                     averageRating={album.averageRating}
                     totalReviews={album.totalReviews}
                   />
@@ -345,7 +347,7 @@ function TrackResult({ track }: { track: Track }) {
 
 export default function SearchPage() {
   return (
-    <div className="w-full px-4 lg:px-12 xl:px-20 py-6 sm:py-8">
+    <div className="w-full max-w-6xl mx-auto px-4 lg:px-12 xl:px-20 py-6 sm:py-8">
       <h1 className="text-2xl sm:text-4xl font-bold tracking-tighter mb-6 sm:mb-8">Search</h1>
       <Suspense fallback={<p className="text-[--muted]">Loading...</p>}>
         <SearchContent />

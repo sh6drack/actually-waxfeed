@@ -36,7 +36,7 @@ export default async function ReviewsPage() {
   const reviews = await getReviews()
 
   return (
-    <div className="w-full px-4 lg:px-12 xl:px-20 py-6 lg:py-8">
+    <div className="w-full max-w-6xl mx-auto px-4 lg:px-12 xl:px-20 py-6 lg:py-8">
       <h1 className="text-2xl lg:text-4xl font-bold tracking-tighter mb-6 lg:mb-8">Recent Reviews</h1>
 
       {reviews.length === 0 ? (

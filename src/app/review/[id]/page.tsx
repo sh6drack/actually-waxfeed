@@ -141,7 +141,7 @@ export default async function ReviewPage({ params }: PageProps) {
   const isOwner = session?.user?.id === review.userId
 
   return (
-    <div className="w-full px-4 lg:px-12 xl:px-20 py-6 lg:py-8">
+    <div className="w-full max-w-5xl mx-auto px-4 lg:px-12 xl:px-20 py-6 lg:py-8">
       {/* Album Header */}
       <Link
         href={`/album/${review.album.spotifyId || review.album.id}`}

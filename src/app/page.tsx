@@ -305,7 +305,7 @@ export default async function Home() {
                     </Link>
                     <Link
                       href="/quick-rate"
-                      className="px-4 py-2.5 bg-[--accent-primary] text-black text-xs font-bold uppercase tracking-wider hover:bg-[--accent-hover] transition-all hover:scale-105"
+                      className="px-4 py-2.5 bg-[#ffd700] text-black text-xs font-bold uppercase tracking-wider hover:bg-[#ffe033] transition-all hover:scale-105"
                     >
                       Rate
                     </Link>
@@ -428,7 +428,7 @@ export default async function Home() {
                     </Link>
                     <Link
                       href="/signup"
-                      className="px-4 py-2.5 bg-[--accent-primary] text-black text-xs font-bold uppercase tracking-wider hover:bg-[--accent-hover] transition-all hover:scale-105"
+                      className="px-4 py-2.5 bg-[#ffd700] text-black text-xs font-bold uppercase tracking-wider hover:bg-[#ffe033] transition-all hover:scale-105"
                     >
                       Rate
                     </Link>

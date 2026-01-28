@@ -266,7 +266,7 @@ export default async function ProfilePage({ params }: Props) {
   const friendCount = user._count.friendshipsAsUser1 + user._count.friendshipsAsUser2
 
   return (
-    <div className="w-full px-4 lg:px-12 xl:px-20 py-6 md:py-8">
+    <div className="w-full max-w-7xl mx-auto px-4 lg:px-12 xl:px-20 py-6 md:py-8">
       {/* Profile Header */}
       <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-8 mb-8 md:mb-12 pb-6 md:pb-8 border-b" style={{ borderColor: 'var(--border)' }}>
         {/* Avatar */}

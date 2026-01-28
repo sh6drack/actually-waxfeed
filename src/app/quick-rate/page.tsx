@@ -675,7 +675,7 @@ export default function QuickRatePage() {
                             title={descriptor.description}
                             className={`text-[9px] sm:text-[10px] px-2 sm:px-3 py-1.5 min-h-[32px] uppercase tracking-wider transition-all duration-150 ${
                               isSelected
-                                ? 'bg-[--accent-primary] text-black border border-[--accent-primary] font-bold'
+                                ? 'bg-[--accent-primary] text-white border border-[--accent-primary] font-bold'
                                 : atMax
                                   ? 'border border-[--border] text-[--muted]/50 cursor-not-allowed'
                                   : 'border border-[--border] text-[--muted] hover:border-[--accent-hover] hover:text-[--accent-hover]'

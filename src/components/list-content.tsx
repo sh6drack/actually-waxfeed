@@ -15,6 +15,7 @@ interface ListItem {
     artistName: string
     coverArtUrl: string | null
     coverArtUrlMedium?: string | null
+    releaseDate?: Date | string | null
     averageRating: number | null
     totalReviews: number
   }
@@ -74,7 +75,10 @@ export function ListContent({ items, isRanked }: ListContentProps) {
                 >
                   {item.album.title}
                 </Link>
-                <p className="text-[--muted] text-sm truncate">{item.album.artistName}</p>
+                <p className="text-[--muted] text-sm truncate">
+                  {item.album.artistName}
+                  {item.album.releaseDate && ` · ${new Date(item.album.releaseDate).getFullYear()}`}
+                </p>
               </div>
 
               {item.album.averageRating !== null && (
@@ -106,6 +110,7 @@ export function ListContent({ items, isRanked }: ListContentProps) {
               title={item.album.title}
               artistName={item.album.artistName}
               coverArtUrl={item.album.coverArtUrl}
+              releaseDate={item.album.releaseDate}
               averageRating={item.album.averageRating}
               totalReviews={item.album.totalReviews}
             />

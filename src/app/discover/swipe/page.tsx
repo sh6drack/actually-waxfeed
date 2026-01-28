@@ -332,7 +332,7 @@ export default function QuickRatePage() {
                       disabled={submitting || atMax}
                       className={`text-[9px] px-2 py-1.5 min-h-[32px] uppercase tracking-wider transition-all ${
                         isSelected
-                          ? 'bg-[var(--accent-primary)] text-black border border-[var(--accent-primary)] font-bold'
+                          ? 'bg-[var(--accent-primary)] text-white border border-[var(--accent-primary)] font-bold'
                           : atMax
                             ? 'border border-[--border] text-[--muted]/40 cursor-not-allowed'
                             : 'border border-[--border] text-[--muted] hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)]'

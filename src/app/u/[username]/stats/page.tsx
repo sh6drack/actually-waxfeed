@@ -138,7 +138,7 @@ export default async function UserStatsPage({ params }: Props) {
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
   return (
-    <div className="w-full px-4 lg:px-12 xl:px-20 py-6 lg:py-8">
+    <div className="w-full max-w-6xl mx-auto px-4 lg:px-12 xl:px-20 py-6 lg:py-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>

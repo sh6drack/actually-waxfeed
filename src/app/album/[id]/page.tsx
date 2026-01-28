@@ -122,7 +122,7 @@ export default async function AlbumPage({ params }: Props) {
   const totalDuration = album.tracks.reduce((sum, t) => sum + t.durationMs, 0)
 
   return (
-    <div className="w-full px-4 lg:px-12 xl:px-20 py-6 md:py-8">
+    <div className="w-full max-w-6xl mx-auto px-4 lg:px-12 xl:px-20 py-6 md:py-8">
       {/* Mobile: Stack vertically, Desktop: Side by side */}
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 mb-6 md:mb-8">
 

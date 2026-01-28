@@ -125,7 +125,7 @@ export default async function ComparePage({ params }: Props) {
   if (!("currentUser" in data)) {
     return (
       <div className="min-h-screen bg-black text-white p-8">
-        <div className="w-full px-4 lg:px-12 xl:px-20">
+        <div className="w-full max-w-5xl mx-auto px-4 lg:px-12 xl:px-20">
           <Link
             href={`/u/${username}`}
             className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-white mb-8"
@@ -151,7 +151,7 @@ export default async function ComparePage({ params }: Props) {
   if ("needsOwnTasteId" in data && data.needsOwnTasteId) {
     return (
       <div className="min-h-screen bg-black text-white p-8">
-        <div className="w-full px-4 lg:px-12 xl:px-20">
+        <div className="w-full max-w-5xl mx-auto px-4 lg:px-12 xl:px-20">
           <Link
             href={`/u/${username}`}
             className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-white mb-8"
@@ -202,7 +202,7 @@ export default async function ComparePage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="w-full px-4 lg:px-12 xl:px-20 py-8">
+      <div className="w-full max-w-5xl mx-auto px-4 lg:px-12 xl:px-20 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <Link

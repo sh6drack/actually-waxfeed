@@ -108,7 +108,7 @@ export default async function HotTakesPage() {
   }
 
   return (
-    <div className="w-full px-4 lg:px-12 xl:px-20 py-6 lg:py-8">
+    <div className="w-full max-w-5xl mx-auto px-4 lg:px-12 xl:px-20 py-6 lg:py-8">
       {/* Header */}
       <header className="mb-8 sm:mb-12">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 sm:mb-6">

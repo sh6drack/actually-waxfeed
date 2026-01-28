@@ -122,14 +122,14 @@ export default function NotificationsPage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="w-full px-4 lg:px-12 xl:px-20 max-w-4xl py-8">
+      <div className="w-full max-w-4xl mx-auto px-4 lg:px-12 xl:px-20 py-8">
         <p className="text-[--muted]">Loading...</p>
       </div>
     )
   }
 
   return (
-    <div className="w-full px-4 lg:px-12 xl:px-20 max-w-4xl py-6 sm:py-8">
+    <div className="w-full max-w-4xl mx-auto px-4 lg:px-12 xl:px-20 py-6 sm:py-8">
       <div className="flex items-center justify-between gap-4 mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-4xl font-bold tracking-tighter">Notifications</h1>
         {unreadCount > 0 && (
