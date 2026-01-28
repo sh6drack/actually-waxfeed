@@ -6,8 +6,9 @@ import { useState, useEffect, useRef, useCallback } from "react"
 import { DefaultAvatar } from "@/components/default-avatar"
 import { RatingSlider } from "@/components/rating-slider"
 import { COUNTRIES } from "@/data/countries"
+import { useCustomization, ACCENT_COLORS, AccentColor, CARD_STYLES, CardStyle } from "@/components/customization-provider"
 
-const TOTAL_STEPS = 4
+const TOTAL_STEPS = 5
 const REQUIRED_RATINGS = 20
 
 // Scientific mood/vibe descriptors for TasteID Polarity Model
@@ -36,6 +37,7 @@ export default function OnboardingPage() {
   const { data: session, status, update } = useSession()
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { settings, updateSetting } = useCustomization()
 
   const [step, setStep] = useState(1)
   const [username, setUsername] = useState("")
@@ -65,9 +67,9 @@ export default function OnboardingPage() {
     // The FirstTimeWelcome modal and header CTAs will guide them here if needed
   }, [session, status, router])
 
-  // Fetch albums when reaching step 4
+  // Fetch albums when reaching step 5
   useEffect(() => {
-    if (step === 4 && albums.length === 0) {
+    if (step === 5 && albums.length === 0) {
       fetchAlbums()
     }
   }, [step])
@@ -280,7 +282,7 @@ export default function OnboardingPage() {
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (step !== 4 || submitting) return
+      if (step !== 5 || submitting) return
       if (e.key === 'Enter') {
         e.preventDefault()
         submitRating()
@@ -320,8 +322,8 @@ export default function OnboardingPage() {
     return (
       <div className="min-h-[80vh] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-2 border-[#333] border-t-[#ffd700] animate-spin" />
-          <span className="text-xs tracking-[0.2em] uppercase text-[#888]">Loading</span>
+          <div className="w-10 h-10 border-2 border-[--border] border-t-[var(--accent-primary)] animate-spin" />
+          <span className="text-xs tracking-[0.2em] uppercase text-[--muted]">Loading</span>
         </div>
       </div>
     )
@@ -335,10 +337,10 @@ export default function OnboardingPage() {
       <div className="w-full px-4 lg:px-12 xl:px-20 max-w-xl mx-auto py-8">
         {/* Progress indicator */}
         <div className="flex gap-2 mb-8">
-          {[1, 2, 3, 4].map((s) => (
+          {[1, 2, 3, 4, 5].map((s) => (
             <div
               key={s}
-              className={`h-1 flex-1 transition-colors ${step >= s ? "bg-[#ffd700]" : "bg-[#333]"}`}
+              className={`h-1 flex-1 transition-colors ${step >= s ? "bg-[var(--accent-primary)]" : "bg-[--border]"}`}
             />
           ))}
         </div>
@@ -346,20 +348,20 @@ export default function OnboardingPage() {
         {/* Step 1: Username */}
         {step === 1 && (
           <>
-            <p className="text-[10px] tracking-[0.3em] uppercase text-[#ffd700] mb-4">
+            <p className="text-[10px] tracking-[0.3em] uppercase text-[var(--accent-primary)] mb-4">
               Step 1 of {TOTAL_STEPS}
             </p>
             <h1 className="text-4xl font-bold tracking-tighter mb-4">Claim Your Identity</h1>
-            <p className="text-[#888] mb-8">
+            <p className="text-[--muted] mb-8">
               Your username is your handle for earning badges and climbing the leaderboard.
               Choose wisely—this is how people will remember you.
             </p>
 
             <form onSubmit={handleUsernameSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm text-[#888] mb-2">Username</label>
+                <label className="block text-sm text-[--muted] mb-2">Username</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#666]">@</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[--muted]/70">@</span>
                   <input
                     type="text"
                     value={username}
@@ -379,12 +381,12 @@ export default function OnboardingPage() {
                   />
                 </div>
                 {checking && (
-                  <p className="text-xs text-[#888] mt-1">Checking availability...</p>
+                  <p className="text-xs text-[--muted] mt-1">Checking availability...</p>
                 )}
                 {error && (
                   <p className="text-xs text-red-500 mt-1">{error}</p>
                 )}
-                <p className="text-xs text-[#666] mt-2">
+                <p className="text-xs text-[--muted]/70 mt-2">
                   3-30 characters, letters, numbers, and underscores only
                 </p>
               </div>
@@ -403,11 +405,11 @@ export default function OnboardingPage() {
         {/* Step 2: Photo */}
         {step === 2 && (
           <>
-            <p className="text-[10px] tracking-[0.3em] uppercase text-[#ffd700] mb-4">
+            <p className="text-[10px] tracking-[0.3em] uppercase text-[var(--accent-primary)] mb-4">
               Step 2 of {TOTAL_STEPS}
             </p>
             <h1 className="text-4xl font-bold tracking-tighter mb-4">Show Your Face</h1>
-            <p className="text-[#888] mb-8">
+            <p className="text-[--muted] mb-8">
               When you earn badges and climb the leaderboard, people will see this.
               Make it memorable.
             </p>
@@ -421,7 +423,7 @@ export default function OnboardingPage() {
                   <img
                     src={image}
                     alt=""
-                    className="w-full h-full object-cover border border-[#333]"
+                    className="w-full h-full object-cover border border-[--border]"
                   />
                 ) : (
                   <DefaultAvatar size="lg" className="w-full h-full" />
@@ -454,7 +456,7 @@ export default function OnboardingPage() {
                 onChange={handleImageUpload}
                 className="hidden"
               />
-              <p className="text-sm text-[#888]">
+              <p className="text-sm text-[--muted]">
                 Click to upload • Max 5MB
               </p>
               {error && (
@@ -465,7 +467,7 @@ export default function OnboardingPage() {
             <div className="flex gap-3">
               <button
                 onClick={handlePhotoComplete}
-                className="flex-1 border border-[#333] py-4 px-6 font-bold text-lg hover:bg-[#111] transition-colors"
+                className="flex-1 border border-[--border] py-4 px-6 font-bold text-lg hover:bg-[--surface] transition-colors"
               >
                 Skip for now
               </button>
@@ -483,18 +485,18 @@ export default function OnboardingPage() {
         {/* Step 3: Country */}
         {step === 3 && (
           <>
-            <p className="text-[10px] tracking-[0.3em] uppercase text-[#ffd700] mb-4">
+            <p className="text-[10px] tracking-[0.3em] uppercase text-[var(--accent-primary)] mb-4">
               Step 3 of {TOTAL_STEPS}
             </p>
             <h1 className="text-4xl font-bold tracking-tighter mb-4">Where You At?</h1>
-            <p className="text-[#888] mb-8">
+            <p className="text-[--muted] mb-8">
               This helps us personalize your music recommendations.
               We'll prioritize music from your region and similar markets.
             </p>
 
             <div className="space-y-4 mb-8">
               <div>
-                <label className="block text-sm text-[#888] mb-2">Search countries</label>
+                <label className="block text-sm text-[--muted] mb-2">Search countries</label>
                 <input
                   type="text"
                   value={countrySearch}
@@ -505,7 +507,7 @@ export default function OnboardingPage() {
                 />
               </div>
 
-              <div className="h-64 overflow-y-auto border border-[#333]">
+              <div className="h-64 overflow-y-auto border border-[--border]">
                 {filteredCountries.map((c) => (
                   <button
                     key={c.code}
@@ -516,8 +518,8 @@ export default function OnboardingPage() {
                     }}
                     className={`w-full px-4 py-3 text-left flex items-center gap-3 transition-colors ${
                       country === c.code
-                        ? 'bg-[#ffd700] text-black'
-                        : 'hover:bg-[#111]'
+                        ? 'bg-[var(--accent-primary)] text-black'
+                        : 'hover:bg-[--surface]'
                     }`}
                   >
                     <span className="text-xl">{c.flag}</span>
@@ -546,14 +548,106 @@ export default function OnboardingPage() {
           </>
         )}
 
-        {/* Step 4: Quick Rate */}
+        {/* Step 4: Customize */}
         {step === 4 && (
           <>
-            <p className="text-[10px] tracking-[0.3em] uppercase text-[#ffd700] mb-4">
+            <p className="text-[10px] tracking-[0.3em] uppercase text-[var(--accent-primary)] mb-4">
               Step 4 of {TOTAL_STEPS}
             </p>
+            <h1 className="text-4xl font-bold tracking-tighter mb-4">Make It Yours</h1>
+            <p className="text-[--muted] mb-8">
+              Customize how Waxfeed looks. You can always change these later in Settings.
+            </p>
+
+            <div className="space-y-8 mb-8">
+              {/* Accent Color */}
+              <div>
+                <label className="block text-sm text-[--muted] mb-3">Accent Color</label>
+                <div className="grid grid-cols-4 gap-3">
+                  {(Object.keys(ACCENT_COLORS) as AccentColor[]).filter(k => k !== 'custom').map((colorKey) => (
+                    <button
+                      key={colorKey}
+                      type="button"
+                      onClick={() => updateSetting('accentColor', colorKey)}
+                      className={`aspect-square border-2 transition-all ${
+                        settings.accentColor === colorKey
+                          ? 'border-white scale-110'
+                          : 'border-transparent hover:border-[--border]'
+                      }`}
+                      style={{ backgroundColor: ACCENT_COLORS[colorKey].primary }}
+                      title={ACCENT_COLORS[colorKey].name}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Card Style */}
+              <div>
+                <label className="block text-sm text-[--muted] mb-3">Card Style</label>
+                <div className="grid grid-cols-3 gap-3">
+                  {(Object.keys(CARD_STYLES) as CardStyle[]).map((styleKey) => (
+                    <button
+                      key={styleKey}
+                      type="button"
+                      onClick={() => updateSetting('cardStyle', styleKey)}
+                      className={`p-4 border transition-all text-center ${
+                        settings.cardStyle === styleKey
+                          ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
+                          : 'border-[--border] hover:border-[#666]'
+                      }`}
+                    >
+                      <span className="text-sm font-medium">{CARD_STYLES[styleKey].name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Preview */}
+              <div className="border border-[--border] p-4">
+                <p className="text-[10px] tracking-[0.2em] uppercase text-[--muted] mb-3">Preview</p>
+                <div className="flex items-center gap-4">
+                  <div
+                    className="w-16 h-16 bg-[--surface]"
+                    style={{
+                      borderRadius: settings.cardStyle === 'outlined' ? '0' : '4px',
+                      boxShadow: settings.cardStyle === 'elevated' ? '0 4px 12px rgba(0,0,0,0.3)' : 'none',
+                      border: settings.cardStyle === 'outlined' ? '2px solid var(--border)' : '1px solid var(--border)'
+                    }}
+                  />
+                  <div>
+                    <p className="font-bold">Album Title</p>
+                    <p className="text-sm text-[--muted]">Artist Name</p>
+                    <p className="text-sm font-bold mt-1" style={{ color: 'var(--accent-primary)' }}>8.5</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setStep(5)}
+                className="flex-1 border border-[--border] py-4 px-6 font-bold text-lg hover:bg-[--surface] transition-colors"
+              >
+                Skip
+              </button>
+              <button
+                onClick={() => setStep(5)}
+                className="flex-1 bg-white text-black py-4 px-6 font-bold text-lg hover:bg-gray-100 transition-colors"
+              >
+                Continue
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Step 5: Quick Rate */}
+        {step === 5 && (
+          <>
+            <p className="text-[10px] tracking-[0.3em] uppercase text-[var(--accent-primary)] mb-4">
+              Step 5 of {TOTAL_STEPS}
+            </p>
             <h1 className="text-4xl font-bold tracking-tighter mb-2">Train Your Taste</h1>
-            <p className="text-[#888] mb-6">
+            <p className="text-[--muted] mb-6">
               Rate {REQUIRED_RATINGS} albums so we can understand your music taste.
               Skip anything you haven't heard.
             </p>
@@ -561,14 +655,14 @@ export default function OnboardingPage() {
             {/* Progress bar */}
             <div className="mb-6">
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-[#888]">{ratedCount} of {REQUIRED_RATINGS} rated</span>
+                <span className="text-[--muted]">{ratedCount} of {REQUIRED_RATINGS} rated</span>
                 {skippedCount > 0 && (
-                  <span className="text-[#666]">{skippedCount} skipped</span>
+                  <span className="text-[--muted]/70">{skippedCount} skipped</span>
                 )}
               </div>
-              <div className="w-full h-2 bg-[#333]">
+              <div className="w-full h-2 bg-[--border]">
                 <div
-                  className="h-full bg-[#ffd700] transition-all duration-300"
+                  className="h-full bg-[var(--accent-primary)] transition-all duration-300"
                   style={{ width: `${(ratedCount / REQUIRED_RATINGS) * 100}%` }}
                 />
               </div>
@@ -576,25 +670,25 @@ export default function OnboardingPage() {
 
             {loadingAlbums ? (
               <div className="flex flex-col items-center justify-center py-20">
-                <div className="w-10 h-10 border-2 border-[#333] border-t-[#ffd700] animate-spin mb-4" />
-                <span className="text-xs tracking-[0.2em] uppercase text-[#888]">Loading albums</span>
+                <div className="w-10 h-10 border-2 border-[--border] border-t-[var(--accent-primary)] animate-spin mb-4" />
+                <span className="text-xs tracking-[0.2em] uppercase text-[--muted]">Loading albums</span>
               </div>
             ) : isRatingComplete ? (
               <div className="text-center py-12">
-                <div className="w-20 h-20 mx-auto mb-6 flex items-center justify-center border-2 border-[#ffd700]">
+                <div className="w-20 h-20 mx-auto mb-6 flex items-center justify-center border-2 border-[var(--accent-primary)]">
                   <span className="text-4xl">✓</span>
                 </div>
                 <h2 className="text-2xl font-bold mb-2">You're All Set!</h2>
-                <p className="text-[#888] mb-2">You rated</p>
-                <p className="text-5xl font-bold text-[#ffd700] mb-2 tabular-nums">{ratedCount}</p>
-                <p className="text-[#888] mb-8">albums</p>
-                <p className="text-sm text-[#666] mb-8">
+                <p className="text-[--muted] mb-2">You rated</p>
+                <p className="text-5xl font-bold text-[var(--accent-primary)] mb-2 tabular-nums">{ratedCount}</p>
+                <p className="text-[--muted] mb-8">albums</p>
+                <p className="text-sm text-[--muted]/70 mb-8">
                   We're building your TasteID now. The more you rate, the better your recommendations.
                 </p>
                 <button
                   onClick={handleComplete}
                   disabled={loading}
-                  className="bg-[#ffd700] text-black px-8 py-4 font-bold text-lg hover:bg-[#ffed4a] transition-colors disabled:opacity-50"
+                  className="bg-[var(--accent-primary)] text-black px-8 py-4 font-bold text-lg hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-50"
                 >
                   {loading ? "Computing TasteID..." : "Enter Waxfeed"}
                 </button>
@@ -602,7 +696,7 @@ export default function OnboardingPage() {
             ) : currentAlbum ? (
               <div className="space-y-6">
                 {/* Album Card */}
-                <div className="border border-[#333]">
+                <div className="border border-[--border]">
                   <div className="aspect-square relative overflow-hidden">
                     {currentAlbum.coverArtUrlLarge || currentAlbum.coverArtUrl ? (
                       <img
@@ -611,8 +705,8 @@ export default function OnboardingPage() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-[#111] flex items-center justify-center">
-                        <svg className="w-20 h-20 text-[#333]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <div className="w-full h-full bg-[--surface] flex items-center justify-center">
+                        <svg className="w-20 h-20 text-[--border]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                         </svg>
                       </div>
@@ -620,13 +714,13 @@ export default function OnboardingPage() {
                   </div>
                   <div className="p-4">
                     <h2 className="text-xl font-bold mb-1 truncate">{currentAlbum.title}</h2>
-                    <p className="text-[#888] truncate">{currentAlbum.artistName}</p>
+                    <p className="text-[--muted] truncate">{currentAlbum.artistName}</p>
                     {currentAlbum.genres && currentAlbum.genres.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-3">
                         {currentAlbum.genres.slice(0, 3).map((genre) => (
                           <span
                             key={genre}
-                            className="text-[10px] px-2 py-1 border border-[#333] text-[#666] uppercase tracking-wider"
+                            className="text-[10px] px-2 py-1 border border-[--border] text-[--muted]/70 uppercase tracking-wider"
                           >
                             {genre}
                           </span>
@@ -639,8 +733,8 @@ export default function OnboardingPage() {
                 {/* Vibe Tags - for TasteID Polarity Model */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs text-[#888] uppercase tracking-wider">Describe the vibe (optional)</p>
-                    <p className="text-[10px] text-[#666]">{selectedVibes.length}/3</p>
+                    <p className="text-xs text-[--muted] uppercase tracking-wider">Describe the vibe (optional)</p>
+                    <p className="text-[10px] text-[--muted]/70">{selectedVibes.length}/3</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {VIBE_TAGS.map((vibe) => (
@@ -651,8 +745,8 @@ export default function OnboardingPage() {
                         disabled={submitting}
                         className={`px-3 py-2 text-sm font-medium transition-all ${
                           selectedVibes.includes(vibe.id)
-                            ? 'bg-[#ffd700] text-black border-[#ffd700]'
-                            : 'bg-transparent text-[#888] border-[#333] hover:border-[#666] hover:text-white'
+                            ? 'bg-[var(--accent-primary)] text-black border-[var(--accent-primary)]'
+                            : 'bg-transparent text-[--muted] border-[--border] hover:border-[#666] hover:text-white'
                         } border`}
                       >
                         <span className="mr-1">{vibe.emoji}</span>
@@ -674,31 +768,31 @@ export default function OnboardingPage() {
                     <button
                       onClick={skip}
                       disabled={submitting}
-                      className="flex-1 py-4 border border-[#333] text-[#888] font-bold uppercase tracking-wider hover:border-white hover:text-white transition-colors disabled:opacity-50"
+                      className="flex-1 py-4 border border-[--border] text-[--muted] font-bold uppercase tracking-wider hover:border-white hover:text-white transition-colors disabled:opacity-50"
                     >
                       Haven't Heard
                     </button>
                     <button
                       onClick={submitRating}
                       disabled={submitting}
-                      className="flex-1 py-4 bg-[#ffd700] text-black font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors disabled:opacity-50"
+                      className="flex-1 py-4 bg-[var(--accent-primary)] text-black font-bold uppercase tracking-wider hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-50"
                     >
                       {submitting ? 'Saving...' : 'Rate'}
                     </button>
                   </div>
 
-                  <p className="text-center text-xs text-[#666]">
-                    <kbd className="px-1.5 py-0.5 border border-[#333] text-[10px]">Enter</kbd> to rate · <kbd className="px-1.5 py-0.5 border border-[#333] text-[10px]">S</kbd> to skip
+                  <p className="text-center text-xs text-[--muted]/70">
+                    <kbd className="px-1.5 py-0.5 border border-[--border] text-[10px]">Enter</kbd> to rate · <kbd className="px-1.5 py-0.5 border border-[--border] text-[10px]">S</kbd> to skip
                   </p>
                 </div>
               </div>
             ) : (
               <div className="text-center py-12">
-                <p className="text-[#888] mb-4">No more albums available.</p>
+                <p className="text-[--muted] mb-4">No more albums available.</p>
                 <button
                   onClick={handleComplete}
                   disabled={loading}
-                  className="bg-[#ffd700] text-black px-8 py-4 font-bold text-lg hover:bg-[#ffed4a] transition-colors disabled:opacity-50"
+                  className="bg-[var(--accent-primary)] text-black px-8 py-4 font-bold text-lg hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-50"
                 >
                   {loading ? "Setting up..." : "Continue to Waxfeed"}
                 </button>
@@ -711,7 +805,7 @@ export default function OnboardingPage() {
                 <button
                   onClick={handleComplete}
                   disabled={loading}
-                  className="text-[#666] text-sm hover:text-white transition-colors"
+                  className="text-[--muted]/70 text-sm hover:text-white transition-colors"
                 >
                   Skip and finish with {ratedCount} ratings →
                 </button>
