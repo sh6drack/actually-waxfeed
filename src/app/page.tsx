@@ -10,98 +10,121 @@ export const dynamic = "force-dynamic"
 
 // Get Billboard 200 trending albums
 async function getBillboardAlbums() {
-  return prisma.album.findMany({
-    where: {
-      billboardRank: { not: null },
-      albumType: { not: 'single' },
-    },
-    orderBy: { billboardRank: 'asc' },
-    take: 50,
-    select: {
-      id: true,
-      spotifyId: true,
-      title: true,
-      artistName: true,
-      coverArtUrl: true,
-      coverArtUrlLarge: true,
-      averageRating: true,
-      totalReviews: true,
-      billboardRank: true,
-    },
-  })
+  try {
+    return await prisma.album.findMany({
+      where: {
+        billboardRank: { not: null },
+        albumType: { not: 'single' },
+      },
+      orderBy: { billboardRank: 'asc' },
+      take: 50,
+      select: {
+        id: true,
+        spotifyId: true,
+        title: true,
+        artistName: true,
+        coverArtUrl: true,
+        coverArtUrlLarge: true,
+        averageRating: true,
+        totalReviews: true,
+        billboardRank: true,
+      },
+    })
+  } catch (error) {
+    console.error('Database error in getBillboardAlbums:', error)
+    return []
+  }
 }
 
 // Get recent reviews - only show reviews with actual text, not quick rates
 async function getRecentReviews() {
-  return prisma.review.findMany({
-    take: 50,
-    where: {
-      AND: [
-        { text: { not: null } },
-        { text: { not: '' } },
-      ]
-    },
-    orderBy: { createdAt: "desc" },
-    include: {
-      user: { select: { id: true, username: true, image: true } },
-      album: { select: { id: true, spotifyId: true, title: true, artistName: true, coverArtUrl: true } },
-    },
-  })
+  try {
+    return await prisma.review.findMany({
+      take: 50,
+      where: {
+        AND: [
+          { text: { not: null } },
+          { text: { not: '' } },
+        ]
+      },
+      orderBy: { createdAt: "desc" },
+      include: {
+        user: { select: { id: true, username: true, image: true } },
+        album: { select: { id: true, spotifyId: true, title: true, artistName: true, coverArtUrl: true } },
+      },
+    })
+  } catch (error) {
+    console.error('Database error in getRecentReviews:', error)
+    return []
+  }
 }
 
 // Get stats
 async function getStats() {
-  const [albumCount, reviewCount, userCount] = await Promise.all([
-    prisma.album.count({ where: { albumType: { not: 'single' } } }),
-    prisma.review.count(),
-    prisma.user.count(),
-  ])
-  return { albumCount, reviewCount, userCount }
+  try {
+    const [albumCount, reviewCount, userCount] = await Promise.all([
+      prisma.album.count({ where: { albumType: { not: 'single' } } }),
+      prisma.review.count(),
+      prisma.user.count(),
+    ])
+    return { albumCount, reviewCount, userCount }
+  } catch (error) {
+    console.error('Database error in getStats:', error)
+    return { albumCount: 0, reviewCount: 0, userCount: 0 }
+  }
 }
 
 // Get current user's full status for personalized homepage
 async function getUserStatus(userId: string) {
-  const [user, reviewCount, firstSpinCount, userRecentReviews] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: userId },
-      select: { 
-        username: true,
-        image: true,
-        waxBalance: true,
-        tasteId: { select: { id: true, primaryArchetype: true } },
-        createdAt: true,
-      }
-    }),
-    prisma.review.count({ where: { userId } }),
-    prisma.review.count({ 
-      where: { 
-        userId, 
-        reviewPosition: { lte: 100 } 
-      } 
-    }),
-    prisma.review.findMany({
-      where: { userId },
-      take: 5,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        album: { select: { id: true, spotifyId: true, title: true, artistName: true, coverArtUrl: true } }
-      }
-    })
-  ])
-  
-  const tasteIDProgress = Math.min(100, Math.round((reviewCount / 25) * 100))
-  
-  return { 
-    username: user?.username || 'user',
-    image: user?.image,
-    waxBalance: user?.waxBalance || 0,
-    reviewCount, 
-    hasTasteID: !!user?.tasteId,
-    archetype: user?.tasteId?.primaryArchetype,
-    tasteIDProgress,
-    firstSpinCount,
-    memberSince: user?.createdAt,
-    recentReviews: userRecentReviews,
+  try {
+    const [user, reviewCount, firstSpinCount, userRecentReviews] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: { 
+          username: true,
+          image: true,
+          waxBalance: true,
+          tasteId: { select: { id: true, primaryArchetype: true } },
+          createdAt: true,
+        }
+      }),
+      prisma.review.count({ where: { userId } }),
+      prisma.review.count({ 
+        where: { 
+          userId, 
+          reviewPosition: { lte: 100 } 
+        } 
+      }),
+      prisma.review.findMany({
+        where: { userId },
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          album: { select: { id: true, spotifyId: true, title: true, artistName: true, coverArtUrl: true } }
+        }
+      })
+    ])
+    
+    const tasteIDProgress = Math.min(100, Math.round((reviewCount / 25) * 100))
+    
+    return { 
+      username: user?.username || 'user',
+      image: user?.image,
+      waxBalance: user?.waxBalance || 0,
+      reviewCount, 
+      hasTasteID: !!user?.tasteId,
+      archetype: user?.tasteId?.primaryArchetype,
+      tasteIDProgress,
+      firstSpinCount,
+      memberSince: user?.createdAt,
+      recentReviews: userRecentReviews,
+    }
+  } catch (error) {
+    console.error('Database error in getUserStatus:', error)
+    return { 
+      username: 'user', image: null, waxBalance: 0, reviewCount: 0, hasTasteID: false, 
+      archetype: null, tasteIDProgress: 0, firstSpinCount: 0, memberSince: null, recentReviews: [] 
+    }
   }
 }
 
