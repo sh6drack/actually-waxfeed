@@ -131,6 +131,7 @@ export default function QuickRatePage() {
   const [ratedCount, setRatedCount] = useState<number | null>(null) // null = loading
   const [skippedCount, setSkippedCount] = useState(0)
   const [sessionRatedCount, setSessionRatedCount] = useState(0)
+  const [history, setHistory] = useState<Array<{ albumIndex: number; rating: number; descriptors: DescriptorId[] }>>([]) // For going back
   const [submitting, setSubmitting] = useState(false)
   const [loadingAlbums, setLoadingAlbums] = useState(false)
   const [error, setError] = useState("")
@@ -344,8 +345,18 @@ export default function QuickRatePage() {
     nextAlbum()
   }
 
-  const nextAlbum = () => {
+  const nextAlbum = (saveToHistory = true) => {
     stopAudio() // Stop any playing preview
+
+    // Save current state to history before moving
+    if (saveToHistory && albums[currentAlbumIndex]) {
+      setHistory(prev => [...prev, {
+        albumIndex: currentAlbumIndex,
+        rating,
+        descriptors: selectedDescriptors
+      }])
+    }
+
     setRating(5)
     setSelectedDescriptors([])
     setShuffledDescriptors(shuffleArray([...POLARITY_DESCRIPTORS])) // Reshuffle for next album
@@ -358,6 +369,20 @@ export default function QuickRatePage() {
     }
   }
 
+  const goBack = () => {
+    if (history.length === 0) return
+
+    stopAudio()
+    const lastState = history[history.length - 1]
+    setHistory(prev => prev.slice(0, -1))
+    setCurrentAlbumIndex(lastState.albumIndex)
+    setRating(lastState.rating)
+    setSelectedDescriptors(lastState.descriptors)
+    setError("")
+  }
+
+  const canGoBack = history.length > 0
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (submitting) return
@@ -368,8 +393,12 @@ export default function QuickRatePage() {
       if (e.key === 's' || e.key === 'S') {
         skip()
       }
+      if ((e.key === 'b' || e.key === 'B' || e.key === 'Backspace') && canGoBack) {
+        e.preventDefault()
+        goBack()
+      }
     },
-    [submitRating, skip, submitting, canSubmit]
+    [submitRating, skip, goBack, submitting, canSubmit, canGoBack]
   )
 
   useEffect(() => {
@@ -558,9 +587,10 @@ export default function QuickRatePage() {
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* MOBILE LAYOUT (default) */}
             <div className="flex-1 flex flex-col md:hidden overflow-hidden">
-              {/* Album Header - Compact on mobile */}
-              <div className="flex gap-3 p-3 border-b border-[--border] flex-shrink-0">
-                <div className="w-20 h-20 flex-shrink-0">
+              {/* Album Card with Art + Info */}
+              <div className="flex gap-3 p-3 flex-shrink-0">
+                {/* Album Art with Back Button Overlay */}
+                <div className="w-24 h-24 flex-shrink-0 relative">
                   {currentAlbum.coverArtUrlLarge || currentAlbum.coverArtUrl ? (
                     <img
                       src={currentAlbum.coverArtUrlLarge || currentAlbum.coverArtUrl!}
@@ -574,121 +604,130 @@ export default function QuickRatePage() {
                       </svg>
                     </div>
                   )}
+                  {/* Back button overlay */}
+                  {canGoBack && (
+                    <button
+                      onClick={goBack}
+                      className="absolute -left-1 -top-1 w-7 h-7 bg-black/80 border border-[--border] flex items-center justify-center text-[--muted] hover:text-white transition-colors"
+                      title="Go back"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
+                {/* Album Info */}
                 <div className="flex-1 min-w-0 flex flex-col justify-center">
                   <h2 className="text-base font-bold leading-tight line-clamp-2">{currentAlbum.title}</h2>
                   <p className="text-sm text-[--muted] truncate">{currentAlbum.artistName}</p>
                   {currentAlbum.genres && currentAlbum.genres.length > 0 && (
-                    <p className="text-[10px] text-[--muted] truncate mt-1">
-                      {currentAlbum.genres.slice(0, 2).join(' · ')}
-                    </p>
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                      {currentAlbum.genres.slice(0, 2).map((genre) => (
+                        <span key={genre} className="text-[9px] px-1.5 py-0.5 bg-[--surface] border border-[--border] text-[--muted] uppercase tracking-wide">
+                          {genre}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {/* Track preview inline */}
+                  {albumTracks.length > 0 && (
+                    <div className="flex items-center gap-1.5 mt-2">
+                      {albumTracks.slice(0, 3).map((track) => (
+                        <button
+                          key={track.id}
+                          onClick={() => playTrack(track)}
+                          disabled={!track.previewUrl}
+                          className={`w-7 h-7 flex items-center justify-center border transition-colors ${
+                            playingTrackId === track.id
+                              ? 'border-[--accent-primary] bg-[--accent-primary]/20 text-[--accent-primary]'
+                              : 'border-[--border] text-[--muted] hover:border-[--muted]'
+                          } ${!track.previewUrl ? 'opacity-30' : ''}`}
+                          title={track.name}
+                        >
+                          {playingTrackId === track.id ? (
+                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                              <rect x="6" y="4" width="4" height="16" />
+                              <rect x="14" y="4" width="4" height="16" />
+                            </svg>
+                          ) : (
+                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M8 5v14l11-7z"/>
+                            </svg>
+                          )}
+                        </button>
+                      ))}
+                      <span className="text-[9px] text-[--muted] uppercase">Preview</span>
+                    </div>
                   )}
                 </div>
               </div>
 
-              {/* Rating Section - Always visible on mobile */}
-              <div className="p-4 flex-shrink-0">
+              {/* Vibes - Horizontal Scroll */}
+              <div className="px-3 pb-2 flex-shrink-0">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-[9px] text-[--muted] uppercase tracking-wider">Vibes</span>
+                  {selectedDescriptors.length > 0 && (
+                    <span className="text-[9px] text-[--accent-primary] font-bold">{selectedDescriptors.length}/5</span>
+                  )}
+                </div>
+                <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-3 px-3 scrollbar-hide">
+                  {shuffledDescriptors.slice(0, 12).map((descriptor) => {
+                    const isSelected = selectedDescriptors.includes(descriptor.id)
+                    const atMax = selectedDescriptors.length >= MAX_DESCRIPTORS && !isSelected
+                    return (
+                      <button
+                        key={descriptor.id}
+                        onClick={() => toggleDescriptor(descriptor.id)}
+                        disabled={submitting || atMax}
+                        className={`flex-shrink-0 text-[10px] px-2.5 py-1.5 uppercase tracking-wider transition-all whitespace-nowrap ${
+                          isSelected
+                            ? 'bg-[--accent-primary] text-black border border-[--accent-primary] font-bold'
+                            : atMax
+                              ? 'border border-[--border] text-[--muted]/40'
+                              : 'border border-[--border] text-[--muted] active:border-[--accent-primary]'
+                        }`}
+                      >
+                        {descriptor.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Rating Slider */}
+              <div className="px-3 py-3 flex-shrink-0">
                 <RatingSlider value={rating} onChange={setRating} disabled={submitting} />
               </div>
 
-              {/* Action Buttons - Always visible */}
-              <div className="px-4 pb-4 flex-shrink-0">
+              {/* Action Buttons - Fixed at bottom */}
+              <div className="mt-auto px-3 pb-4 pt-2 border-t border-[--border] flex-shrink-0 bg-[--background]">
                 {error && (
-                  <p className="text-red-500 text-sm text-center mb-3">{error}</p>
+                  <p className="text-red-500 text-xs text-center mb-2">{error}</p>
                 )}
-                <div className="flex gap-3">
+                <div className="flex gap-2">
                   <button
                     onClick={skip}
                     disabled={submitting}
-                    className="flex-1 py-4 min-h-[56px] border border-[--border] text-[--muted] font-bold uppercase tracking-wider text-sm hover:border-[--foreground] hover:text-[--foreground] transition-colors disabled:opacity-50"
+                    className="w-20 py-3 border border-[--border] text-[--muted] font-bold uppercase tracking-wider text-xs hover:border-[--foreground] hover:text-[--foreground] transition-colors disabled:opacity-50"
                   >
                     Skip
                   </button>
                   <button
                     onClick={submitRating}
                     disabled={submitting}
-                    className="flex-1 py-4 min-h-[56px] font-bold uppercase tracking-wider text-sm transition-colors disabled:opacity-50 bg-[--accent-primary] text-black hover:bg-[--accent-hover]"
+                    className="flex-1 py-3 font-bold uppercase tracking-wider text-sm transition-colors disabled:opacity-50 bg-[--accent-primary] text-black hover:bg-[--accent-hover]"
                   >
                     {submitting ? 'Saving...' : 'Rate'}
                   </button>
                 </div>
               </div>
-
-              {/* Optional: Vibes (collapsible on mobile) */}
-              <details className="border-t border-[--border] flex-shrink-0">
-                <summary className="px-4 py-3 text-xs text-[--muted] uppercase tracking-wider cursor-pointer hover:bg-[--surface]">
-                  Add vibes for better recommendations {selectedDescriptors.length > 0 && `(${selectedDescriptors.length} selected)`}
-                </summary>
-                <div className="px-4 pb-4">
-                  <div className="flex flex-wrap gap-1.5">
-                    {shuffledDescriptors.slice(0, 15).map((descriptor) => {
-                      const isSelected = selectedDescriptors.includes(descriptor.id)
-                      const atMax = selectedDescriptors.length >= MAX_DESCRIPTORS && !isSelected
-                      return (
-                        <button
-                          key={descriptor.id}
-                          onClick={() => toggleDescriptor(descriptor.id)}
-                          disabled={submitting || atMax}
-                          className={`text-[10px] px-2.5 py-1.5 uppercase tracking-wider transition-all ${
-                            isSelected
-                              ? 'bg-[--accent-primary] text-white border border-[--accent-primary] font-bold'
-                              : 'border border-[--border] text-[--muted]'
-                          }`}
-                        >
-                          {descriptor.label}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-              </details>
-
-              {/* Optional: Track previews (collapsible on mobile) */}
-              {albumTracks.length > 0 && (
-                <details className="border-t border-[--border] flex-1 overflow-hidden">
-                  <summary className="px-4 py-3 text-xs text-[--muted] uppercase tracking-wider cursor-pointer hover:bg-[--surface]">
-                    Preview tracks
-                  </summary>
-                  <div className="px-4 pb-4 overflow-y-auto max-h-[200px]">
-                    <div className="space-y-1">
-                      {albumTracks.slice(0, 5).map((track) => (
-                        <button
-                          key={track.id}
-                          onClick={() => playTrack(track)}
-                          disabled={!track.previewUrl}
-                          className={`w-full flex items-center gap-2 p-2 text-left transition-colors ${
-                            playingTrackId === track.id
-                              ? 'bg-[--accent-primary]/20'
-                              : ''
-                          } ${!track.previewUrl ? 'opacity-40' : ''}`}
-                        >
-                          <div className={`w-6 h-6 flex items-center justify-center ${
-                            playingTrackId === track.id ? 'text-[--accent-primary]' : 'text-[--muted]'
-                          }`}>
-                            {playingTrackId === track.id ? (
-                              <svg className="w-4 h-4 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
-                                <rect x="6" y="4" width="4" height="16" />
-                                <rect x="14" y="4" width="4" height="16" />
-                              </svg>
-                            ) : (
-                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M8 5v14l11-7z"/>
-                              </svg>
-                            )}
-                          </div>
-                          <span className="text-sm truncate">{track.name}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </details>
-              )}
             </div>
 
             {/* DESKTOP LAYOUT */}
             <div className="hidden md:flex border border-[--border] flex-1 overflow-hidden">
               {/* Album Art - Left Side */}
-              <div className="w-[280px] lg:w-[320px] flex-shrink-0">
+              <div className="w-[280px] lg:w-[320px] flex-shrink-0 relative">
                 <div className="aspect-square relative max-h-[320px]">
                   {currentAlbum.coverArtUrlLarge || currentAlbum.coverArtUrl ? (
                     <img
@@ -702,6 +741,18 @@ export default function QuickRatePage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                       </svg>
                     </div>
+                  )}
+                  {/* Back button overlay - Desktop */}
+                  {canGoBack && (
+                    <button
+                      onClick={goBack}
+                      className="absolute left-2 top-2 w-10 h-10 bg-black/70 border border-[--border] flex items-center justify-center text-[--muted] hover:text-white hover:bg-black/90 transition-colors"
+                      title="Go back (B)"
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
                   )}
                 </div>
               </div>
@@ -843,7 +894,7 @@ export default function QuickRatePage() {
                   </div>
 
                   <p className="text-center text-xs text-[--muted]">
-                    <kbd className="px-1.5 py-0.5 border border-[--border] text-[10px]">Enter</kbd> to rate · <kbd className="px-1.5 py-0.5 border border-[--border] text-[10px]">S</kbd> to skip
+                    <kbd className="px-1.5 py-0.5 border border-[--border] text-[10px]">Enter</kbd> rate · <kbd className="px-1.5 py-0.5 border border-[--border] text-[10px]">S</kbd> skip · <kbd className="px-1.5 py-0.5 border border-[--border] text-[10px]">B</kbd> back
                   </p>
                 </div>
               </div>
