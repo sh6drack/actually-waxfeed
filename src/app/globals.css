@@ -377,6 +377,19 @@ html.light .track-row:hover .track-name {
   color: #000000 !important;
 }
 
+/* TRACK PLAYER (album page) - Dark mode hover */
+html.dark .track-player-row:hover,
+html:not(.light) .track-player-row:hover {
+  background-color: #3a3a3a !important;
+  border-left-color: var(--accent-primary, #ffd700) !important;
+}
+
+/* TRACK PLAYER (album page) - Light mode hover */
+html.light .track-player-row:hover {
+  background-color: #e8e8e3 !important;
+  border-left-color: var(--accent-primary, #b8860b) !important;
+}
+
 /* Smooth image loading */
 img {
   opacity: 1;

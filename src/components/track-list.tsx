@@ -249,23 +249,36 @@ function TrackRow({
 }) {
   const [hoverRating, setHoverRating] = useState<number | null>(null)
   const [showRater, setShowRater] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
 
   const displayRating = hoverRating ?? track.userRating
 
   return (
     <div
-      className="track-row px-4 py-2.5 flex items-center gap-3 border-l-2 border-l-transparent transition-all duration-150 group animate-fade-in"
-      style={{ animationDelay: `${animationDelay}ms` }}
+      className="track-row px-4 py-2.5 flex items-center gap-3 border-l-2 transition-all duration-150 group animate-fade-in"
+      style={{
+        animationDelay: `${animationDelay}ms`,
+        backgroundColor: isHovered ? 'var(--surface-hover)' : 'transparent',
+        borderLeftColor: isHovered ? 'var(--accent-primary)' : 'transparent',
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Track number - color changes handled by CSS in globals.css */}
-      <span className="track-number w-6 text-center text-sm tabular-nums font-medium transition-colors duration-150">
+      {/* Track number */}
+      <span
+        className="w-6 text-center text-sm tabular-nums font-medium transition-colors duration-150"
+        style={{ color: isHovered ? 'var(--accent-primary)' : 'var(--muted)' }}
+      >
         {track.trackNumber}
       </span>
 
       {/* Track info */}
       <div className="flex-1 min-w-0">
-        {/* Track name - color changes handled by CSS in globals.css */}
-        <p className="track-name text-sm truncate transition-colors duration-150">
+        {/* Track name */}
+        <p
+          className="text-sm truncate transition-colors duration-150"
+          style={{ color: isHovered ? 'var(--accent-primary)' : 'var(--foreground)' }}
+        >
           {track.name}
         </p>
         <div className="flex items-center gap-2 text-[10px] text-[--muted]">
