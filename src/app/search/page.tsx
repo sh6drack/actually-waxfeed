@@ -234,9 +234,14 @@ function SearchContent() {
                           )}
                           {!isImported && (
                             <button
-                              onClick={() => importAlbum(album.id)}
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                importAlbum(album.id)
+                              }}
                               disabled={importing === album.id}
-                              className="absolute bottom-0 left-0 right-0 bg-[var(--accent-primary)] text-black py-2 text-xs font-bold uppercase tracking-wider hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-50"
+                              className="absolute bottom-0 left-0 right-0 z-10 bg-[var(--accent-primary)] text-black py-2 text-xs font-bold uppercase tracking-wider hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-50 cursor-pointer"
                             >
                               {importing === album.id ? "Importing..." : "+ Import"}
                             </button>
