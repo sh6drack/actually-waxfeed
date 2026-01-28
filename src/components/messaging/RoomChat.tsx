@@ -110,7 +110,7 @@ export function RoomChat({ albumId }: RoomChatProps) {
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3 animate-fade-in">
-          <div className="w-8 h-8 border-2 border-[--muted] border-t-[#ffd700] animate-spin" />
+          <div className="w-8 h-8 border-2 border-[--muted] border-t-[var(--accent-primary)] animate-spin" />
           <span className="text-xs tracking-[0.2em] uppercase text-[--muted]">Loading room</span>
         </div>
       </div>
@@ -130,7 +130,7 @@ export function RoomChat({ albumId }: RoomChatProps) {
           {error.includes('must review') ? (
             <Link
               href={`/album/${albumId}`}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#ffd700] text-black font-semibold text-sm hover:bg-[#ffed4a] transition-colors group"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[var(--accent-primary)] text-black font-semibold text-sm hover:bg-[#ffed4a] transition-colors group"
             >
               <span>Review to unlock</span>
               <svg className="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -140,7 +140,7 @@ export function RoomChat({ albumId }: RoomChatProps) {
           ) : (
             <button
               onClick={fetchRoom}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#ffd700] border border-[#ffd700]/30 hover:bg-[#ffd700]/10 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--accent-primary)] border border-[var(--accent-primary)]/30 hover:bg-[var(--accent-primary)]/10 transition-colors"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -188,13 +188,13 @@ export function RoomChat({ albumId }: RoomChatProps) {
                   </svg>
                 </div>
               )}
-              <div className="absolute inset-0 border border-[#ffd700]/0 group-hover:border-[#ffd700]/50 transition-colors" />
+              <div className="absolute inset-0 border border-[var(--accent-primary)]/0 group-hover:border-[var(--accent-primary)]/50 transition-colors" />
             </div>
           </Link>
           <div className="flex-1 min-w-0">
             <Link
               href={`/album/${room.album.id}`}
-              className="font-semibold text-lg hover:text-[#ffd700] transition-colors line-clamp-1"
+              className="font-semibold text-lg hover:text-[var(--accent-primary)] transition-colors line-clamp-1"
             >
               {room.album.title}
             </Link>
@@ -266,7 +266,7 @@ export function RoomChat({ albumId }: RoomChatProps) {
                   <div className="flex items-center gap-2 flex-wrap">
                     <Link
                       href={`/u/${msg.user.username}`}
-                      className={`text-sm font-semibold hover:underline ${isOwn ? 'text-[#ffd700]' : ''}`}
+                      className={`text-sm font-semibold hover:underline ${isOwn ? 'text-[var(--accent-primary)]' : ''}`}
                     >
                       @{msg.user.username || 'user'}
                     </Link>

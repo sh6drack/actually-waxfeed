@@ -33,14 +33,14 @@ export default function NewHotTakePage() {
       <header className="mb-12">
         <Link
           href="/hot-takes"
-          className="inline-block text-[10px] tracking-[0.2em] uppercase text-[#666] hover:text-white mb-4"
+          className="inline-block text-[10px] tracking-[0.2em] uppercase text-[--muted] hover:text-[--foreground] mb-4"
         >
           ← Back to Hot Takes
         </Link>
         <h1 className="text-3xl lg:text-5xl font-bold tracking-tight mb-4">
           Post a Hot Take
         </h1>
-        <p className="text-sm text-[#888]">
+        <p className="text-sm text-[--muted]">
           Share your controversial opinion. Pick an album, take a stance, make your case.
         </p>
       </header>

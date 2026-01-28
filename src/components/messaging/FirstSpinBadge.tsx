@@ -12,7 +12,7 @@ export function FirstSpinBadge({ badge, position, size = 'md' }: FirstSpinBadgeP
   if (!badge) return null
 
   const colors = {
-    gold: { bg: '#ffd700', text: '#000', border: '#ffd700' },
+    gold: { bg: 'var(--accent-primary)', text: '#000', border: 'var(--accent-primary)' },
     silver: { bg: '#e5e5e5', text: '#000', border: '#c0c0c0' },
     bronze: { bg: '#cd7f32', text: '#fff', border: '#cd7f32' },
   }

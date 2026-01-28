@@ -163,7 +163,7 @@ export function Header() {
           {needsTasteID && (
             <Link
               href="/quick-rate"
-              className="px-4 py-2 bg-[#ffd700] text-black text-xs font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-[--accent-primary] text-black text-xs font-bold uppercase tracking-wider hover:bg-[--accent-hover] transition-colors flex items-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -202,7 +202,7 @@ export function Header() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
               {unreadMessages > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] bg-[#ffd700] text-black text-[10px] font-bold flex items-center justify-center px-1">
+                <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] bg-[--accent-primary] text-black text-[10px] font-bold flex items-center justify-center px-1">
                   {unreadMessages > 9 ? '9+' : unreadMessages}
                 </span>
               )}
@@ -309,7 +309,7 @@ export function Header() {
                   >
                     <span>Messages</span>
                     {unreadMessages > 0 && (
-                      <span className="px-1.5 py-0.5 bg-[#ffd700] text-black text-[10px] font-bold">
+                      <span className="px-1.5 py-0.5 bg-[--accent-primary] text-black text-[10px] font-bold">
                         {unreadMessages}
                       </span>
                     )}
@@ -351,7 +351,7 @@ export function Header() {
           {needsTasteID && (
             <Link
               href="/quick-rate"
-              className="px-2.5 py-2 bg-[#ffd700] text-black text-[10px] font-bold uppercase tracking-wider min-h-[44px] flex items-center"
+              className="px-2.5 py-2 bg-[--accent-primary] text-black text-[10px] font-bold uppercase tracking-wider min-h-[44px] flex items-center"
             >
               Build
             </Link>
@@ -361,7 +361,7 @@ export function Header() {
           {isMounted && session && waxStats && (
             <Link
               href="/wallet"
-              className="flex items-center gap-1 px-2 min-h-[44px] min-w-[44px] justify-center text-[#ffd700]"
+              className="flex items-center gap-1 px-2 min-h-[44px] min-w-[44px] justify-center text-[--accent-primary]"
             >
               <span className="text-xs font-bold">{waxStats.balance}</span>
             </Link>
@@ -378,7 +378,7 @@ export function Header() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
               {unreadMessages > 0 && (
-                <span className="absolute top-1 right-1 min-w-[16px] h-[16px] bg-[#ffd700] text-black text-[9px] font-bold flex items-center justify-center px-0.5">
+                <span className="absolute top-1 right-1 min-w-[16px] h-[16px] bg-[--accent-primary] text-black text-[9px] font-bold flex items-center justify-center px-0.5">
                   {unreadMessages > 9 ? '9+' : unreadMessages}
                 </span>
               )}
@@ -445,7 +445,7 @@ export function Header() {
             <div className="p-4" style={{ borderBottom: '1px solid var(--header-border)' }}>
               <Link
                 href="/quick-rate"
-                className="flex items-center justify-center gap-2 w-full px-4 py-4 text-sm font-bold bg-[#ffd700] text-black"
+                className="flex items-center justify-center gap-2 w-full px-4 py-4 text-sm font-bold bg-[--accent-primary] text-black"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -566,7 +566,7 @@ export function Header() {
                     <div className="flex justify-between items-center">
                       <div>
                         <p className="text-xs uppercase" style={{ color: 'var(--header-text)', opacity: 0.6 }}>WAX Balance</p>
-                        <p className="text-2xl font-bold text-[#ffd700]">{waxStats.balance.toLocaleString()}</p>
+                        <p className="text-2xl font-bold text-[--accent-primary]">{waxStats.balance.toLocaleString()}</p>
                       </div>
                       <div>
                         <p className="text-xs uppercase" style={{ color: 'var(--header-text)', opacity: 0.6 }}>Score</p>
@@ -617,7 +617,7 @@ export function Header() {
                 >
                   Messages
                   {unreadMessages > 0 && (
-                    <span className="px-2 py-0.5 bg-[#ffd700] text-black text-xs font-bold">
+                    <span className="px-2 py-0.5 bg-[--accent-primary] text-black text-xs font-bold">
                       {unreadMessages}
                     </span>
                   )}

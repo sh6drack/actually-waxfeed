@@ -128,12 +128,12 @@ export default async function Home() {
               <div className="flex items-center gap-4">
                 <Link href={`/u/${userStatus.username}`} className="flex items-center gap-3 group">
                   {userStatus.image ? (
-                    <img src={userStatus.image} alt="" className="w-10 h-10 rounded-full border-2 border-[var(--border)] group-hover:border-[#ffd700] transition-colors" />
+                    <img src={userStatus.image} alt="" className="w-10 h-10 rounded-full border-2 border-[var(--border)] group-hover:border-[--accent-hover] transition-colors" />
                   ) : (
                     <DefaultAvatar size="md" />
                   )}
                   <div>
-                    <p className="font-bold group-hover:text-[#ffd700] transition-colors">@{userStatus.username}</p>
+                    <p className="font-bold group-hover:text-[--accent-primary] transition-colors">@{userStatus.username}</p>
                     <p className="text-xs text-[var(--muted)]">
                       {userStatus.archetype ? userStatus.archetype : 'Building TasteID...'}
                     </p>
@@ -162,7 +162,7 @@ export default async function Home() {
                         {tier.id === 'locked' ? (
                           <div className="w-16 sm:w-20 h-2 bg-[var(--border)] overflow-hidden">
                             <div
-                              className="h-full bg-[#ffd700] transition-all duration-500"
+                              className="h-full bg-[--accent-primary] transition-all duration-500"
                               style={{ width: `${userStatus.tasteIDProgress}%` }}
                             />
                           </div>
@@ -173,7 +173,7 @@ export default async function Home() {
                       {tier.id !== 'locked' && (
                         <Link
                           href="/quick-rate"
-                          className="px-2 sm:px-3 py-1.5 bg-[#ffd700] text-black text-[9px] sm:text-[10px] font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors"
+                          className="px-2 sm:px-3 py-1.5 bg-[--accent-primary] text-black text-[9px] sm:text-[10px] font-bold uppercase tracking-wider hover:bg-[--accent-hover] transition-colors"
                         >
                           + Add
                         </Link>
@@ -190,14 +190,14 @@ export default async function Home() {
 
                 {/* First Spins */}
                 <div className="text-center border-l border-[var(--border)] pl-3 sm:pl-6">
-                  <p className="text-base sm:text-lg font-bold tabular-nums text-[#ffd700]">{userStatus.firstSpinCount}</p>
+                  <p className="text-base sm:text-lg font-bold tabular-nums text-[--accent-primary]">{userStatus.firstSpinCount}</p>
                   <p className="text-[10px] sm:text-xs text-[var(--muted)] uppercase tracking-wider">1st Spins</p>
                 </div>
 
                 {/* WAX Balance - Hidden on very small screens, shown in header */}
                 <Link
                   href="/wallet"
-                  className="hidden sm:flex items-center gap-2 border-l border-[var(--border)] pl-3 sm:pl-6 hover:text-[#ffd700] transition-colors"
+                  className="hidden sm:flex items-center gap-2 border-l border-[var(--border)] pl-3 sm:pl-6 hover:text-[--accent-primary] transition-colors"
                 >
                   <div className="text-center">
                     <p className="text-base sm:text-lg font-bold tabular-nums">{userStatus.waxBalance}</p>
@@ -211,7 +211,7 @@ export default async function Home() {
                 {/* Quick Action - Only on larger screens */}
                 <Link
                   href="/quick-rate"
-                  className="hidden md:block px-4 py-2 bg-[#ffd700] text-black text-xs font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors"
+                  className="hidden md:block px-4 py-2 bg-[--accent-primary] text-black text-xs font-bold uppercase tracking-wider hover:bg-[--accent-hover] transition-colors"
                 >
                   + Rate Album
                 </Link>
@@ -230,12 +230,12 @@ export default async function Home() {
               <>
                 {/* Left - Tagline + Progress */}
                 <div>
-                  <p className="text-xs tracking-[0.3em] uppercase text-[#ffd700] mb-3 font-medium">
+                  <p className="text-xs tracking-[0.3em] uppercase text-[--accent-primary] mb-3 font-medium">
                     {userStatus.archetype ? userStatus.archetype : 'Building Your Profile'}
                   </p>
                   <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight mb-4">
                     {userStatus.hasTasteID ? (
-                      <>Your taste is <span className="text-[#ffd700]">proven</span>. Keep discovering.</>
+                      <>Your taste is <span className="text-[--accent-primary]">proven</span>. Keep discovering.</>
                     ) : userStatus.reviewCount < 10 ? (
                       <>Rate {10 - userStatus.reviewCount} more to unlock insights</>
                     ) : (
@@ -254,7 +254,7 @@ export default async function Home() {
                         </div>
                         <span className="text-xs font-bold uppercase tracking-wider">TasteID Progress</span>
                       </div>
-                      <span className="text-xs font-bold text-[#ffd700]">
+                      <span className="text-xs font-bold text-[--accent-primary]">
                         {userStatus.hasTasteID ? '100%' : `${userStatus.tasteIDProgress}%`}
                       </span>
                     </div>
@@ -269,8 +269,8 @@ export default async function Home() {
                     
                     {/* Progress Milestones */}
                     <div className="flex justify-between text-[10px] text-[var(--muted)] mb-2">
-                      <span className={userStatus.reviewCount >= 5 ? 'text-[#ffd700]' : ''}>5 ratings</span>
-                      <span className={userStatus.reviewCount >= 10 ? 'text-[#ffd700]' : ''}>10 ratings</span>
+                      <span className={userStatus.reviewCount >= 5 ? 'text-[--accent-primary]' : ''}>5 ratings</span>
+                      <span className={userStatus.reviewCount >= 10 ? 'text-[--accent-primary]' : ''}>10 ratings</span>
                       <span className={userStatus.reviewCount >= 25 ? 'text-[#00ff88]' : ''}>25 ratings</span>
                     </div>
                     
@@ -279,13 +279,13 @@ export default async function Home() {
                       {userStatus.hasTasteID ? (
                         <span className="text-[#00ff88]">TasteID Complete! Your musical identity is established.</span>
                       ) : userStatus.tasteIDProgress < 20 ? (
-                        <>Start your journey! Rate <span className="text-[#ffd700] font-medium">{25 - userStatus.reviewCount}</span> more albums to unlock your TasteID.</>
+                        <>Start your journey! Rate <span className="text-[--accent-primary] font-medium">{25 - userStatus.reviewCount}</span> more albums to unlock your TasteID.</>
                       ) : userStatus.tasteIDProgress < 40 ? (
-                        <>Nice start! Your taste profile is forming. <span className="text-[#ffd700] font-medium">{25 - userStatus.reviewCount}</span> to go.</>
+                        <>Nice start! Your taste profile is forming. <span className="text-[--accent-primary] font-medium">{25 - userStatus.reviewCount}</span> to go.</>
                       ) : userStatus.tasteIDProgress < 80 ? (
-                        <>Making progress! Your musical identity is taking shape. <span className="text-[#ffd700] font-medium">{25 - userStatus.reviewCount}</span> more.</>
+                        <>Making progress! Your musical identity is taking shape. <span className="text-[--accent-primary] font-medium">{25 - userStatus.reviewCount}</span> more.</>
                       ) : (
-                        <>Almost there! Just <span className="text-[#ffd700] font-medium">{25 - userStatus.reviewCount}</span> more ratings to complete your TasteID!</>
+                        <>Almost there! Just <span className="text-[--accent-primary] font-medium">{25 - userStatus.reviewCount}</span> more ratings to complete your TasteID!</>
                       )}
                     </p>
                   </div>
@@ -305,7 +305,7 @@ export default async function Home() {
                     </Link>
                     <Link
                       href="/quick-rate"
-                      className="px-4 py-2.5 bg-[#ffd700] text-black text-xs font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-all hover:scale-105"
+                      className="px-4 py-2.5 bg-[--accent-primary] text-black text-xs font-bold uppercase tracking-wider hover:bg-[--accent-hover] transition-all hover:scale-105"
                     >
                       Rate
                     </Link>
@@ -344,7 +344,7 @@ export default async function Home() {
                             <p className="text-sm font-medium truncate">{review.album.title}</p>
                             <p className="text-xs text-[var(--muted)] truncate">{review.album.artistName}</p>
                           </div>
-                          <span className="text-[#ffd700] font-bold text-sm">{review.rating.toFixed(1)}</span>
+                          <span className="text-[--accent-primary] font-bold text-sm">{review.rating.toFixed(1)}</span>
                         </Link>
                       ))}
                     </div>
@@ -353,7 +353,7 @@ export default async function Home() {
                       <p className="text-sm text-[var(--muted)] mb-3">No ratings yet</p>
                       <Link
                         href="/quick-rate"
-                        className="text-xs text-[#ffd700] font-bold uppercase tracking-wider hover:underline"
+                        className="text-xs text-[--accent-primary] font-bold uppercase tracking-wider hover:underline"
                       >
                         Start Rating →
                       </Link>
@@ -366,14 +366,14 @@ export default async function Home() {
               <>
                 {/* Left Column - Main Content */}
                 <div>
-                  <p className="text-xs tracking-[0.3em] uppercase text-[#ffd700] mb-3 font-medium">
+                  <p className="text-xs tracking-[0.3em] uppercase text-[--accent-primary] mb-3 font-medium">
                     The World's First Music Taste Platform
                   </p>
                   <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight mb-4">
                     Prove You Found It First.
                   </h1>
                   <p className="text-base md:text-lg text-[var(--muted)] mb-6 leading-relaxed">
-                    Rate albums. Get <span className="text-[#ffd700] font-semibold">timestamped proof</span> of your discovery.
+                    Rate albums. Get <span className="text-[--accent-primary] font-semibold">timestamped proof</span> of your discovery.
                     Connect with people who <span className="text-[var(--foreground)]">actually get your music</span>.
                   </p>
                   
@@ -408,7 +408,7 @@ export default async function Home() {
                     
                     {/* Status Message */}
                     <p className="text-xs text-[var(--muted)]">
-                      Sign up to start building your unique musical identity. Rate 25 albums to unlock your <span className="text-[#ffd700] font-medium">TasteID</span>.
+                      Sign up to start building your unique musical identity. Rate 25 albums to unlock your <span className="text-[--accent-primary] font-medium">TasteID</span>.
                     </p>
                   </div>
                   
@@ -428,7 +428,7 @@ export default async function Home() {
                     </Link>
                     <Link
                       href="/signup"
-                      className="px-4 py-2.5 bg-[#ffd700] text-black text-xs font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-all hover:scale-105"
+                      className="px-4 py-2.5 bg-[--accent-primary] text-black text-xs font-bold uppercase tracking-wider hover:bg-[--accent-hover] transition-all hover:scale-105"
                     >
                       Rate
                     </Link>
@@ -476,13 +476,13 @@ export default async function Home() {
                     </div>
                     
                     <div className="flex items-start gap-3 p-3 border-b border-[var(--border)]">
-                      <div className="w-8 h-8 bg-[#ffd700] rounded-sm flex items-center justify-center flex-shrink-0">
+                      <div className="w-8 h-8 bg-[--accent-primary] rounded-sm flex items-center justify-center flex-shrink-0">
                         <svg className="w-4 h-4 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                         </svg>
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-[#ffd700]">Rate</p>
+                        <p className="text-sm font-bold text-[--accent-primary]">Rate</p>
                         <p className="text-xs text-[var(--muted)]">Timestamped proof you discovered artists first</p>
                       </div>
                     </div>
@@ -502,7 +502,7 @@ export default async function Home() {
                   
                   <Link
                     href="/signup"
-                    className="block w-full mt-4 px-4 py-3 bg-[#ffd700] text-black text-xs font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-all text-center"
+                    className="block w-full mt-4 px-4 py-3 bg-[--accent-primary] text-black text-xs font-bold uppercase tracking-wider hover:bg-[--accent-hover] transition-all text-center"
                   >
                     Get Started Free →
                   </Link>
@@ -554,14 +554,14 @@ export default async function Home() {
                 </Link>
               </div>
 
-              <div className="grid grid-cols-4 gap-2 flex-1 content-start">
-                {billboardAlbums.slice(0, 48).map((album) => (
+              <div className="album-grid grid grid-cols-4 gap-2 flex-1 content-start">
+                {billboardAlbums.slice(0, 48).map((album, index) => (
                   <Link
                     key={album.id}
                     href={`/album/${album.spotifyId}`}
                     className="group"
                   >
-                    <div className="aspect-square w-full bg-[var(--surface)] overflow-hidden relative">
+                    <div className="album-cover aspect-square w-full bg-[var(--surface)] overflow-hidden relative">
                       {album.coverArtUrl && (
                         <img
                           src={album.coverArtUrlLarge || album.coverArtUrl}
@@ -569,11 +569,15 @@ export default async function Home() {
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       )}
-                      {album.billboardRank && album.billboardRank <= 10 && (
-                        <div className="absolute top-0.5 left-0.5 bg-[#ffd700] text-black px-1 py-0.5 text-[8px] font-bold">
-                          #{album.billboardRank}
-                        </div>
-                      )}
+                      <div className={`absolute top-0 left-0 px-1.5 py-0.5 text-[9px] font-bold ${
+                        index < 10
+                          ? 'bg-[#ffd700] text-black'
+                          : index < 25
+                            ? 'bg-white/90 text-black'
+                            : 'bg-black/70 text-white'
+                      }`}>
+                        {index + 1}
+                      </div>
                     </div>
                     <p className="text-[9px] font-medium truncate mt-1 group-hover:text-[var(--muted)] transition-colors">
                       {album.title}
@@ -612,7 +616,7 @@ export default async function Home() {
                         <span className="text-sm font-medium truncate group-hover:text-[var(--muted)] transition-colors">
                           {review.album.title}
                         </span>
-                        <span className="text-[#ffd700] font-bold text-sm tabular-nums">{review.rating.toFixed(1)}</span>
+                        <span className="text-[--accent-primary] font-bold text-sm tabular-nums">{review.rating.toFixed(1)}</span>
                       </div>
                       <p className="text-xs text-[var(--muted)] truncate">{review.album.artistName}</p>
                       {review.text && (
@@ -648,7 +652,7 @@ export default async function Home() {
               <span className="text-xs tracking-[0.3em] uppercase text-[var(--muted-dim)]">
                 What Makes WAXFEED Different?
               </span>
-              <span className="text-xs px-2 py-1 bg-[#ffd700] text-black font-bold">3 FEATURES</span>
+              <span className="text-xs px-2 py-1 bg-[--accent-primary] text-black font-bold">3 FEATURES</span>
             </div>
             <svg className="w-5 h-5 text-[var(--muted)] transform transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -658,20 +662,20 @@ export default async function Home() {
           <div className="w-full px-6 lg:px-12 xl:px-20 pb-12 pt-4 bg-[var(--surface)]">
             <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
               {/* PILLAR 1: GAMIFY */}
-              <Link href="/quick-rate" className="group/card block p-6 border border-[var(--border)] hover:border-[#ffd700] transition-colors">
+              <Link href="/quick-rate" className="group/card block p-6 border border-[var(--border)] hover:border-[--accent-hover] transition-colors">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 border border-[#ffd700] flex items-center justify-center text-[#ffd700]">
+                  <div className="w-10 h-10 border border-[--accent-primary] flex items-center justify-center text-[--accent-primary]">
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                     </svg>
                   </div>
-                  <h3 className="font-bold text-[#ffd700]">GAMIFY</h3>
+                  <h3 className="font-bold text-[--accent-primary]">GAMIFY</h3>
                 </div>
                 <p className="font-bold mb-2">Prove You Were First</p>
                 <p className="text-sm text-[var(--muted)] mb-3">
                   Review albums early. Earn Gold, Silver, Bronze badges when they trend.
                 </p>
-                <span className="text-xs text-[#ffd700]">First Spin Badges → WAX Rewards</span>
+                <span className="text-xs text-[--accent-primary]">First Spin Badges → WAX Rewards</span>
               </Link>
               
               {/* PILLAR 2: CONNECT */}
@@ -717,7 +721,7 @@ export default async function Home() {
         <div className="w-full px-6 lg:px-12 xl:px-20 py-16 lg:py-20">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <p className="text-[10px] tracking-[0.3em] uppercase text-[#ffd700] mb-4">
+              <p className="text-[10px] tracking-[0.3em] uppercase text-[--accent-primary] mb-4">
                 College Radio Partnership
               </p>
               <h2 className="text-3xl lg:text-4xl font-bold mb-4 leading-tight">
@@ -731,12 +735,12 @@ export default async function Home() {
               <div className="flex items-center gap-4">
                 <Link
                   href="/stations"
-                  className="px-6 py-3 bg-[#ffd700] text-black text-sm font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors"
+                  className="px-6 py-3 bg-[--accent-primary] text-black text-sm font-bold uppercase tracking-wider hover:bg-[--accent-hover] transition-colors"
                 >
                   Apply Now
                 </Link>
                 <span className="text-sm text-[var(--muted)]">
-                  <span className="text-[#ffd700] font-bold">23</span> spots remaining
+                  <span className="text-[--accent-primary] font-bold">23</span> spots remaining
                 </span>
               </div>
             </div>
@@ -747,7 +751,7 @@ export default async function Home() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between py-2 border-b border-[var(--border)]">
                   <div className="flex items-center gap-3">
-                    <span className="text-[#ffd700] font-bold">#1</span>
+                    <span className="text-[--accent-primary] font-bold">#1</span>
                     <span className="font-medium">WRVU Nashville</span>
                   </div>
                   <span className="text-sm tabular-nums">847</span>
@@ -785,14 +789,14 @@ export default async function Home() {
             {!session ? (
               <Link
                 href="/signup"
-                className="px-10 py-4 bg-[#ffd700] text-black text-sm font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors"
+                className="px-10 py-4 bg-[--accent-primary] text-black text-sm font-bold uppercase tracking-wider hover:bg-[--accent-hover] transition-colors"
               >
                 Create Free Account
               </Link>
             ) : (
               <Link
                 href="/quick-rate"
-                className="px-10 py-4 bg-[#ffd700] text-black text-sm font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors"
+                className="px-10 py-4 bg-[--accent-primary] text-black text-sm font-bold uppercase tracking-wider hover:bg-[--accent-hover] transition-colors"
               >
                 Start Building TasteID
               </Link>
@@ -813,7 +817,7 @@ export default async function Home() {
               <Link href="/discover" className="text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Discover</Link>
               <Link href="/trending" className="text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Trending</Link>
               <Link href="/pricing" className="text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Pricing</Link>
-              <Link href="/stations" className="text-sm text-[#ffd700] hover:text-[#ffed4a] transition-colors">College Radio</Link>
+              <Link href="/stations" className="text-sm text-[--accent-primary] hover:text-[--accent-hover] transition-colors">College Radio</Link>
             </nav>
           </div>
         </div>

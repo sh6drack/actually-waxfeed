@@ -145,7 +145,7 @@ export default async function ReviewPage({ params }: PageProps) {
       {/* Album Header */}
       <Link
         href={`/album/${review.album.spotifyId || review.album.id}`}
-        className="flex items-center gap-4 mb-6 p-4 bg-[#111] border border-[#222] hover:border-[#333] transition-colors no-underline"
+        className="flex items-center gap-4 mb-6 p-4 bg-[--surface] border border-[--border] hover:border-[--foreground]/30 transition-colors no-underline"
       >
         {review.album.coverArtUrl ? (
           <img
@@ -154,18 +154,18 @@ export default async function ReviewPage({ params }: PageProps) {
             className="w-16 h-16 sm:w-20 sm:h-20 object-cover"
           />
         ) : (
-          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-[#222] flex items-center justify-center text-[#666]">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-[--surface] flex items-center justify-center text-[--muted]">
             No Cover
           </div>
         )}
         <div className="min-w-0 flex-1">
           <h2 className="font-bold text-base sm:text-lg truncate">{review.album.title}</h2>
-          <p className="text-sm text-[#888] truncate">{review.album.artistName}</p>
+          <p className="text-sm text-[--muted] truncate">{review.album.artistName}</p>
         </div>
       </Link>
 
       {/* Review Card */}
-      <div className="border border-[#222] p-4 sm:p-6 mb-6">
+      <div className="border border-[--border] p-4 sm:p-6 mb-6">
         {/* User Info */}
         <div className="flex items-start gap-3 mb-4">
           <Link href={`/u/${review.user.username}`} className="flex-shrink-0">
@@ -173,7 +173,7 @@ export default async function ReviewPage({ params }: PageProps) {
               <img
                 src={review.user.image}
                 alt={review.user.username || ""}
-                className="w-10 h-10 sm:w-12 sm:h-12 object-cover border border-[#333]"
+                className="w-10 h-10 sm:w-12 sm:h-12 object-cover border border-[--border]"
               />
             ) : (
               <DefaultAvatar size="md" />
@@ -190,16 +190,16 @@ export default async function ReviewPage({ params }: PageProps) {
               {review.user.isVerified && (
                 <VerifiedIcon size={14} className="text-blue-400" />
               )}
-              <span className="text-[#666] text-sm">·</span>
-              <span className="text-[#666] text-sm">
+              <span className="text-[--muted] text-sm">·</span>
+              <span className="text-[--muted] text-sm">
                 {formatDistanceToNow(new Date(review.createdAt), { addSuffix: true })}
               </span>
               {review.isEdited && (
-                <span className="text-[#666] text-xs">(edited)</span>
+                <span className="text-[--muted] text-xs">(edited)</span>
               )}
             </div>
             {review.user.bio && (
-              <p className="text-xs text-[#666] mt-0.5 truncate">{review.user.bio}</p>
+              <p className="text-xs text-[--muted] mt-0.5 truncate">{review.user.bio}</p>
             )}
           </div>
           {/* Rating */}
@@ -228,8 +228,8 @@ export default async function ReviewPage({ params }: PageProps) {
       </div>
 
       {/* Replies Section */}
-      <div className="border border-[#222]">
-        <div className="p-4 border-b border-[#222]">
+      <div className="border border-[--border]">
+        <div className="p-4 border-b border-[--border]">
           <h3 className="font-bold">
             Replies ({review._count.replies})
           </h3>
@@ -239,8 +239,8 @@ export default async function ReviewPage({ params }: PageProps) {
         {session ? (
           <ReplyForm reviewId={review.id} />
         ) : (
-          <div className="p-4 border-b border-[#222] text-center">
-            <Link href="/login" className="text-white hover:underline">
+          <div className="p-4 border-b border-[--border] text-center">
+            <Link href="/login" className="text-[--foreground] hover:underline">
               Sign in to reply
             </Link>
           </div>
@@ -258,7 +258,7 @@ export default async function ReviewPage({ params }: PageProps) {
             ))}
           </div>
         ) : (
-          <div className="p-8 text-center text-[#666]">
+          <div className="p-8 text-center text-[--muted]">
             No replies yet. Be the first to comment!
           </div>
         )}

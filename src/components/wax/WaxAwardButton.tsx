@@ -35,8 +35,8 @@ const WAX_TYPE_CONFIG = {
   gold: {
     name: "GOLD",
     label: "G",
-    color: "text-[#ffd700]",
-    borderColor: "border-[#ffd700]/50",
+    color: "text-[var(--accent-primary)]",
+    borderColor: "border-[var(--accent-primary)]/50",
     cost: "100 Wax",
     requirement: "Pro",
   },

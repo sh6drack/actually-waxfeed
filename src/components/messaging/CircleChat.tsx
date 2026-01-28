@@ -101,7 +101,7 @@ export function CircleChat({ archetype }: CircleChatProps) {
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-[--muted] border-t-[#ffd700] animate-spin"
+          <div className="w-8 h-8 border-2 border-[--muted] border-t-[var(--accent-primary)] animate-spin"
                style={{ borderRadius: '50%' }} />
           <span className="text-xs tracking-[0.2em] uppercase text-[--muted]">Loading circle</span>
         </div>
@@ -126,7 +126,7 @@ export function CircleChat({ archetype }: CircleChatProps) {
           ) : (
             <button
               onClick={fetchCircle}
-              className="mt-4 px-4 py-2 text-sm border border-[--border] hover:border-[#ffd700] hover:text-[#ffd700] transition-colors"
+              className="mt-4 px-4 py-2 text-sm border border-[--border] hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-colors"
             >
               Try again
             </button>
@@ -154,7 +154,7 @@ export function CircleChat({ archetype }: CircleChatProps) {
       {/* Header */}
       <div className={`p-5 border-b transition-colors ${
         isPrimaryArchetype
-          ? 'bg-gradient-to-r from-[#ffd700]/10 to-transparent border-[#ffd700]/30'
+          ? 'bg-gradient-to-r from-[var(--accent-primary)]/10 to-transparent border-[var(--accent-primary)]/30'
           : 'border-[--border]'
       }`}>
         <div className="flex items-start justify-between gap-4">
@@ -166,7 +166,7 @@ export function CircleChat({ archetype }: CircleChatProps) {
                 size="lg"
               />
               {isPrimaryArchetype && (
-                <span className="text-[9px] tracking-[0.15em] uppercase text-[#ffd700] font-medium px-2 py-1 bg-[#ffd700]/10 border border-[#ffd700]/30">
+                <span className="text-[9px] tracking-[0.15em] uppercase text-[var(--accent-primary)] font-medium px-2 py-1 bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/30">
                   Your Primary
                 </span>
               )}
@@ -226,12 +226,12 @@ export function CircleChat({ archetype }: CircleChatProps) {
                     <Link
                       href={`/u/${msg.user.username}`}
                       className={`text-sm font-semibold hover:underline transition-colors ${
-                        isOwn ? 'text-[#ffd700]' : 'hover:text-[#ffd700]'
+                        isOwn ? 'text-[var(--accent-primary)]' : 'hover:text-[var(--accent-primary)]'
                       }`}
                     >
                       @{msg.user.username || 'user'}
                     </Link>
-                    <span className="text-[10px] px-1.5 py-0.5 bg-[#ffd700]/10 text-[#ffd700]/80 font-medium tabular-nums">
+                    <span className="text-[10px] px-1.5 py-0.5 bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]/80 font-medium tabular-nums">
                       {msg.userTasteScore}
                     </span>
                     <span className="text-[10px] text-[--muted]/50">

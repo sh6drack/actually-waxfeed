@@ -36,8 +36,8 @@ export default async function StationsPage() {
       <section className="border-b border-[--border] animate-fade-in">
         <div className="max-w-4xl mx-auto px-6 py-20 lg:py-28">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-2 h-2 bg-[#ffd700]" />
-            <p className="text-[10px] tracking-[0.3em] uppercase text-[#ffd700] font-bold">
+            <div className="w-2 h-2 bg-[var(--accent-primary)]" />
+            <p className="text-[10px] tracking-[0.3em] uppercase text-[var(--accent-primary)] font-bold">
               College Radio Partnership
             </p>
           </div>
@@ -53,7 +53,7 @@ export default async function StationsPage() {
           <div className="flex flex-wrap gap-4">
             <a
               href="#apply"
-              className="group px-8 py-4 bg-[#ffd700] text-black text-[11px] tracking-[0.15em] uppercase font-bold hover:bg-[#ffed4a] transition-all inline-flex items-center gap-3"
+              className="group px-8 py-4 bg-[var(--accent-primary)] text-black text-[11px] tracking-[0.15em] uppercase font-bold hover:bg-[var(--accent-hover)] transition-all inline-flex items-center gap-3"
             >
               <span>Apply for Founding Status</span>
               <svg className="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -62,7 +62,7 @@ export default async function StationsPage() {
             </a>
             <a
               href="#how-it-works"
-              className="px-8 py-4 border border-[--border] text-[11px] tracking-[0.15em] uppercase hover:border-[#ffd700]/50 hover:text-[#ffd700] transition-all inline-block"
+              className="px-8 py-4 border border-[--border] text-[11px] tracking-[0.15em] uppercase hover:border-[var(--accent-primary)]/50 hover:text-[var(--accent-primary)] transition-all inline-block"
             >
               How It Works
             </a>
@@ -114,9 +114,9 @@ export default async function StationsPage() {
                   Spotify playlist gets credit
                 </p>
               </div>
-              <div className="p-6 border border-[#ffd700]/30 bg-[#ffd700]/5 hover:bg-[#ffd700]/10 transition-colors">
-                <p className="text-sm text-[#ffd700] mb-2">With WaxFeed</p>
-                <p className="font-medium text-[#ffd700] flex items-center gap-2">
+              <div className="p-6 border border-[var(--accent-primary)]/30 bg-[var(--accent-primary)]/5 hover:bg-[var(--accent-primary)]/10 transition-colors">
+                <p className="text-sm text-[var(--accent-primary)] mb-2">With WaxFeed</p>
+                <p className="font-medium text-[var(--accent-primary)] flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
@@ -139,7 +139,7 @@ export default async function StationsPage() {
           </div>
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="p-6 border border-[--border] hover:border-[--muted]/50 transition-colors group">
-              <div className="w-10 h-10 border border-white flex items-center justify-center mb-4 group-hover:border-[#ffd700] group-hover:text-[#ffd700] transition-colors">
+              <div className="w-10 h-10 border border-white flex items-center justify-center mb-4 group-hover:border-[var(--accent-primary)] group-hover:text-[var(--accent-primary)] transition-colors">
                 <span className="text-lg font-bold">1</span>
               </div>
               <p className="text-lg font-bold mb-2">DJs review albums</p>
@@ -149,7 +149,7 @@ export default async function StationsPage() {
               </p>
             </div>
             <div className="p-6 border border-[--border] hover:border-[--muted]/50 transition-colors group">
-              <div className="w-10 h-10 border border-white flex items-center justify-center mb-4 group-hover:border-[#ffd700] group-hover:text-[#ffd700] transition-colors">
+              <div className="w-10 h-10 border border-white flex items-center justify-center mb-4 group-hover:border-[var(--accent-primary)] group-hover:text-[var(--accent-primary)] transition-colors">
                 <span className="text-lg font-bold">2</span>
               </div>
               <p className="text-lg font-bold mb-2">Albums trend</p>
@@ -158,8 +158,8 @@ export default async function StationsPage() {
                 everyone who called it early gets credit.
               </p>
             </div>
-            <div className="p-6 border border-[#ffd700]/30 bg-[#ffd700]/5 hover:bg-[#ffd700]/10 transition-colors group">
-              <div className="w-10 h-10 border border-[#ffd700] flex items-center justify-center mb-4 text-[#ffd700]">
+            <div className="p-6 border border-[var(--accent-primary)]/30 bg-[var(--accent-primary)]/5 hover:bg-[var(--accent-primary)]/10 transition-colors group">
+              <div className="w-10 h-10 border border-[var(--accent-primary)] flex items-center justify-center mb-4 text-[var(--accent-primary)]">
                 <span className="text-lg font-bold">3</span>
               </div>
               <p className="text-lg font-bold mb-2">Station earns badges</p>
@@ -217,7 +217,7 @@ export default async function StationsPage() {
                   >
                     <div className="flex items-center gap-4">
                       <span className={`w-6 text-center font-bold tabular-nums ${
-                        station.rank === 1 ? 'text-[#ffd700]' : ''
+                        station.rank === 1 ? 'text-[var(--accent-primary)]' : ''
                       }`}>
                         {station.rank}
                       </span>
@@ -229,7 +229,7 @@ export default async function StationsPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
-                      <span className="text-xs text-[#ffd700] flex items-center gap-1">
+                      <span className="text-xs text-[var(--accent-primary)] flex items-center gap-1">
                         <svg className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clipRule="evenodd" />
                         </svg>
@@ -246,11 +246,11 @@ export default async function StationsPage() {
       </section>
 
       {/* The Offer */}
-      <section className="border-b border-[--border] bg-gradient-to-b from-[#ffd700]/5 to-transparent animate-fade-in" style={{ animationDelay: '400ms' }}>
+      <section className="border-b border-[--border] bg-gradient-to-b from-[var(--accent-primary)]/5 to-transparent animate-fade-in" style={{ animationDelay: '400ms' }}>
         <div className="max-w-4xl mx-auto px-6 py-16 text-center">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="w-2 h-2 bg-[#ffd700]" />
-            <p className="text-[10px] tracking-[0.3em] uppercase text-[#ffd700] font-bold">
+            <div className="w-2 h-2 bg-[var(--accent-primary)]" />
+            <p className="text-[10px] tracking-[0.3em] uppercase text-[var(--accent-primary)] font-bold">
               Founding Station Program
             </p>
           </div>
@@ -263,9 +263,9 @@ export default async function StationsPage() {
           </p>
 
           <div className="grid sm:grid-cols-2 gap-4 max-w-2xl mx-auto mb-12">
-            <div className="p-6 border border-[--border] text-left hover:border-[#ffd700]/30 transition-colors">
+            <div className="p-6 border border-[--border] text-left hover:border-[var(--accent-primary)]/30 transition-colors">
               <p className="text-sm font-bold mb-4 flex items-center gap-2">
-                <svg className="w-4 h-4 text-[#ffd700]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-4 h-4 text-[var(--accent-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
                 </svg>
                 What you get
@@ -288,9 +288,9 @@ export default async function StationsPage() {
                 ))}
               </ul>
             </div>
-            <div className="p-6 border border-[--border] text-left hover:border-[#ffd700]/30 transition-colors">
+            <div className="p-6 border border-[--border] text-left hover:border-[var(--accent-primary)]/30 transition-colors">
               <p className="text-sm font-bold mb-4 flex items-center gap-2">
-                <svg className="w-4 h-4 text-[#ffd700]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-4 h-4 text-[var(--accent-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
                 What we ask
@@ -314,8 +314,8 @@ export default async function StationsPage() {
             </div>
           </div>
 
-          <div className="inline-flex items-center gap-4 px-6 py-4 border border-[#ffd700]/30 bg-[#ffd700]/5">
-            <span className="text-4xl font-bold text-[#ffd700] tabular-nums">{stats.foundingSpotsRemaining}</span>
+          <div className="inline-flex items-center gap-4 px-6 py-4 border border-[var(--accent-primary)]/30 bg-[var(--accent-primary)]/5">
+            <span className="text-4xl font-bold text-[var(--accent-primary)] tabular-nums">{stats.foundingSpotsRemaining}</span>
             <div className="text-left">
               <span className="text-sm text-[--foreground] block">spots remaining</span>
               <span className="text-xs text-[--muted]">of {FOUNDING_STATION_LIMIT} founding stations</span>
@@ -341,7 +341,7 @@ export default async function StationsPage() {
 
           <p className="text-xs text-[--muted] text-center mt-6">
             Questions? Email us at{" "}
-            <a href="mailto:stations@waxfeed.com" className="text-[#ffd700] hover:underline">
+            <a href="mailto:stations@waxfeed.com" className="text-[var(--accent-primary)] hover:underline">
               stations@waxfeed.com
             </a>
           </p>
@@ -374,8 +374,8 @@ export default async function StationsPage() {
               <p className="text-4xl font-bold mb-2 tabular-nums">{stats.foundingStations || 0}</p>
               <p className="text-[10px] tracking-[0.2em] uppercase text-[--muted]">Stations joined</p>
             </div>
-            <div className="p-6 border border-[#ffd700]/30 bg-[#ffd700]/5">
-              <p className="text-4xl font-bold text-[#ffd700] mb-2 tabular-nums">{stats.foundingSpotsRemaining}</p>
+            <div className="p-6 border border-[var(--accent-primary)]/30 bg-[var(--accent-primary)]/5">
+              <p className="text-4xl font-bold text-[var(--accent-primary)] mb-2 tabular-nums">{stats.foundingSpotsRemaining}</p>
               <p className="text-[10px] tracking-[0.2em] uppercase text-[--muted]">Spots left</p>
             </div>
           </div>
@@ -387,20 +387,20 @@ export default async function StationsPage() {
         <div className="w-full px-6 lg:px-12 xl:px-20 py-8 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-[--muted]">
             Questions?{" "}
-            <a href="mailto:stations@waxfeed.com" className="text-[#ffd700] hover:underline">
+            <a href="mailto:stations@waxfeed.com" className="text-[var(--accent-primary)] hover:underline">
               stations@waxfeed.com
             </a>
           </p>
           <div className="flex gap-6">
             <Link
               href="/"
-              className="text-[11px] tracking-[0.15em] uppercase text-[--muted] hover:text-[#ffd700] transition-colors"
+              className="text-[11px] tracking-[0.15em] uppercase text-[--muted] hover:text-[var(--accent-primary)] transition-colors"
             >
               WaxFeed Home
             </Link>
             <Link
               href="/leaderboard"
-              className="text-[11px] tracking-[0.15em] uppercase text-[--muted] hover:text-[#ffd700] transition-colors"
+              className="text-[11px] tracking-[0.15em] uppercase text-[--muted] hover:text-[var(--accent-primary)] transition-colors"
             >
               Leaderboard
             </Link>

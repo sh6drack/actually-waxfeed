@@ -136,7 +136,7 @@ export function MessageButton({ targetUserId, className = '' }: MessageButtonPro
     <>
       <button
         onClick={handleClick}
-        className={`px-4 py-2 bg-[#ffd700] text-black text-sm font-medium hover:bg-[#ffed4a] transition-colors ${className}`}
+        className={`px-4 py-2 bg-[var(--accent-primary)] text-black text-sm font-medium hover:bg-[#ffed4a] transition-colors ${className}`}
       >
         <span className="flex items-center gap-2">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -164,7 +164,7 @@ export function MessageButton({ targetUserId, className = '' }: MessageButtonPro
 
             <div className="p-3 bg-[--muted]/10 mb-4">
               <p className="text-sm text-[--muted]">
-                You have a <span className="text-[#ffd700] font-bold">{canMsg.score}%</span> taste match with @{canMsg.targetUser?.username}
+                You have a <span className="text-[var(--accent-primary)] font-bold">{canMsg.score}%</span> taste match with @{canMsg.targetUser?.username}
               </p>
             </div>
 
@@ -172,7 +172,7 @@ export function MessageButton({ targetUserId, className = '' }: MessageButtonPro
               value={message}
               onChange={(e) => setMessage(e.target.value.slice(0, 500))}
               placeholder="Write your first message..."
-              className="w-full p-3 bg-[--muted]/10 resize-none focus:outline-none focus:ring-1 focus:ring-[#ffd700]"
+              className="w-full p-3 bg-[--muted]/10 resize-none focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
               rows={4}
             />
             <p className="text-[10px] text-[--muted] mt-1 text-right">
@@ -189,7 +189,7 @@ export function MessageButton({ targetUserId, className = '' }: MessageButtonPro
               <button
                 onClick={handleSend}
                 disabled={!message.trim() || sending}
-                className="flex-1 px-4 py-2 bg-[#ffd700] text-black text-sm font-medium disabled:opacity-50"
+                className="flex-1 px-4 py-2 bg-[var(--accent-primary)] text-black text-sm font-medium disabled:opacity-50"
               >
                 {sending ? 'Sending...' : 'Send Message'}
               </button>

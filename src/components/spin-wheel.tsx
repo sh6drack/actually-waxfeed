@@ -160,18 +160,18 @@ export function SpinWheel({ userId, userReviewCount = 0 }: SpinWheelProps) {
   if (!userId) {
     return (
       <div className="text-center py-16">
-        <p className="text-[10px] tracking-[0.3em] uppercase text-[#555] mb-4">
+        <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-4">
           Locked Feature
         </p>
         <h2 className="text-3xl lg:text-5xl font-bold tracking-tight mb-6">
           Spin the Wheel
         </h2>
-        <p className="text-sm text-[#666] max-w-md mx-auto mb-8">
+        <p className="text-sm text-[--muted] max-w-md mx-auto mb-8">
           Discover albums tailored to your taste. Sign in and review {MIN_REVIEWS_REQUIRED} albums to unlock.
         </p>
         <Link
           href="/login"
-          className="inline-block bg-white text-black px-8 py-4 font-semibold text-sm tracking-wide hover:bg-[#e5e5e5] transition-colors"
+          className="inline-block bg-[--foreground] text-[--background] px-8 py-4 font-semibold text-sm tracking-wide hover:bg-[--foreground]/90 transition-colors"
         >
           SIGN IN
         </Link>
@@ -185,35 +185,35 @@ export function SpinWheel({ userId, userReviewCount = 0 }: SpinWheelProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
         {/* Left: Unlock prompt */}
         <div className="order-2 lg:order-1">
-          <p className="text-[10px] tracking-[0.3em] uppercase text-[#555] mb-4">
+          <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-4">
             Unlock Now
           </p>
           <h2 className="text-4xl lg:text-5xl font-bold tracking-tight leading-[0.95] mb-6">
             Spin the Wheel
           </h2>
-          <p className="text-sm text-[#666] max-w-sm leading-relaxed mb-6">
+          <p className="text-sm text-[--muted] max-w-sm leading-relaxed mb-6">
             Review your first album to unlock personalized discovery. The more you review, the better your recommendations.
           </p>
 
           {/* Benefits */}
-          <div className="space-y-2 mb-8 text-[11px] text-[#555]">
+          <div className="space-y-2 mb-8 text-[11px] text-[--muted]">
             <div className="flex items-center gap-2">
               <span className="w-1 h-1 bg-white rounded-full" />
               <span>1 review = 5 spins/day</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-1 h-1 bg-[#444] rounded-full" />
+              <span className="w-1 h-1 bg-[--foreground]/50 rounded-full" />
               <span>5 reviews = 20 spins/day</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-1 h-1 bg-[#333] rounded-full" />
+              <span className="w-1 h-1 bg-[--foreground]/30 rounded-full" />
               <span>15+ reviews = unlimited</span>
             </div>
           </div>
 
           <Link
             href="/search"
-            className="inline-block bg-white text-black px-6 py-3 font-semibold text-sm tracking-wide hover:bg-[#e5e5e5] transition-colors"
+            className="inline-block bg-[--foreground] text-[--background] px-6 py-3 font-semibold text-sm tracking-wide hover:bg-[--foreground]/90 transition-colors"
           >
             WRITE YOUR FIRST REVIEW
           </Link>
@@ -246,7 +246,7 @@ export function SpinWheel({ userId, userReviewCount = 0 }: SpinWheelProps) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           {/* Left: Controls */}
           <div className="order-2 lg:order-1">
-            <p className="text-[10px] tracking-[0.3em] uppercase text-[#555] mb-4">
+            <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-4">
               Discovery
             </p>
             <h2 className="text-4xl lg:text-5xl font-bold tracking-tight leading-[0.95] mb-6">
@@ -255,7 +255,7 @@ export function SpinWheel({ userId, userReviewCount = 0 }: SpinWheelProps) {
 
             {/* Mode selector */}
             <div className="mb-6">
-              <p className="text-[10px] tracking-[0.15em] uppercase text-[#555] mb-3">
+              <p className="text-[10px] tracking-[0.15em] uppercase text-[--muted] mb-3">
                 Mode
               </p>
               <div className="flex gap-2">
@@ -267,7 +267,7 @@ export function SpinWheel({ userId, userReviewCount = 0 }: SpinWheelProps) {
                       px-4 py-2 text-[11px] tracking-[0.1em] uppercase font-medium transition-colors
                       ${mode === m
                         ? "bg-white text-black"
-                        : "border border-[#333] text-[#666] hover:border-[#555] hover:text-[#888]"
+                        : "border border-[--border] text-[--muted] hover:border-[--foreground]/30 hover:text-[--muted]"
                       }
                     `}
                   >
@@ -275,7 +275,7 @@ export function SpinWheel({ userId, userReviewCount = 0 }: SpinWheelProps) {
                   </button>
                 ))}
               </div>
-              <p className="text-[11px] text-[#444] mt-2">
+              <p className="text-[11px] text-[--muted]/70 mt-2">
                 {MODE_INFO[mode].description}
               </p>
             </div>
@@ -283,14 +283,14 @@ export function SpinWheel({ userId, userReviewCount = 0 }: SpinWheelProps) {
             {/* User's top genres */}
             {userStats?.topGenres && userStats.topGenres.length > 0 && (
               <div className="mb-6">
-                <p className="text-[10px] tracking-[0.15em] uppercase text-[#555] mb-2">
+                <p className="text-[10px] tracking-[0.15em] uppercase text-[--muted] mb-2">
                   Your Top Genres
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {userStats.topGenres.map((genre, i) => (
                     <span
                       key={i}
-                      className="text-[10px] tracking-[0.1em] uppercase px-2 py-1 border border-[#333] text-[#555]"
+                      className="text-[10px] tracking-[0.1em] uppercase px-2 py-1 border border-[--border] text-[--muted]"
                     >
                       {genre}
                     </span>
@@ -303,11 +303,11 @@ export function SpinWheel({ userId, userReviewCount = 0 }: SpinWheelProps) {
               <button
                 onClick={spin}
                 disabled={isSpinning}
-                className="inline-flex items-center gap-3 bg-white text-black px-6 py-3 font-semibold text-sm tracking-wide hover:bg-[#e5e5e5] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 active:scale-[0.98]"
+                className="inline-flex items-center gap-3 bg-[--foreground] text-[--background] px-6 py-3 font-semibold text-sm tracking-wide hover:bg-[--foreground]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 active:scale-[0.98]"
               >
                 <span>{isSpinning ? "SPINNING..." : "SPIN"}</span>
                 {spinCount > 0 && (
-                  <span className="text-[11px] text-[#888] tabular-nums">#{spinCount + 1}</span>
+                  <span className="text-[11px] text-[--muted] tabular-nums">#{spinCount + 1}</span>
                 )}
               </button>
 
@@ -317,7 +317,7 @@ export function SpinWheel({ userId, userReviewCount = 0 }: SpinWheelProps) {
                 if (limit === -1) return null
                 const remaining = Math.max(0, limit - dailySpinCount)
                 return (
-                  <div className="text-[10px] tracking-[0.1em] uppercase text-[#444]">
+                  <div className="text-[10px] tracking-[0.1em] uppercase text-[--muted]/70">
                     <span className="tabular-nums">{remaining}</span> / {limit} today
                   </div>
                 )
@@ -334,7 +334,7 @@ export function SpinWheel({ userId, userReviewCount = 0 }: SpinWheelProps) {
               if (limit === -1 || userReviewCount >= 15) return null
               const reviewsToUnlimited = 15 - userReviewCount
               return (
-                <p className="text-[10px] text-[#444] mt-3">
+                <p className="text-[10px] text-[--muted]/70 mt-3">
                   Review {reviewsToUnlimited} more album{reviewsToUnlimited !== 1 ? 's' : ''} for unlimited spins
                 </p>
               )
@@ -398,10 +398,10 @@ export function SpinWheel({ userId, userReviewCount = 0 }: SpinWheelProps) {
         /* Result state */
         <div>
           {/* Top bar */}
-          <div className="flex items-center justify-between text-[10px] tracking-[0.15em] uppercase text-[#555] mb-6 pb-4 border-b border-[#1a1a1a]">
+          <div className="flex items-center justify-between text-[10px] tracking-[0.15em] uppercase text-[--muted] mb-6 pb-4 border-b border-[--border]">
             <span>Spin #{spinCount}</span>
             {recommendation && (
-              <span className="text-[#888]">{recommendation.reason}</span>
+              <span className="text-[--muted]">{recommendation.reason}</span>
             )}
             <span className="tabular-nums">{recommendation?.score}% match</span>
           </div>
@@ -410,7 +410,7 @@ export function SpinWheel({ userId, userReviewCount = 0 }: SpinWheelProps) {
             {/* Album art */}
             <div>
               <Link href={`/album/${album.spotifyId}`} className="block group">
-                <div className="aspect-square bg-[#111] overflow-hidden">
+                <div className="aspect-square bg-[--surface] overflow-hidden">
                   {album.coverArtUrl ? (
                     <img
                       src={album.coverArtUrl}
@@ -418,7 +418,7 @@ export function SpinWheel({ userId, userReviewCount = 0 }: SpinWheelProps) {
                       className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-[#333]">
+                    <div className="w-full h-full flex items-center justify-center text-[--muted]/50">
                       No Cover
                     </div>
                   )}
@@ -429,17 +429,17 @@ export function SpinWheel({ userId, userReviewCount = 0 }: SpinWheelProps) {
             {/* Info */}
             <div className="flex flex-col justify-between">
               <div>
-                <p className="text-[10px] tracking-[0.3em] uppercase text-[#555] mb-3">
+                <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-3">
                   Your Discovery
                 </p>
 
                 <Link href={`/album/${album.spotifyId}`} className="group">
-                  <h2 className="text-3xl lg:text-4xl font-bold tracking-tight leading-[0.95] mb-3 group-hover:text-[#777] transition-colors">
+                  <h2 className="text-3xl lg:text-4xl font-bold tracking-tight leading-[0.95] mb-3 group-hover:text-[--muted] transition-colors">
                     {album.title}
                   </h2>
                 </Link>
 
-                <p className="text-lg text-[#666] mb-6">
+                <p className="text-lg text-[--muted] mb-6">
                   {album.artistName}
                 </p>
 
@@ -448,8 +448,8 @@ export function SpinWheel({ userId, userReviewCount = 0 }: SpinWheelProps) {
                     <span className="text-4xl font-bold tabular-nums">
                       {album.averageRating.toFixed(1)}
                     </span>
-                    <span className="text-sm text-[#555]">/ 10</span>
-                    <span className="text-[11px] text-[#444] ml-2">
+                    <span className="text-sm text-[--muted]">/ 10</span>
+                    <span className="text-[11px] text-[--muted]/70 ml-2">
                       from {album.totalReviews} reviews
                     </span>
                   </div>
@@ -457,25 +457,25 @@ export function SpinWheel({ userId, userReviewCount = 0 }: SpinWheelProps) {
 
                 {/* Score breakdown */}
                 {recommendation && (
-                  <div className="mb-6 p-4 bg-[#0f0f0f] border border-[#1a1a1a]">
-                    <p className="text-[10px] tracking-[0.15em] uppercase text-[#555] mb-3">
+                  <div className="mb-6 p-4 bg-[--surface] border border-[--border]">
+                    <p className="text-[10px] tracking-[0.15em] uppercase text-[--muted] mb-3">
                       Why this album
                     </p>
                     <div className="grid grid-cols-2 gap-3 text-[11px]">
                       <div className="flex justify-between">
-                        <span className="text-[#555]">Genre Match</span>
+                        <span className="text-[--muted]">Genre Match</span>
                         <span className="tabular-nums">{Math.round(recommendation.breakdown.genre * 100)}%</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#555]">Artist Match</span>
+                        <span className="text-[--muted]">Artist Match</span>
                         <span className="tabular-nums">{Math.round(recommendation.breakdown.artist * 100)}%</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#555]">Quality</span>
+                        <span className="text-[--muted]">Quality</span>
                         <span className="tabular-nums">{Math.round(recommendation.breakdown.quality * 100)}%</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#555]">Similar Listeners</span>
+                        <span className="text-[--muted]">Similar Listeners</span>
                         <span className="tabular-nums">{Math.round(recommendation.breakdown.collaborative * 100)}%</span>
                       </div>
                     </div>
@@ -488,7 +488,7 @@ export function SpinWheel({ userId, userReviewCount = 0 }: SpinWheelProps) {
                     {album.genres.slice(0, 4).map((genre, i) => (
                       <span
                         key={i}
-                        className="text-[10px] tracking-[0.1em] uppercase px-2 py-1 border border-[#333] text-[#666]"
+                        className="text-[10px] tracking-[0.1em] uppercase px-2 py-1 border border-[--border] text-[--muted]"
                       >
                         {genre}
                       </span>
@@ -508,13 +508,13 @@ export function SpinWheel({ userId, userReviewCount = 0 }: SpinWheelProps) {
               <div className="flex flex-col sm:flex-row gap-3">
                 <Link
                   href={`/album/${album.spotifyId}`}
-                  className="bg-white text-black px-6 py-3 font-semibold text-sm tracking-wide text-center hover:bg-[#e5e5e5] transition-colors"
+                  className="bg-[--foreground] text-[--background] px-6 py-3 font-semibold text-sm tracking-wide text-center hover:bg-[--foreground]/90 transition-colors"
                 >
                   REVIEW ALBUM
                 </Link>
                 <button
                   onClick={reset}
-                  className="border border-[#333] px-6 py-3 font-semibold text-sm tracking-wide hover:border-white hover:text-white transition-colors"
+                  className="border border-[--border] px-6 py-3 font-semibold text-sm tracking-wide hover:border-[--foreground] hover:text-[--foreground] transition-colors"
                 >
                   SPIN AGAIN
                 </button>

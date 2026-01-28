@@ -113,7 +113,7 @@ export default async function HotTakesPage() {
       <header className="mb-8 sm:mb-12">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 sm:mb-6">
           <div>
-            <p className="text-[10px] tracking-[0.3em] uppercase text-[#666] mb-2">
+            <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-2">
               Community Debates
             </p>
             <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold tracking-tight">
@@ -124,54 +124,54 @@ export default async function HotTakesPage() {
           {session && (
             <Link
               href="/hot-takes/new"
-              className="bg-white text-black px-5 sm:px-6 py-3 min-h-[48px] flex items-center justify-center font-bold text-xs sm:text-sm tracking-wide hover:bg-[#f0f0f0] transition-colors no-underline w-full sm:w-auto"
+              className="bg-white text-black px-5 sm:px-6 py-3 min-h-[48px] flex items-center justify-center font-bold text-xs sm:text-sm tracking-wide hover:bg-gray-200 transition-colors no-underline w-full sm:w-auto"
             >
               POST A TAKE
             </Link>
           )}
         </div>
 
-        <p className="text-xs sm:text-sm text-[#888] max-w-xl">
+        <p className="text-xs sm:text-sm text-[--muted] max-w-xl">
           Controversial opinions about albums. Vote, argue, and defend your taste.
         </p>
       </header>
 
       {/* Filter tabs */}
-      <nav className="flex gap-4 sm:gap-6 border-b border-[#222] mb-6 sm:mb-8 overflow-x-auto scrollbar-hide">
+      <nav className="flex gap-4 sm:gap-6 border-b border-[--border] mb-6 sm:mb-8 overflow-x-auto scrollbar-hide">
         <button className="pb-3 min-h-[44px] text-xs sm:text-sm font-bold tracking-wide border-b-2 border-white -mb-[1px] whitespace-nowrap">
           TRENDING
         </button>
-        <button className="pb-3 min-h-[44px] text-xs sm:text-sm text-[#666] tracking-wide hover:text-white transition-colors whitespace-nowrap">
+        <button className="pb-3 min-h-[44px] text-xs sm:text-sm text-[--muted] tracking-wide hover:text-white transition-colors whitespace-nowrap">
           RECENT
         </button>
-        <button className="pb-3 min-h-[44px] text-xs sm:text-sm text-[#666] tracking-wide hover:text-white transition-colors whitespace-nowrap">
+        <button className="pb-3 min-h-[44px] text-xs sm:text-sm text-[--muted] tracking-wide hover:text-white transition-colors whitespace-nowrap">
           MOST HEATED
         </button>
       </nav>
 
       {/* Hot takes list */}
       {error ? (
-        <div className="text-center py-16 border border-[#222]">
-          <p className="text-[#666] mb-4">Hot Takes feature coming soon</p>
-          <p className="text-xs text-[#444]">Database migration required</p>
+        <div className="text-center py-16 border border-[--border]">
+          <p className="text-[--muted] mb-4">Hot Takes feature coming soon</p>
+          <p className="text-xs text-[--muted]/50">Database migration required</p>
         </div>
       ) : hotTakes.length === 0 ? (
-        <div className="text-center py-16 border border-[#222]">
-          <p className="text-[10px] tracking-[0.3em] uppercase text-[#666] mb-4">
+        <div className="text-center py-16 border border-[--border]">
+          <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-4">
             No hot takes yet
           </p>
           <p className="text-xl font-bold mb-6">Be the first to start a debate</p>
           {session ? (
             <Link
               href="/hot-takes/new"
-              className="inline-block bg-white text-black px-6 py-3 font-bold text-sm tracking-wide hover:bg-[#f0f0f0] transition-colors no-underline"
+              className="inline-block bg-white text-black px-6 py-3 font-bold text-sm tracking-wide hover:bg-gray-200 transition-colors no-underline"
             >
               POST YOUR HOT TAKE
             </Link>
           ) : (
             <Link
               href="/login"
-              className="inline-block bg-white text-black px-6 py-3 font-bold text-sm tracking-wide hover:bg-[#f0f0f0] transition-colors no-underline"
+              className="inline-block bg-white text-black px-6 py-3 font-bold text-sm tracking-wide hover:bg-gray-200 transition-colors no-underline"
             >
               SIGN IN TO POST
             </Link>
@@ -190,11 +190,11 @@ export default async function HotTakesPage() {
 
       {/* Not signed in prompt */}
       {!session && hotTakes.length > 0 && (
-        <div className="mt-12 text-center py-8 border-t border-[#222]">
-          <p className="text-[#666] mb-4">Sign in to vote and post your own hot takes</p>
+        <div className="mt-12 text-center py-8 border-t border-[--border]">
+          <p className="text-[--muted] mb-4">Sign in to vote and post your own hot takes</p>
           <Link
             href="/login"
-            className="inline-block bg-white text-black px-6 py-3 font-bold text-sm tracking-wide hover:bg-[#f0f0f0] transition-colors no-underline"
+            className="inline-block bg-white text-black px-6 py-3 font-bold text-sm tracking-wide hover:bg-gray-200 transition-colors no-underline"
           >
             SIGN IN
           </Link>

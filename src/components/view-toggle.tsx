@@ -11,16 +11,16 @@ export function ViewToggle({ view, onChange }: ViewToggleProps) {
       <button
         onClick={() => onChange("list")}
         className={`transition-colors ${
-          view === "list" ? "text-white" : "text-[#666] hover:text-[#888]"
+          view === "list" ? "text-[--foreground]" : "text-[--muted] hover:text-[--foreground]/70"
         }`}
       >
         List
       </button>
-      <span className="text-[#333]">|</span>
+      <span className="text-[--muted]/50">|</span>
       <button
         onClick={() => onChange("grid")}
         className={`transition-colors ${
-          view === "grid" ? "text-white" : "text-[#666] hover:text-[#888]"
+          view === "grid" ? "text-[--foreground]" : "text-[--muted] hover:text-[--foreground]/70"
         }`}
       >
         Grid

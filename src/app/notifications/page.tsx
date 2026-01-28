@@ -123,7 +123,7 @@ export default function NotificationsPage() {
   if (status === "loading" || loading) {
     return (
       <div className="w-full px-4 lg:px-12 xl:px-20 max-w-4xl py-8">
-        <p className="text-[#888]">Loading...</p>
+        <p className="text-[--muted]">Loading...</p>
       </div>
     )
   }
@@ -135,7 +135,7 @@ export default function NotificationsPage() {
         {unreadCount > 0 && (
           <button
             onClick={markAllAsRead}
-            className="text-xs sm:text-sm text-[#888] hover:text-white min-h-[44px] px-2"
+            className="text-xs sm:text-sm text-[--muted] hover:text-white min-h-[44px] px-2"
           >
             Mark all read
           </button>
@@ -143,8 +143,8 @@ export default function NotificationsPage() {
       </div>
 
       {notifications.length === 0 ? (
-        <div className="border border-[#222] p-8 text-center">
-          <p className="text-[#888]">No notifications yet.</p>
+        <div className="border border-[--border] p-8 text-center">
+          <p className="text-[--muted]">No notifications yet.</p>
         </div>
       ) : (
         <div className="divide-y divide-[#222]">
@@ -152,8 +152,8 @@ export default function NotificationsPage() {
             <Link
               key={notification.id}
               href={getNotificationLink(notification)}
-              className={`block py-3 sm:py-4 no-underline hover:bg-[#111] -mx-4 px-4 transition-colors min-h-[56px] ${
-                !notification.isRead ? "bg-[#111]/50" : ""
+              className={`block py-3 sm:py-4 no-underline hover:bg-[--surface] -mx-4 px-4 transition-colors min-h-[56px] ${
+                !notification.isRead ? "bg-[--surface]/50" : ""
               }`}
             >
               <div className="flex items-start gap-3">
@@ -162,7 +162,7 @@ export default function NotificationsPage() {
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm">{getNotificationText(notification)}</p>
-                  <p className="text-xs text-[#666] mt-1">
+                  <p className="text-xs text-[--muted]/70 mt-1">
                     {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                   </p>
                 </div>

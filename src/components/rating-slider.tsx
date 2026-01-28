@@ -14,7 +14,7 @@ export function RatingSlider({ value, onChange, disabled }: RatingSliderProps) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between text-sm">
-        <span className="text-[#888]">Your Rating</span>
+        <span className="text-[--muted]">Your Rating</span>
         <span className="font-bold text-2xl">{value.toFixed(1)}</span>
       </div>
       <input
@@ -29,7 +29,7 @@ export function RatingSlider({ value, onChange, disabled }: RatingSliderProps) {
         disabled={disabled}
         className="w-full"
       />
-      <div className="flex justify-between text-xs text-[#666]">
+      <div className="flex justify-between text-xs text-[--muted]">
         <span>0</span>
         <span>5</span>
         <span>10</span>

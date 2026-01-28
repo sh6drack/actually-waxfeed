@@ -37,7 +37,7 @@ export function ArchetypeBadge({
       <span
         className={`inline-flex items-center font-medium tracking-tight transition-colors ${sizeClasses[size]} ${
           isPrimary
-            ? 'bg-gradient-to-r from-[#ffd700]/20 to-[#ffd700]/10 text-[#ffd700] border border-[#ffd700]/40 hover:border-[#ffd700]/60'
+            ? 'bg-gradient-to-r from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 text-[var(--accent-primary)] border border-[var(--accent-primary)]/40 hover:border-[var(--accent-primary)]/60'
             : 'bg-[--muted]/10 text-[--foreground] border border-[--border] hover:border-[--muted]'
         }`}
       >

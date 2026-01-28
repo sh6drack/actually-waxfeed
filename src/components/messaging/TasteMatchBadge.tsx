@@ -11,7 +11,7 @@ interface TasteMatchBadgeProps {
 export function TasteMatchBadge({ score, size = 'md', showLabel = true }: TasteMatchBadgeProps) {
   // Determine color based on score
   const getColor = () => {
-    if (score >= 80) return '#ffd700' // Gold - Taste Twin
+    if (score >= 80) return 'var(--accent-primary)' // Gold - Taste Twin
     if (score >= 70) return '#22c55e' // Green - Strong match
     if (score >= 60) return '#3b82f6' // Blue - Good match
     return '#6b7280' // Gray - Below threshold

@@ -91,7 +91,7 @@ export function ConversationList({
         <p className="text-[--muted] mb-4 text-sm">{error}</p>
         <button
           onClick={fetchConversations}
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#ffd700] border border-[#ffd700]/30 hover:bg-[#ffd700]/10 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--accent-primary)] border border-[var(--accent-primary)]/30 hover:bg-[var(--accent-primary)]/10 transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -116,7 +116,7 @@ export function ConversationList({
         </p>
         <Link
           href="/discover/similar-tasters"
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#ffd700] text-black font-semibold text-sm hover:bg-[#ffed4a] transition-colors group"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[var(--accent-primary)] text-black font-semibold text-sm hover:bg-[#ffed4a] transition-colors group"
         >
           <span>Find taste matches</span>
           <svg className="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -145,7 +145,7 @@ export function ConversationList({
             }}
             className={`block p-5 transition-all duration-200 animate-fade-in group ${
               isActive
-                ? 'bg-[#ffd700]/10 border-l-2 border-l-[#ffd700]'
+                ? 'bg-[var(--accent-primary)]/10 border-l-2 border-l-[var(--accent-primary)]'
                 : 'hover:bg-[--muted]/5 border-l-2 border-l-transparent hover:border-l-[--muted]/30'
             }`}
             style={{ animationDelay: `${index * 50}ms` }}
@@ -163,7 +163,7 @@ export function ConversationList({
                   <DefaultAvatar size="md" />
                 )}
                 {conv.unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 bg-[#ffd700] text-black text-[10px] font-bold flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 bg-[var(--accent-primary)] text-black text-[10px] font-bold flex items-center justify-center">
                     {conv.unreadCount > 99 ? '99+' : conv.unreadCount}
                   </span>
                 )}
@@ -172,7 +172,7 @@ export function ConversationList({
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2.5 mb-1.5">
-                  <span className="font-semibold truncate group-hover:text-[#ffd700] transition-colors">
+                  <span className="font-semibold truncate group-hover:text-[var(--accent-primary)] transition-colors">
                     @{user.username || 'user'}
                   </span>
                   <TasteMatchBadge score={conv.tasteMatchScore} size="sm" showLabel={false} />

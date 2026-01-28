@@ -40,7 +40,7 @@ export default async function ReviewsPage() {
       <h1 className="text-2xl lg:text-4xl font-bold tracking-tighter mb-6 lg:mb-8">Recent Reviews</h1>
 
       {reviews.length === 0 ? (
-        <div className="text-center py-12 text-[#888]">
+        <div className="text-center py-12 text-[--muted]">
           <p>No reviews yet.</p>
           <p className="text-sm mt-2">Be the first to review an album!</p>
         </div>

@@ -24,7 +24,7 @@ function getPositionBadge(totalReviews: number): { text: string; color: string; 
   if (nextPosition <= 10) {
     return { 
       text: `Be #${nextPosition} • Gold eligible`, 
-      color: "text-[#ffd700] border-[#ffd700]/50",
+      color: "text-[var(--accent-primary)] border-[var(--accent-primary)]/50",
       urgent: true 
     }
   }

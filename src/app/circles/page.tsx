@@ -20,7 +20,7 @@ export default function CirclesPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-[--muted] border-t-[#ffd700] animate-spin"
+          <div className="w-8 h-8 border-2 border-[--muted] border-t-[var(--accent-primary)] animate-spin"
                style={{ borderRadius: '50%' }} />
           <span className="text-xs tracking-[0.2em] uppercase text-[--muted]">Loading circles</span>
         </div>
@@ -38,7 +38,7 @@ export default function CirclesPage() {
         {/* Header */}
         <div className="px-6 pt-10 pb-8 border-b border-[--border] animate-fade-in">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-2 h-2 bg-[#ffd700]" />
+            <div className="w-2 h-2 bg-[var(--accent-primary)]" />
             <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted]">Community</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Taste Circles</h1>
@@ -48,10 +48,10 @@ export default function CirclesPage() {
         </div>
 
         {/* Info banner */}
-        <div className="px-6 py-5 bg-gradient-to-r from-[#ffd700]/5 to-transparent border-b border-[--border] animate-fade-in"
+        <div className="px-6 py-5 bg-gradient-to-r from-[var(--accent-primary)]/5 to-transparent border-b border-[--border] animate-fade-in"
              style={{ animationDelay: '100ms' }}>
           <div className="flex items-start gap-4">
-            <div className="w-10 h-10 flex items-center justify-center bg-[#ffd700]/10 border border-[#ffd700]/30 flex-shrink-0">
+            <div className="w-10 h-10 flex items-center justify-center bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/30 flex-shrink-0">
               <span className="text-lg">🎭</span>
             </div>
             <div>
@@ -62,7 +62,7 @@ export default function CirclesPage() {
               </p>
               <Link
                 href="/tasteid"
-                className="inline-flex items-center gap-1.5 text-sm text-[#ffd700] hover:text-[#ffed4a] transition-colors mt-3 group"
+                className="inline-flex items-center gap-1.5 text-sm text-[var(--accent-primary)] hover:text-[var(--accent-hover)] transition-colors mt-3 group"
               >
                 <span>View your TasteID</span>
                 <svg className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">

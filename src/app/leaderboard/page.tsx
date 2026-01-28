@@ -100,7 +100,7 @@ export default async function LeaderboardPage() {
                     >
                       {/* Rank */}
                       <div className={`w-10 h-10 flex items-center justify-center font-bold ${
-                        index === 0 ? 'text-[#ffd700]' : 
+                        index === 0 ? 'text-[var(--accent-primary)]' : 
                         index === 1 ? 'text-gray-300' : 
                         index === 2 ? 'text-amber-600' : 
                         'text-[--muted]'
@@ -128,7 +128,7 @@ export default async function LeaderboardPage() {
                         </p>
                         <div className="flex items-center gap-2 text-xs">
                           {user.goldSpinCount > 0 && (
-                            <span className="text-[#ffd700]">G:{user.goldSpinCount}</span>
+                            <span className="text-[var(--accent-primary)]">G:{user.goldSpinCount}</span>
                           )}
                           {user.silverSpinCount > 0 && (
                             <span className="text-gray-400">S:{user.silverSpinCount}</span>
@@ -171,7 +171,7 @@ export default async function LeaderboardPage() {
                       href={`/album/${album.spotifyId}`}
                       className="flex gap-3 group"
                     >
-                      <div className="w-12 h-12 flex-shrink-0 bg-[#181818]">
+                      <div className="w-12 h-12 flex-shrink-0 bg-[--surface]">
                         {album.coverArtUrl ? (
                           <img
                             src={album.coverArtUrl}
@@ -179,7 +179,7 @@ export default async function LeaderboardPage() {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-[#666] text-xs">
+                          <div className="w-full h-full flex items-center justify-center text-[--muted] text-xs">
                             ?
                           </div>
                         )}
@@ -208,7 +208,7 @@ export default async function LeaderboardPage() {
               </p>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-[#ffd700]">Gold Spin</span>
+                  <span className="text-[var(--accent-primary)]">Gold Spin</span>
                   <span>+10 points</span>
                 </div>
                 <div className="flex justify-between">
@@ -227,7 +227,7 @@ export default async function LeaderboardPage() {
 
             {/* Station Rankings */}
             <div className="px-6 py-8">
-              <p className="text-[10px] tracking-[0.3em] uppercase text-[#ffd700] mb-4">
+              <p className="text-[10px] tracking-[0.3em] uppercase text-[var(--accent-primary)] mb-4">
                 College Radio
               </p>
               <p className="text-sm mb-4">
@@ -235,7 +235,7 @@ export default async function LeaderboardPage() {
               </p>
               <Link
                 href="/stations"
-                className="block px-4 py-3 border border-[#ffd700]/30 text-sm text-center hover:border-[#ffd700] transition"
+                className="block px-4 py-3 border border-[var(--accent-primary)]/30 text-sm text-center hover:border-[var(--accent-primary)] transition"
               >
                 Apply for Founding Status
               </Link>

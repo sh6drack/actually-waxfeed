@@ -139,7 +139,7 @@ function WalletContent() {
                 Your WAX Balance
               </p>
               <div className="flex items-baseline gap-2 sm:gap-3 justify-center sm:justify-start">
-                <span className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight tabular-nums text-[#ffd700]">
+                <span className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight tabular-nums text-[--accent-primary]">
                   {stats.balance.toLocaleString()}
                 </span>
                 <span className="text-base sm:text-lg text-[var(--muted)]">WAX</span>
@@ -158,7 +158,7 @@ function WalletContent() {
               <div className="h-8 sm:h-10 w-px bg-[var(--border)]" />
               <div className="flex items-center gap-3 sm:gap-4">
                 <div className="text-center">
-                  <p className="text-xl sm:text-2xl font-bold text-[#ffd700] tabular-nums">{stats.goldSpinCount}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-[--accent-primary] tabular-nums">{stats.goldSpinCount}</p>
                   <p className="text-[8px] sm:text-[10px] tracking-[0.2em] uppercase text-[var(--muted)]">Gold</p>
                 </div>
                 <div className="text-center">
@@ -183,7 +183,7 @@ function WalletContent() {
             <div className="flex items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 border border-[var(--border)]">
               <div className="min-w-0">
                 <p className="font-bold text-sm sm:text-base">
-                  Earn <span className="text-[#ffd700]">+1 WAX</span> per rating
+                  Earn <span className="text-[--accent-primary]">+1 WAX</span> per rating
                 </p>
                 <p className="text-xs sm:text-sm text-[var(--muted)]">Free, unlimited</p>
               </div>
@@ -195,16 +195,16 @@ function WalletContent() {
               </Link>
             </div>
             {/* Buy WAX */}
-            <div className="flex items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 border border-[#ffd700]">
+            <div className="flex items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 border border-[--accent-primary]">
               <div className="min-w-0">
-                <p className="font-bold text-[#ffd700] text-sm sm:text-base">
+                <p className="font-bold text-[--accent-primary] text-sm sm:text-base">
                   Get WAX Packs
                 </p>
                 <p className="text-xs sm:text-sm text-[var(--muted)]">Starting at $0.99</p>
               </div>
               <Link
                 href="/shop"
-                className="px-4 sm:px-5 py-2 min-h-[44px] flex items-center bg-[#ffd700] text-black text-xs sm:text-sm font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors flex-shrink-0"
+                className="px-4 sm:px-5 py-2 min-h-[44px] flex items-center bg-[--accent-primary] text-black text-xs sm:text-sm font-bold uppercase tracking-wider hover:bg-[--accent-hover] transition-colors flex-shrink-0"
               >
                 Shop
               </Link>
@@ -257,14 +257,14 @@ function WalletContent() {
           {/* Main Ways */}
           <div className="grid md:grid-cols-2 gap-6 mb-12">
             {/* Rate Albums */}
-            <Link href="/quick-rate" className="group p-6 border border-[var(--border)] hover:border-[#ffd700] transition-colors">
+            <Link href="/quick-rate" className="group p-6 border border-[var(--border)] hover:border-[--accent-hover] transition-colors">
               <div className="flex items-start justify-between mb-4">
-                <div className="w-10 h-10 border border-[#ffd700] flex items-center justify-center text-[#ffd700]">
+                <div className="w-10 h-10 border border-[--accent-primary] flex items-center justify-center text-[--accent-primary]">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                   </svg>
                 </div>
-                <span className="text-2xl font-bold text-[#ffd700]">+1</span>
+                <span className="text-2xl font-bold text-[--accent-primary]">+1</span>
               </div>
               <p className="font-bold mb-1 group-hover:text-[var(--muted)] transition-colors">Rate Any Album</p>
               <p className="text-sm text-[var(--muted)]">
@@ -299,10 +299,10 @@ function WalletContent() {
               early reviewers automatically receive badges and bonus WAX.
             </p>
             <div className="grid md:grid-cols-3 gap-4">
-              <div className="p-5 border border-[#ffd700]/30 bg-[#ffd700]/5">
+              <div className="p-5 border border-[--accent-primary]/30 bg-[--accent-primary]/5">
                 <div className="flex items-baseline justify-between mb-2">
-                  <span className="text-[10px] tracking-wider uppercase text-[#ffd700]">Gold Spin</span>
-                  <span className="text-xl font-bold text-[#ffd700]">+100</span>
+                  <span className="text-[10px] tracking-wider uppercase text-[--accent-primary]">Gold Spin</span>
+                  <span className="text-xl font-bold text-[--accent-primary]">+100</span>
                 </div>
                 <p className="text-sm text-[var(--muted)]">First 10 reviewers</p>
               </div>
@@ -337,7 +337,7 @@ function WalletContent() {
                 <div className="flex gap-2 text-xs">
                   <span className="px-2 py-1 border border-[var(--border)]">5 WAX</span>
                   <span className="px-2 py-1 border border-purple-500/30 text-purple-500">20 WAX</span>
-                  <span className="px-2 py-1 border border-[#ffd700]/30 text-[#ffd700]">100 WAX</span>
+                  <span className="px-2 py-1 border border-[--accent-primary]/30 text-[--accent-primary]">100 WAX</span>
                 </div>
               </div>
               <div className="p-5 border border-[var(--border)]">
@@ -345,23 +345,23 @@ function WalletContent() {
                 <p className="text-sm text-[var(--muted)] mb-3">
                   Unlock custom cursor colors and styles. Show off your personality.
                 </p>
-                <p className="text-xs text-[#ffd700]">Coming Soon</p>
+                <p className="text-xs text-[--accent-primary]">Coming Soon</p>
               </div>
               <div className="p-5 border border-[var(--border)]">
                 <p className="text-2xl font-bold mb-2">Profile Flair</p>
                 <p className="text-sm text-[var(--muted)] mb-3">
                   Special badges, profile borders, and customization options.
                 </p>
-                <p className="text-xs text-[#ffd700]">Coming Soon</p>
+                <p className="text-xs text-[--accent-primary]">Coming Soon</p>
               </div>
             </div>
           </div>
 
           {/* Get More WAX - Purchase CTA */}
-          <div className="p-6 border border-[#ffd700] bg-[#ffd700]/5">
+          <div className="p-6 border border-[--accent-primary] bg-[--accent-primary]/5">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
               <div>
-                <p className="text-[10px] tracking-[0.3em] uppercase text-[#ffd700] mb-2">
+                <p className="text-[10px] tracking-[0.3em] uppercase text-[--accent-primary] mb-2">
                   Need More WAX?
                 </p>
                 <p className="text-xl font-bold mb-2">Get WAX Packs</p>
@@ -372,7 +372,7 @@ function WalletContent() {
               <div className="flex flex-col gap-2">
                 <Link
                   href="/shop"
-                  className="px-8 py-3 bg-[#ffd700] text-black text-sm font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors text-center"
+                  className="px-8 py-3 bg-[--accent-primary] text-black text-sm font-bold uppercase tracking-wider hover:bg-[--accent-hover] transition-colors text-center"
                 >
                   View WAX Packs
                 </Link>
@@ -388,7 +388,7 @@ function WalletContent() {
         <section className="w-full px-6 lg:px-12 xl:px-20 py-10">
           {totalBadges === 0 ? (
             <div className="py-16 border border-[var(--border)] text-center">
-              <div className="w-14 h-14 border border-[#ffd700] flex items-center justify-center mx-auto mb-4 text-[#ffd700]">
+              <div className="w-14 h-14 border border-[--accent-primary] flex items-center justify-center mx-auto mb-4 text-[--accent-primary]">
                 <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                 </svg>
@@ -399,7 +399,7 @@ function WalletContent() {
               </p>
               <Link
                 href="/discover"
-                className="inline-block px-6 py-3 bg-[#ffd700] text-black text-sm font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors"
+                className="inline-block px-6 py-3 bg-[--accent-primary] text-black text-sm font-bold uppercase tracking-wider hover:bg-[--accent-hover] transition-colors"
               >
                 Start Reviewing
               </Link>
@@ -415,7 +415,7 @@ function WalletContent() {
                     key={badge.id} 
                     className={`p-5 border ${
                       badge.badgeType === 'GOLD' 
-                        ? 'border-[#ffd700]/50 bg-[#ffd700]/5' 
+                        ? 'border-[--accent-primary]/50 bg-[--accent-primary]/5' 
                         : badge.badgeType === 'SILVER'
                           ? 'border-[var(--border)]'
                           : 'border-amber-600/50 bg-amber-600/5'
@@ -424,7 +424,7 @@ function WalletContent() {
                     <div className="flex items-start justify-between mb-3">
                       <div className={`w-10 h-10 flex items-center justify-center text-sm font-bold ${
                         badge.badgeType === 'GOLD' 
-                          ? 'border border-[#ffd700] text-[#ffd700]' 
+                          ? 'border border-[--accent-primary] text-[--accent-primary]' 
                           : badge.badgeType === 'SILVER'
                             ? 'border border-[var(--border)]'
                             : 'border border-amber-600 text-amber-600'
@@ -433,7 +433,7 @@ function WalletContent() {
                       </div>
                       <span className={`text-lg font-bold ${
                         badge.badgeType === 'GOLD' 
-                          ? 'text-[#ffd700]' 
+                          ? 'text-[--accent-primary]' 
                           : badge.badgeType === 'SILVER'
                             ? 'text-[var(--foreground)]'
                             : 'text-amber-600'
@@ -443,7 +443,7 @@ function WalletContent() {
                     </div>
                     <p className={`text-sm font-bold mb-1 ${
                       badge.badgeType === 'GOLD' 
-                        ? 'text-[#ffd700]' 
+                        ? 'text-[--accent-primary]' 
                         : badge.badgeType === 'SILVER'
                           ? ''
                           : 'text-amber-600'
@@ -471,7 +471,7 @@ function WalletContent() {
               <p className="text-[var(--muted)] mb-4">No transactions yet.</p>
               <Link
                 href="/quick-rate"
-                className="inline-block px-6 py-3 bg-[#ffd700] text-black text-sm font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors"
+                className="inline-block px-6 py-3 bg-[--accent-primary] text-black text-sm font-bold uppercase tracking-wider hover:bg-[--accent-hover] transition-colors"
               >
                 Start Rating
               </Link>
@@ -525,17 +525,17 @@ function WalletContent() {
             </Link>
             <Link 
               href="/shop"
-              className="group flex items-center justify-between p-5 border border-[#ffd700]/50 hover:border-[#ffd700] transition-colors"
+              className="group flex items-center justify-between p-5 border border-[--accent-primary]/50 hover:border-[--accent-hover] transition-colors"
             >
               <div>
-                <p className="font-bold text-[#ffd700] group-hover:text-[#ffed4a] transition-colors">
+                <p className="font-bold text-[--accent-primary] group-hover:text-[var(--accent-hover)] transition-colors">
                   Get WAX Packs
                 </p>
                 <p className="text-sm text-[var(--muted)]">
                   Instant WAX, bonus included
                 </p>
               </div>
-              <svg className="w-5 h-5 text-[#ffd700]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-5 h-5 text-[--accent-primary]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
             </Link>

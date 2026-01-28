@@ -202,7 +202,7 @@ export const ReviewCard = memo(function ReviewCard({
         {/* Album Cover */}
         {showAlbum && (
           <Link href={`/album/${album.spotifyId}`} className="flex-shrink-0">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-[#181818]">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-[--surface]">
               {album.coverArtUrl ? (
                 <img
                   src={album.coverArtUrl}
@@ -210,7 +210,7 @@ export const ReviewCard = memo(function ReviewCard({
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-[#666] text-xs">
+                <div className="w-full h-full flex items-center justify-center text-[--muted-dim] text-xs">
                   No Cover
                 </div>
               )}
@@ -270,7 +270,7 @@ export const ReviewCard = memo(function ReviewCard({
                 <div
                   className={`px-1.5 py-0.5 text-[10px] font-bold ${
                     reviewPosition <= 10
-                      ? "border border-[#ffd700] text-[#ffd700]"
+                      ? "border border-[--accent-primary] text-[--accent-primary]"
                       : reviewPosition <= 50
                         ? "border border-gray-400 text-gray-400"
                         : "border border-amber-700 text-amber-700"
@@ -301,11 +301,11 @@ export const ReviewCard = memo(function ReviewCard({
                 onClick={() => session ? setShowWaxMenu(!showWaxMenu) : null}
                 disabled={hasAwardedWax}
                 className={`flex items-center gap-1.5 transition-colors ${
-                  hasAwardedWax 
-                    ? "text-[#ffd700]" 
-                    : totalWax > 0 
-                      ? "hover:text-[#ffd700]" 
-                      : "hover:text-white"
+                  hasAwardedWax
+                    ? "text-[--accent-primary]"
+                    : totalWax > 0
+                      ? "hover:text-[--accent-primary]"
+                      : "hover:text-[--foreground]"
                 }`}
                 title={hasAwardedWax ? "You awarded Wax" : "Award Wax"}
               >
@@ -342,7 +342,7 @@ export const ReviewCard = memo(function ReviewCard({
                     <button
                       onClick={() => handleAwardWax("gold")}
                       disabled={awardingWax === "gold"}
-                      className="w-full flex items-center justify-between px-2 py-1.5 hover:bg-[--border]/30 transition text-left text-[#ffd700] disabled:opacity-50"
+                      className="w-full flex items-center justify-between px-2 py-1.5 hover:bg-[--border]/30 transition text-left text-[--accent-primary] disabled:opacity-50"
                     >
                       <span>GOLD</span>
                       <span className="text-[10px]">100</span>
@@ -354,7 +354,7 @@ export const ReviewCard = memo(function ReviewCard({
 
             <button
               onClick={handleLike}
-              className={`hover:text-white transition-colors flex items-center gap-1.5 ${liked ? "text-red-500" : ""}`}
+              className={`hover:text-[--foreground] transition-colors flex items-center gap-1.5 ${liked ? "text-red-500" : ""}`}
             >
               {liked ? <HeartFilledIcon size={16} /> : <HeartIcon size={16} />}
               <span>{likeCount}</span>
@@ -364,7 +364,7 @@ export const ReviewCard = memo(function ReviewCard({
             <div className="relative">
               <button
                 onClick={() => setShowReactions(!showReactions)}
-                className="hover:text-white transition-colors flex items-center gap-1.5"
+                className="hover:text-[--foreground] transition-colors flex items-center gap-1.5"
               >
                 <ReactionsIcon size={16} />
                 <span>{totalReactions}</span>
@@ -373,13 +373,13 @@ export const ReviewCard = memo(function ReviewCard({
               {showReactions && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowReactions(false)} />
-                  <div className="absolute bottom-full left-0 mb-1 bg-[#1a1a1a] border border-[#333] p-2 flex gap-0.5 z-50 max-w-[calc(100vw-2rem)]">
+                  <div className="absolute bottom-full left-0 mb-1 bg-[--surface-raised] border border-[--border] p-2 flex gap-0.5 z-50 max-w-[calc(100vw-2rem)]">
                     {REACTIONS.map(({ type, Icon, label }) => (
                       <button
                         key={type}
                         onClick={() => handleReaction(type)}
-                        className={`min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-[#333] transition-colors ${
-                          userReactions.includes(type) ? "bg-[#333] text-white" : ""
+                        className={`min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-[--border] transition-colors ${
+                          userReactions.includes(type) ? "bg-[--border] text-[--foreground]" : ""
                         }`}
                         title={`${label} (${reactionCounts[type as keyof typeof reactionCounts]})`}
                       >
@@ -394,14 +394,14 @@ export const ReviewCard = memo(function ReviewCard({
             {/* Show Wax breakdown if any premium/gold - hide on very small screens */}
             {(waxCounts.premium > 0 || waxCounts.gold > 0) && !compact && (
               <div className="hidden sm:flex items-center gap-1.5 text-[10px]">
-                {waxCounts.gold > 0 && <span className="text-[#ffd700]">G:{waxCounts.gold}</span>}
+                {waxCounts.gold > 0 && <span className="text-[--accent-primary]">G:{waxCounts.gold}</span>}
                 {waxCounts.premium > 0 && <span className="text-purple-400">P:{waxCounts.premium}</span>}
               </div>
             )}
 
             <Link
               href={`/review/${id}`}
-              className="hover:text-white transition-colors no-underline flex items-center gap-1.5"
+              className="hover:text-[--foreground] transition-colors no-underline flex items-center gap-1.5"
             >
               <MessageIcon size={16} />
               <span>{replyCount || 0}</span>
@@ -409,7 +409,7 @@ export const ReviewCard = memo(function ReviewCard({
 
             <button
               onClick={handleShare}
-              className="hover:text-white transition-colors flex items-center gap-1.5"
+              className="hover:text-[--foreground] transition-colors flex items-center gap-1.5"
               title="Share"
             >
               <ShareIcon size={16} />
@@ -417,7 +417,7 @@ export const ReviewCard = memo(function ReviewCard({
 
             <Link
               href={`/review/${id}`}
-              className="hover:text-white transition-colors no-underline ml-auto flex items-center gap-1 min-h-[44px] min-w-[44px] justify-center sm:min-h-0 sm:min-w-0"
+              className="hover:text-[--foreground] transition-colors no-underline ml-auto flex items-center gap-1 min-h-[44px] min-w-[44px] justify-center sm:min-h-0 sm:min-w-0"
             >
               <span className="hidden sm:inline">View</span>
               <ArrowRightIcon size={14} />

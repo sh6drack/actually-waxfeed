@@ -340,10 +340,10 @@ export default async function ProfilePage({ params }: Props) {
           {((user.goldSpinCount || 0) + (user.silverSpinCount || 0) + (user.bronzeSpinCount || 0)) > 0 && (
             <div className="flex flex-wrap justify-center sm:justify-start gap-3 text-sm mb-4">
               {(user.goldSpinCount || 0) > 0 && (
-                <span className="flex items-center gap-1.5 px-2 py-1 border border-[#ffd700]/30 bg-[#ffd700]/10" title="Gold Spin - First 10 reviewers on trending albums">
-                  <span className="text-[#ffd700]">🥇</span>
-                  <span className="text-[#ffd700] font-bold">{user.goldSpinCount}</span>
-                  <span className="text-[#ffd700]/70">Gold</span>
+                <span className="flex items-center gap-1.5 px-2 py-1 border border-[#ffd700]/30 bg-[--accent-primary]/10" title="Gold Spin - First 10 reviewers on trending albums">
+                  <span className="text-[--accent-primary]">🥇</span>
+                  <span className="text-[--accent-primary] font-bold">{user.goldSpinCount}</span>
+                  <span className="text-[--accent-primary]/70">Gold</span>
                 </span>
               )}
               {(user.silverSpinCount || 0) > 0 && (
@@ -565,7 +565,7 @@ export default async function ProfilePage({ params }: Props) {
                     </div>
                     <Link
                       href="/quick-rate"
-                      className="px-3 py-1.5 bg-[#ffd700] text-black text-[10px] font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors"
+                      className="px-3 py-1.5 bg-[--accent-primary] text-black text-[10px] font-bold uppercase tracking-wider hover:bg-[--accent-hover] transition-colors"
                     >
                       Keep Building
                     </Link>

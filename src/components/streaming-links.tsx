@@ -137,8 +137,8 @@ export function StreamingLinks({ spotifyUrl }: StreamingLinksProps) {
   if (loading) {
     return (
       <div className="flex gap-2">
-        <div className="w-24 h-8 bg-[#222] animate-pulse" />
-        <div className="w-24 h-8 bg-[#222] animate-pulse" />
+        <div className="w-24 h-8 bg-[--surface] animate-pulse" />
+        <div className="w-24 h-8 bg-[--surface] animate-pulse" />
       </div>
     )
   }
@@ -156,17 +156,17 @@ export function StreamingLinks({ spotifyUrl }: StreamingLinksProps) {
           href={link.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 px-3 py-2.5 min-h-[44px] text-xs font-medium transition-all no-underline border border-[#333] hover:border-[#555] bg-[#111] hover:bg-[#1a1a1a]"
+          className="inline-flex items-center gap-1.5 px-3 py-2.5 min-h-[44px] text-xs font-medium transition-all no-underline border border-[--border] hover:border-[--border] bg-[--surface] hover:bg-[--surface-raised]"
           style={{ color: link.color }}
         >
           {link.icon}
-          <span className="text-white">{link.name}</span>
+          <span className="text-[--foreground]">{link.name}</span>
         </a>
       ))}
       {hasMore && !expanded && (
         <button
           onClick={() => setExpanded(true)}
-          className="px-3 py-2.5 min-h-[44px] text-xs text-[#888] border border-[#333] hover:border-[#555] hover:text-white transition-colors"
+          className="px-3 py-2.5 min-h-[44px] text-xs text-[--muted] border border-[--border] hover:border-[--border] hover:text-[--foreground] transition-colors"
         >
           +{links.length - 3} more
         </button>

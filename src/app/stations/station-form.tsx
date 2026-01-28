@@ -58,7 +58,7 @@ export function StationApplicationForm() {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="animate-fade-in" style={{ animationDelay: '0ms' }}>
         <label className="block text-sm mb-2 font-medium">
-          Station Name / Call Letters <span className="text-[#ffd700]">*</span>
+          Station Name / Call Letters <span className="text-[var(--accent-primary)]">*</span>
         </label>
         <input
           type="text"
@@ -67,7 +67,7 @@ export function StationApplicationForm() {
           placeholder="e.g., WRVU"
           required
           disabled={loading}
-          className="w-full px-4 py-3.5 text-base bg-[--background] border border-[--border] text-[--foreground] placeholder:text-[--muted]/50 focus:outline-none focus:border-[#ffd700] focus:bg-[#ffd700]/5 transition-all disabled:opacity-50"
+          className="w-full px-4 py-3.5 text-base bg-[--background] border border-[--border] text-[--foreground] placeholder:text-[--muted]/50 focus:outline-none focus:border-[var(--accent-primary)] focus:bg-[var(--accent-primary)]/5 transition-all disabled:opacity-50"
         />
       </div>
       <div className="animate-fade-in" style={{ animationDelay: '50ms' }}>
@@ -78,12 +78,12 @@ export function StationApplicationForm() {
           onChange={(e) => setUniversity(e.target.value)}
           placeholder="e.g., Vanderbilt University"
           disabled={loading}
-          className="w-full px-4 py-3.5 text-base bg-[--background] border border-[--border] text-[--foreground] placeholder:text-[--muted]/50 focus:outline-none focus:border-[#ffd700] focus:bg-[#ffd700]/5 transition-all disabled:opacity-50"
+          className="w-full px-4 py-3.5 text-base bg-[--background] border border-[--border] text-[--foreground] placeholder:text-[--muted]/50 focus:outline-none focus:border-[var(--accent-primary)] focus:bg-[var(--accent-primary)]/5 transition-all disabled:opacity-50"
         />
       </div>
       <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
         <label className="block text-sm mb-2 font-medium">
-          Your Email (Station Manager/MD) <span className="text-[#ffd700]">*</span>
+          Your Email (Station Manager/MD) <span className="text-[var(--accent-primary)]">*</span>
         </label>
         <input
           type="email"
@@ -92,7 +92,7 @@ export function StationApplicationForm() {
           placeholder="md@station.edu"
           required
           disabled={loading}
-          className="w-full px-4 py-3.5 text-base bg-[--background] border border-[--border] text-[--foreground] placeholder:text-[--muted]/50 focus:outline-none focus:border-[#ffd700] focus:bg-[#ffd700]/5 transition-all disabled:opacity-50"
+          className="w-full px-4 py-3.5 text-base bg-[--background] border border-[--border] text-[--foreground] placeholder:text-[--muted]/50 focus:outline-none focus:border-[var(--accent-primary)] focus:bg-[var(--accent-primary)]/5 transition-all disabled:opacity-50"
         />
       </div>
 
@@ -108,7 +108,7 @@ export function StationApplicationForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-4 bg-[#ffd700] text-black text-[11px] tracking-[0.15em] uppercase font-bold hover:bg-[#ffed4a] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 animate-fade-in"
+        className="w-full py-4 bg-[var(--accent-primary)] text-black text-[11px] tracking-[0.15em] uppercase font-bold hover:bg-[var(--accent-hover)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 animate-fade-in"
         style={{ animationDelay: '150ms' }}
       >
         {loading ? (

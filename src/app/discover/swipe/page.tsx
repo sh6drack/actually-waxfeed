@@ -197,7 +197,7 @@ export default function QuickRatePage() {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--background)' }}>
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-2 border-[--muted] border-t-[#ffd700] animate-spin" />
+          <div className="w-10 h-10 border-2 border-[--muted] border-t-[var(--accent-primary)] animate-spin" />
           <span className="text-xs tracking-[0.2em] uppercase text-[--muted]">Loading albums</span>
         </div>
       </div>
@@ -226,7 +226,7 @@ export default function QuickRatePage() {
             <span className="text-xs tracking-[0.15em] uppercase">Back</span>
           </Link>
           <div className="text-center">
-            <p className="text-[10px] tracking-[0.3em] uppercase text-[#ffd700]">Quick Rate</p>
+            <p className="text-[10px] tracking-[0.3em] uppercase text-[var(--accent-primary)]">Quick Rate</p>
             <p className="text-xs text-[--muted]">Train your taste profile</p>
           </div>
           <div className="text-right">
@@ -240,12 +240,12 @@ export default function QuickRatePage() {
       <main className="w-full px-6 lg:px-12 xl:px-20 py-8">
         {isFinished ? (
           <div className="text-center py-12">
-            <div className="w-20 h-20 mx-auto mb-6 flex items-center justify-center border-2 border-[#ffd700]">
+            <div className="w-20 h-20 mx-auto mb-6 flex items-center justify-center border-2 border-[var(--accent-primary)]">
               <span className="text-4xl">✓</span>
             </div>
             <h2 className="text-2xl font-bold mb-2">Session Complete</h2>
             <p className="text-[--muted] mb-2">You rated</p>
-            <p className="text-5xl font-bold text-[#ffd700] mb-2 tabular-nums">{ratedCount}</p>
+            <p className="text-5xl font-bold text-[var(--accent-primary)] mb-2 tabular-nums">{ratedCount}</p>
             <p className="text-[--muted] mb-1">albums</p>
             {skippedCount > 0 && (
               <p className="text-sm text-[--muted] mb-8">({skippedCount} skipped)</p>
@@ -257,7 +257,7 @@ export default function QuickRatePage() {
                   setSkippedCount(0)
                   fetchAlbums()
                 }}
-                className="px-6 py-3 bg-[#ffd700] text-black font-bold text-sm tracking-wide uppercase hover:bg-[#ffed4a] transition-colors"
+                className="px-6 py-3 bg-[var(--accent-primary)] text-black font-bold text-sm tracking-wide uppercase hover:bg-[var(--accent-hover)] transition-colors"
               >
                 Keep Going
               </button>
@@ -311,7 +311,7 @@ export default function QuickRatePage() {
               <div className="flex items-center justify-between mb-2">
                 <p className="text-[10px] text-[--muted] uppercase tracking-wider">
                   Describe this album{' '}
-                  <span className={selectedDescriptors.length >= MIN_DESCRIPTORS ? 'text-[#ffd700]' : 'text-[#ff6b6b]'}>
+                  <span className={selectedDescriptors.length >= MIN_DESCRIPTORS ? 'text-[var(--accent-primary)]' : 'text-[#ff6b6b]'}>
                     ({selectedDescriptors.length}/{MIN_DESCRIPTORS} required)
                   </span>
                 </p>
@@ -332,10 +332,10 @@ export default function QuickRatePage() {
                       disabled={submitting || atMax}
                       className={`text-[9px] px-2 py-1.5 min-h-[32px] uppercase tracking-wider transition-all ${
                         isSelected
-                          ? 'bg-[#ffd700] text-black border border-[#ffd700] font-bold'
+                          ? 'bg-[var(--accent-primary)] text-black border border-[var(--accent-primary)] font-bold'
                           : atMax
                             ? 'border border-[--border] text-[--muted]/40 cursor-not-allowed'
-                            : 'border border-[--border] text-[--muted] hover:border-[#ffd700] hover:text-[#ffd700]'
+                            : 'border border-[--border] text-[--muted] hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)]'
                       }`}
                     >
                       {descriptor.label}
@@ -366,7 +366,7 @@ export default function QuickRatePage() {
                   disabled={submitting || !canSubmit}
                   className={`flex-1 py-4 min-h-[48px] font-bold text-sm tracking-wide uppercase transition-colors disabled:opacity-50 ${
                     canSubmit
-                      ? 'bg-[#ffd700] text-black hover:bg-[#ffed4a]'
+                      ? 'bg-[var(--accent-primary)] text-black hover:bg-[var(--accent-hover)]'
                       : 'bg-[--border] text-[--muted] cursor-not-allowed'
                   }`}
                 >
@@ -388,7 +388,7 @@ export default function QuickRatePage() {
               </div>
               <div className="w-full h-1 bg-[--border] overflow-hidden">
                 <div
-                  className="h-full bg-[#ffd700] transition-all duration-300"
+                  className="h-full bg-[var(--accent-primary)] transition-all duration-300"
                   style={{ width: `${((currentIndex + 1) / albums.length) * 100}%` }}
                 />
               </div>

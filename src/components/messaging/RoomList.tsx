@@ -87,7 +87,7 @@ export function RoomList({ onSelectRoom }: RoomListProps) {
         <p className="text-[--muted] mb-4 text-sm">{error}</p>
         <button
           onClick={fetchRooms}
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#ffd700] border border-[#ffd700]/30 hover:bg-[#ffd700]/10 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--accent-primary)] border border-[var(--accent-primary)]/30 hover:bg-[var(--accent-primary)]/10 transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -112,7 +112,7 @@ export function RoomList({ onSelectRoom }: RoomListProps) {
         </p>
         <Link
           href="/discover"
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#ffd700] text-black font-semibold text-sm hover:bg-[#ffed4a] transition-colors group"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[var(--accent-primary)] text-black font-semibold text-sm hover:bg-[#ffed4a] transition-colors group"
         >
           <span>Discover albums</span>
           <svg className="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -135,7 +135,7 @@ export function RoomList({ onSelectRoom }: RoomListProps) {
               onClick={() => setSortBy(sort)}
               className={`px-3 py-1.5 text-xs font-medium transition-all ${
                 sortBy === sort
-                  ? 'bg-[#ffd700] text-black'
+                  ? 'bg-[var(--accent-primary)] text-black'
                   : 'bg-[--muted]/5 text-[--muted] hover:bg-[--muted]/10 border border-[--border]'
               }`}
             >
@@ -157,7 +157,7 @@ export function RoomList({ onSelectRoom }: RoomListProps) {
                 onSelectRoom(room.album.id)
               }
             }}
-            className="block p-5 transition-all duration-200 animate-fade-in group hover:bg-[--muted]/5 border-l-2 border-l-transparent hover:border-l-[#ffd700]/50"
+            className="block p-5 transition-all duration-200 animate-fade-in group hover:bg-[--muted]/5 border-l-2 border-l-transparent hover:border-l-[var(--accent-primary)]/50"
             style={{ animationDelay: `${index * 50}ms` }}
           >
             <div className="flex items-start gap-4">
@@ -189,7 +189,7 @@ export function RoomList({ onSelectRoom }: RoomListProps) {
 
               {/* Content */}
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold truncate group-hover:text-[#ffd700] transition-colors">
+                <h3 className="font-semibold truncate group-hover:text-[var(--accent-primary)] transition-colors">
                   {room.album.title}
                 </h3>
                 <p className="text-sm text-[--muted] truncate">{room.album.artistName}</p>

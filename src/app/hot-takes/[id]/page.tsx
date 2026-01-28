@@ -7,7 +7,7 @@ import Link from "next/link"
 const STANCE_LABELS: Record<string, { label: string; color: string }> = {
   OVERRATED: { label: "OVERRATED", color: "#ff3b3b" },
   UNDERRATED: { label: "UNDERRATED", color: "#3bff6f" },
-  MASTERPIECE: { label: "MASTERPIECE", color: "#ffd700" },
+  MASTERPIECE: { label: "MASTERPIECE", color: "var(--accent-primary)" },
   TRASH: { label: "TRASH", color: "#ff3b3b" },
   AHEAD_OF_TIME: { label: "AHEAD OF ITS TIME", color: "#3b9fff" },
   DATED: { label: "DATED", color: "#888888" },
@@ -129,9 +129,9 @@ export default function HotTakePage() {
     return (
       <div className="w-full px-4 lg:px-12 xl:px-20 py-12">
         <div className="animate-pulse">
-          <div className="h-8 bg-[#222] w-32 mb-4" />
-          <div className="h-12 bg-[#222] w-3/4 mb-8" />
-          <div className="aspect-video bg-[#222]" />
+          <div className="h-8 bg-[--surface] w-32 mb-4" />
+          <div className="h-12 bg-[--surface] w-3/4 mb-8" />
+          <div className="aspect-video bg-[--surface]" />
         </div>
       </div>
     )
@@ -141,10 +141,10 @@ export default function HotTakePage() {
     return (
       <div className="w-full px-4 lg:px-12 xl:px-20 py-12 text-center">
         <h1 className="text-4xl font-bold mb-4">404</h1>
-        <p className="text-[#666] mb-8">{error || "Hot take not found"}</p>
+        <p className="text-[--muted] mb-8">{error || "Hot take not found"}</p>
         <Link
           href="/hot-takes"
-          className="inline-block bg-white text-black px-6 py-3 font-bold text-sm tracking-wide hover:bg-[#f0f0f0] transition-colors"
+          className="inline-block bg-[--foreground] text-[--background] px-6 py-3 font-bold text-sm tracking-wide hover:bg-[--foreground]/90 transition-colors"
         >
           BACK TO HOT TAKES
         </Link>
@@ -164,7 +164,7 @@ export default function HotTakePage() {
       {/* Back link */}
       <Link
         href="/hot-takes"
-        className="inline-block text-[10px] tracking-[0.2em] uppercase text-[#666] hover:text-white mb-8"
+        className="inline-block text-[10px] tracking-[0.2em] uppercase text-[--muted] hover:text-[--foreground] mb-8"
       >
         ← Back to Hot Takes
       </Link>
@@ -172,7 +172,7 @@ export default function HotTakePage() {
       {/* Main content */}
       <article className="border border-[--border] bg-[--background]">
         {/* Header bar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#222]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[--border]">
           <div className="flex items-center gap-4">
             <span
               className="text-[10px] tracking-[0.2em] font-bold px-3 py-1"
@@ -181,7 +181,7 @@ export default function HotTakePage() {
               {stanceConfig.label}
             </span>
           </div>
-          <span className="text-[10px] tracking-[0.1em] uppercase text-[#444]">
+          <span className="text-[10px] tracking-[0.1em] uppercase text-[--muted]/70">
             {new Date(hotTake.createdAt).toLocaleDateString("en-US", {
               month: "long",
               day: "numeric",
@@ -195,7 +195,7 @@ export default function HotTakePage() {
           {/* Album art */}
           <div className="lg:col-span-5">
             <Link href={`/album/${hotTake.albumSpotifyId}`} className="block">
-              <div className="relative aspect-square bg-[#111] overflow-hidden group">
+              <div className="relative aspect-square bg-[--surface] overflow-hidden group">
                 {(hotTake.albumCoverUrlLarge || hotTake.albumCoverUrl) && (
                   <img
                     src={hotTake.albumCoverUrlLarge || hotTake.albumCoverUrl || ""}
@@ -216,15 +216,15 @@ export default function HotTakePage() {
           <div className="lg:col-span-7 p-6 lg:p-8 flex flex-col">
             {/* The hot take */}
             <div className="mb-8">
-              <p className="text-[10px] tracking-[0.2em] uppercase text-[#666] mb-3">
+              <p className="text-[10px] tracking-[0.2em] uppercase text-[--muted] mb-3">
                 The Take
               </p>
               <blockquote className="text-2xl lg:text-3xl font-bold leading-tight mb-4">
                 {hotTake.content}
               </blockquote>
-              <p className="text-sm text-[#666]">
+              <p className="text-sm text-[--muted]">
                 by{" "}
-                <Link href={`/u/${hotTake.authorUsername}`} className="text-white hover:underline">
+                <Link href={`/u/${hotTake.authorUsername}`} className="text-[--foreground] hover:underline">
                   @{hotTake.authorUsername}
                 </Link>
               </p>
@@ -233,11 +233,11 @@ export default function HotTakePage() {
             {/* Temperature gauge */}
             {total > 0 && (
               <div className="mb-8">
-                <p className="text-[10px] tracking-[0.2em] uppercase text-[#666] mb-3">
+                <p className="text-[10px] tracking-[0.2em] uppercase text-[--muted] mb-3">
                   Community Verdict
                 </p>
                 <div className="flex items-center gap-4">
-                  <div className="flex-1 h-2 bg-[#222] relative overflow-hidden">
+                  <div className="flex-1 h-2 bg-[--surface] relative overflow-hidden">
                     <div
                       className="absolute left-0 top-0 h-full bg-white transition-all duration-300"
                       style={{ width: `${agreeRatio * 100}%` }}
@@ -248,7 +248,7 @@ export default function HotTakePage() {
                     />
                   </div>
                 </div>
-                <div className="flex justify-between mt-2 text-[10px] tracking-[0.1em] uppercase text-[#666]">
+                <div className="flex justify-between mt-2 text-[10px] tracking-[0.1em] uppercase text-[--muted]">
                   <span>{Math.round(agreeRatio * 100)}% agree</span>
                   <span>{Math.round((1 - agreeRatio) * 100)}% disagree</span>
                 </div>
@@ -262,8 +262,8 @@ export default function HotTakePage() {
                 disabled={isVoting}
                 className={`py-5 font-bold text-sm tracking-wide transition-all border ${
                   localVote === "agree"
-                    ? "bg-white text-black border-white"
-                    : "bg-transparent text-white border-[#333] hover:border-white"
+                    ? "bg-[--foreground] text-[--background] border-[--foreground]"
+                    : "bg-transparent text-[--foreground] border-[--border] hover:border-[--foreground]"
                 }`}
               >
                 <span className="block text-3xl mb-1">{localAgree}</span>
@@ -277,7 +277,7 @@ export default function HotTakePage() {
                 className={`py-5 font-bold text-sm tracking-wide transition-all border ${
                   localVote === "disagree"
                     ? "bg-[#ff3b3b] text-white border-[#ff3b3b]"
-                    : "bg-transparent text-white border-[#333] hover:border-[#ff3b3b]"
+                    : "bg-transparent text-[--foreground] border-[--border] hover:border-[#ff3b3b]"
                 }`}
               >
                 <span className="block text-3xl mb-1">{localDisagree}</span>
@@ -291,8 +291,8 @@ export default function HotTakePage() {
 
         {/* Arguments section */}
         {(hotTake.agreeArguments.length > 0 || hotTake.disagreeArguments.length > 0) && (
-          <div className="border-t border-[#222] p-6 lg:p-8">
-            <h3 className="text-[10px] tracking-[0.3em] uppercase text-[#666] mb-6">
+          <div className="border-t border-[--border] p-6 lg:p-8">
+            <h3 className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-6">
               The Debate
             </h3>
 
@@ -300,20 +300,20 @@ export default function HotTakePage() {
               {/* Agree side */}
               <div>
                 <h4 className="text-sm font-bold tracking-wide mb-4 flex items-center gap-2">
-                  <span className="w-3 h-3 bg-white" />
+                  <span className="w-3 h-3 bg-[--foreground]" />
                   AGREE ({hotTake.agreeArguments.length})
                 </h4>
                 <div className="space-y-4">
                   {hotTake.agreeArguments.map((arg) => (
-                    <div key={arg.id} className="pl-4 border-l-2 border-white">
-                      <p className="text-sm text-[#ccc]">{arg.content}</p>
-                      <p className="text-[10px] tracking-[0.1em] uppercase text-[#666] mt-2">
+                    <div key={arg.id} className="pl-4 border-l-2 border-[--foreground]">
+                      <p className="text-sm text-[--foreground]/80">{arg.content}</p>
+                      <p className="text-[10px] tracking-[0.1em] uppercase text-[--muted] mt-2">
                         @{arg.authorUsername} · {arg.likes} likes
                       </p>
                     </div>
                   ))}
                   {hotTake.agreeArguments.length === 0 && (
-                    <p className="text-sm text-[#444]">No arguments yet</p>
+                    <p className="text-sm text-[--muted]/70">No arguments yet</p>
                   )}
                 </div>
               </div>
@@ -327,14 +327,14 @@ export default function HotTakePage() {
                 <div className="space-y-4">
                   {hotTake.disagreeArguments.map((arg) => (
                     <div key={arg.id} className="pl-4 border-l-2 border-[#ff3b3b]">
-                      <p className="text-sm text-[#ccc]">{arg.content}</p>
-                      <p className="text-[10px] tracking-[0.1em] uppercase text-[#666] mt-2">
+                      <p className="text-sm text-[--foreground]/80">{arg.content}</p>
+                      <p className="text-[10px] tracking-[0.1em] uppercase text-[--muted] mt-2">
                         @{arg.authorUsername} · {arg.likes} likes
                       </p>
                     </div>
                   ))}
                   {hotTake.disagreeArguments.length === 0 && (
-                    <p className="text-sm text-[#444]">No arguments yet</p>
+                    <p className="text-sm text-[--muted]/70">No arguments yet</p>
                   )}
                 </div>
               </div>
@@ -347,7 +347,7 @@ export default function HotTakePage() {
       <div className="mt-12 text-center">
         <Link
           href="/hot-takes"
-          className="text-[10px] tracking-[0.2em] uppercase text-[#666] hover:text-white transition-colors"
+          className="text-[10px] tracking-[0.2em] uppercase text-[--muted] hover:text-[--foreground] transition-colors"
         >
           View More Hot Takes →
         </Link>

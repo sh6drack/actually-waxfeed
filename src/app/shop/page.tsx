@@ -81,7 +81,7 @@ export default function ShopPage() {
         <div className="w-full px-6 lg:px-12 xl:px-20 py-12 lg:py-16">
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
             <div>
-              <p className="text-[10px] tracking-[0.3em] uppercase text-[#ffd700] mb-3">
+              <p className="text-[10px] tracking-[0.3em] uppercase text-[var(--accent-primary)] mb-3">
                 Wax Economy
               </p>
               <h1 className="text-4xl lg:text-5xl font-bold tracking-[-0.02em] mb-4">
@@ -110,7 +110,7 @@ export default function ShopPage() {
           <div className="grid md:grid-cols-3 gap-8">
             <div>
               <div className="w-8 h-8 border border-[--border] flex items-center justify-center mb-3">
-                <span className="text-[#ffd700]">💰</span>
+                <span className="text-[var(--accent-primary)]">💰</span>
               </div>
               <p className="font-bold mb-1">Tip Great Reviews</p>
               <p className="text-sm text-[--muted]">
@@ -119,7 +119,7 @@ export default function ShopPage() {
             </div>
             <div>
               <div className="w-8 h-8 border border-[--border] flex items-center justify-center mb-3">
-                <span className="text-[#ffd700]">📈</span>
+                <span className="text-[var(--accent-primary)]">📈</span>
               </div>
               <p className="font-bold mb-1">Boost Visibility</p>
               <p className="text-sm text-[--muted]">
@@ -128,7 +128,7 @@ export default function ShopPage() {
             </div>
             <div>
               <div className="w-8 h-8 border border-[--border] flex items-center justify-center mb-3">
-                <span className="text-[#ffd700]">🏆</span>
+                <span className="text-[var(--accent-primary)]">🏆</span>
               </div>
               <p className="font-bold mb-1">Build Reputation</p>
               <p className="text-sm text-[--muted]">
@@ -158,14 +158,14 @@ export default function ShopPage() {
               key={pax.id} 
               className={`p-6 border relative ${
                 pax.best 
-                  ? 'border-[#ffd700]/50' 
+                  ? 'border-[var(--accent-primary)]/50' 
                   : pax.popular 
                     ? 'border-white/50' 
                     : 'border-[--border]'
               }`}
             >
               {pax.best && (
-                <div className="absolute -top-3 left-4 px-2 py-0.5 bg-[#ffd700] text-black text-[9px] tracking-wider uppercase font-bold">
+                <div className="absolute -top-3 left-4 px-2 py-0.5 bg-[var(--accent-primary)] text-black text-[9px] tracking-wider uppercase font-bold">
                   Best Value
                 </div>
               )}
@@ -182,7 +182,7 @@ export default function ShopPage() {
                 <p className="text-sm text-[--muted]">Wax</p>
                 {pax.bonusPercent > 0 && (
                   <span className={`text-[10px] px-1.5 py-0.5 ${
-                    pax.best ? 'bg-[#ffd700]/20 text-[#ffd700]' : 'bg-green-500/20 text-green-500'
+                    pax.best ? 'bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]' : 'bg-green-500/20 text-green-500'
                   }`}>
                     +{pax.bonusPercent}% bonus
                   </span>
@@ -194,7 +194,7 @@ export default function ShopPage() {
                 disabled={loading === pax.id}
                 className={`w-full py-3 text-[11px] tracking-[0.15em] uppercase font-medium transition disabled:opacity-50 ${
                   pax.best
-                    ? 'bg-[#ffd700] text-black hover:bg-[#ffed4a]'
+                    ? 'bg-[var(--accent-primary)] text-black hover:bg-[var(--accent-hover)]'
                     : 'bg-white text-black hover:bg-[#e5e5e5]'
                 }`}
               >

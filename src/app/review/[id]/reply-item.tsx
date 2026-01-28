@@ -57,7 +57,7 @@ export function ReplyItem({ reply, currentUserId }: ReplyItemProps) {
             <img
               src={reply.user.image}
               alt={reply.user.username || ""}
-              className="w-8 h-8 object-cover border border-[#333]"
+              className="w-8 h-8 object-cover border border-[--border]"
             />
           ) : (
             <DefaultAvatar size="sm" />
@@ -74,12 +74,12 @@ export function ReplyItem({ reply, currentUserId }: ReplyItemProps) {
             {reply.user.isVerified && (
               <VerifiedIcon size={12} className="text-blue-400" />
             )}
-            <span className="text-[#666] text-xs">
+            <span className="text-[--muted] text-xs">
               {formatDistanceToNow(new Date(reply.createdAt), { addSuffix: true })}
             </span>
             {isOwner && (
               <>
-                <span className="text-[#666]">·</span>
+                <span className="text-[--muted]">·</span>
                 {showConfirm ? (
                   <span className="flex items-center gap-2">
                     <button
@@ -91,7 +91,7 @@ export function ReplyItem({ reply, currentUserId }: ReplyItemProps) {
                     </button>
                     <button
                       onClick={() => setShowConfirm(false)}
-                      className="text-xs text-[#666] hover:underline"
+                      className="text-xs text-[--muted] hover:underline"
                     >
                       Cancel
                     </button>
@@ -99,7 +99,7 @@ export function ReplyItem({ reply, currentUserId }: ReplyItemProps) {
                 ) : (
                   <button
                     onClick={() => setShowConfirm(true)}
-                    className="text-xs text-[#666] hover:text-red-500 transition-colors"
+                    className="text-xs text-[--muted] hover:text-red-500 transition-colors"
                   >
                     Delete
                   </button>

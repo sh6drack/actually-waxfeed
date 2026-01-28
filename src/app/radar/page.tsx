@@ -88,8 +88,8 @@ export default function RadarPage() {
       <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
         <section className="border-b border-[--border]">
           <div className="max-w-4xl mx-auto px-6 py-16 text-center">
-            <div className="w-16 h-16 border-2 border-[#ffd700] flex items-center justify-center mx-auto mb-6">
-              <svg className="w-8 h-8 text-[#ffd700]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <div className="w-16 h-16 border-2 border-[var(--accent-primary)] flex items-center justify-center mx-auto mb-6">
+              <svg className="w-8 h-8 text-[var(--accent-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
@@ -108,7 +108,7 @@ export default function RadarPage() {
               </p>
               <div className="flex items-center justify-center gap-4 text-sm">
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-[#ffd700]">3x</p>
+                  <p className="text-2xl font-bold text-[var(--accent-primary)]">3x</p>
                   <p className="text-xs text-[--muted]">More badges</p>
                 </div>
                 <div className="h-8 w-px bg-[--border]" />
@@ -151,8 +151,8 @@ export default function RadarPage() {
       <section style={{ borderBottom: '1px solid var(--border)' }}>
         <div className="w-full px-6 lg:px-12 xl:px-20 py-12">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 border border-[#ffd700] flex items-center justify-center">
-              <svg className="w-5 h-5 text-[#ffd700]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <div className="w-10 h-10 border border-[var(--accent-primary)] flex items-center justify-center">
+              <svg className="w-5 h-5 text-[var(--accent-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
@@ -192,7 +192,7 @@ export default function RadarPage() {
           {/* High Priority */}
           {highAlbums.length > 0 && (
             <div className="px-6 py-8 border-b border-[--border]">
-              <p className="text-[10px] tracking-[0.3em] uppercase text-[#ffd700] mb-6">
+              <p className="text-[10px] tracking-[0.3em] uppercase text-[var(--accent-primary)] mb-6">
                 Hot
               </p>
               <div className="space-y-4">
@@ -298,7 +298,7 @@ export default function RadarPage() {
 }
 
 function AlbumCard({ album }: { album: RadarAlbum }) {
-  const badgeColor = album.potentialBadge === 'GOLD' ? 'text-[#ffd700] border-[#ffd700]'
+  const badgeColor = album.potentialBadge === 'GOLD' ? 'text-[var(--accent-primary)] border-[var(--accent-primary)]'
     : album.potentialBadge === 'SILVER' ? 'text-gray-400 border-gray-400'
     : 'text-amber-700 border-amber-700'
 
@@ -347,7 +347,7 @@ function AlbumCard({ album }: { album: RadarAlbum }) {
             <div 
               className={`h-full transition-all ${
                 album.urgency === 'critical' ? 'bg-red-500' :
-                album.urgency === 'high' ? 'bg-[#ffd700]' :
+                album.urgency === 'high' ? 'bg-[var(--accent-primary)]' :
                 'bg-white/50'
               }`}
               style={{ width: `${album.progress}%` }}

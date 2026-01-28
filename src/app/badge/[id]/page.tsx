@@ -100,7 +100,7 @@ export default async function BadgePage({ params }: BadgePageProps) {
         <div className="w-full px-6 lg:px-12 xl:px-20 py-4">
           <Link
             href="/wallet"
-            className="inline-flex items-center gap-2 text-sm text-[--muted] hover:text-[#ffd700] transition-colors group"
+            className="inline-flex items-center gap-2 text-sm text-[--muted] hover:text-[var(--accent-primary)] transition-colors group"
           >
             <svg className="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -157,7 +157,7 @@ export default async function BadgePage({ params }: BadgePageProps) {
               </div>
             )}
             <div className="flex-1">
-              <h2 className="text-xl font-bold group-hover:text-[#ffd700] transition-colors line-clamp-1">
+              <h2 className="text-xl font-bold group-hover:text-[var(--accent-primary)] transition-colors line-clamp-1">
                 {badge.album.title}
               </h2>
               <p className="text-[--muted] mb-2">{badge.album.artistName}</p>
@@ -217,7 +217,7 @@ export default async function BadgePage({ params }: BadgePageProps) {
               </div>
             )}
             <div>
-              <p className="font-semibold group-hover:text-[#ffd700] transition-colors">
+              <p className="font-semibold group-hover:text-[var(--accent-primary)] transition-colors">
                 @{badge.user.username || 'user'}
               </p>
               <p className="text-sm text-[--muted]">

@@ -86,7 +86,7 @@ export function FriendRequestActions({ username, type }: Props) {
         <button
           onClick={handleDecline}
           disabled={loading}
-          className="px-3 py-1.5 text-sm font-bold border border-[#333] text-[#888] hover:border-red-500 hover:text-red-500 transition-colors disabled:opacity-50"
+          className="px-3 py-1.5 text-sm font-bold border border-[--border] text-[--muted] hover:border-red-500 hover:text-red-500 transition-colors disabled:opacity-50"
         >
           Decline
         </button>
@@ -99,7 +99,7 @@ export function FriendRequestActions({ username, type }: Props) {
     <button
       onClick={handleCancel}
       disabled={loading}
-      className="px-3 py-1.5 text-sm font-bold border border-[#333] text-[#888] hover:border-red-500 hover:text-red-500 transition-colors disabled:opacity-50"
+      className="px-3 py-1.5 text-sm font-bold border border-[--border] text-[--muted] hover:border-red-500 hover:text-red-500 transition-colors disabled:opacity-50"
     >
       {loading ? "..." : "Cancel"}
     </button>

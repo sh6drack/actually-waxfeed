@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { SessionProvider } from "@/components/session-provider";
 import { ThemeProvider } from "@/components/theme-provider";
+import { CustomizationProvider } from "@/components/customization-provider";
 import { Header } from "@/components/header";
 import { CustomCursor } from "@/components/custom-cursor";
 import { PolaritySystem } from "@/components/polarity-system";
@@ -34,17 +35,37 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
+      <head>
+        {/* Prevent flash of wrong theme by setting class before paint */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('waxfeed-theme');
+                  if (theme === 'light') {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.classList.add('light');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className="antialiased min-h-screen transition-colors duration-200" suppressHydrationWarning>
         <SessionProvider>
           <ThemeProvider>
-            <CustomCursor />
-            <Header />
-            <FirstTimeWelcome />
-            <main className="pt-16 pb-12">
-              {children}
-            </main>
-            <PolaritySystem />
-            <Analytics />
+            <CustomizationProvider>
+              <CustomCursor />
+              <Header />
+              <FirstTimeWelcome />
+              <main className="pt-16 pb-12">
+                {children}
+              </main>
+              <PolaritySystem />
+              <Analytics />
+            </CustomizationProvider>
           </ThemeProvider>
         </SessionProvider>
       </body>

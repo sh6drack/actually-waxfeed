@@ -20,7 +20,7 @@ export default function RoomsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[--background]">
         <div className="flex flex-col items-center gap-3 animate-fade-in">
-          <div className="w-8 h-8 border-2 border-[--muted] border-t-[#ffd700] animate-spin" />
+          <div className="w-8 h-8 border-2 border-[--muted] border-t-[var(--accent-primary)] animate-spin" />
           <span className="text-xs tracking-[0.2em] uppercase text-[--muted]">Loading rooms</span>
         </div>
       </div>
@@ -37,7 +37,7 @@ export default function RoomsPage() {
         {/* Header */}
         <div className="px-6 pt-10 pb-8 border-b border-[--border] animate-fade-in">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-2 h-2 bg-[#ffd700]" />
+            <div className="w-2 h-2 bg-[var(--accent-primary)]" />
             <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted]">Album Chat Rooms</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">Rooms</h1>
@@ -47,10 +47,10 @@ export default function RoomsPage() {
         </div>
 
         {/* Info banner */}
-        <div className="p-5 bg-gradient-to-r from-[#ffd700]/5 to-transparent border-b border-[--border] animate-fade-in" style={{ animationDelay: '100ms' }}>
+        <div className="p-5 bg-gradient-to-r from-[var(--accent-primary)]/5 to-transparent border-b border-[--border] animate-fade-in" style={{ animationDelay: '100ms' }}>
           <div className="flex items-start gap-4">
-            <div className="w-10 h-10 flex items-center justify-center border border-[#ffd700]/30 bg-[#ffd700]/10 flex-shrink-0">
-              <svg className="w-5 h-5 text-[#ffd700]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-10 h-10 flex items-center justify-center border border-[var(--accent-primary)]/30 bg-[var(--accent-primary)]/10 flex-shrink-0">
+              <svg className="w-5 h-5 text-[var(--accent-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
               </svg>
             </div>
@@ -62,7 +62,7 @@ export default function RoomsPage() {
               </p>
               <Link
                 href="/discover"
-                className="inline-flex items-center gap-2 text-sm text-[#ffd700] hover:underline mt-3 group"
+                className="inline-flex items-center gap-2 text-sm text-[var(--accent-primary)] hover:underline mt-3 group"
               >
                 <span>Discover albums to review</span>
                 <svg className="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">

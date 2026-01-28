@@ -186,8 +186,8 @@ export function TrackPlayer({ tracks, albumId, albumTitle, artistName, coverArtU
               onClick={() => setShowRatings(!showRatings)}
               className={`text-[10px] tracking-[0.1em] uppercase px-2.5 py-1.5 border transition-all ${
                 showRatings
-                  ? "border-[#ffd700] text-[#ffd700] bg-[#ffd700]/5"
-                  : "border-[--border] text-[--muted] hover:border-[#ffd700]/50 hover:text-[#ffd700]"
+                  ? "border-[var(--accent-primary)] text-[var(--accent-primary)] bg-[var(--accent-primary)]/5"
+                  : "border-[--border] text-[--muted] hover:border-[var(--accent-primary)]/50 hover:text-[var(--accent-primary)]"
               }`}
             >
               {showRatings ? "Hide Ratings" : "Rate Tracks"}
@@ -201,7 +201,7 @@ export function TrackPlayer({ tracks, albumId, albumTitle, artistName, coverArtU
             <div className="flex items-center gap-2 cursor-help">
               <div className="w-16 h-1 bg-[--border] overflow-hidden">
                 <div
-                  className={`h-full transition-all ${progressPercent === 100 ? "bg-green-500" : "bg-[#ffd700]"}`}
+                  className={`h-full transition-all ${progressPercent === 100 ? "bg-green-500" : "bg-[var(--accent-primary)]"}`}
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
@@ -229,9 +229,9 @@ export function TrackPlayer({ tracks, albumId, albumTitle, artistName, coverArtU
           return (
             <div
               key={track.id}
-              className={`flex items-center gap-2 px-3 py-2.5 border-b border-[--border]/30 last:border-0 group transition-all animate-fade-in ${
-                hasPreview ? "cursor-pointer hover:bg-[--muted]/5" : "opacity-50"
-              } ${isActive ? "bg-[#ffd700]/5 border-l-2 border-l-[#ffd700]" : ""}`}
+              className={`track-player-row flex items-center gap-2 px-3 py-2.5 border-b border-[--border]/30 last:border-0 group transition-all animate-fade-in border-l-2 border-l-transparent ${
+                hasPreview ? "cursor-pointer" : "opacity-50"
+              } ${isActive ? "bg-[var(--accent-primary)]/5 !border-l-[var(--accent-primary)]" : ""}`}
               style={{ animationDelay: `${index * 20}ms` }}
             >
               {/* Track Number / Play Button */}
@@ -242,12 +242,12 @@ export function TrackPlayer({ tracks, albumId, albumTitle, artistName, coverArtU
                 {hasPreview ? (
                   isActive && isPlaying ? (
                     <div className="flex items-center justify-center gap-0.5">
-                      <div className="w-0.5 h-3 bg-[#ffd700] animate-pulse" />
-                      <div className="w-0.5 h-4 bg-[#ffd700] animate-pulse" style={{ animationDelay: '100ms' }} />
-                      <div className="w-0.5 h-2 bg-[#ffd700] animate-pulse" style={{ animationDelay: '200ms' }} />
+                      <div className="w-0.5 h-3 bg-[var(--accent-primary)] animate-pulse" />
+                      <div className="w-0.5 h-4 bg-[var(--accent-primary)] animate-pulse" style={{ animationDelay: '100ms' }} />
+                      <div className="w-0.5 h-2 bg-[var(--accent-primary)] animate-pulse" style={{ animationDelay: '200ms' }} />
                     </div>
                   ) : (
-                    <svg className={`w-4 h-4 mx-auto transition-colors ${isActive ? 'text-[#ffd700]' : 'text-[--muted] group-hover:text-[--foreground]'}`} fill="currentColor" viewBox="0 0 24 24">
+                    <svg className={`w-4 h-4 mx-auto transition-colors ${isActive ? 'text-[var(--accent-primary)]' : 'text-[--muted] group-hover:text-[--foreground]'}`} fill="currentColor" viewBox="0 0 24 24">
                       <path d="M8 5v14l11-7z" />
                     </svg>
                   )
@@ -258,13 +258,13 @@ export function TrackPlayer({ tracks, albumId, albumTitle, artistName, coverArtU
 
               {/* Track Info */}
               <div className="flex-1 min-w-0" onClick={() => hasPreview && playTrack(track)}>
-                <p className={`text-sm truncate transition-colors ${isActive ? "text-[#ffd700] font-medium" : "text-[--foreground]/80 group-hover:text-[--foreground]"}`}>
+                <p className={`text-sm truncate transition-colors ${isActive ? "text-[var(--accent-primary)] font-medium" : "text-[--foreground]/80 group-hover:text-[--foreground]"}`}>
                   {track.name}
                 </p>
                 {isActive && (
                   <div className="mt-1.5 h-0.5 bg-[--border] overflow-hidden">
                     <div
-                      className="h-full bg-[#ffd700] transition-all duration-100"
+                      className="h-full bg-[var(--accent-primary)] transition-all duration-100"
                       style={{ width: `${progress}%` }}
                     />
                   </div>
@@ -283,7 +283,7 @@ export function TrackPlayer({ tracks, albumId, albumTitle, artistName, coverArtU
 
               {/* User Rating Badge (when ratings hidden but user has rated) */}
               {!showRatings && userRating !== null && (
-                <span className="text-xs font-bold text-[#ffd700] tabular-nums w-5 text-center">
+                <span className="text-xs font-bold text-[var(--accent-primary)] tabular-nums w-5 text-center">
                   {userRating}
                 </span>
               )}
@@ -296,7 +296,7 @@ export function TrackPlayer({ tracks, albumId, albumTitle, artistName, coverArtU
               {/* Lyrics Link */}
               <Link
                 href={`/lyrics/${track.id}`}
-                className="text-[--muted] hover:text-[#ffd700] p-1 opacity-0 group-hover:opacity-100 transition-all"
+                className="text-[--muted] hover:text-[var(--accent-primary)] p-1 opacity-0 group-hover:opacity-100 transition-all"
                 onClick={(e) => e.stopPropagation()}
                 title="View lyrics"
               >
@@ -327,7 +327,7 @@ export function TrackPlayer({ tracks, albumId, albumTitle, artistName, coverArtU
 
       {/* Now Playing Bar */}
       {currentTrack && (
-        <div className="flex items-center gap-3 p-3 border-t border-[--border] bg-gradient-to-r from-[#ffd700]/10 to-transparent animate-fade-in">
+        <div className="flex items-center gap-3 p-3 border-t border-[--border] bg-gradient-to-r from-[var(--accent-primary)]/10 to-transparent animate-fade-in">
           {coverArtUrl && (
             <img src={coverArtUrl} alt="" className="w-10 h-10 object-cover" />
           )}
@@ -337,7 +337,7 @@ export function TrackPlayer({ tracks, albumId, albumTitle, artistName, coverArtU
           </div>
           <button
             onClick={() => playTrack(currentTrack)}
-            className="w-10 h-10 flex items-center justify-center bg-[#ffd700] hover:bg-[#ffed4a] transition-colors"
+            className="w-10 h-10 flex items-center justify-center bg-[var(--accent-primary)] hover:bg-[var(--accent-hover)] transition-colors"
           >
             {isPlaying ? (
               <svg className="w-4 h-4 text-black" fill="currentColor" viewBox="0 0 24 24">
@@ -388,8 +388,8 @@ function TrackRatingWidget({
           onMouseEnter={() => setHoverRating(rating)}
           className={`w-7 h-7 sm:w-5 sm:h-5 text-[10px] sm:text-[8px] font-bold transition-all disabled:opacity-50 ${
             displayRating !== null && rating <= displayRating
-              ? "bg-[#ffd700] text-black"
-              : "bg-[--border] text-[--muted] hover:bg-[#ffd700]/30"
+              ? "bg-[var(--accent-primary)] text-black"
+              : "bg-[--border] text-[--muted] hover:bg-[var(--accent-primary)]/30"
           }`}
           title={`Rate ${rating}/10`}
         >
@@ -401,7 +401,7 @@ function TrackRatingWidget({
         </button>
       ))}
       {displayRating !== null && (
-        <span className="ml-1 text-[10px] font-bold tabular-nums text-[#ffd700]">
+        <span className="ml-1 text-[10px] font-bold tabular-nums text-[var(--accent-primary)]">
           {displayRating}
         </span>
       )}

@@ -37,11 +37,11 @@ function ListCard({ list }: { list: ListData }) {
   return (
     <Link
       href={`/list/${list.id}`}
-      className="block border border-[#222] p-4 hover:border-[#444] transition-colors no-underline"
+      className="block border border-[--border] p-4 hover:border-[--foreground]/30 transition-colors no-underline"
     >
       <div className="flex gap-1 mb-4">
         {list.items.slice(0, 5).map((item, i) => (
-          <div key={i} className="w-12 h-12 bg-[#222]">
+          <div key={i} className="w-12 h-12 bg-[--surface]">
             {item.album.coverArtUrlMedium || item.album.coverArtUrl ? (
               <img
                 src={item.album.coverArtUrlMedium || item.album.coverArtUrl || ""}
@@ -52,13 +52,13 @@ function ListCard({ list }: { list: ListData }) {
           </div>
         ))}
         {list._count.items > 5 && (
-          <div className="w-12 h-12 bg-[#222] flex items-center justify-center text-xs text-[#888]">
+          <div className="w-12 h-12 bg-[--surface] flex items-center justify-center text-xs text-[--muted]">
             +{list._count.items - 5}
           </div>
         )}
       </div>
       <h3 className="font-bold truncate mb-1">{list.title}</h3>
-      <div className="flex items-center gap-2 text-xs text-[#888]">
+      <div className="flex items-center gap-2 text-xs text-[--muted]">
         <span>@{list.user.username}</span>
         {list.user.isVerified && <VerifiedIcon size={12} className="text-blue-400" />}
         <span>•</span>
@@ -74,11 +74,11 @@ function ListRow({ list }: { list: ListData }) {
   return (
     <Link
       href={`/list/${list.id}`}
-      className="flex items-center gap-4 border border-[#222] p-4 hover:border-[#444] transition-colors no-underline"
+      className="flex items-center gap-4 border border-[--border] p-4 hover:border-[--foreground]/30 transition-colors no-underline"
     >
       <div className="flex gap-0.5 shrink-0">
         {list.items.slice(0, 4).map((item, i) => (
-          <div key={i} className="w-10 h-10 bg-[#222]">
+          <div key={i} className="w-10 h-10 bg-[--surface]">
             {item.album.coverArtUrlMedium || item.album.coverArtUrl ? (
               <img
                 src={item.album.coverArtUrlMedium || item.album.coverArtUrl || ""}
@@ -91,12 +91,12 @@ function ListRow({ list }: { list: ListData }) {
       </div>
       <div className="flex-1 min-w-0">
         <h3 className="font-bold truncate">{list.title}</h3>
-        <div className="flex items-center gap-2 text-xs text-[#888]">
+        <div className="flex items-center gap-2 text-xs text-[--muted]">
           <span>@{list.user.username}</span>
           {list.user.isVerified && <VerifiedIcon size={12} className="text-blue-400" />}
         </div>
       </div>
-      <div className="text-right text-xs text-[#888]">
+      <div className="text-right text-xs text-[--muted]">
         <div>{list._count.items} albums</div>
         <div className="flex items-center justify-end gap-1"><HeartIcon size={12} /> {list._count.likes}</div>
       </div>
@@ -114,7 +114,7 @@ function ListsSection({ title, lists, emptyMessage }: ListsSectionProps) {
         <ViewToggle view={view} onChange={setView} />
       </div>
       {lists.length === 0 ? (
-        <p className="text-[#888]">{emptyMessage}</p>
+        <p className="text-[--muted]">{emptyMessage}</p>
       ) : view === "grid" ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {lists.map((list) => (

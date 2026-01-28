@@ -60,10 +60,10 @@ export default async function ListPage({
       <div className="mb-8">
         <h1 className="text-4xl font-bold tracking-tighter mb-2">{list.title}</h1>
         {list.description && (
-          <p className="text-[#888] text-lg mb-4">{list.description}</p>
+          <p className="text-[--muted] text-lg mb-4">{list.description}</p>
         )}
-        <div className="flex items-center gap-4 text-sm text-[#888]">
-          <Link href={`/u/${list.user.username}`} className="hover:text-white flex items-center gap-1.5">
+        <div className="flex items-center gap-4 text-sm text-[--muted]">
+          <Link href={`/u/${list.user.username}`} className="hover:text-[--foreground] flex items-center gap-1.5">
             @{list.user.username}
             {list.user.isVerified && <VerifiedIcon size={14} className="text-blue-400" />}
           </Link>

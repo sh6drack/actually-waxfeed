@@ -13,8 +13,8 @@ const MATCH_TYPES = {
   taste_twin: {
     name: "Taste Twin",
     icon: "👯",
-    color: "text-[#ffd700]",
-    borderColor: "border-[#ffd700]/30",
+    color: "text-[var(--accent-primary)]",
+    borderColor: "border-[var(--accent-primary)]/30",
     description: "80%+ compatibility - your musical soulmate",
   },
   genre_buddy: {
@@ -140,13 +140,13 @@ export default async function ConnectionsPage({
               {reviewsNeeded} More Review{reviewsNeeded !== 1 ? 's' : ''} Needed
             </h1>
             <p className="text-[--muted] mb-6 max-w-md mx-auto">
-              Rate at least <span className="font-bold text-[#ffd700]">20 albums</span> to unlock Taste Connections.
+              Rate at least <span className="font-bold text-[var(--accent-primary)]">20 albums</span> to unlock Taste Connections.
               The more you review, the better your matches.
             </p>
             <div className="mb-8">
               <div className="w-full max-w-xs mx-auto h-2 bg-[--border] overflow-hidden">
                 <div
-                  className="h-full bg-[#ffd700] transition-all duration-500"
+                  className="h-full bg-[var(--accent-primary)] transition-all duration-500"
                   style={{ width: `${Math.min((reviewCount / 20) * 100, 100)}%` }}
                 />
               </div>
@@ -157,7 +157,7 @@ export default async function ConnectionsPage({
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
                 href="/discover/swipe"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[#ffd700] text-black text-[11px] tracking-[0.15em] uppercase font-medium hover:bg-[#ffed4a] transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--accent-primary)] text-black text-[11px] tracking-[0.15em] uppercase font-medium hover:bg-[var(--accent-hover)] transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -206,7 +206,7 @@ export default async function ConnectionsPage({
         <div className="mb-12 pb-6 border-b border-[--border]">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <p className="text-[10px] tracking-[0.4em] uppercase text-[#ffd700] mb-2">
+              <p className="text-[10px] tracking-[0.4em] uppercase text-[var(--accent-primary)] mb-2">
                 Polarity Match Engine
               </p>
               <h1 className="text-4xl font-bold tracking-tight">Taste Connections</h1>

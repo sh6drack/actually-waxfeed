@@ -48,7 +48,7 @@ export function MessageInput({
   return (
     <div className={`p-5 border-t transition-all duration-200 ${
       isFocused
-        ? 'border-[#ffd700]/40 bg-gradient-to-t from-[#ffd700]/5 to-transparent'
+        ? 'border-[var(--accent-primary)]/40 bg-gradient-to-t from-[var(--accent-primary)]/5 to-transparent'
         : 'border-[--border]'
     }`}>
       <div className="flex items-end gap-3">
@@ -63,7 +63,7 @@ export function MessageInput({
             placeholder={placeholder}
             disabled={disabled}
             rows={1}
-            className="w-full p-4 pr-14 bg-[--muted]/5 border border-[--border] resize-none focus:outline-none focus:border-[#ffd700]/40 disabled:opacity-50 transition-colors text-sm leading-relaxed placeholder:text-[--muted]/50"
+            className="w-full p-4 pr-14 bg-[--muted]/5 border border-[--border] resize-none focus:outline-none focus:border-[var(--accent-primary)]/40 disabled:opacity-50 transition-colors text-sm leading-relaxed placeholder:text-[--muted]/50"
             style={{ minHeight: '56px', maxHeight: '150px' }}
           />
           {remaining < 100 && (
@@ -81,7 +81,7 @@ export function MessageInput({
           disabled={!hasContent || disabled}
           className={`px-6 py-4 font-semibold text-sm transition-all duration-200 flex items-center gap-2 ${
             hasContent && !disabled
-              ? 'bg-[#ffd700] text-black hover:bg-[#ffed4a] active:scale-[0.98]'
+              ? 'bg-[var(--accent-primary)] text-black hover:bg-[#ffed4a] active:scale-[0.98]'
               : 'bg-[--muted]/10 text-[--muted]/50 cursor-not-allowed'
           }`}
         >

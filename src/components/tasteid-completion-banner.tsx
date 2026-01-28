@@ -53,7 +53,7 @@ export function TasteIDCompletionBanner({ reviewCount, hasTasteID }: TasteIDComp
   const tiers = TASTEID_TIERS.slice(1) // Skip 'locked'
 
   return (
-    <div className="border-b border-[--border] bg-gradient-to-r from-[#ffd700]/5 to-transparent">
+    <div className="border-b border-[--border] bg-gradient-to-r from-[var(--accent-primary)]/5 to-transparent">
       <div className="w-full px-6 lg:px-12 xl:px-20 py-2">
         <div className="flex items-center gap-4">
           {/* Level badge */}
@@ -150,13 +150,13 @@ export function TasteIDCompletionBanner({ reviewCount, hasTasteID }: TasteIDComp
           <div className="flex gap-2">
             <Link
               href="/tasteid/me"
-              className="px-4 py-2 bg-[#ffd700] text-black text-xs uppercase tracking-wider font-bold hover:bg-[#ffed4a] transition-colors"
+              className="px-4 py-2 bg-[var(--accent-primary)] text-black text-xs uppercase tracking-wider font-bold hover:bg-[#ffed4a] transition-colors"
             >
               View TasteID
             </Link>
             <Link
               href="/quick-rate"
-              className="px-4 py-2 bg-[#ffd700] text-black text-xs uppercase tracking-wider font-bold hover:bg-[#ffed4a] transition-colors"
+              className="px-4 py-2 bg-[var(--accent-primary)] text-black text-xs uppercase tracking-wider font-bold hover:bg-[#ffed4a] transition-colors"
             >
               Keep Building
             </Link>

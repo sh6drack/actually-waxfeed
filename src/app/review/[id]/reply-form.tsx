@@ -42,17 +42,17 @@ export function ReplyForm({ reviewId }: ReplyFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 border-b border-[#222]">
+    <form onSubmit={handleSubmit} className="p-4 border-b border-[--border]">
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="Write a reply..."
         maxLength={2000}
         rows={3}
-        className="w-full bg-[#111] border border-[#333] px-3 py-2 text-sm text-white placeholder-[#666] focus:outline-none focus:border-white transition-colors resize-none"
+        className="w-full bg-[--surface] border border-[--border] px-3 py-2 text-sm text-[--foreground] placeholder-[--muted] focus:outline-none focus:border-[--foreground] transition-colors resize-none"
       />
       <div className="flex items-center justify-between mt-2">
-        <span className="text-xs text-[#666]">{text.length}/2000</span>
+        <span className="text-xs text-[--muted]">{text.length}/2000</span>
         <div className="flex items-center gap-2">
           {error && <span className="text-xs text-red-500">{error}</span>}
           <button

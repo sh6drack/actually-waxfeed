@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic"
 // Position badge helper - the subtle offer
 function getPositionBadge(totalReviews: number): { text: string; color: string } | null {
   const nextPosition = totalReviews + 1
-  if (nextPosition <= 10) return { text: `#${nextPosition} Gold`, color: "text-[#ffd700]" }
+  if (nextPosition <= 10) return { text: `#${nextPosition} Gold`, color: "text-[--accent-primary]" }
   if (nextPosition <= 50) return { text: `#${nextPosition} Silver`, color: "text-gray-300" }
   if (nextPosition <= 100) return { text: `#${nextPosition} Bronze`, color: "text-amber-600" }
   return null
@@ -182,7 +182,7 @@ export default async function DiscoverPage() {
         <div className="w-full px-6 lg:px-12 xl:px-20 py-12 lg:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
             <div className="lg:col-span-8">
-              <p className="text-[10px] sm:text-xs tracking-[0.4em] uppercase mb-4 text-[#ffd700]">
+              <p className="text-[10px] sm:text-xs tracking-[0.4em] uppercase mb-4 text-[--accent-primary]">
                 Review Now · Prove Later
               </p>
               <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold tracking-[-0.04em] leading-[0.85]">
@@ -202,7 +202,7 @@ export default async function DiscoverPage() {
                   </div>
                   <Link
                     href="/discover/swipe"
-                    className="inline-flex items-center gap-2 px-4 py-3 min-h-[44px] bg-[#ffd700] text-black text-[10px] sm:text-xs tracking-[0.15em] uppercase font-bold hover:bg-[#ffed4a] transition group"
+                    className="inline-flex items-center gap-2 px-4 py-3 min-h-[44px] bg-[--accent-primary] text-black text-[10px] sm:text-xs tracking-[0.15em] uppercase font-bold hover:bg-[--accent-hover] transition group"
                   >
                     <span>Quick Rate</span>
                     <svg className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -213,7 +213,7 @@ export default async function DiscoverPage() {
               ) : (
                 <Link
                   href="/signup"
-                  className="inline-block px-6 py-3 min-h-[44px] bg-white text-black text-[11px] sm:text-xs tracking-[0.15em] uppercase font-bold hover:bg-[#e5e5e5] transition"
+                  className="inline-block px-6 py-3 min-h-[44px] bg-white text-black text-[11px] sm:text-xs tracking-[0.15em] uppercase font-bold hover:bg-gray-200 transition"
                 >
                   Start Reviewing
                 </Link>
@@ -293,7 +293,7 @@ export default async function DiscoverPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+                <div className="album-grid grid grid-cols-2 md:grid-cols-4 gap-5">
                   {recommendations.forYou.map((album, i) => (
                     <Link
                       key={album.id}
@@ -301,7 +301,7 @@ export default async function DiscoverPage() {
                       className="group"
                       style={{ animationDelay: `${i * 0.05}s` }}
                     >
-                      <div className="aspect-square bg-[--border] overflow-hidden mb-3">
+                      <div className="album-cover aspect-square bg-[--border] overflow-hidden mb-3">
                         {album.coverArtUrl ? (
                           <img
                             src={album.coverArtUrl}
@@ -429,10 +429,10 @@ export default async function DiscoverPage() {
             <div className="col-span-12 lg:col-span-5 border-r border-[--border] py-10 lg:py-14 px-6 lg:px-8">
               <div className="flex items-baseline justify-between mb-6">
                 <h2 className="text-xl font-bold tracking-tight">New Releases</h2>
-                <span className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-[#ffd700]">Early review opportunity</span>
+                <span className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-[--accent-primary]">Early review opportunity</span>
               </div>
               {recommendations.newReleases.length > 0 ? (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="album-grid grid grid-cols-2 gap-4">
                   {recommendations.newReleases.map((album) => {
                     const badge = getPositionBadge(album.totalReviews)
                     return (
@@ -441,7 +441,7 @@ export default async function DiscoverPage() {
                         href={`/album/${album.spotifyId}`}
                         className="group"
                       >
-                        <div className="aspect-square bg-[--border] overflow-hidden mb-2 relative">
+                        <div className="album-cover aspect-square bg-[--border] overflow-hidden mb-2 relative">
                           {album.coverArtUrl && (
                             <img
                               src={album.coverArtUrl}
@@ -517,7 +517,7 @@ export default async function DiscoverPage() {
       {(!session || recommendations.forYou.length === 0) && (
         <section className="py-20 lg:py-28 bg-white/[0.02]">
           <div className="w-full px-6 lg:px-12 xl:px-20 text-center">
-            <p className="text-[10px] sm:text-xs tracking-[0.4em] uppercase text-[#ffd700] mb-6">
+            <p className="text-[10px] sm:text-xs tracking-[0.4em] uppercase text-[--accent-primary] mb-6">
               {session ? 'Start Proving Your Taste' : 'The Music Credibility Platform'}
             </p>
             <h2 className="text-3xl lg:text-5xl font-bold tracking-tight mb-4">
@@ -533,7 +533,7 @@ export default async function DiscoverPage() {
             </p>
             <Link
               href={session ? "/search" : "/signup"}
-              className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 font-semibold text-sm tracking-wide hover:bg-[#e5e5e5] transition-colors"
+              className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 font-semibold text-sm tracking-wide hover:bg-gray-200 transition-colors"
             >
               {session ? 'Find Albums' : 'Sign In'}
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

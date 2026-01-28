@@ -136,7 +136,7 @@ export default function SignupPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-[--surface] border border-[--border-dim] px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
+              className="w-full bg-[--surface] border border-[--border-dim] px-4 py-3 text-[--foreground] focus:outline-none focus:border-[--foreground] transition-colors"
               placeholder="you@example.com"
               required
             />
@@ -151,7 +151,7 @@ export default function SignupPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-[--surface] border border-[--border-dim] px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
+              className="w-full bg-[--surface] border border-[--border-dim] px-4 py-3 text-[--foreground] focus:outline-none focus:border-[--foreground] transition-colors"
               placeholder="••••••••"
               required
               minLength={8}
@@ -167,7 +167,7 @@ export default function SignupPage() {
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full bg-[--surface] border border-[--border-dim] px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
+              className="w-full bg-[--surface] border border-[--border-dim] px-4 py-3 text-[--foreground] focus:outline-none focus:border-[--foreground] transition-colors"
               placeholder="••••••••"
               required
               minLength={8}
@@ -185,7 +185,7 @@ export default function SignupPage() {
 
         <p className="text-sm text-[--muted] mt-6 text-center">
           Already have an account?{" "}
-          <Link href="/login" className="text-white hover:underline">
+          <Link href="/login" className="text-[--foreground] hover:underline">
             Sign in
           </Link>
         </p>

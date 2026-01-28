@@ -64,15 +64,15 @@ export function FirstSpinWidget() {
           <p className="text-sm text-[--muted] mb-4">
             Every album you review records your position. If it trends later you get credited.
           </p>
-          <div className="p-3 border border-[#ffd700]/30 mb-4">
+          <div className="p-3 border border-[var(--accent-primary)]/30 mb-4">
             <p className="text-sm">
-              <span className="text-[#ffd700] font-bold">47 Gold Spins</span>
+              <span className="text-[var(--accent-primary)] font-bold">47 Gold Spins</span>
               <span className="text-[--muted]"> means you called 47 albums first</span>
             </p>
           </div>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-[#ffd700]">Gold Spin</span>
+              <span className="text-[var(--accent-primary)]">Gold Spin</span>
               <span className="text-[--muted]">First 10 reviewers</span>
             </div>
             <div className="flex justify-between">
@@ -129,7 +129,7 @@ export function FirstSpinWidget() {
             </Tooltip>
           </div>
           {isSubscriber && (
-            <span className="text-[9px] tracking-wider uppercase px-1.5 py-0.5 bg-[#ffd700]/20 text-[#ffd700]">
+            <span className="text-[9px] tracking-wider uppercase px-1.5 py-0.5 bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]">
               {stats?.tier === "WAX_PRO" ? "Pro" : "Wax+"}
             </span>
           )}
@@ -149,8 +149,8 @@ export function FirstSpinWidget() {
       <div className="p-4 border-b border-[--border]">
         <div className="flex items-center justify-between gap-2">
           <Tooltip content="Gold Spin: You were one of the FIRST 10 people to review this album before it trended. Earns +100 Wax.">
-            <div className="flex-1 text-center p-2 cursor-help hover:bg-[#ffd700]/5 transition-colors rounded">
-              <p className="text-2xl font-bold tabular-nums text-[#ffd700]">{stats?.goldSpinCount || 0}</p>
+            <div className="flex-1 text-center p-2 cursor-help hover:bg-[var(--accent-primary)]/5 transition-colors rounded">
+              <p className="text-2xl font-bold tabular-nums text-[var(--accent-primary)]">{stats?.goldSpinCount || 0}</p>
               <p className="text-[9px] text-[--muted] uppercase tracking-wider">Gold</p>
             </div>
           </Tooltip>
@@ -177,10 +177,10 @@ export function FirstSpinWidget() {
           <div>
             <Link
               href="/radar"
-              className="flex items-center justify-between w-full p-3 border border-[#ffd700]/30 hover:border-[#ffd700] transition mb-3 no-underline"
+              className="flex items-center justify-between w-full p-3 border border-[var(--accent-primary)]/30 hover:border-[var(--accent-primary)] transition mb-3 no-underline"
             >
               <div className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-[#ffd700]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="w-4 h-4 text-[var(--accent-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
                 <span className="text-sm font-medium">Trending Radar</span>
@@ -207,7 +207,7 @@ export function FirstSpinWidget() {
             )}
             <Link
               href="/radar"
-              className="flex items-center justify-center gap-2 w-full py-2.5 border border-[--border] text-center text-[10px] tracking-[0.15em] uppercase hover:border-[#ffd700] hover:text-[#ffd700] transition no-underline mb-2"
+              className="flex items-center justify-center gap-2 w-full py-2.5 border border-[--border] text-center text-[10px] tracking-[0.15em] uppercase hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition no-underline mb-2"
             >
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />

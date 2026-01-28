@@ -58,8 +58,8 @@ export default async function TasteSetupPage() {
         </p>
 
         {/* What you'll get */}
-        <div className="border-2 border-[#ffd700] p-6 text-left space-y-4">
-          <h3 className="text-xs uppercase tracking-widest text-[#ffd700] font-bold">
+        <div className="border-2 border-[var(--accent-primary)] p-6 text-left space-y-4">
+          <h3 className="text-xs uppercase tracking-widest text-[var(--accent-primary)] font-bold">
             TWO THINGS HAPPEN WHEN YOU RATE
           </h3>
           <ul className="space-y-3">

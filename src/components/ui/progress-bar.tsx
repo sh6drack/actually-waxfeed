@@ -204,7 +204,7 @@ export function MetricBar({
   label, 
   value, 
   maxValue = 100, 
-  color = '#ffd700',
+  color = 'var(--accent-primary)',
   showPercentage = true,
   suffix = '',
   className = ''

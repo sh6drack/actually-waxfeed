@@ -83,8 +83,17 @@ export async function GET(request: NextRequest) {
         popularAlbums = [...popularAlbums, ...fallbackAlbums]
       }
 
+      // Deduplicate by title+artist combination (same album can have different IDs)
+      const seenOnboarding = new Set<string>()
+      const deduped = popularAlbums.filter(album => {
+        const key = `${album.title.toLowerCase()}|${album.artistName.toLowerCase()}`
+        if (seenOnboarding.has(key)) return false
+        seenOnboarding.add(key)
+        return true
+      })
+
       // Shuffle and return
-      const shuffled = popularAlbums
+      const shuffled = deduped
         .sort(() => Math.random() - 0.5)
         .slice(0, limit)
 
@@ -256,11 +265,12 @@ export async function GET(request: NextRequest) {
       albums.push(...fallbackAlbums)
     }
 
-    // Deduplicate
+    // Deduplicate by title+artist combination (same album can have different IDs)
     const seen = new Set<string>()
     albums = albums.filter(album => {
-      if (seen.has(album.id)) return false
-      seen.add(album.id)
+      const key = `${album.title.toLowerCase()}|${album.artistName.toLowerCase()}`
+      if (seen.has(key)) return false
+      seen.add(key)
       return true
     })
 

@@ -106,8 +106,8 @@ function PricingContent() {
             Every album you call before it blows up is recorded. Every Gold Spin is proof. 
             This is your permanent music credibility.
           </p>
-          <div className="inline-flex items-center gap-3 px-4 py-2 border border-[#ffd700]/30 text-sm">
-            <span className="text-[#ffd700] font-bold">47 Gold Spins</span>
+          <div className="inline-flex items-center gap-3 px-4 py-2 border border-[var(--accent-primary)]/30 text-sm">
+            <span className="text-[var(--accent-primary)] font-bold">47 Gold Spins</span>
             <span className="text-[--muted]">=</span>
             <span>"I called 47 albums before they trended"</span>
           </div>
@@ -142,8 +142,8 @@ function PricingContent() {
             {/* Trending Radar */}
             <div className="border-2 border-white/20 p-6 mb-8">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 border border-[#ffd700] flex items-center justify-center flex-shrink-0">
-                  <svg className="w-6 h-6 text-[#ffd700]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <div className="w-12 h-12 border border-[var(--accent-primary)] flex items-center justify-center flex-shrink-0">
+                  <svg className="w-6 h-6 text-[var(--accent-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
@@ -153,7 +153,7 @@ function PricingContent() {
                     Albums at 70, 80, 90 reviews. Approaching the 100 threshold. 
                     Review now and you still qualify for a badge when it trends.
                   </p>
-                  <p className="text-xs text-[#ffd700]">
+                  <p className="text-xs text-[var(--accent-primary)]">
                     Subscribers earn 3x more Gold Spins on average.
                   </p>
                 </div>
@@ -190,13 +190,13 @@ function PricingContent() {
                 200 to 300 extra Wax
               </p>
             </div>
-            <div className="p-6 border border-[#ffd700]/30">
-              <p className="text-5xl font-bold text-[#ffd700] mb-2">∞</p>
+            <div className="p-6 border border-[var(--accent-primary)]/30">
+              <p className="text-5xl font-bold text-[var(--accent-primary)] mb-2">∞</p>
               <p className="text-lg font-medium mb-2">Permanent record</p>
               <p className="text-sm text-[--muted] mb-4">
                 Your Tastemaker Score lives forever. Your music resume.
               </p>
-              <p className="text-xs text-[#ffd700]">
+              <p className="text-xs text-[var(--accent-primary)]">
                 Priceless credibility
               </p>
             </div>
@@ -287,7 +287,7 @@ function PricingContent() {
                   <span className="text-sm">Everything in Free</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <svg className="w-4 h-4 text-[#ffd700] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className="w-4 h-4 text-[var(--accent-primary)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                   <span className="text-sm font-medium">Trending Radar</span>
@@ -333,7 +333,7 @@ function PricingContent() {
 
             {/* Pro Tier */}
             <div className="px-6 py-12 relative">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-[#ffd700]" />
+              <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--accent-primary)]" />
               
               <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-3">
                 Pro
@@ -354,25 +354,25 @@ function PricingContent() {
                   <span className="text-sm">Everything in Wax+</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <svg className="w-4 h-4 text-[#ffd700] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className="w-4 h-4 text-[var(--accent-primary)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
-                  <span className="text-sm font-medium text-[#ffd700]">GOLD tips</span>
+                  <span className="text-sm font-medium text-[var(--accent-primary)]">GOLD tips</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <svg className="w-4 h-4 text-[#ffd700] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className="w-4 h-4 text-[var(--accent-primary)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                   <span className="text-sm">Momentum Analytics</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <svg className="w-4 h-4 text-[#ffd700] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className="w-4 h-4 text-[var(--accent-primary)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                   <span className="text-sm">Verified badge eligible</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <svg className="w-4 h-4 text-[#ffd700] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className="w-4 h-4 text-[var(--accent-primary)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                   <span className="text-sm">Featured in leaderboards</span>
@@ -383,7 +383,7 @@ function PricingContent() {
                 <button
                   onClick={handleManageSubscription}
                   disabled={loading === "manage"}
-                  className="w-full py-3 px-4 border border-[#ffd700]/50 text-[#ffd700] text-[11px] tracking-[0.15em] uppercase hover:bg-[#ffd700]/10 transition disabled:opacity-50"
+                  className="w-full py-3 px-4 border border-[var(--accent-primary)]/50 text-[var(--accent-primary)] text-[11px] tracking-[0.15em] uppercase hover:bg-[var(--accent-primary)]/10 transition disabled:opacity-50"
                 >
                   {loading === "manage" ? "Loading..." : "Manage"}
                 </button>
@@ -391,7 +391,7 @@ function PricingContent() {
                 <button
                   onClick={() => handleSubscribe("WAX_PRO")}
                   disabled={loading === "WAX_PRO"}
-                  className="w-full py-4 bg-[#ffd700] text-black text-[11px] tracking-[0.15em] uppercase font-bold hover:bg-[#ffed4a] transition disabled:opacity-50"
+                  className="w-full py-4 bg-[var(--accent-primary)] text-black text-[11px] tracking-[0.15em] uppercase font-bold hover:bg-[var(--accent-hover)] transition disabled:opacity-50"
                 >
                   {loading === "WAX_PRO" ? "Loading..." : "Go Pro"}
                 </button>

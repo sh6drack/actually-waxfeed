@@ -381,8 +381,8 @@ export default function QuickRatePage() {
     return (
       <div className="min-h-[80vh] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-2 border-[#333] border-t-[#ffd700] animate-spin" />
-          <span className="text-xs tracking-[0.2em] uppercase text-[#888]">Loading</span>
+          <div className="w-10 h-10 border-2 border-[--border] border-t-[--accent-primary] animate-spin" />
+          <span className="text-xs tracking-[0.2em] uppercase text-[--muted]">Loading</span>
         </div>
       </div>
     )
@@ -400,13 +400,13 @@ export default function QuickRatePage() {
         <div className="flex items-center justify-between mb-3 flex-shrink-0">
           <div className="min-w-0 flex-1">
             <h1 className="text-lg sm:text-xl font-bold tracking-tighter">Quick Rate</h1>
-            <p className="text-[10px] sm:text-xs text-[#888] truncate">
+            <p className="text-[10px] sm:text-xs text-[--muted] truncate">
               Build your TasteID. Skip what you haven't heard.
             </p>
           </div>
           <button
             onClick={() => router.push('/')}
-            className="text-[#888] hover:text-white transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center flex-shrink-0"
+            className="text-[--muted] hover:text-[--foreground] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center flex-shrink-0"
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -415,11 +415,11 @@ export default function QuickRatePage() {
         </div>
 
         {/* Stats Bar */}
-        <div className="mb-3 p-2 border border-[#333] bg-[#111] flex-shrink-0">
+        <div className="mb-3 p-2 border border-[--border] bg-[--surface] flex-shrink-0">
           {!isStatsLoaded ? (
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 border-2 border-[#333] border-t-[#ffd700] rounded-full animate-spin" />
-              <span className="text-sm text-[#888]">Loading your progress...</span>
+              <div className="w-4 h-4 border-2 border-[--border] border-t-[--accent-primary] rounded-full animate-spin" />
+              <span className="text-sm text-[--muted]">Loading your progress...</span>
             </div>
           ) : (
             <>
@@ -435,24 +435,24 @@ export default function QuickRatePage() {
                     </span>
                   ) : (
                     <span className="text-white">
-                      <span className="font-bold text-[#ffd700]">{remaining}</span> more to unlock
+                      <span className="font-bold text-[--accent-primary]">{remaining}</span> more to unlock
                     </span>
                   )}
                   
                   {/* Session count */}
                   {sessionRatedCount > 0 && (
-                    <span className="text-[#888]">
-                      <span className="text-[#ffd700] font-bold">+{sessionRatedCount}</span> this session
+                    <span className="text-[--muted]">
+                      <span className="text-[--accent-primary] font-bold">+{sessionRatedCount}</span> this session
                     </span>
                   )}
                 </div>
                 
                 {/* Total ratings */}
                 <span className="text-sm">
-                  <span className="text-white font-bold">{actualRatedCount}</span>
-                  <span className="text-[#666]"> ratings</span>
+                  <span className="text-[--foreground] font-bold">{actualRatedCount}</span>
+                  <span className="text-[--muted]"> ratings</span>
                   {!isUnlocked && (
-                    <span className="text-[#888] ml-2">{Math.round(unlockProgress)}%</span>
+                    <span className="text-[--muted] ml-2">{Math.round(unlockProgress)}%</span>
                   )}
                 </span>
               </div>
@@ -461,7 +461,7 @@ export default function QuickRatePage() {
               <TierProgressBar ratingCount={actualRatedCount} />
               
               {skippedCount > 0 && (
-                <p className="text-[10px] text-[#666] mt-1 text-right">
+                <p className="text-[10px] text-[--muted] mt-1 text-right">
                   {skippedCount} skipped
                 </p>
               )}
@@ -480,11 +480,11 @@ export default function QuickRatePage() {
               </div>
               <div>
                 <h3 className="font-bold text-[#00ff88]">TasteID Unlocked!</h3>
-                <p className="text-xs text-[#888]">Keep rating to make it smarter</p>
+                <p className="text-xs text-[--muted]">Keep rating to make it smarter</p>
               </div>
               <button 
                 onClick={() => setShowCompletion(false)}
-                className="ml-4 text-[#666] hover:text-white"
+                className="ml-4 text-[--muted] hover:text-[--foreground]"
               >
                 ✕
               </button>
@@ -496,7 +496,7 @@ export default function QuickRatePage() {
         {milestoneReached && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 animate-in fade-in duration-300">
             <div 
-              className="text-center p-8 border-2 max-w-md animate-in zoom-in duration-500 bg-[#111]"
+              className="text-center p-8 border-2 max-w-md animate-in zoom-in duration-500 bg-[--surface]"
               style={{ borderColor: milestoneReached.color }}
             >
               {/* Level badge */}
@@ -507,15 +507,15 @@ export default function QuickRatePage() {
                 {milestoneReached.shortName}
               </div>
               
-              <p className="text-xs uppercase tracking-widest text-[#666] mb-2">Tier Unlocked</p>
+              <p className="text-xs uppercase tracking-widest text-[--muted] mb-2">Tier Unlocked</p>
               <h2 className="text-3xl font-black mb-2" style={{ color: milestoneReached.color }}>
                 {milestoneReached.name}
               </h2>
-              <p className="text-[#888] mb-6">{milestoneReached.description}</p>
+              <p className="text-[--muted] mb-6">{milestoneReached.description}</p>
               
               {/* Accuracy badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 border border-[#333] mb-6">
-                <span className="text-[#666] text-xs uppercase">Max Accuracy:</span>
+              <div className="inline-flex items-center gap-2 px-4 py-2 border border-[--border] mb-6">
+                <span className="text-[--muted] text-xs uppercase">Max Accuracy:</span>
                 <span className="font-bold" style={{ color: milestoneReached.color }}>
                   {milestoneReached.maxConfidence}%
                 </span>
@@ -523,13 +523,13 @@ export default function QuickRatePage() {
               
               {/* Perks list */}
               <div className="space-y-2 text-sm mb-6">
-                <p className="text-[#555] uppercase tracking-wider text-[10px]">New Features Unlocked</p>
+                <p className="text-[--muted]/70 uppercase tracking-wider text-[10px]">New Features Unlocked</p>
                 {milestoneReached.perks.map((perk, i) => (
                   <div key={i} className="flex items-center justify-center gap-2">
                     <svg className="w-4 h-4" style={{ color: milestoneReached.color }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
-                    <span className="text-[#888]">{perk}</span>
+                    <span className="text-[--muted]">{perk}</span>
                   </div>
                 ))}
               </div>
@@ -551,11 +551,11 @@ export default function QuickRatePage() {
         {/* Content */}
         {loadingAlbums && albums.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center">
-            <div className="w-10 h-10 border-2 border-[#333] border-t-[#ffd700] animate-spin mb-4" />
-            <span className="text-xs tracking-[0.2em] uppercase text-[#888]">Loading albums</span>
+            <div className="w-10 h-10 border-2 border-[--border] border-t-[--accent-primary] animate-spin mb-4" />
+            <span className="text-xs tracking-[0.2em] uppercase text-[--muted]">Loading albums</span>
           </div>
         ) : currentAlbum ? (
-          <div className="border border-[#333] flex-1 overflow-hidden flex flex-col">
+          <div className="border border-[--border] flex-1 overflow-hidden flex flex-col">
             <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
               {/* Album Art - Left Side */}
               <div className="md:w-[280px] lg:w-[320px] flex-shrink-0">
@@ -567,8 +567,8 @@ export default function QuickRatePage() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full bg-[#111] flex items-center justify-center">
-                      <svg className="w-20 h-20 text-[#333]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div className="w-full h-full bg-[--surface] flex items-center justify-center">
+                      <svg className="w-20 h-20 text-[--muted]/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                       </svg>
                     </div>
@@ -580,13 +580,13 @@ export default function QuickRatePage() {
               <div className="flex-1 p-4 flex flex-col overflow-hidden">
                 <div className="flex-1 overflow-y-auto">
                   <h2 className="text-xl lg:text-2xl font-bold mb-1">{currentAlbum.title}</h2>
-                  <p className="text-[#888] text-base mb-3">{currentAlbum.artistName}</p>
+                  <p className="text-[--muted] text-base mb-3">{currentAlbum.artistName}</p>
                   {currentAlbum.genres && currentAlbum.genres.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-4">
                       {currentAlbum.genres.slice(0, 3).map((genre) => (
                         <span
                           key={genre}
-                          className="text-[10px] px-2 py-1 border border-[#333] text-[#666] uppercase tracking-wider"
+                          className="text-[10px] px-2 py-1 border border-[--border] text-[--muted] uppercase tracking-wider"
                         >
                           {genre}
                         </span>
@@ -595,16 +595,16 @@ export default function QuickRatePage() {
                   )}
 
                   {/* Track Previews - 15 second samples */}
-                  <div className="mb-3 p-2 bg-[#111] border border-[#333]">
-                    <p className="text-[10px] text-[#666] uppercase tracking-wider mb-2 flex items-center gap-2">
+                  <div className="mb-3 p-2 bg-[--surface] border border-[--border]">
+                    <p className="text-[10px] text-[--muted] uppercase tracking-wider mb-2 flex items-center gap-2">
                       <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
                       </svg>
                       Preview tracks (15s)
                     </p>
                     {loadingTracks ? (
-                      <div className="flex items-center gap-2 text-[#666] text-xs py-2">
-                        <div className="w-4 h-4 border-2 border-[#333] border-t-[#ffd700] rounded-full animate-spin" />
+                      <div className="flex items-center gap-2 text-[--muted] text-xs py-2">
+                        <div className="w-4 h-4 border-2 border-[--border] border-t-[--accent-primary] rounded-full animate-spin" />
                         Loading previews...
                       </div>
                     ) : albumTracks.length > 0 ? (
@@ -615,13 +615,13 @@ export default function QuickRatePage() {
                             onClick={() => playTrack(track)}
                             disabled={!track.previewUrl}
                             className={`w-full flex items-center gap-3 p-2 text-left transition-colors ${
-                              playingTrackId === track.id 
-                                ? 'bg-[#ffd700]/20 border border-[#ffd700]' 
-                                : 'hover:bg-[#1a1a1a] border border-transparent'
+                              playingTrackId === track.id
+                                ? 'bg-[--accent-primary]/20 border border-[--accent-primary]'
+                                : 'hover:bg-[--surface-raised] border border-transparent'
                             } ${!track.previewUrl ? 'opacity-40 cursor-not-allowed' : ''}`}
                           >
                             <div className={`w-8 h-8 flex items-center justify-center border ${
-                              playingTrackId === track.id ? 'border-[#ffd700] text-[#ffd700]' : 'border-[#444] text-[#666]'
+                              playingTrackId === track.id ? 'border-[--accent-primary] text-[--accent-primary]' : 'border-[--border] text-[--muted]'
                             }`}>
                               {playingTrackId === track.id ? (
                                 <svg className="w-4 h-4 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
@@ -635,8 +635,8 @@ export default function QuickRatePage() {
                               )}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm text-white truncate">{track.name}</p>
-                              <p className="text-[10px] text-[#666]">
+                              <p className="text-sm text-[--foreground] truncate">{track.name}</p>
+                              <p className="text-[10px] text-[--muted]">
                                 Track {track.trackNumber} · {Math.floor(track.durationMs / 60000)}:{String(Math.floor((track.durationMs % 60000) / 1000)).padStart(2, '0')}
                               </p>
                             </div>
@@ -644,16 +644,16 @@ export default function QuickRatePage() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-[#555] text-xs py-2">No previews available</p>
+                      <p className="text-[--muted]/70 text-xs py-2">No previews available</p>
                     )}
                   </div>
 
                   {/* Polarity Descriptors */}
                   <div className="mb-3">
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-[10px] text-[#666] uppercase tracking-wider">
+                      <p className="text-[10px] text-[--muted] uppercase tracking-wider">
                         Describe this album{' '}
-                        <span className={selectedDescriptors.length >= MIN_DESCRIPTORS ? 'text-[#ffd700]' : 'text-[#ff6b6b]'}>
+                        <span className={selectedDescriptors.length >= MIN_DESCRIPTORS ? 'text-[--accent-primary]' : 'text-[#ff6b6b]'}>
                           ({selectedDescriptors.length}/{MIN_DESCRIPTORS} required, up to {MAX_DESCRIPTORS})
                         </span>
                       </p>
@@ -675,10 +675,10 @@ export default function QuickRatePage() {
                             title={descriptor.description}
                             className={`text-[9px] sm:text-[10px] px-2 sm:px-3 py-1.5 min-h-[32px] uppercase tracking-wider transition-all duration-150 ${
                               isSelected
-                                ? 'bg-[#ffd700] text-black border border-[#ffd700] font-bold'
+                                ? 'bg-[--accent-primary] text-black border border-[--accent-primary] font-bold'
                                 : atMax
-                                  ? 'border border-[#333] text-[#444] cursor-not-allowed'
-                                  : 'border border-[#444] text-[#888] hover:border-[#ffd700] hover:text-[#ffd700]'
+                                  ? 'border border-[--border] text-[--muted]/50 cursor-not-allowed'
+                                  : 'border border-[--border] text-[--muted] hover:border-[--accent-hover] hover:text-[--accent-hover]'
                             } disabled:opacity-50`}
                           >
                             {descriptor.label}
@@ -690,7 +690,7 @@ export default function QuickRatePage() {
                 </div>
 
                 {/* Rating Controls */}
-                <div className="space-y-3 flex-shrink-0 pt-3 border-t border-[#333]">
+                <div className="space-y-3 flex-shrink-0 pt-3 border-t border-[--border]">
                   <RatingSlider value={rating} onChange={setRating} disabled={submitting} />
 
                   {error && (
@@ -701,7 +701,7 @@ export default function QuickRatePage() {
                     <button
                       onClick={skip}
                       disabled={submitting}
-                      className="flex-1 py-3 min-h-[48px] border border-[#333] text-[#888] font-bold uppercase tracking-wider text-xs sm:text-sm hover:border-white hover:text-white transition-colors disabled:opacity-50"
+                      className="flex-1 py-3 min-h-[48px] border border-[--border] text-[--muted] font-bold uppercase tracking-wider text-xs sm:text-sm hover:border-[--foreground] hover:text-[--foreground] transition-colors disabled:opacity-50"
                     >
                       Skip
                     </button>
@@ -710,19 +710,19 @@ export default function QuickRatePage() {
                       disabled={submitting || !canSubmit}
                       className={`flex-1 py-3 min-h-[48px] font-bold uppercase tracking-wider text-xs sm:text-sm transition-colors disabled:opacity-50 ${
                         canSubmit
-                          ? 'bg-[#ffd700] text-black hover:bg-[#ffed4a]'
-                          : 'bg-[#333] text-[#666] cursor-not-allowed'
+                          ? 'bg-[--accent-primary] text-black hover:bg-[--accent-hover]'
+                          : 'bg-[--surface] text-[--muted] cursor-not-allowed'
                       }`}
                     >
                       {submitting ? 'Saving...' : !canSubmit ? `+${MIN_DESCRIPTORS - selectedDescriptors.length} vibes` : 'Rate'}
                     </button>
                   </div>
 
-                  <p className="text-center text-xs text-[#666]">
+                  <p className="text-center text-xs text-[--muted]">
                     {canSubmit ? (
-                      <><kbd className="px-1.5 py-0.5 border border-[#333] text-[10px]">Enter</kbd> to rate · </>
+                      <><kbd className="px-1.5 py-0.5 border border-[--border] text-[10px]">Enter</kbd> to rate · </>
                     ) : null}
-                    <kbd className="px-1.5 py-0.5 border border-[#333] text-[10px]">S</kbd> to skip
+                    <kbd className="px-1.5 py-0.5 border border-[--border] text-[10px]">S</kbd> to skip
                   </p>
                 </div>
               </div>
@@ -730,10 +730,10 @@ export default function QuickRatePage() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-[#888] mb-4">No more albums available right now.</p>
+            <p className="text-[--muted] mb-4">No more albums available right now.</p>
             <button
               onClick={() => router.push('/')}
-              className="bg-[#ffd700] text-black px-8 py-4 font-bold text-lg hover:bg-[#ffed4a] transition-colors"
+              className="bg-[--accent-primary] text-black px-8 py-4 font-bold text-lg hover:bg-[--accent-hover] transition-colors"
             >
               Back to Home
             </button>
@@ -743,12 +743,12 @@ export default function QuickRatePage() {
         {/* Quick navigation */}
         {sessionRatedCount >= 10 && (
           <div className="mt-6 text-center">
-            <p className="text-sm text-[#888] mb-3">
-              You've rated {sessionRatedCount} albums this session! 🎉
+            <p className="text-sm text-[--muted] mb-3">
+              You've rated {sessionRatedCount} albums this session!
             </p>
             <button
               onClick={() => router.push('/tasteid/me')}
-              className="text-[#ffd700] text-sm hover:underline"
+              className="text-[--accent-primary] text-sm hover:underline"
             >
               View Your TasteID →
             </button>
@@ -775,10 +775,10 @@ function TierProgressBar({ ratingCount }: { ratingCount: number }) {
           >
             {currentTier.name}
           </span>
-          <span className="text-[10px] text-[#666]">{currentTier.maxConfidence}% accuracy</span>
+          <span className="text-[10px] text-[--muted]">{currentTier.maxConfidence}% accuracy</span>
         </div>
         {nextTier && (
-          <span className="text-[10px] text-[#888]">
+          <span className="text-[10px] text-[--muted]">
             {ratingsToNext} ratings to <span style={{ color: nextTier.color }}>{nextTier.name}</span>
           </span>
         )}
@@ -800,8 +800,8 @@ function TierProgressBar({ ratingCount }: { ratingCount: number }) {
               className="flex-1"
             >
               {/* Progress segment */}
-              <div 
-                className="h-2 bg-[#222] rounded-sm overflow-hidden mb-1"
+              <div
+                className="h-2 bg-[--surface] rounded-sm overflow-hidden mb-1"
                 title={`${tier.name}: ${tier.minRatings}+ ratings`}
               >
                 <div 
@@ -815,7 +815,7 @@ function TierProgressBar({ ratingCount }: { ratingCount: number }) {
               {/* Tier name label */}
               <div
                 className={`text-[8px] sm:text-[9px] text-center uppercase tracking-wider ${isCurrent ? 'font-bold' : ''}`}
-                style={{ color: isCompleted || isCurrent ? tier.color : '#444' }}
+                style={{ color: isCompleted || isCurrent ? tier.color : 'var(--muted)' }}
               >
                 {tier.name}
               </div>

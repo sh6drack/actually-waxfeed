@@ -26,8 +26,8 @@ export default function TasteIDMeRedirect() {
   return (
     <div className="min-h-[80vh] flex items-center justify-center">
       <div className="flex flex-col items-center gap-3">
-        <div className="w-10 h-10 border-2 border-[#333] border-t-[#ffd700] rounded-full animate-spin" />
-        <span className="text-xs tracking-[0.2em] uppercase text-[#888]">Loading your TasteID...</span>
+        <div className="w-10 h-10 border-2 border-[--muted] border-t-[var(--accent-primary)] rounded-full animate-spin" />
+        <span className="text-xs tracking-[0.2em] uppercase text-[--muted]">Loading your TasteID...</span>
       </div>
     </div>
   )

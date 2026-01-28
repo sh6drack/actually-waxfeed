@@ -158,9 +158,9 @@ export function PolarityLoader({ text = "INITIALIZING" }: { text?: string }) {
         <div className="relative">
           <div className="w-16 h-16 border border-[--foreground]/20" />
           <div className="absolute inset-2 border border-[--foreground]/10 animate-spin" style={{ animationDuration: "3s" }} />
-          <div className="absolute inset-4 border border-[#ffd700]/30 animate-spin" style={{ animationDuration: "2s", animationDirection: "reverse" }} />
+          <div className="absolute inset-4 border border-[var(--accent-primary)]/30 animate-spin" style={{ animationDuration: "2s", animationDirection: "reverse" }} />
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-2 h-2 bg-[#ffd700] animate-pulse" />
+            <div className="w-2 h-2 bg-[var(--accent-primary)] animate-pulse" />
           </div>
         </div>
 
@@ -199,7 +199,7 @@ export function DataReadout({
         {label}
       </span>
       <div className="flex items-baseline gap-1">
-        <span className={`font-mono text-2xl tabular-nums font-bold ${highlight ? "text-[#ffd700]" : "text-[--foreground]"}`}>
+        <span className={`font-mono text-2xl tabular-nums font-bold ${highlight ? "text-[var(--accent-primary)]" : "text-[--foreground]"}`}>
           {value}
         </span>
         {unit && (
@@ -226,7 +226,7 @@ export function SectionHeader({
     <div className="flex flex-col gap-2 animate-fade-in">
       {tag && (
         <div className="flex items-center gap-2">
-          <div className="w-1.5 h-1.5 bg-[#ffd700]" />
+          <div className="w-1.5 h-1.5 bg-[var(--accent-primary)]" />
           <span className="font-mono text-[9px] tracking-[0.3em] uppercase text-[--foreground]/50">
             {tag}
           </span>

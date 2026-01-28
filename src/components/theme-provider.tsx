@@ -7,6 +7,7 @@ type Theme = "light" | "dark"
 interface ThemeContextType {
   theme: Theme
   toggleTheme: () => void
+  mounted: boolean
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
@@ -43,7 +44,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Always render the provider to maintain consistent tree structure
   // This prevents hydration mismatches
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, mounted }}>
       {children}
     </ThemeContext.Provider>
   )
@@ -53,7 +54,7 @@ export function useTheme() {
   const context = useContext(ThemeContext)
   // Return default values for SSR/static generation (e.g., /_not-found page)
   if (!context) {
-    return { theme: "dark" as Theme, toggleTheme: () => {} }
+    return { theme: "dark" as Theme, toggleTheme: () => {}, mounted: false }
   }
   return context
 }

@@ -83,7 +83,7 @@ export function CircleList({ onSelectCircle }: CircleListProps) {
         <p className="text-[--muted] mb-4">{error}</p>
         <button
           onClick={fetchCircles}
-          className="px-4 py-2 text-sm border border-[--border] hover:border-[#ffd700] hover:text-[#ffd700] transition-colors"
+          className="px-4 py-2 text-sm border border-[--border] hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-colors"
         >
           Try again
         </button>
@@ -94,7 +94,7 @@ export function CircleList({ onSelectCircle }: CircleListProps) {
   if (userCircles.length === 0) {
     return (
       <div className="p-12 text-center">
-        <div className="w-16 h-16 mx-auto mb-6 flex items-center justify-center bg-[#ffd700]/10 border border-[#ffd700]/30">
+        <div className="w-16 h-16 mx-auto mb-6 flex items-center justify-center bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/30">
           <span className="text-3xl">🎭</span>
         </div>
         <h3 className="text-lg font-semibold mb-2">No circles yet</h3>
@@ -103,7 +103,7 @@ export function CircleList({ onSelectCircle }: CircleListProps) {
         </p>
         <Link
           href="/discover"
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#ffd700] text-black text-sm font-medium hover:bg-[#ffed4a] transition-colors group"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[var(--accent-primary)] text-black text-sm font-medium hover:bg-[#ffed4a] transition-colors group"
         >
           <span>Start reviewing</span>
           <svg className="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -119,7 +119,7 @@ export function CircleList({ onSelectCircle }: CircleListProps) {
       {/* Your Circles */}
       <div className="p-6 border-b border-[--border]">
         <div className="flex items-center gap-2 mb-5">
-          <div className="w-1.5 h-1.5 bg-[#ffd700]" />
+          <div className="w-1.5 h-1.5 bg-[var(--accent-primary)]" />
           <h3 className="text-[11px] tracking-[0.2em] uppercase text-[--muted]">
             Your Circles
           </h3>
@@ -140,7 +140,7 @@ export function CircleList({ onSelectCircle }: CircleListProps) {
             >
               <div className={`p-5 border transition-all duration-200 ${
                 circle.isPrimary
-                  ? 'bg-gradient-to-r from-[#ffd700]/10 to-transparent border-[#ffd700]/40 hover:border-[#ffd700]'
+                  ? 'bg-gradient-to-r from-[var(--accent-primary)]/10 to-transparent border-[var(--accent-primary)]/40 hover:border-[var(--accent-primary)]'
                   : 'bg-[--muted]/5 border-[--border] hover:border-[--muted] hover:bg-[--muted]/10'
               }`}>
                 <div className="flex items-start justify-between gap-4">
@@ -152,7 +152,7 @@ export function CircleList({ onSelectCircle }: CircleListProps) {
                         size="md"
                       />
                       {circle.isPrimary && (
-                        <span className="text-[9px] tracking-[0.15em] uppercase text-[#ffd700] font-medium px-1.5 py-0.5 bg-[#ffd700]/10">
+                        <span className="text-[9px] tracking-[0.15em] uppercase text-[var(--accent-primary)] font-medium px-1.5 py-0.5 bg-[var(--accent-primary)]/10">
                           Primary
                         </span>
                       )}

@@ -172,7 +172,7 @@ function SearchContent() {
       </div>
 
       {loading ? (
-        <p className="text-[#888]">Searching...</p>
+        <p className="text-[--muted]">Searching...</p>
       ) : (
         <div className="space-y-12">
           {/* Local Album Results */}
@@ -218,7 +218,7 @@ function SearchContent() {
                   return (
                     <div key={album.id} className="group">
                       <div className="w-40">
-                        <div className="aspect-square bg-[#222] relative overflow-hidden border border-[#333]">
+                        <div className="aspect-square bg-[--surface] relative overflow-hidden border border-[--border]">
                           {album.images[0]?.url ? (
                             <img
                               src={album.images[0].url}
@@ -226,7 +226,7 @@ function SearchContent() {
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-[#666]">
+                            <div className="w-full h-full flex items-center justify-center text-[--muted]/70">
                               No Cover
                             </div>
                           )}
@@ -234,7 +234,7 @@ function SearchContent() {
                             <button
                               onClick={() => importAlbum(album.id)}
                               disabled={importing === album.id}
-                              className="absolute bottom-0 left-0 right-0 bg-[#ffd700] text-black py-2 text-xs font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors disabled:opacity-50"
+                              className="absolute bottom-0 left-0 right-0 bg-[var(--accent-primary)] text-black py-2 text-xs font-bold uppercase tracking-wider hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-50"
                             >
                               {importing === album.id ? "Importing..." : "+ Import"}
                             </button>
@@ -251,10 +251,10 @@ function SearchContent() {
                           ) : (
                             <p className="font-bold text-sm truncate">{album.name}</p>
                           )}
-                          <p className="text-[#888] text-xs truncate">
+                          <p className="text-[--muted] text-xs truncate">
                             {album.artists.map(a => a.name).join(", ")}
                           </p>
-                          <p className="text-[#666] text-xs">
+                          <p className="text-[--muted]/70 text-xs">
                             {album.album_type} • {album.release_date?.split("-")[0]}
                           </p>
                         </div>
@@ -315,7 +315,7 @@ function TrackResult({ track }: { track: Track }) {
 
       {/* Track info */}
       <div className="flex-1 min-w-0">
-        <p className="font-medium truncate group-hover:text-[#ffd700] transition-colors">
+        <p className="font-medium truncate group-hover:text-[var(--accent-primary)] transition-colors">
           {track.name}
         </p>
         <p className="text-sm text-[--muted] truncate">
@@ -330,7 +330,7 @@ function TrackResult({ track }: { track: Track }) {
 
       {/* Rating */}
       {track.averageRating !== null && (
-        <div className="text-sm font-bold text-[#ffd700] tabular-nums">
+        <div className="text-sm font-bold text-[var(--accent-primary)] tabular-nums">
           {track.averageRating.toFixed(1)}
         </div>
       )}

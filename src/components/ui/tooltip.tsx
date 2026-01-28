@@ -132,7 +132,7 @@ export function HelpTooltip({ content }: { content: string }) {
         }}
       >
         <svg 
-          style={{ width: "10px", height: "10px", color: "#ffd700" }}
+          style={{ width: "10px", height: "10px", color: "var(--accent-primary)" }}
           fill="none" 
           viewBox="0 0 24 24" 
           stroke="currentColor"

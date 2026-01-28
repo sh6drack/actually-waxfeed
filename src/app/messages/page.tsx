@@ -41,7 +41,7 @@ export default function MessagesPage() {
     return (
       <div className="h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--background)' }}>
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-[--muted] border-t-[#ffd700] animate-spin" />
+          <div className="w-8 h-8 border-2 border-[--muted] border-t-[var(--accent-primary)] animate-spin" />
           <span className="text-xs tracking-[0.2em] uppercase text-[--muted]">Loading messages</span>
         </div>
       </div>
@@ -59,7 +59,7 @@ export default function MessagesPage() {
         <div className="py-3 sm:py-4 border-b border-[--border] flex-shrink-0">
           <div className="flex items-center justify-between gap-3 sm:gap-4">
             <div className="flex items-center gap-3 sm:gap-4">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-[#ffd700] flex items-center justify-center flex-shrink-0">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-[var(--accent-primary)] flex items-center justify-center flex-shrink-0">
                 <svg className="w-4 h-4 sm:w-5 sm:h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
@@ -71,13 +71,13 @@ export default function MessagesPage() {
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
               {totalUnread > 0 && (
-                <div className="px-2 sm:px-3 py-1 bg-[#ffd700] text-black text-xs sm:text-sm font-bold">
+                <div className="px-2 sm:px-3 py-1 bg-[var(--accent-primary)] text-black text-xs sm:text-sm font-bold">
                   {totalUnread}
                 </div>
               )}
               <Link
                 href="/discover/similar-tasters"
-                className="hidden sm:block px-4 py-2 border border-[--border] text-xs uppercase tracking-wider hover:border-[#ffd700] hover:text-[#ffd700] transition-colors"
+                className="hidden sm:block px-4 py-2 border border-[--border] text-xs uppercase tracking-wider hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-colors"
               >
                 Find Matches
               </Link>
@@ -91,7 +91,7 @@ export default function MessagesPage() {
             onClick={() => setActiveTab('dms')}
             className={`flex-1 sm:flex-none px-3 sm:px-6 py-3 text-[10px] sm:text-xs uppercase tracking-wider transition-colors border-b-2 -mb-px whitespace-nowrap min-h-[44px] ${
               activeTab === 'dms'
-                ? 'border-[#ffd700] text-[#ffd700]'
+                ? 'border-[var(--accent-primary)] text-[var(--accent-primary)]'
                 : 'border-transparent text-[--muted] hover:text-[--foreground]'
             }`}
           >
@@ -142,13 +142,13 @@ export default function MessagesPage() {
           {activeTab === 'dms' && (
             <div>
               {/* Taste-gated info */}
-              <div className="p-4 bg-[#ffd700]/5 border-b border-[--border]">
+              <div className="p-4 bg-[var(--accent-primary)]/5 border-b border-[--border]">
                 <div className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-[#ffd700]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <svg className="w-5 h-5 text-[var(--accent-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
                   <p className="text-sm text-[--muted]">
-                    <span className="text-[#ffd700] font-medium">60%+ taste match</span> required to message
+                    <span className="text-[var(--accent-primary)] font-medium">60%+ taste match</span> required to message
                   </p>
                 </div>
               </div>
@@ -207,7 +207,7 @@ export default function MessagesPage() {
         <div className="border-t border-[--border] py-3 sm:py-4 flex-shrink-0">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-0">
             <p className="text-[10px] sm:text-xs text-[--muted] text-center sm:text-left">
-              Powered by <span className="text-[#ffd700]">Polarity</span> matching
+              Powered by <span className="text-[var(--accent-primary)]">Polarity</span> matching
             </p>
             <div className="flex gap-3 sm:gap-3">
               <Link

@@ -158,13 +158,13 @@ export function HotTakeForm({ album, onSubmit, onCancel }: HotTakeFormProps) {
       {/* Album selection */}
       {!album && (
         <div>
-          <label className="block text-[10px] tracking-[0.3em] uppercase text-[#666] mb-3">
+          <label className="block text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-3">
             Select Album
           </label>
 
           {selectedAlbum ? (
-            <div className="flex items-center gap-4 p-4 border border-[#333] bg-[#111]">
-              <div className="w-16 h-16 flex-shrink-0 bg-[#222]">
+            <div className="flex items-center gap-4 p-4 border border-[--border] bg-[--surface]">
+              <div className="w-16 h-16 flex-shrink-0 bg-[--surface]">
                 {selectedAlbum.coverArtUrl && (
                   <img
                     src={selectedAlbum.coverArtUrl}
@@ -175,12 +175,12 @@ export function HotTakeForm({ album, onSubmit, onCancel }: HotTakeFormProps) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-bold truncate">{selectedAlbum.title}</p>
-                <p className="text-sm text-[#888] truncate">{selectedAlbum.artistName}</p>
+                <p className="text-sm text-[--muted] truncate">{selectedAlbum.artistName}</p>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedAlbum(null)}
-                className="text-[10px] tracking-[0.15em] uppercase text-[#666] hover:text-white"
+                className="text-[10px] tracking-[0.15em] uppercase text-[--muted] hover:text-[--foreground]"
               >
                 Change
               </button>
@@ -192,14 +192,14 @@ export function HotTakeForm({ album, onSubmit, onCancel }: HotTakeFormProps) {
                 value={searchQuery}
                 onChange={handleSearchChange}
                 placeholder="Search for an album..."
-                className="w-full bg-transparent border border-[#333] px-4 py-3 text-white placeholder-[#666] focus:border-white focus:outline-none"
+                className="w-full bg-transparent border border-[--border] px-4 py-3 text-[--foreground] placeholder-[--muted] focus:border-[--foreground] focus:outline-none"
               />
 
               {/* Search results dropdown */}
               {(searchResults.length > 0 || isSearching) && (
                 <div className="absolute top-full left-0 right-0 mt-1 border border-[--border] bg-[--background] z-10 max-h-64 overflow-y-auto">
                   {isSearching ? (
-                    <div className="p-4 text-center text-[#666] text-sm">Searching...</div>
+                    <div className="p-4 text-center text-[--muted] text-sm">Searching...</div>
                   ) : (
                     searchResults.map((result) => (
                       <button
@@ -210,9 +210,9 @@ export function HotTakeForm({ album, onSubmit, onCancel }: HotTakeFormProps) {
                           setSearchQuery("")
                           setSearchResults([])
                         }}
-                        className="w-full flex items-center gap-3 p-3 hover:bg-[#111] transition-colors text-left"
+                        className="w-full flex items-center gap-3 p-3 hover:bg-[--surface] transition-colors text-left"
                       >
-                        <div className="w-10 h-10 flex-shrink-0 bg-[#222]">
+                        <div className="w-10 h-10 flex-shrink-0 bg-[--surface]">
                           {result.coverArtUrl && (
                             <img
                               src={result.coverArtUrl}
@@ -223,7 +223,7 @@ export function HotTakeForm({ album, onSubmit, onCancel }: HotTakeFormProps) {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-bold truncate">{result.title}</p>
-                          <p className="text-xs text-[#888] truncate">{result.artistName}</p>
+                          <p className="text-xs text-[--muted] truncate">{result.artistName}</p>
                         </div>
                       </button>
                     ))
@@ -237,7 +237,7 @@ export function HotTakeForm({ album, onSubmit, onCancel }: HotTakeFormProps) {
 
       {/* Stance selection */}
       <div>
-        <label className="block text-[10px] tracking-[0.3em] uppercase text-[#666] mb-3">
+        <label className="block text-[10px] tracking-[0.3em] uppercase text-[--muted] mb-3">
           Your Stance
         </label>
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
@@ -248,14 +248,14 @@ export function HotTakeForm({ album, onSubmit, onCancel }: HotTakeFormProps) {
               onClick={() => setStance(s.value)}
               className={`p-4 border text-left transition-all ${
                 stance === s.value
-                  ? "border-white bg-white text-black"
-                  : "border-[#333] hover:border-[#666]"
+                  ? "border-[--foreground] bg-[--foreground] text-[--background]"
+                  : "border-[--border] hover:border-[--foreground]/30"
               }`}
             >
               <span className="block text-sm font-bold tracking-wide">{s.label}</span>
               <span
                 className={`block text-[10px] mt-1 ${
-                  stance === s.value ? "text-[#666]" : "text-[#666]"
+                  stance === s.value ? "text-[--muted]" : "text-[--muted]"
                 }`}
               >
                 {s.description}
@@ -268,12 +268,12 @@ export function HotTakeForm({ album, onSubmit, onCancel }: HotTakeFormProps) {
       {/* The hot take content */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <label className="text-[10px] tracking-[0.3em] uppercase text-[#666]">
+          <label className="text-[10px] tracking-[0.3em] uppercase text-[--muted]">
             Your Hot Take
           </label>
           <span
             className={`text-[10px] tracking-[0.1em] ${
-              content.length > 280 ? "text-[#ff3b3b]" : "text-[#666]"
+              content.length > 280 ? "text-[#ff3b3b]" : "text-[--muted]"
             }`}
           >
             {content.length}/280
@@ -284,7 +284,7 @@ export function HotTakeForm({ album, onSubmit, onCancel }: HotTakeFormProps) {
           onChange={(e) => setContent(e.target.value)}
           placeholder="Make your case. Be bold. Be controversial."
           rows={4}
-          className="w-full bg-transparent border border-[#333] px-4 py-3 text-white placeholder-[#666] focus:border-white focus:outline-none resize-none text-lg"
+          className="w-full bg-transparent border border-[--border] px-4 py-3 text-[--foreground] placeholder-[--muted] focus:border-[--foreground] focus:outline-none resize-none text-lg"
         />
       </div>
 
@@ -298,7 +298,7 @@ export function HotTakeForm({ album, onSubmit, onCancel }: HotTakeFormProps) {
         <button
           type="submit"
           disabled={isSubmitting || !selectedAlbum || !stance || content.length < 10}
-          className="flex-1 bg-white text-black py-4 font-bold text-sm tracking-wide hover:bg-[#f0f0f0] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="flex-1 bg-[--foreground] text-[--background] py-4 font-bold text-sm tracking-wide hover:bg-[--foreground]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isSubmitting ? "POSTING..." : "POST HOT TAKE"}
         </button>
@@ -306,7 +306,7 @@ export function HotTakeForm({ album, onSubmit, onCancel }: HotTakeFormProps) {
           <button
             type="button"
             onClick={onCancel}
-            className="px-6 py-4 border border-[#333] font-bold text-sm tracking-wide hover:border-white transition-colors"
+            className="px-6 py-4 border border-[--border] font-bold text-sm tracking-wide hover:border-[--foreground] transition-colors"
           >
             CANCEL
           </button>
@@ -314,7 +314,7 @@ export function HotTakeForm({ album, onSubmit, onCancel }: HotTakeFormProps) {
       </div>
 
       {/* Disclaimer */}
-      <p className="text-[10px] tracking-[0.1em] uppercase text-[#444] text-center">
+      <p className="text-[10px] tracking-[0.1em] uppercase text-[--muted]/70 text-center">
         Hot takes are meant to spark discussion. Be respectful, be bold.
       </p>
     </form>

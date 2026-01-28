@@ -47,11 +47,11 @@ export function FirstTimeWelcome() {
           isAnimating ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
         }`}
       >
-        <div className="bg-[#111] border border-[#333] relative">
+        <div className="bg-[--surface] border border-[--border] relative">
           {/* Close */}
           <button
             onClick={handleSkip}
-            className="absolute top-6 right-6 text-[#888] hover:text-white transition-colors"
+            className="absolute top-6 right-6 text-[--muted] hover:text-[--foreground] transition-colors"
             aria-label="Close"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -61,14 +61,14 @@ export function FirstTimeWelcome() {
 
           <div className="p-10 md:p-12">
             {/* Category label */}
-            <p className="text-xs tracking-[0.3em] uppercase text-[#ffd700] font-bold mb-6">
+            <p className="text-xs tracking-[0.3em] uppercase text-[var(--accent-primary)] font-bold mb-6">
               First of Its Kind
             </p>
 
             {/* Headline */}
             <h2 className="text-3xl md:text-4xl font-bold leading-tight mb-5 text-white">
               The world's first platform<br />
-              <span className="text-[#ffd700]">that proves your taste.</span>
+              <span className="text-[var(--accent-primary)]">that proves your taste.</span>
             </h2>
 
             {/* Subhead */}
@@ -78,7 +78,7 @@ export function FirstTimeWelcome() {
             </p>
 
             {/* The differentiator */}
-            <div className="border-l-4 border-[#ffd700] pl-5 mb-8 bg-[#1a1a1a] py-4 pr-4">
+            <div className="border-l-4 border-[var(--accent-primary)] pl-5 mb-8 bg-[--surface-raised] py-4 pr-4">
               <p className="text-sm text-[#ddd] leading-relaxed">
                 "Letterboxd proved people care about logging films. 
                 WaxFeed proves people care about <span className="text-white font-bold">being first</span>."
@@ -89,26 +89,26 @@ export function FirstTimeWelcome() {
             <div className="grid grid-cols-2 gap-5 mb-10">
               <div>
                 <div className="text-white font-bold mb-1">Timestamped Reviews</div>
-                <div className="text-[#999] text-sm">Permanent proof of discovery</div>
+                <div className="text-[--muted] text-sm">Permanent proof of discovery</div>
               </div>
               <div>
                 <div className="text-white font-bold mb-1">First Spin Badges</div>
-                <div className="text-[#999] text-sm">Recognition when you're early</div>
+                <div className="text-[--muted] text-sm">Recognition when you're early</div>
               </div>
               <div>
                 <div className="text-white font-bold mb-1">TasteID Profile</div>
-                <div className="text-[#999] text-sm">Your musical fingerprint</div>
+                <div className="text-[--muted] text-sm">Your musical fingerprint</div>
               </div>
               <div>
                 <div className="text-white font-bold mb-1">Taste Matching</div>
-                <div className="text-[#999] text-sm">Find people who get it</div>
+                <div className="text-[--muted] text-sm">Find people who get it</div>
               </div>
             </div>
 
             {/* CTA */}
             <button
               onClick={handleCreateTasteID}
-              className="w-full py-4 bg-[#ffd700] text-black font-bold text-sm uppercase tracking-wider hover:bg-[#ffe44d] transition-colors"
+              className="w-full py-4 bg-[var(--accent-primary)] text-black font-bold text-sm uppercase tracking-wider hover:bg-[#ffe44d] transition-colors"
             >
               Join Free — Takes 30 Seconds
             </button>
@@ -116,14 +116,14 @@ export function FirstTimeWelcome() {
             {/* Skip */}
             <button
               onClick={handleSkip}
-              className="w-full mt-4 text-[#888] text-sm hover:text-white transition-colors"
+              className="w-full mt-4 text-[--muted] text-sm hover:text-[--foreground] transition-colors"
             >
               Continue as guest
             </button>
           </div>
 
           {/* Bottom bar */}
-          <div className="border-t border-[#333] px-10 py-4 flex items-center justify-between text-xs text-[#888]">
+          <div className="border-t border-[--border] px-10 py-4 flex items-center justify-between text-xs text-[--muted]">
             <span>No credit card required</span>
             <span>Free forever</span>
             <span>2,500+ members</span>

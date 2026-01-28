@@ -32,7 +32,7 @@ export function BillboardList({ albums }: BillboardListProps) {
     <div>
       {/* Mobile Grid Layout - 3 columns, hidden on md+ */}
       <div className="md:hidden">
-        <div className="grid grid-cols-3 gap-3">
+        <div className="album-grid grid grid-cols-3 gap-3">
           {displayedAlbums.slice(0, isExpanded ? albums.length : mobileCount).map((album) => (
             <Link
               key={album.id}
@@ -41,7 +41,7 @@ export function BillboardList({ albums }: BillboardListProps) {
             >
               {/* Album artwork with subtle border */}
               <div
-                className="relative aspect-square overflow-hidden"
+                className="album-cover relative aspect-square overflow-hidden"
                 style={{
                   border: '1px solid var(--border)',
                   background: 'var(--surface)'
@@ -126,7 +126,7 @@ export function BillboardList({ albums }: BillboardListProps) {
 
       {/* Desktop Grid Layout - 5 columns, hidden on mobile */}
       <div className="hidden md:block">
-        <div className="grid grid-cols-5 gap-4">
+        <div className="album-grid grid grid-cols-5 gap-4">
           {displayedAlbums.slice(0, desktopCount).map((album) => (
             <Link
               key={album.id}
@@ -135,7 +135,7 @@ export function BillboardList({ albums }: BillboardListProps) {
             >
               {/* Album artwork */}
               <div
-                className="relative aspect-square overflow-hidden"
+                className="album-cover relative aspect-square overflow-hidden"
                 style={{
                   border: '1px solid var(--border)',
                   background: 'var(--surface)'

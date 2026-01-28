@@ -212,14 +212,14 @@ export default async function TrendingPage() {
               {recentReleases.length === 0 ? (
                 <p className="text-[--muted]">No recent releases</p>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-5">
+                <div className="album-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-5">
                   {recentReleases.map((album, index) => (
                     <Link
                       key={album.id}
                       href={`/album/${album.spotifyId}`}
                       className={`group ${index >= 4 ? 'hidden sm:block' : ''}`}
                     >
-                      <div className="aspect-square bg-[--border] overflow-hidden mb-3">
+                      <div className="album-cover aspect-square bg-[--border] overflow-hidden mb-3">
                         {album.coverArtUrl && (
                           <img
                             src={album.coverArtUrl}

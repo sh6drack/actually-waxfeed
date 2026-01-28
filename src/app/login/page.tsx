@@ -110,7 +110,7 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-[--surface] border border-[--border-dim] px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
+              className="w-full bg-[--surface] border border-[--border-dim] px-4 py-3 text-[--foreground] focus:outline-none focus:border-[--foreground] transition-colors"
               placeholder="you@example.com"
               required
             />
@@ -125,7 +125,7 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-[--surface] border border-[--border-dim] px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
+              className="w-full bg-[--surface] border border-[--border-dim] px-4 py-3 text-[--foreground] focus:outline-none focus:border-[--foreground] transition-colors"
               placeholder="••••••••"
               required
             />
@@ -142,7 +142,7 @@ export default function LoginPage() {
 
         <p className="text-sm text-[--muted] mt-6 text-center">
           Don&apos;t have an account?{" "}
-          <Link href="/signup" className="text-white hover:underline">
+          <Link href="/signup" className="text-[--foreground] hover:underline">
             Sign up
           </Link>
         </p>

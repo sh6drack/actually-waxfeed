@@ -21,10 +21,10 @@ const iconSizes = {
 export function DefaultAvatar({ size = "sm", name, className = "" }: DefaultAvatarProps) {
   return (
     <div
-      className={`${sizeClasses[size]} rounded-full bg-[#333] flex items-center justify-center ${className}`}
+      className={`${sizeClasses[size]} rounded-full bg-[--surface] flex items-center justify-center ${className}`}
     >
       <svg
-        className={`${iconSizes[size]} text-[#888]`}
+        className={`${iconSizes[size]} text-[--muted]`}
         fill="currentColor"
         viewBox="0 0 24 24"
       >

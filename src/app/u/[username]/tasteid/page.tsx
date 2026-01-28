@@ -159,16 +159,16 @@ export default async function TasteIDPage({ params }: Props) {
           {/* Premium Card Design */}
           <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f23] border border-white/10 shadow-2xl">
             {/* Animated background glow */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#ffd700]/10 rounded-full blur-3xl" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-[var(--accent-primary)]/10 rounded-full blur-3xl" />
             <div className="absolute bottom-0 right-0 w-64 h-64 bg-[#00ff88]/10 rounded-full blur-3xl" />
             
             <div className="relative p-8 sm:p-10">
               {/* Header */}
               <div className="text-center mb-8">
                 {/* Animated icon */}
-                <div className="w-24 h-24 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-[#ffd700] to-[#ff6b6b] p-[2px]">
+                <div className="w-24 h-24 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-[var(--accent-primary)] to-[#ff6b6b] p-[2px]">
                   <div className="w-full h-full rounded-2xl bg-[#1a1a2e] flex items-center justify-center">
-                    <svg className="w-12 h-12 text-[#ffd700]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <svg className="w-12 h-12 text-[var(--accent-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
                     </svg>
                   </div>
@@ -191,7 +191,7 @@ export default async function TasteIDPage({ params }: Props) {
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-xs uppercase tracking-wider text-white/50 font-medium">Progress</span>
                       <span className="text-lg font-bold">
-                        <span className="text-[#ffd700]">{reviewCount}</span>
+                        <span className="text-[var(--accent-primary)]">{reviewCount}</span>
                         <span className="text-white/40"> / {minReviews}</span>
                       </span>
                     </div>
@@ -199,7 +199,7 @@ export default async function TasteIDPage({ params }: Props) {
                     {/* Progress Bar */}
                     <div className="h-3 bg-white/10 rounded-full overflow-hidden mb-4">
                       <div 
-                        className="h-full bg-gradient-to-r from-[#ff6b6b] via-[#ffd700] to-[#00ff88] rounded-full transition-all duration-700 ease-out"
+                        className="h-full bg-gradient-to-r from-[#ff6b6b] via-[var(--accent-primary)] to-[#00ff88] rounded-full transition-all duration-700 ease-out"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
@@ -210,12 +210,12 @@ export default async function TasteIDPage({ params }: Props) {
                         <div key={num} className="flex flex-col items-center">
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold mb-1 transition-all ${
                             reviewCount >= num 
-                              ? 'bg-[#ffd700] text-black' 
+                              ? 'bg-[var(--accent-primary)] text-black' 
                               : 'bg-white/10 text-white/40'
                           }`}>
                             {reviewCount >= num ? '✓' : num}
                           </div>
-                          <span className={`text-[10px] ${reviewCount >= num ? 'text-[#ffd700]' : 'text-white/40'}`}>
+                          <span className={`text-[10px] ${reviewCount >= num ? 'text-[var(--accent-primary)]' : 'text-white/40'}`}>
                             {num === 3 ? 'Unlock!' : `Album ${num}`}
                           </span>
                         </div>
@@ -232,7 +232,7 @@ export default async function TasteIDPage({ params }: Props) {
                       </div>
                     ) : (
                       <p className="text-white/60">
-                        Rate <span className="text-[#ffd700] font-bold">{minReviews - reviewCount}</span> more album{minReviews - reviewCount !== 1 ? 's' : ''} to unlock
+                        Rate <span className="text-[var(--accent-primary)] font-bold">{minReviews - reviewCount}</span> more album{minReviews - reviewCount !== 1 ? 's' : ''} to unlock
                       </p>
                     )}
                   </div>
@@ -244,7 +244,7 @@ export default async function TasteIDPage({ params }: Props) {
                     ) : (
                       <Link
                         href="/quick-rate"
-                        className="block w-full py-4 bg-gradient-to-r from-[#ffd700] to-[#ffed4a] text-black text-sm font-bold uppercase tracking-wider rounded-xl text-center hover:shadow-lg hover:shadow-[#ffd700]/25 transition-all"
+                        className="block w-full py-4 bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-hover)] text-black text-sm font-bold uppercase tracking-wider rounded-xl text-center hover:shadow-lg hover:shadow-[var(--accent-primary)]/25 transition-all"
                       >
                         Start Rating Albums
                       </Link>
@@ -419,7 +419,7 @@ export default async function TasteIDPage({ params }: Props) {
             {isOwnProfile && (
               <Link
                 href="/quick-rate"
-                className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#ffd700] text-black text-sm font-bold uppercase tracking-wider hover:bg-[#ffed4a] transition-colors w-full sm:w-auto"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[var(--accent-primary)] text-black text-sm font-bold uppercase tracking-wider hover:bg-[var(--accent-hover)] transition-colors w-full sm:w-auto"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -537,7 +537,7 @@ export default async function TasteIDPage({ params }: Props) {
             value={tasteId.averageRating.toFixed(1)}
             description={`±${tasteId.ratingStdDev.toFixed(1)} std dev`}
             progress={(tasteId.averageRating / 10) * 100}
-            color="#ffd700"
+            color="var(--accent-primary)"
           />
         </div>
 
@@ -1185,7 +1185,7 @@ function StatCard({
   value,
   description,
   progress,
-  color = '#ffd700',
+  color = 'var(--accent-primary)',
 }: {
   label: string
   value: string
