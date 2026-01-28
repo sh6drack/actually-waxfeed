@@ -110,7 +110,7 @@ export default function QuickRatePage() {
     try {
       setLoading(true)
       setError(null)
-      const res = await fetch('/api/albums/swipe?limit=20')
+      const res = await fetch('/api/albums/swipe?limit=20', { credentials: 'include' })
       const data = await res.json()
       if (data.success) {
         setAlbums(data.data || [])
@@ -137,6 +137,7 @@ export default function QuickRatePage() {
       const res = await fetch('/api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           albumId: album.id,
           rating,

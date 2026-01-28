@@ -78,7 +78,7 @@ export default function OnboardingPage() {
     setLoadingAlbums(true)
     try {
       // For onboarding, get popular/well-reviewed albums for broader appeal
-      const res = await fetch('/api/albums/swipe?limit=30&onboarding=true')
+      const res = await fetch('/api/albums/swipe?limit=30&onboarding=true', { credentials: 'include' })
       const data = await res.json()
       if (data.success) {
         setAlbums(data.data || [])
@@ -231,6 +231,7 @@ export default function OnboardingPage() {
       const res = await fetch('/api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           albumId: album.id,
           rating,
@@ -303,7 +304,7 @@ export default function OnboardingPage() {
     setLoading(true)
     try {
       // Trigger TasteID computation with the new ratings
-      await fetch('/api/tasteid/compute', { method: 'POST' })
+      await fetch('/api/tasteid/compute', { method: 'POST', credentials: 'include' })
     } catch {
       // Continue anyway
     }

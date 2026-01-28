@@ -227,7 +227,7 @@ export default function QuickRatePage() {
     if (currentAlbumId) {
       setAlbumTracks([])
       setLoadingTracks(true)
-      fetch(`/api/albums/${currentAlbumId}/tracks`)
+      fetch(`/api/albums/${currentAlbumId}/tracks`, { credentials: 'include' })
         .then(res => res.json())
         .then(data => {
           if (data.success && data.data) {
@@ -262,7 +262,9 @@ export default function QuickRatePage() {
   const fetchAlbums = async () => {
     setLoadingAlbums(true)
     try {
-      const res = await fetch(`/api/albums/swipe?limit=${BATCH_SIZE * 2}`)
+      const res = await fetch(`/api/albums/swipe?limit=${BATCH_SIZE * 2}`, {
+        credentials: 'include',
+      })
       const data = await res.json()
       if (data.success) {
         setAlbums(data.data || [])
@@ -285,6 +287,7 @@ export default function QuickRatePage() {
       const res = await fetch('/api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           albumId: album.id,
           rating,
@@ -318,7 +321,7 @@ export default function QuickRatePage() {
         
         // Recompute TasteID in background every 5 ratings (keeps it fresh!)
         if (newCount >= TASTEID_UNLOCK && newCount % 5 === 0) {
-          fetch('/api/tasteid/compute', { method: 'POST' })
+          fetch('/api/tasteid/compute', { method: 'POST', credentials: 'include' })
             .then(res => res.json())
             .then(data => console.log('[TasteID] Background recompute:', data?.data?.tasteId?.primaryArchetype))
             .catch(() => {})
