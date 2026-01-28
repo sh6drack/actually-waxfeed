@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Configure Tailwind 4 dark mode to use class strategy */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Dark mode (default) - dark body, white contrasting header */
 :root,
 html.dark {
@@ -11,7 +14,8 @@ html.dark {
   --border: #222222;
   --border-dim: #333333;
   --surface: #111111;
-  --surface-raised: #1a1a1a;
+  --surface-raised: #2a2a2a;
+  --surface-hover: #333333;
   --accent: #ffffff;
   --accent-muted: #cccccc;
   --header-bg: #ffffff;
@@ -20,6 +24,13 @@ html.dark {
   --error: #ff3b3b;
   --success: #22c55e;
   --warning: #eab308;
+
+  /* Customization defaults */
+  --accent-primary: #ffd700;
+  --accent-hover: #ffed4a;
+  --accent-muted: #ffd700;
+  --font-custom: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --density-scale: 1;
 }
 
 /* Light mode - soft white body, dark header */
@@ -33,6 +44,7 @@ html.light {
   --border-dim: #c5c5c0;
   --surface: #eaeae5;
   --surface-raised: #e0e0db;
+  --surface-hover: #d5d5d0;
   --accent: #1a1a1a;
   --accent-muted: #333333;
   --header-bg: #1a1a1a;
@@ -41,6 +53,11 @@ html.light {
   --error: #dc2626;
   --success: #16a34a;
   --warning: #ca8a04;
+
+  /* Customization defaults (inherited from root, can be overridden) */
+  --accent-primary: #ffd700;
+  --accent-hover: #ffed4a;
+  --accent-muted: #ffd700;
 }
 
 @theme inline {
@@ -178,13 +195,13 @@ main input:focus, main textarea:focus {
 
 /* Select dropdown styling */
 select {
-  background-color: #111;
+  background-color: var(--surface);
   color: var(--foreground);
   font-size: 14px;
 }
 
 select option {
-  background-color: #111;
+  background-color: var(--surface);
   color: var(--foreground);
 }
 
@@ -266,6 +283,90 @@ input[type="range"]::-moz-range-thumb {
 h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.02em;
   font-weight: 700;
+}
+
+/* Ensure pre and code tags use proper colors */
+pre, code {
+  color: var(--foreground) !important;
+  background: transparent;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LYRICS & TRACKLIST - Pure CSS theming with high specificity
+   Using @layer utilities for Tailwind v4 compatibility
+   ═══════════════════════════════════════════════════════════════ */
+
+/* LYRICS - Force correct colors with maximum specificity */
+html.dark .lyrics-content pre.lyrics-text,
+html.dark pre.lyrics-text,
+html.dark .lyrics-text,
+html:not(.light) .lyrics-content pre.lyrics-text,
+html:not(.light) pre.lyrics-text,
+html:not(.light) .lyrics-text {
+  color: #ededed !important;
+  line-height: 1.8;
+}
+
+html.light .lyrics-content pre.lyrics-text,
+html.light pre.lyrics-text,
+html.light .lyrics-text,
+html.light .lyrics-page-content pre,
+html.light .lyrics-page-content .lyrics-text,
+.light .lyrics-text {
+  color: #1a1a1a !important;
+  line-height: 1.8 !important;
+  background: transparent !important;
+}
+
+/* TRACKLIST - Base styles */
+.track-row {
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+/* TRACKLIST - Dark mode text colors */
+html.dark .track-row .track-number,
+html:not(.light) .track-row .track-number {
+  color: #888888 !important;
+}
+
+html.dark .track-row .track-name,
+html:not(.light) .track-row .track-name {
+  color: #ededed !important;
+}
+
+/* TRACKLIST - Dark mode hover - more visible background */
+html.dark .track-row:hover,
+html:not(.light) .track-row:hover {
+  background-color: #1a1a1a !important;
+  border-left-color: var(--accent-primary, #ffd700) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 215, 0, 0.1);
+}
+
+html.dark .track-row:hover .track-number,
+html.dark .track-row:hover .track-name,
+html:not(.light) .track-row:hover .track-number,
+html:not(.light) .track-row:hover .track-name {
+  color: var(--accent-primary, #ffd700) !important;
+}
+
+/* TRACKLIST - Light mode text colors */
+html.light .track-row .track-number {
+  color: #5a5a5a !important;
+}
+
+html.light .track-row .track-name {
+  color: #1a1a1a !important;
+}
+
+/* TRACKLIST - Light mode hover */
+html.light .track-row:hover {
+  background-color: #d5d5d0 !important;
+  border-left-color: #b8860b !important;
+}
+
+html.light .track-row:hover .track-number,
+html.light .track-row:hover .track-name {
+  color: #b8860b !important;
 }
 
 /* Smooth image loading */
@@ -653,6 +754,272 @@ img[src=""] {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* User-controlled reduce motion class */
+html.reduce-motion *,
+html.reduce-motion *::before,
+html.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* User-controlled cursor visibility */
+html.no-custom-cursor .cursor {
+  display: none !important;
+}
+
+html.no-custom-cursor * {
+  cursor: auto !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BACKGROUND TEXTURES - Magazine-style visual options
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Paper texture */
+[data-bg-texture="paper"] body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Film grain texture */
+[data-bg-texture="grain"] body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)'/%3E%3C/svg%3E");
+  animation: grain-shift 0.5s steps(10) infinite;
+}
+
+@keyframes grain-shift {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-1%, -1%); }
+  20% { transform: translate(1%, 1%); }
+  30% { transform: translate(-1%, 1%); }
+  40% { transform: translate(1%, -1%); }
+  50% { transform: translate(-1%, 0); }
+  60% { transform: translate(1%, 0); }
+  70% { transform: translate(0, 1%); }
+  80% { transform: translate(0, -1%); }
+  90% { transform: translate(1%, 1%); }
+}
+
+/* Digital noise texture */
+[data-bg-texture="noise"] body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.02;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CUSTOMIZATION SYSTEM - User-controlled styling
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Accent color utility classes */
+.accent-text { color: var(--accent-primary); }
+.accent-bg { background-color: var(--accent-primary); }
+.accent-border { border-color: var(--accent-primary); }
+.accent-text-hover:hover { color: var(--accent-hover); }
+.accent-bg-hover:hover { background-color: var(--accent-hover); }
+
+/* Card style variants */
+[data-card-style="minimal"] .customizable-card {
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+
+[data-card-style="elevated"] .customizable-card {
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+[data-card-style="outlined"] .customizable-card {
+  border: 2px solid var(--foreground);
+  box-shadow: none;
+}
+
+/* Font family customization */
+.font-custom {
+  font-family: var(--font-custom);
+}
+
+/* Density-aware spacing */
+.density-padding {
+  padding: calc(1rem * var(--density-scale));
+}
+
+.density-gap {
+  gap: calc(1rem * var(--density-scale));
+}
+
+.density-margin {
+  margin: calc(1rem * var(--density-scale));
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GRID COLUMN OPTIONS - User-controlled album grid layouts
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Grid column overrides for album displays */
+[data-grid-cols="two"] .album-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+[data-grid-cols="three"] .album-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+[data-grid-cols="four"] .album-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+[data-grid-cols="five"] .album-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   COVER ART STYLES - Magazine-inspired album display options
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Rounded corners style */
+[data-cover-style="rounded"] .album-cover,
+[data-cover-style="rounded"] .album-cover img {
+  border-radius: 8px !important;
+}
+
+/* Shadow/elevated style */
+[data-cover-style="shadow"] .album-cover {
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.4) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+
+[data-cover-style="shadow"] .album-cover:hover {
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.5) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   COMPACT MODE - Cleaner, minimal UI
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Hide secondary elements in compact mode */
+html.compact-mode .hide-compact {
+  display: none !important;
+}
+
+/* Reduce padding in compact mode */
+html.compact-mode .compact-padding {
+  padding: calc(0.75rem * var(--density-scale)) !important;
+}
+
+/* Smaller text in compact mode */
+html.compact-mode .compact-text {
+  font-size: 0.875rem !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FONT SIZE SCALING
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Apply font size scale to main content */
+:root {
+  --font-size-scale: 1;
+}
+
+.scalable-text {
+  font-size: calc(1rem * var(--font-size-scale)) !important;
+}
+
+.scalable-text-sm {
+  font-size: calc(0.875rem * var(--font-size-scale)) !important;
+}
+
+.scalable-text-lg {
+  font-size: calc(1.125rem * var(--font-size-scale)) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   REVIEW DISPLAY MODES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* List mode - compact horizontal layout */
+[data-review-display="list"] .review-card {
+  flex-direction: row !important;
+  gap: 1rem !important;
+}
+
+[data-review-display="list"] .review-card .review-album-art {
+  width: 80px !important;
+  height: 80px !important;
+  flex-shrink: 0 !important;
+}
+
+[data-review-display="list"] .review-card .review-content {
+  flex: 1 !important;
+}
+
+/* Magazine mode - editorial spread with larger typography */
+[data-review-display="magazine"] .review-card {
+  padding: 2rem !important;
+  border-left: 4px solid var(--accent-primary) !important;
+  background: linear-gradient(135deg, var(--surface) 0%, transparent 100%) !important;
+}
+
+[data-review-display="magazine"] .review-card .review-text {
+  font-size: 1.125rem !important;
+  line-height: 1.8 !important;
+  font-style: italic !important;
+}
+
+[data-review-display="magazine"] .review-card .review-rating {
+  font-size: 2rem !important;
+  font-weight: 700 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   HOMEPAGE LAYOUT MODES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Grid mode - album-focused, less text */
+[data-homepage-layout="grid"] .homepage-hero {
+  display: none !important;
+}
+
+[data-homepage-layout="grid"] .homepage-trending {
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
+}
+
+/* Stream mode - activity feed style */
+[data-homepage-layout="stream"] .homepage-sidebar {
+  display: none !important;
+}
+
+[data-homepage-layout="stream"] .homepage-main {
+  max-width: 640px !important;
+  margin: 0 auto !important;
 }
 
 /* Portrait mode specific adjustments */
