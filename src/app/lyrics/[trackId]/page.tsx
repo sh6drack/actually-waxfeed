@@ -155,10 +155,13 @@ export default function LyricsPage() {
           </div>
         ) : (
           <>
-            {/* Actual Lyrics - uses CSS variables for proper theming */}
+            {/* Actual Lyrics - uses inline style to guarantee correct color */}
             {data.lyrics ? (
               <div className="lyrics-content">
-                <pre className="lyrics-text whitespace-pre-wrap font-sans leading-loose text-base selection:bg-[--accent-primary] selection:text-black text-[--foreground]">
+                <pre
+                  className="lyrics-text whitespace-pre-wrap font-sans leading-loose text-base selection:bg-[--accent-primary] selection:text-black"
+                  style={{ color: 'var(--foreground)' }}
+                >
                   {data.lyrics}
                 </pre>
                 {data.geniusUrl && (

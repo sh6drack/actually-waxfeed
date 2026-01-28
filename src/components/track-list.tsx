@@ -254,18 +254,18 @@ function TrackRow({
 
   return (
     <div
-      className="track-row px-4 py-2.5 flex items-center gap-3 border-l-2 border-l-transparent transition-all group animate-fade-in hover:bg-[--surface-hover] hover:border-l-[--accent-primary]"
+      className="track-row px-4 py-2.5 flex items-center gap-3 border-l-2 border-l-transparent transition-all duration-150 group animate-fade-in"
       style={{ animationDelay: `${animationDelay}ms` }}
     >
-      {/* Track number */}
-      <span className="track-number w-6 text-center text-sm tabular-nums font-medium transition-colors text-[--muted] group-hover:text-[--accent-primary]">
+      {/* Track number - color changes handled by CSS in globals.css */}
+      <span className="track-number w-6 text-center text-sm tabular-nums font-medium transition-colors duration-150">
         {track.trackNumber}
       </span>
 
       {/* Track info */}
       <div className="flex-1 min-w-0">
-        {/* Track name */}
-        <p className="track-name text-sm truncate transition-colors text-[--foreground] group-hover:text-[--accent-primary]">
+        {/* Track name - color changes handled by CSS in globals.css */}
+        <p className="track-name text-sm truncate transition-colors duration-150">
           {track.name}
         </p>
         <div className="flex items-center gap-2 text-[10px] text-[--muted]">
