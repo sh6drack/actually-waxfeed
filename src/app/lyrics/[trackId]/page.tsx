@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
+import { useTheme } from "@/components/theme-provider"
 
 interface LyricsData {
   track: {
@@ -29,10 +30,14 @@ interface LyricsData {
 export default function LyricsPage() {
   const params = useParams()
   const trackId = params.trackId as string
+  const { theme } = useTheme()
 
   const [data, setData] = useState<LyricsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Explicit text color based on theme - dark text for light mode, light text for dark mode
+  const lyricsTextColor = theme === 'light' ? '#1a1a1a' : '#ededed'
 
   useEffect(() => {
     const fetchLyrics = async () => {
@@ -155,12 +160,12 @@ export default function LyricsPage() {
           </div>
         ) : (
           <>
-            {/* Actual Lyrics - uses inline style to guarantee correct color */}
+            {/* Actual Lyrics - explicit color based on theme state */}
             {data.lyrics ? (
               <div className="lyrics-content">
                 <pre
                   className="lyrics-text whitespace-pre-wrap font-sans leading-loose text-base selection:bg-[--accent-primary] selection:text-black"
-                  style={{ color: 'var(--foreground)' }}
+                  style={{ color: lyricsTextColor }}
                 >
                   {data.lyrics}
                 </pre>

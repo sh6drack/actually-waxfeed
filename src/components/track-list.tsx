@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { Tooltip } from "./ui/tooltip"
+import { useTheme } from "./theme-provider"
 
 interface Track {
   id: string
@@ -247,19 +248,28 @@ function TrackRow({
   formatDuration: (ms: number) => string
   animationDelay?: number
 }) {
+  const { theme } = useTheme()
   const [hoverRating, setHoverRating] = useState<number | null>(null)
   const [showRater, setShowRater] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
 
   const displayRating = hoverRating ?? track.userRating
 
+  // Explicit colors based on theme - no CSS variables
+  const colors = {
+    hoverBg: theme === 'light' ? '#e5e5e0' : '#252525',
+    accentPrimary: '#ffd700',
+    muted: theme === 'light' ? '#5a5a5a' : '#888888',
+    foreground: theme === 'light' ? '#1a1a1a' : '#ededed',
+  }
+
   return (
     <div
       className="track-row px-4 py-2.5 flex items-center gap-3 border-l-2 transition-all duration-150 group animate-fade-in"
       style={{
         animationDelay: `${animationDelay}ms`,
-        backgroundColor: isHovered ? 'var(--surface-hover)' : 'transparent',
-        borderLeftColor: isHovered ? 'var(--accent-primary)' : 'transparent',
+        backgroundColor: isHovered ? colors.hoverBg : 'transparent',
+        borderLeftColor: isHovered ? colors.accentPrimary : 'transparent',
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -267,7 +277,7 @@ function TrackRow({
       {/* Track number */}
       <span
         className="w-6 text-center text-sm tabular-nums font-medium transition-colors duration-150"
-        style={{ color: isHovered ? 'var(--accent-primary)' : 'var(--muted)' }}
+        style={{ color: isHovered ? colors.accentPrimary : colors.muted }}
       >
         {track.trackNumber}
       </span>
@@ -277,7 +287,7 @@ function TrackRow({
         {/* Track name */}
         <p
           className="text-sm truncate transition-colors duration-150"
-          style={{ color: isHovered ? 'var(--accent-primary)' : 'var(--foreground)' }}
+          style={{ color: isHovered ? colors.accentPrimary : colors.foreground }}
         >
           {track.name}
         </p>
