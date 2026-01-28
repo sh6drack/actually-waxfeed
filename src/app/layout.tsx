@@ -7,6 +7,7 @@ import { Header } from "@/components/header";
 import { CustomCursor } from "@/components/custom-cursor";
 import { PolaritySystem } from "@/components/polarity-system";
 import { FirstTimeWelcome } from "@/components/first-time-welcome";
+import { OnboardingGuard } from "@/components/onboarding-guard";
 import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
@@ -59,6 +60,7 @@ export default function RootLayout({
             <CustomizationProvider>
               <CustomCursor />
               <Header />
+              <OnboardingGuard />
               <FirstTimeWelcome />
               <main className="pt-16 pb-12">
                 {children}
