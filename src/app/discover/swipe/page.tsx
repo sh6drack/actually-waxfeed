@@ -43,7 +43,7 @@ const POLARITY_DESCRIPTORS = [
 
 type DescriptorId = typeof POLARITY_DESCRIPTORS[number]['id']
 
-const MIN_DESCRIPTORS = 3
+const MIN_DESCRIPTORS = 0 // Vibes optional - don't block users from rating
 const MAX_DESCRIPTORS = 5
 
 // Fisher-Yates shuffle
@@ -270,29 +270,32 @@ export default function QuickRatePage() {
             </div>
           </div>
         ) : currentAlbum ? (
-          <div className="space-y-8">
-            {/* Album Card */}
-            <div className="border border-[--border]">
-              <div className="aspect-square relative overflow-hidden">
-                {currentAlbum.coverArtUrlLarge || currentAlbum.coverArtUrl ? (
-                  <img
-                    src={currentAlbum.coverArtUrlLarge || currentAlbum.coverArtUrl!}
-                    alt={currentAlbum.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-[--muted]/10 flex items-center justify-center">
-                    <svg className="w-20 h-20 text-[--muted]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-                    </svg>
-                  </div>
-                )}
+          <div className="space-y-4 md:space-y-6">
+            {/* Album Card - Compact on mobile */}
+            <div className="flex gap-3 md:block md:border md:border-[--border]">
+              {/* Mobile: Small image + info side by side */}
+              <div className="w-24 h-24 md:w-full md:h-auto flex-shrink-0">
+                <div className="w-full h-full md:aspect-square relative overflow-hidden">
+                  {currentAlbum.coverArtUrlLarge || currentAlbum.coverArtUrl ? (
+                    <img
+                      src={currentAlbum.coverArtUrlLarge || currentAlbum.coverArtUrl!}
+                      alt={currentAlbum.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-[--muted]/10 flex items-center justify-center">
+                      <svg className="w-8 md:w-20 h-8 md:h-20 text-[--muted]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="p-6">
-                <h2 className="text-xl font-bold mb-1">{currentAlbum.title}</h2>
-                <p className="text-[--muted] mb-4">{currentAlbum.artistName}</p>
+              <div className="flex-1 min-w-0 flex flex-col justify-center md:p-6">
+                <h2 className="text-base md:text-xl font-bold mb-0.5 md:mb-1 line-clamp-2">{currentAlbum.title}</h2>
+                <p className="text-sm md:text-base text-[--muted] truncate md:mb-4">{currentAlbum.artistName}</p>
                 {currentAlbum.genres && currentAlbum.genres.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="hidden md:flex flex-wrap gap-2">
                     {currentAlbum.genres.slice(0, 4).map((genre) => (
                       <span
                         key={genre}
@@ -306,18 +309,68 @@ export default function QuickRatePage() {
               </div>
             </div>
 
-            {/* Descriptors Section */}
-            <div className="mb-4">
+            {/* Rating Section - Prominent on mobile */}
+            <div className="space-y-4">
+              <RatingSlider value={rating} onChange={setRating} disabled={submitting} />
+
+              {error && (
+                <p className="text-red-500 text-sm text-center">{error}</p>
+              )}
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={skip}
+                  disabled={submitting}
+                  className="flex-1 py-4 min-h-[56px] border border-[--border] text-[--muted] font-bold text-sm tracking-wide uppercase hover:border-white hover:text-white transition-colors disabled:opacity-50"
+                >
+                  Skip
+                </button>
+                <button
+                  onClick={submitRating}
+                  disabled={submitting}
+                  className="flex-1 py-4 min-h-[56px] font-bold text-sm tracking-wide uppercase transition-colors disabled:opacity-50 bg-[var(--accent-primary)] text-black hover:bg-[var(--accent-hover)]"
+                >
+                  {submitting ? 'Saving...' : 'Rate'}
+                </button>
+              </div>
+            </div>
+
+            {/* Descriptors Section - Collapsible on mobile */}
+            <details className="md:hidden border-t border-[--border] pt-3">
+              <summary className="text-xs text-[--muted] uppercase tracking-wider cursor-pointer">
+                Add vibes (optional) {selectedDescriptors.length > 0 && `· ${selectedDescriptors.length} selected`}
+              </summary>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {shuffledDescriptors.slice(0, 15).map((descriptor) => {
+                  const isSelected = selectedDescriptors.includes(descriptor.id)
+                  const atMax = selectedDescriptors.length >= MAX_DESCRIPTORS && !isSelected
+                  return (
+                    <button
+                      key={descriptor.id}
+                      onClick={() => toggleDescriptor(descriptor.id)}
+                      disabled={submitting || atMax}
+                      className={`text-[10px] px-2.5 py-1.5 uppercase tracking-wider transition-all ${
+                        isSelected
+                          ? 'bg-[var(--accent-primary)] text-white border border-[var(--accent-primary)] font-bold'
+                          : 'border border-[--border] text-[--muted]'
+                      }`}
+                    >
+                      {descriptor.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </details>
+
+            {/* Descriptors - Desktop always visible */}
+            <div className="hidden md:block">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-[10px] text-[--muted] uppercase tracking-wider">
-                  Describe this album{' '}
-                  <span className={selectedDescriptors.length >= MIN_DESCRIPTORS ? 'text-[var(--accent-primary)]' : 'text-[#ff6b6b]'}>
-                    ({selectedDescriptors.length}/{MIN_DESCRIPTORS} required)
-                  </span>
+                  Describe this album <span className="text-[--muted]">(optional)</span>
                 </p>
-                {selectedDescriptors.length < MIN_DESCRIPTORS && (
-                  <span className="text-[10px] text-[#ff6b6b] animate-pulse">
-                    Pick {MIN_DESCRIPTORS - selectedDescriptors.length} more
+                {selectedDescriptors.length > 0 && (
+                  <span className="text-[10px] text-[var(--accent-primary)]">
+                    {selectedDescriptors.length} selected
                   </span>
                 )}
               </div>
@@ -345,43 +398,8 @@ export default function QuickRatePage() {
               </div>
             </div>
 
-            {/* Rating Section */}
-            <div className="space-y-6">
-              <RatingSlider value={rating} onChange={setRating} disabled={submitting} />
-
-              {error && (
-                <p className="text-red-500 text-sm text-center">{error}</p>
-              )}
-
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={skip}
-                  disabled={submitting}
-                  className="flex-1 py-4 min-h-[48px] border border-[--border] text-[--muted] font-medium text-sm tracking-wide uppercase hover:border-white hover:text-white transition-colors disabled:opacity-50"
-                >
-                  Skip
-                </button>
-                <button
-                  onClick={submitRating}
-                  disabled={submitting || !canSubmit}
-                  className={`flex-1 py-4 min-h-[48px] font-bold text-sm tracking-wide uppercase transition-colors disabled:opacity-50 ${
-                    canSubmit
-                      ? 'bg-[var(--accent-primary)] text-black hover:bg-[var(--accent-hover)]'
-                      : 'bg-[--border] text-[--muted] cursor-not-allowed'
-                  }`}
-                >
-                  {submitting ? 'Saving...' : !canSubmit ? `+${MIN_DESCRIPTORS - selectedDescriptors.length} vibes` : 'Rate'}
-                </button>
-              </div>
-
-              <p className="text-center text-xs text-[--muted]">
-                {canSubmit && <><kbd className="px-1.5 py-0.5 border border-[--border] text-[10px]">Enter</kbd> to rate · </>}
-                <kbd className="px-1.5 py-0.5 border border-[--border] text-[10px]">S</kbd> to skip
-              </p>
-            </div>
-
             {/* Progress */}
-            <div className="pt-4 border-t border-[--border]">
+            <div className="pt-3 border-t border-[--border]">
               <div className="flex items-center justify-between text-xs text-[--muted] mb-2">
                 <span>{currentIndex + 1} of {albums.length}</span>
                 <span>{ratedCount} rated · {skippedCount} skipped</span>

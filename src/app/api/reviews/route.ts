@@ -116,10 +116,7 @@ export async function POST(request: NextRequest) {
 
     const { albumId, rating, text, isQuickRate, vibes } = validation.data
 
-    // Quick rate requires at least 3 vibes for CCX POLARITY model accuracy
-    if (isQuickRate && (!vibes || vibes.length < 3)) {
-      return errorResponse('Quick rate requires at least 3 descriptors for TasteID accuracy', 400)
-    }
+    // Vibes are optional but improve TasteID accuracy when provided
 
     // Check album exists
     const album = await prisma.album.findUnique({ where: { id: albumId } })

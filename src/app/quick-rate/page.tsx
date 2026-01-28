@@ -87,7 +87,7 @@ type Descriptor = typeof POLARITY_DESCRIPTORS[number]
 // Taste profiling requires 3-5 descriptors for optimal signal
 // 3 = minimum viable signal (C(31,3) = 4,495 combinations)
 // 5 = rich signal without cognitive overload (C(31,5) = 169,911 combinations)
-const MIN_DESCRIPTORS = 3
+const MIN_DESCRIPTORS = 0 // Vibes optional - don't block users from rating
 const MAX_DESCRIPTORS = 5
 const TASTEID_UNLOCK = 20 // Ratings needed to UNLOCK TasteID (but it never stops learning)
 
@@ -555,11 +555,141 @@ export default function QuickRatePage() {
             <span className="text-xs tracking-[0.2em] uppercase text-[--muted]">Loading albums</span>
           </div>
         ) : currentAlbum ? (
-          <div className="border border-[--border] flex-1 overflow-hidden flex flex-col">
-            <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {/* MOBILE LAYOUT (default) */}
+            <div className="flex-1 flex flex-col md:hidden overflow-hidden">
+              {/* Album Header - Compact on mobile */}
+              <div className="flex gap-3 p-3 border-b border-[--border] flex-shrink-0">
+                <div className="w-20 h-20 flex-shrink-0">
+                  {currentAlbum.coverArtUrlLarge || currentAlbum.coverArtUrl ? (
+                    <img
+                      src={currentAlbum.coverArtUrlLarge || currentAlbum.coverArtUrl!}
+                      alt={currentAlbum.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-[--surface] flex items-center justify-center">
+                      <svg className="w-8 h-8 text-[--muted]/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                  <h2 className="text-base font-bold leading-tight line-clamp-2">{currentAlbum.title}</h2>
+                  <p className="text-sm text-[--muted] truncate">{currentAlbum.artistName}</p>
+                  {currentAlbum.genres && currentAlbum.genres.length > 0 && (
+                    <p className="text-[10px] text-[--muted] truncate mt-1">
+                      {currentAlbum.genres.slice(0, 2).join(' · ')}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Rating Section - Always visible on mobile */}
+              <div className="p-4 flex-shrink-0">
+                <RatingSlider value={rating} onChange={setRating} disabled={submitting} />
+              </div>
+
+              {/* Action Buttons - Always visible */}
+              <div className="px-4 pb-4 flex-shrink-0">
+                {error && (
+                  <p className="text-red-500 text-sm text-center mb-3">{error}</p>
+                )}
+                <div className="flex gap-3">
+                  <button
+                    onClick={skip}
+                    disabled={submitting}
+                    className="flex-1 py-4 min-h-[56px] border border-[--border] text-[--muted] font-bold uppercase tracking-wider text-sm hover:border-[--foreground] hover:text-[--foreground] transition-colors disabled:opacity-50"
+                  >
+                    Skip
+                  </button>
+                  <button
+                    onClick={submitRating}
+                    disabled={submitting}
+                    className="flex-1 py-4 min-h-[56px] font-bold uppercase tracking-wider text-sm transition-colors disabled:opacity-50 bg-[--accent-primary] text-black hover:bg-[--accent-hover]"
+                  >
+                    {submitting ? 'Saving...' : 'Rate'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Optional: Vibes (collapsible on mobile) */}
+              <details className="border-t border-[--border] flex-shrink-0">
+                <summary className="px-4 py-3 text-xs text-[--muted] uppercase tracking-wider cursor-pointer hover:bg-[--surface]">
+                  Add vibes for better recommendations {selectedDescriptors.length > 0 && `(${selectedDescriptors.length} selected)`}
+                </summary>
+                <div className="px-4 pb-4">
+                  <div className="flex flex-wrap gap-1.5">
+                    {shuffledDescriptors.slice(0, 15).map((descriptor) => {
+                      const isSelected = selectedDescriptors.includes(descriptor.id)
+                      const atMax = selectedDescriptors.length >= MAX_DESCRIPTORS && !isSelected
+                      return (
+                        <button
+                          key={descriptor.id}
+                          onClick={() => toggleDescriptor(descriptor.id)}
+                          disabled={submitting || atMax}
+                          className={`text-[10px] px-2.5 py-1.5 uppercase tracking-wider transition-all ${
+                            isSelected
+                              ? 'bg-[--accent-primary] text-white border border-[--accent-primary] font-bold'
+                              : 'border border-[--border] text-[--muted]'
+                          }`}
+                        >
+                          {descriptor.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              </details>
+
+              {/* Optional: Track previews (collapsible on mobile) */}
+              {albumTracks.length > 0 && (
+                <details className="border-t border-[--border] flex-1 overflow-hidden">
+                  <summary className="px-4 py-3 text-xs text-[--muted] uppercase tracking-wider cursor-pointer hover:bg-[--surface]">
+                    Preview tracks
+                  </summary>
+                  <div className="px-4 pb-4 overflow-y-auto max-h-[200px]">
+                    <div className="space-y-1">
+                      {albumTracks.slice(0, 5).map((track) => (
+                        <button
+                          key={track.id}
+                          onClick={() => playTrack(track)}
+                          disabled={!track.previewUrl}
+                          className={`w-full flex items-center gap-2 p-2 text-left transition-colors ${
+                            playingTrackId === track.id
+                              ? 'bg-[--accent-primary]/20'
+                              : ''
+                          } ${!track.previewUrl ? 'opacity-40' : ''}`}
+                        >
+                          <div className={`w-6 h-6 flex items-center justify-center ${
+                            playingTrackId === track.id ? 'text-[--accent-primary]' : 'text-[--muted]'
+                          }`}>
+                            {playingTrackId === track.id ? (
+                              <svg className="w-4 h-4 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
+                                <rect x="6" y="4" width="4" height="16" />
+                                <rect x="14" y="4" width="4" height="16" />
+                              </svg>
+                            ) : (
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z"/>
+                              </svg>
+                            )}
+                          </div>
+                          <span className="text-sm truncate">{track.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </details>
+              )}
+            </div>
+
+            {/* DESKTOP LAYOUT */}
+            <div className="hidden md:flex border border-[--border] flex-1 overflow-hidden">
               {/* Album Art - Left Side */}
-              <div className="md:w-[280px] lg:w-[320px] flex-shrink-0">
-                <div className="aspect-square relative max-h-[280px] lg:max-h-[320px]">
+              <div className="w-[280px] lg:w-[320px] flex-shrink-0">
+                <div className="aspect-square relative max-h-[320px]">
                   {currentAlbum.coverArtUrlLarge || currentAlbum.coverArtUrl ? (
                     <img
                       src={currentAlbum.coverArtUrlLarge || currentAlbum.coverArtUrl!}
@@ -594,7 +724,7 @@ export default function QuickRatePage() {
                     </div>
                   )}
 
-                  {/* Track Previews - 15 second samples */}
+                  {/* Track Previews - Desktop */}
                   <div className="mb-3 p-2 bg-[--surface] border border-[--border]">
                     <p className="text-[10px] text-[--muted] uppercase tracking-wider mb-2 flex items-center gap-2">
                       <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
@@ -605,7 +735,7 @@ export default function QuickRatePage() {
                     {loadingTracks ? (
                       <div className="flex items-center gap-2 text-[--muted] text-xs py-2">
                         <div className="w-4 h-4 border-2 border-[--border] border-t-[--accent-primary] rounded-full animate-spin" />
-                        Loading previews...
+                        Loading...
                       </div>
                     ) : albumTracks.length > 0 ? (
                       <div className="space-y-1">
@@ -648,22 +778,20 @@ export default function QuickRatePage() {
                     )}
                   </div>
 
-                  {/* Polarity Descriptors */}
+                  {/* Polarity Descriptors - Desktop */}
                   <div className="mb-3">
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-[10px] text-[--muted] uppercase tracking-wider">
                         Describe this album{' '}
-                        <span className={selectedDescriptors.length >= MIN_DESCRIPTORS ? 'text-[--accent-primary]' : 'text-[#ff6b6b]'}>
-                          ({selectedDescriptors.length}/{MIN_DESCRIPTORS} required, up to {MAX_DESCRIPTORS})
-                        </span>
+                        <span className="text-[--muted]">(optional)</span>
                       </p>
-                      {selectedDescriptors.length < MIN_DESCRIPTORS && (
-                        <span className="text-[10px] text-[#ff6b6b] animate-pulse">
-                          Pick {MIN_DESCRIPTORS - selectedDescriptors.length} more
+                      {selectedDescriptors.length > 0 && (
+                        <span className="text-[10px] text-[--accent-primary]">
+                          {selectedDescriptors.length} selected
                         </span>
                       )}
                     </div>
-                    <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                    <div className="flex flex-wrap gap-1.5">
                       {shuffledDescriptors.map((descriptor) => {
                         const isSelected = selectedDescriptors.includes(descriptor.id)
                         const atMax = selectedDescriptors.length >= MAX_DESCRIPTORS && !isSelected
@@ -673,7 +801,7 @@ export default function QuickRatePage() {
                             onClick={() => toggleDescriptor(descriptor.id)}
                             disabled={submitting || atMax}
                             title={descriptor.description}
-                            className={`text-[9px] sm:text-[10px] px-2 sm:px-3 py-1.5 min-h-[32px] uppercase tracking-wider transition-all duration-150 ${
+                            className={`text-[10px] px-3 py-1.5 min-h-[32px] uppercase tracking-wider transition-all duration-150 ${
                               isSelected
                                 ? 'bg-[--accent-primary] text-white border border-[--accent-primary] font-bold'
                                 : atMax
@@ -689,7 +817,7 @@ export default function QuickRatePage() {
                   </div>
                 </div>
 
-                {/* Rating Controls */}
+                {/* Rating Controls - Desktop */}
                 <div className="space-y-3 flex-shrink-0 pt-3 border-t border-[--border]">
                   <RatingSlider value={rating} onChange={setRating} disabled={submitting} />
 
@@ -697,32 +825,25 @@ export default function QuickRatePage() {
                     <p className="text-red-500 text-sm text-center">{error}</p>
                   )}
 
-                  <div className="flex gap-2 sm:gap-3">
+                  <div className="flex gap-3">
                     <button
                       onClick={skip}
                       disabled={submitting}
-                      className="flex-1 py-3 min-h-[48px] border border-[--border] text-[--muted] font-bold uppercase tracking-wider text-xs sm:text-sm hover:border-[--foreground] hover:text-[--foreground] transition-colors disabled:opacity-50"
+                      className="flex-1 py-3 min-h-[48px] border border-[--border] text-[--muted] font-bold uppercase tracking-wider text-sm hover:border-[--foreground] hover:text-[--foreground] transition-colors disabled:opacity-50"
                     >
                       Skip
                     </button>
                     <button
                       onClick={submitRating}
-                      disabled={submitting || !canSubmit}
-                      className={`flex-1 py-3 min-h-[48px] font-bold uppercase tracking-wider text-xs sm:text-sm transition-colors disabled:opacity-50 ${
-                        canSubmit
-                          ? 'bg-[--accent-primary] text-black hover:bg-[--accent-hover]'
-                          : 'bg-[--surface] text-[--muted] cursor-not-allowed'
-                      }`}
+                      disabled={submitting}
+                      className="flex-1 py-3 min-h-[48px] font-bold uppercase tracking-wider text-sm transition-colors disabled:opacity-50 bg-[--accent-primary] text-black hover:bg-[--accent-hover]"
                     >
-                      {submitting ? 'Saving...' : !canSubmit ? `+${MIN_DESCRIPTORS - selectedDescriptors.length} vibes` : 'Rate'}
+                      {submitting ? 'Saving...' : 'Rate'}
                     </button>
                   </div>
 
                   <p className="text-center text-xs text-[--muted]">
-                    {canSubmit ? (
-                      <><kbd className="px-1.5 py-0.5 border border-[--border] text-[10px]">Enter</kbd> to rate · </>
-                    ) : null}
-                    <kbd className="px-1.5 py-0.5 border border-[--border] text-[10px]">S</kbd> to skip
+                    <kbd className="px-1.5 py-0.5 border border-[--border] text-[10px]">Enter</kbd> to rate · <kbd className="px-1.5 py-0.5 border border-[--border] text-[10px]">S</kbd> to skip
                   </p>
                 </div>
               </div>
