@@ -35,7 +35,7 @@ export async function GET(
 
     const ratingColor = getRatingColor(review.rating)
 
-    return new ImageResponse(
+    const response = new ImageResponse(
       (
         <div
           style={{
@@ -203,6 +203,11 @@ export async function GET(
         height: 630,
       }
     )
+
+    // Add cache headers to prevent stale social previews
+    response.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400')
+
+    return response
   } catch (error) {
     console.error('Error generating OG image:', error)
     return new Response('Failed to generate image', { status: 500 })

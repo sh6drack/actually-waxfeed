@@ -8,9 +8,74 @@ import { format } from "date-fns"
 import { StreamingLinks } from "@/components/streaming-links"
 import { TrackPlayer } from "@/components/track-player"
 import { FirstFans } from "@/components/first-fans"
+import type { Metadata } from "next"
 
 interface Props {
   params: Promise<{ id: string }>
+}
+
+// Generate dynamic metadata for social sharing
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params
+
+  const album = await prisma.album.findFirst({
+    where: {
+      OR: [{ id }, { spotifyId: id }]
+    },
+    select: {
+      title: true,
+      artistName: true,
+      coverArtUrl: true,
+      coverArtUrlLarge: true,
+      releaseDate: true,
+      genres: true,
+      _count: {
+        select: { reviews: true }
+      }
+    }
+  })
+
+  if (!album) {
+    return { title: "Album | WAXFEED" }
+  }
+
+  const releaseYear = album.releaseDate
+    ? new Date(album.releaseDate).getFullYear()
+    : null
+
+  const title = `${album.title} by ${album.artistName} | WAXFEED`
+  const description = album.genres?.length
+    ? `${album._count.reviews} reviews. ${releaseYear ? `(${releaseYear}) ` : ""}Genres: ${album.genres.slice(0, 3).join(", ")}`
+    : `${album._count.reviews} reviews on WAXFEED${releaseYear ? ` (${releaseYear})` : ""}`
+
+  const ogImage = album.coverArtUrlLarge || album.coverArtUrl
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title: `${album.title} - ${album.artistName}`,
+      description,
+      type: "music.album",
+      siteName: "WAXFEED",
+      images: ogImage
+        ? [
+            {
+              url: ogImage,
+              width: 640,
+              height: 640,
+              alt: `${album.title} album cover`,
+            },
+          ]
+        : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${album.title} - ${album.artistName}`,
+      description,
+      images: ogImage ? [ogImage] : [],
+    },
+  }
 }
 
 async function getAlbum(spotifyId: string) {

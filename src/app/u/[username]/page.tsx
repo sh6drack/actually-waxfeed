@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth"
 import { ProfileActions } from "./profile-actions"
 import Link from "next/link"
 import { format, formatDistanceToNow } from "date-fns"
+import type { Metadata } from "next"
 
 // Disable caching - always fetch fresh TasteID data
 export const dynamic = 'force-dynamic'
@@ -25,6 +26,77 @@ import { getCurrentTier, getKeepBuildingMessage } from "@/lib/tasteid-tiers"
 
 interface Props {
   params: Promise<{ username: string }>
+}
+
+// Generate dynamic metadata for social sharing
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { username } = await params
+
+  const user = await prisma.user.findUnique({
+    where: { username },
+    select: {
+      username: true,
+      name: true,
+      bio: true,
+      tasteId: {
+        select: {
+          primaryArchetype: true,
+          topGenres: true,
+        },
+      },
+      _count: {
+        select: {
+          reviews: true,
+        },
+      },
+    },
+  })
+
+  if (!user) {
+    return { title: `@${username} | WAXFEED` }
+  }
+
+  const archetype = user.tasteId
+    ? getArchetypeInfo(user.tasteId.primaryArchetype)
+    : null
+
+  const title = archetype
+    ? `@${user.username} is a ${archetype.name} on WAXFEED`
+    : `@${user.username} on WAXFEED`
+
+  const description = user.bio
+    ? user.bio.slice(0, 160)
+    : user.tasteId?.topGenres?.length
+    ? `${user._count.reviews} reviews. Top genres: ${user.tasteId.topGenres.slice(0, 3).join(", ")}`
+    : `${user._count.reviews} album reviews on WAXFEED`
+
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.wax-feed.com"
+  const ogImageUrl = `${baseUrl}/api/og/user/${username}`
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "profile",
+      siteName: "WAXFEED",
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: `@${user.username}'s profile on WAXFEED`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImageUrl],
+    },
+  }
 }
 
 async function getUser(identifier: string) {
