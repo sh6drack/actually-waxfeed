@@ -62,12 +62,12 @@ export default function LyricsPage() {
     return (
       <div className="w-full px-4 lg:px-12 xl:px-20 py-8">
         <div className="animate-pulse">
-          <div className="h-8 bg-[#222] w-1/3 mb-4"></div>
-          <div className="h-4 bg-[#222] w-1/2 mb-8"></div>
+          <div className="h-8 bg-[--border] w-1/3 mb-4"></div>
+          <div className="h-4 bg-[--border] w-1/2 mb-8"></div>
           <div className="space-y-2">
-            <div className="h-4 bg-[#222] w-full"></div>
-            <div className="h-4 bg-[#222] w-5/6"></div>
-            <div className="h-4 bg-[#222] w-4/6"></div>
+            <div className="h-4 bg-[--border] w-full"></div>
+            <div className="h-4 bg-[--border] w-5/6"></div>
+            <div className="h-4 bg-[--border] w-4/6"></div>
           </div>
         </div>
       </div>
@@ -77,9 +77,9 @@ export default function LyricsPage() {
   if (error || !data) {
     return (
       <div className="w-full px-4 lg:px-12 xl:px-20 py-8">
-        <div className="border border-[#222] p-8 text-center">
-          <p className="text-[#888] mb-4">{error || "Track not found"}</p>
-          <Link href="/" className="text-white hover:underline">
+        <div className="border border-[--border] p-8 text-center">
+          <p className="text-[--muted] mb-4">{error || "Track not found"}</p>
+          <Link href="/" className="text-[--foreground] hover:underline">
             Go back home
           </Link>
         </div>
@@ -92,7 +92,7 @@ export default function LyricsPage() {
       {/* Header */}
       <div className="flex items-start gap-6 mb-8">
         {/* Album Art */}
-        <div className="w-32 h-32 bg-[#222] flex-shrink-0">
+        <div className="w-32 h-32 bg-[--surface] flex-shrink-0">
           {data.track.coverArtUrl ? (
             <img
               src={data.track.coverArtUrl}
@@ -100,7 +100,7 @@ export default function LyricsPage() {
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-[#666]">
+            <div className="w-full h-full flex items-center justify-center text-[--muted-dim]">
               No Cover
             </div>
           )}
@@ -108,15 +108,15 @@ export default function LyricsPage() {
 
         {/* Track Info */}
         <div className="flex-1 min-w-0">
-          <h1 className="text-3xl font-bold tracking-tighter mb-1 truncate">
+          <h1 className="text-3xl font-bold tracking-tighter mb-1 truncate text-[--foreground]">
             {data.track.name}
           </h1>
-          <p className="text-xl text-[#888] mb-2">{data.track.artistName}</p>
-          <p className="text-sm text-[#666]">From: {data.track.albumTitle}</p>
+          <p className="text-xl text-[--muted] mb-2">{data.track.artistName}</p>
+          <p className="text-sm text-[--muted-dim]">From: {data.track.albumTitle}</p>
 
           {/* Song Details */}
           {data.songDetails && (
-            <div className="mt-4 space-y-1 text-sm text-[#888]">
+            <div className="mt-4 space-y-1 text-sm text-[--muted]">
               {data.songDetails.releaseDate && (
                 <p>Released: {data.songDetails.releaseDate}</p>
               )}
@@ -132,11 +132,11 @@ export default function LyricsPage() {
       </div>
 
       {/* Lyrics Content */}
-      <div className="border border-[#222] p-6">
+      <div className="lyrics-page-content border border-[--border] p-6 bg-[--surface]">
         {data.notFound ? (
           <div className="text-center py-8">
             <svg
-              className="w-16 h-16 mx-auto mb-4 text-[#444]"
+              className="w-16 h-16 mx-auto mb-4 text-[--muted]"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -148,29 +148,29 @@ export default function LyricsPage() {
                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
             </svg>
-            <p className="text-[#888] mb-2">Lyrics not found for this track</p>
-            <p className="text-sm text-[#666]">
+            <p className="text-[--foreground] mb-2">Lyrics not found for this track</p>
+            <p className="text-sm text-[--muted]">
               We couldn&apos;t find lyrics on Genius for this song
             </p>
           </div>
         ) : (
           <>
-            {/* Actual Lyrics */}
+            {/* Actual Lyrics - uses CSS variables for proper theming */}
             {data.lyrics ? (
               <div className="lyrics-content">
-                <pre className="whitespace-pre-wrap font-sans text-[#e0e0e0] leading-relaxed text-base">
+                <pre className="lyrics-text whitespace-pre-wrap font-sans leading-loose text-base selection:bg-[--accent-primary] selection:text-black text-[--foreground]">
                   {data.lyrics}
                 </pre>
                 {data.geniusUrl && (
-                  <div className="mt-8 pt-6 border-t border-[#222] flex items-center justify-between">
-                    <p className="text-xs text-[#555]">
+                  <div className="mt-8 pt-6 border-t border-[--border] flex items-center justify-between">
+                    <p className="text-xs text-[--muted-dim]">
                       Lyrics from LRCLIB
                     </p>
                     <a
                       href={data.geniusUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-[#FFFF64] hover:underline"
+                      className="text-xs text-[var(--accent-primary)] hover:underline"
                     >
                       View on Genius for annotations →
                     </a>
@@ -181,11 +181,11 @@ export default function LyricsPage() {
               <>
                 {/* Description */}
                 {data.songDetails?.description && (
-                  <div className="mb-6 pb-6 border-b border-[#222]">
-                    <h2 className="text-sm font-bold text-[#888] uppercase tracking-wide mb-2">
+                  <div className="mb-6 pb-6 border-b border-[--border]">
+                    <h2 className="text-sm font-bold uppercase tracking-wide mb-2 text-[--muted]">
                       About
                     </h2>
-                    <p className="text-sm text-[#ccc] leading-relaxed">
+                    <p className="text-sm leading-relaxed lyrics-text">
                       {data.songDetails.description}
                     </p>
                   </div>
@@ -193,11 +193,11 @@ export default function LyricsPage() {
 
                 {/* Link to Genius when no lyrics available */}
                 <div className="text-center py-12">
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#FFFF64] mb-6">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[--accent-primary] mb-6">
                     <span className="text-black font-bold text-2xl">G</span>
                   </div>
-                  <h2 className="text-xl font-bold mb-2">View Lyrics on Genius</h2>
-                  <p className="text-[#888] mb-6 max-w-md mx-auto">
+                  <h2 className="text-xl font-bold mb-2 text-[--foreground]">View Lyrics on Genius</h2>
+                  <p className="text-[--muted] mb-6 max-w-md mx-auto">
                     Full lyrics, annotations, and song meanings from the Genius community
                   </p>
                   {data.geniusUrl && (
@@ -205,7 +205,7 @@ export default function LyricsPage() {
                       href={data.geniusUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 bg-[#FFFF64] text-black px-8 py-3 font-bold hover:bg-[#FFFF80] transition-colors no-underline"
+                      className="inline-flex items-center gap-2 bg-[--accent-primary] text-black px-8 py-3 font-bold hover:bg-[--accent-hover] transition-colors no-underline"
                     >
                       <span>Open in Genius</span>
                       <svg
@@ -234,7 +234,7 @@ export default function LyricsPage() {
       <div className="mt-6">
         <button
           onClick={() => window.history.back()}
-          className="text-sm text-[#888] hover:text-white transition-colors"
+          className="text-sm text-[--muted] hover:text-[--foreground] transition-colors"
         >
           &larr; Back to album
         </button>

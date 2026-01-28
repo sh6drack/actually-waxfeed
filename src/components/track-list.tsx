@@ -116,7 +116,7 @@ export function TrackList({ albumId, albumTitle, initialTracks, initialProgress 
     return (
       <div className="border border-[--border] p-6 animate-fade-in">
         <div className="flex items-center gap-3">
-          <div className="w-4 h-4 border-2 border-[--muted] border-t-[#ffd700] animate-spin" />
+          <div className="w-4 h-4 border-2 border-[--muted] border-t-[--accent-primary] animate-spin" />
           <p className="text-sm text-[--muted]">Loading tracks...</p>
         </div>
       </div>
@@ -155,7 +155,7 @@ export function TrackList({ albumId, albumTitle, initialTracks, initialProgress 
               <div className="flex items-center gap-2 cursor-help">
                 <div className="w-20 h-1 bg-[--border] overflow-hidden">
                   <div
-                    className={`h-full transition-all ${progress.isComplete ? "bg-green-500" : "bg-[#ffd700]"}`}
+                    className={`h-full transition-all ${progress.isComplete ? "bg-green-500" : "bg-[--accent-primary]"}`}
                     style={{ width: `${progress.percent}%` }}
                   />
                 </div>
@@ -207,7 +207,7 @@ export function TrackList({ albumId, albumTitle, initialTracks, initialProgress 
       {tracks.length > 5 && (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="w-full p-3 text-[10px] tracking-[0.15em] uppercase text-[--muted] hover:text-[#ffd700] hover:bg-[#ffd700]/5 transition-all border-t border-[--border] flex items-center justify-center gap-2"
+          className="track-row w-full p-3 text-[10px] tracking-[0.15em] uppercase text-[--muted] hover:text-[--accent-primary] transition-all border-t border-[--border] flex items-center justify-center gap-2"
         >
           {expanded ? (
             <>
@@ -230,7 +230,8 @@ export function TrackList({ albumId, albumTitle, initialTracks, initialProgress 
   )
 }
 
-// Individual track row component
+// Individual track row component - NO INLINE STYLES FOR COLORS
+// All colors are handled by CSS in globals.css
 function TrackRow({
   track,
   isLoggedIn,
@@ -253,18 +254,21 @@ function TrackRow({
 
   return (
     <div
-      className="px-4 py-2.5 flex items-center gap-3 hover:bg-[--muted]/5 transition-colors group animate-fade-in"
+      className="track-row px-4 py-2.5 flex items-center gap-3 border-l-2 border-l-transparent transition-all group animate-fade-in hover:bg-[--surface-hover] hover:border-l-[--accent-primary]"
       style={{ animationDelay: `${animationDelay}ms` }}
     >
       {/* Track number */}
-      <span className="w-6 text-center text-sm text-[--muted] tabular-nums font-medium">
+      <span className="track-number w-6 text-center text-sm tabular-nums font-medium transition-colors text-[--muted] group-hover:text-[--accent-primary]">
         {track.trackNumber}
       </span>
 
       {/* Track info */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm truncate group-hover:text-[--foreground] transition-colors">{track.name}</p>
-        <div className="flex items-center gap-2 text-[10px] text-[--muted]/70">
+        {/* Track name */}
+        <p className="track-name text-sm truncate transition-colors text-[--foreground] group-hover:text-[--accent-primary]">
+          {track.name}
+        </p>
+        <div className="flex items-center gap-2 text-[10px] text-[--muted]">
           <span className="tabular-nums">{formatDuration(track.durationMs)}</span>
           {track.averageRating !== null && (
             <>
@@ -305,8 +309,8 @@ function TrackRow({
                   onMouseEnter={() => setHoverRating(rating)}
                   className={`w-5 h-5 text-xs font-bold transition-all disabled:opacity-50 ${
                     displayRating !== null && rating <= displayRating
-                      ? "bg-[#ffd700] text-black"
-                      : "bg-[--border] text-[--muted] hover:bg-[#ffd700]/30"
+                      ? "bg-[--accent-primary] text-black"
+                      : "bg-[--border] text-[--muted] hover:bg-[--border-dim]"
                   }`}
                   title={`Rate ${rating}/10`}
                 >
@@ -318,7 +322,7 @@ function TrackRow({
                 </button>
               ))}
               {displayRating !== null && (
-                <span className="ml-1.5 text-xs font-bold tabular-nums text-[#ffd700] w-5 text-center">
+                <span className="ml-1.5 text-xs font-bold tabular-nums text-[--accent-primary] w-5 text-center">
                   {displayRating}
                 </span>
               )}
@@ -326,7 +330,7 @@ function TrackRow({
           ) : (
             <button
               onClick={() => setShowRater(true)}
-              className="opacity-0 group-hover:opacity-100 px-2 py-1 text-[10px] tracking-wide uppercase text-[--muted] hover:text-[#ffd700] border border-transparent hover:border-[#ffd700]/30 transition-all"
+              className="opacity-0 group-hover:opacity-100 px-2 py-1 text-[10px] tracking-wide uppercase text-[--muted] hover:text-[--accent-hover] border border-[--border] group-hover:border-[--muted]/50 hover:border-[--accent-primary]/50 transition-all bg-[--surface]"
             >
               Rate
             </button>
@@ -336,7 +340,7 @@ function TrackRow({
 
       {/* Show user's rating if not in edit mode */}
       {!isLoggedIn && track.averageRating !== null && (
-        <span className="text-sm font-bold text-[#ffd700] tabular-nums">
+        <span className="text-sm font-bold text-[--accent-primary] tabular-nums">
           {track.averageRating.toFixed(1)}
         </span>
       )}
