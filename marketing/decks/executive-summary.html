@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WAXFEED — Executive Summary</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        @page {
+            size: letter;
+            margin: 0.5in;
+        }
+        
+        body {
+            font-family: 'Helvetica Neue', 'Inter', Arial, sans-serif;
+            background: #0a0a0a;
+            color: #ededed;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            padding: 60px;
+            max-width: 8.5in;
+            margin: 0 auto;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .header-left h1 {
+            font-size: 3.5em;
+            font-weight: 900;
+            letter-spacing: -0.05em;
+            line-height: 1;
+        }
+        
+        .header-left .subtitle {
+            font-size: 1.1em;
+            color: #a0a0a0;
+            margin-top: 8px;
+        }
+        
+        .header-right {
+            text-align: right;
+            color: #a0a0a0;
+            font-size: 0.85em;
+        }
+        
+        .header-right .date {
+            color: #ffd700;
+            font-weight: 500;
+        }
+        
+        .gold {
+            color: #ffd700;
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+        }
+        
+        .section {
+            margin-bottom: 35px;
+        }
+        
+        .section-label {
+            font-size: 10px;
+            letter-spacing: 0.25em;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+        
+        h2 {
+            font-size: 1.3em;
+            font-weight: 700;
+            margin-bottom: 12px;
+            line-height: 1.2;
+        }
+        
+        p {
+            font-size: 0.95em;
+            color: #c0c0c0;
+        }
+        
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 35px;
+        }
+        
+        .stat {
+            text-align: center;
+            padding: 25px 15px;
+            border: 1px solid #222;
+        }
+        
+        .stat-value {
+            font-size: 2.2em;
+            font-weight: 900;
+            color: #ffd700;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            font-size: 0.7em;
+            color: #a0a0a0;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-top: 8px;
+        }
+        
+        ul {
+            list-style: none;
+            margin-top: 15px;
+        }
+        
+        li {
+            padding: 8px 0;
+            color: #c0c0c0;
+            font-size: 0.9em;
+            border-bottom: 1px solid #1a1a1a;
+        }
+        
+        li::before {
+            content: "—";
+            margin-right: 12px;
+            color: #666;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85em;
+            margin-top: 15px;
+        }
+        
+        th {
+            text-align: left;
+            color: #555;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 10px 0;
+            border-bottom: 1px solid #333;
+            font-size: 0.8em;
+        }
+        
+        td {
+            padding: 10px 0;
+            border-bottom: 1px solid #1a1a1a;
+            color: #888;
+        }
+        
+        td:first-child {
+            color: #ccc;
+        }
+        
+        .highlight-box {
+            background: #111;
+            border-left: 3px solid #ffd700;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .highlight-box p {
+            color: #ccc;
+            margin: 0;
+            font-size: 1em;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding-top: 25px;
+            border-top: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            color: #444;
+            font-size: 0.8em;
+        }
+        
+        .contact {
+            text-align: right;
+        }
+        
+        .contact strong {
+            color: #888;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .badge-row {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .mini-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border: 1px solid #222;
+            font-size: 0.8em;
+        }
+        
+        .mini-badge .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .mini-badge .dot.gold { background: #ffd700; }
+        .mini-badge .dot.silver { background: #c0c0c0; }
+        .mini-badge .dot.bronze { background: #cd7f32; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-left">
+            <h1>WAXFEED</h1>
+            <div class="subtitle">Letterboxd for Music</div>
+        </div>
+        <div class="header-right">
+            <div class="date">Q1 2026</div>
+            Series Seed<br>
+            Polarity Lab LLC
+        </div>
+    </header>
+    
+    <div class="stat-grid">
+        <div class="stat">
+            <div class="stat-value">616M</div>
+            <div class="stat-label">Streaming Subscribers</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">$0</div>
+            <div class="stat-label">Music Social Platforms</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">$10M+</div>
+            <div class="stat-label">Letterboxd ARR</div>
+        </div>
+    </div>
+    
+    <div class="main-grid">
+        <div class="left-col">
+            <div class="section">
+                <div class="section-label">The Opportunity</div>
+                <h2>Film has Letterboxd. Books has Goodreads. Music has nothing.</h2>
+                <p>616M paid streaming subscribers globally with no platform to share taste. Letterboxd proved the model—15M users, $10M+ ARR, acquired. We're building the same for music.</p>
+            </div>
+            
+            <div class="section">
+                <div class="section-label">The Product</div>
+                <h2>Review albums. Follow friends. Discover through taste.</h2>
+                <ul>
+                    <li>Album reviews with 0–10 ratings</li>
+                    <li>TasteID — AI taste fingerprint</li>
+                    <li>Lists, Hot Takes, messaging</li>
+                    <li>Wax social currency</li>
+                    <li>Full product live and functional</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <div class="section-label">Differentiation</div>
+                <h2>First Spin — Prove you called it first</h2>
+                <p>Review albums early. If they trend, you get credit forever. Retroactive badges reward predictive taste.</p>
+                <div class="badge-row">
+                    <div class="mini-badge"><span class="dot gold"></span> Gold: First 10</div>
+                    <div class="mini-badge"><span class="dot silver"></span> Silver: First 50</div>
+                    <div class="mini-badge"><span class="dot bronze"></span> Bronze: First 100</div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-label">Go-to-Market</div>
+                <h2>College Radio as Distribution Channel</h2>
+                <p>1,400 stations. 100,000+ DJs. High-velocity reviewers who break artists. Station leaderboards create competition. 50 founding stations launching Q1.</p>
+            </div>
+        </div>
+        
+        <div class="right-col">
+            <div class="section">
+                <div class="section-label">Business Model</div>
+                <h2>Freemium + Subscriptions</h2>
+                <table>
+                    <tr>
+                        <th>Tier</th>
+                        <th>Price</th>
+                    </tr>
+                    <tr>
+                        <td>Free</td>
+                        <td>Unlimited reviews, badges</td>
+                    </tr>
+                    <tr>
+                        <td>Waxfeed+</td>
+                        <td>$4.99/mo</td>
+                    </tr>
+                    <tr>
+                        <td>Station Plan</td>
+                        <td>$19.99/mo</td>
+                    </tr>
+                    <tr>
+                        <td>Wax Pax</td>
+                        <td>$0.99–$24.99</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="section">
+                <div class="section-label">Projections</div>
+                <h2>Conservative Growth Path</h2>
+                <table>
+                    <tr>
+                        <th>Year</th>
+                        <th>Users</th>
+                        <th>ARR</th>
+                    </tr>
+                    <tr>
+                        <td>2026</td>
+                        <td>100K</td>
+                        <td>$180K</td>
+                    </tr>
+                    <tr>
+                        <td>2027</td>
+                        <td>500K</td>
+                        <td>$1.2M</td>
+                    </tr>
+                    <tr>
+                        <td>2028</td>
+                        <td>2M</td>
+                        <td>$6M</td>
+                    </tr>
+                </table>
+                <p style="margin-top: 10px; font-size: 0.8em; color: #555;">5% premium conversion @ $4.99 avg.</p>
+            </div>
+            
+            <div class="section">
+                <div class="section-label">The Ask</div>
+                <h2>$850K Seed — 18mo Runway</h2>
+                <table>
+                    <tr>
+                        <td>Engineering (2 hires)</td>
+                        <td>50%</td>
+                    </tr>
+                    <tr>
+                        <td>Marketing & Growth</td>
+                        <td>25%</td>
+                    </tr>
+                    <tr>
+                        <td>Operations</td>
+                        <td>15%</td>
+                    </tr>
+                    <tr>
+                        <td>Reserve</td>
+                        <td>10%</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="highlight-box">
+                <p><strong>Why now:</strong> Streaming killed ownership. Gen Z craves authenticity. Music discourse is fragmented. Letterboxd proved the model. Infrastructure exists—product gap is clear.</p>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        <div>© 2026 Polarity Lab LLC</div>
+        <div class="contact">
+            <strong>Shadrack Annor</strong><br>
+            shadrack@brown.edu
+        </div>
+    </footer>
+</body>
+</html>

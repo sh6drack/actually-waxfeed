@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WAXFEED — First Spin</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Helvetica Neue', 'Inter', Arial, sans-serif;
+            background: #0a0a0a;
+            color: #ededed;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 40px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+        
+        .logo {
+            font-size: 14px;
+            letter-spacing: 0.3em;
+            color: #999;
+            text-transform: uppercase;
+            margin-bottom: 40px;
+        }
+        
+        h1 {
+            font-size: 6em;
+            font-weight: 900;
+            letter-spacing: -0.05em;
+            line-height: 0.9;
+            margin-bottom: 30px;
+        }
+        
+        .gold {
+            color: #ffd700;
+        }
+        
+        .tagline {
+            font-size: 1.8em;
+            font-weight: 300;
+            color: #c0c0c0;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .section {
+            margin-bottom: 100px;
+        }
+        
+        .section-label {
+            font-size: 12px;
+            letter-spacing: 0.25em;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+        
+        h2 {
+            font-size: 3em;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            margin-bottom: 30px;
+            line-height: 1.1;
+        }
+        
+        p {
+            font-size: 1.2em;
+            font-weight: 300;
+            color: #c0c0c0;
+            max-width: 700px;
+        }
+        
+        .insight-box {
+            background: #111;
+            border-left: 4px solid #ffd700;
+            padding: 40px;
+            margin: 40px 0;
+        }
+        
+        .insight-box p {
+            font-size: 1.4em;
+            color: #ccc;
+            margin: 0;
+        }
+        
+        .badges-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+            margin: 60px 0;
+        }
+        
+        .badge-card {
+            text-align: center;
+            padding: 50px 30px;
+            border: 1px solid #222;
+        }
+        
+        .badge-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+        }
+        
+        .badge-icon.gold { background: linear-gradient(135deg, #ffd700, #ffaa00); color: #000; }
+        .badge-icon.silver { background: linear-gradient(135deg, #c0c0c0, #888); color: #000; }
+        .badge-icon.bronze { background: linear-gradient(135deg, #cd7f32, #8b4513); color: #000; }
+        
+        .badge-name {
+            font-size: 1.4em;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .badge-req {
+            color: #a0a0a0;
+            font-size: 1em;
+            margin-bottom: 15px;
+        }
+        
+        .badge-reward {
+            color: #ffd700;
+            font-weight: 500;
+            font-size: 1.1em;
+        }
+        
+        .formula {
+            background: #111;
+            font-family: 'SF Mono', Monaco, monospace;
+            padding: 30px 40px;
+            font-size: 1.3em;
+            margin: 40px 0;
+            border: 1px solid #333;
+        }
+        
+        .formula .equals {
+            color: #ffd700;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            margin: 40px 0;
+        }
+        
+        .grid-item h3 {
+            font-size: 1.3em;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        
+        .grid-item ul {
+            list-style: none;
+        }
+        
+        .grid-item li {
+            padding: 12px 0;
+            color: #888;
+            border-bottom: 1px solid #222;
+            font-size: 1.1em;
+        }
+        
+        .grid-item li::before {
+            content: "—";
+            margin-right: 15px;
+            color: #333;
+        }
+        
+        .flow {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            margin: 40px 0;
+        }
+        
+        .flow-step {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            padding: 25px 0;
+            border-bottom: 1px solid #222;
+        }
+        
+        .flow-num {
+            width: 50px;
+            height: 50px;
+            background: #ffd700;
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2em;
+            flex-shrink: 0;
+        }
+        
+        .flow-text {
+            font-size: 1.2em;
+            color: #ccc;
+        }
+        
+        .cta-section {
+            text-align: center;
+            padding: 80px 0;
+            border-top: 1px solid #222;
+        }
+        
+        .cta-section h2 {
+            margin-bottom: 40px;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: #ffd700;
+            color: #000;
+            padding: 20px 50px;
+            font-size: 1.2em;
+            font-weight: 700;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 40px 0;
+            color: #444;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+        }
+        
+        @media (max-width: 768px) {
+            h1 { font-size: 3em; }
+            h2 { font-size: 2em; }
+            .badges-grid { grid-template-columns: 1fr; }
+            .grid-2 { grid-template-columns: 1fr; }
+            .container { padding: 40px 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">Waxfeed</div>
+            <h1>FIRST <span class="gold">SPIN</span></h1>
+            <p class="tagline">The mechanic that turns taste into proof.</p>
+        </header>
+        
+        <section class="section">
+            <div class="section-label">The Insight</div>
+            <h2>Everyone says "I liked them before they were cool."</h2>
+            <p>But there's no way to prove it. Until now.</p>
+            
+            <div class="insight-box">
+                <p>When you review an album on Waxfeed, you go <strong>on record</strong>. If that album later trends, everyone who reviewed it early gets rewarded retroactively.</p>
+            </div>
+        </section>
+        
+        <section class="section">
+            <div class="section-label">The Badges</div>
+            <h2>First Spin Rewards</h2>
+            <p>When you're among the first reviewers of an album that later trends, you earn a badge that stays on your profile forever.</p>
+            
+            <div class="badges-grid">
+                <div class="badge-card">
+                    <div class="badge-icon gold">●</div>
+                    <div class="badge-name">Gold Spin</div>
+                    <div class="badge-req">First 10 reviewers</div>
+                    <div class="badge-reward">+100 Wax</div>
+                </div>
+                <div class="badge-card">
+                    <div class="badge-icon silver">●</div>
+                    <div class="badge-name">Silver Spin</div>
+                    <div class="badge-req">First 50 reviewers</div>
+                    <div class="badge-reward">+50 Wax</div>
+                </div>
+                <div class="badge-card">
+                    <div class="badge-icon bronze">●</div>
+                    <div class="badge-name">Bronze Spin</div>
+                    <div class="badge-req">First 100 reviewers</div>
+                    <div class="badge-reward">+25 Wax</div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section">
+            <div class="section-label">The Score</div>
+            <h2>Tastemaker Score</h2>
+            <p>Your aggregate measure of predictive taste. A score of 50+ means you've correctly predicted multiple trends. 200+ means elite taste.</p>
+            
+            <div class="formula">
+                TASTEMAKER <span class="equals">=</span> (Gold × 10) + (Silver × 5) + (Bronze × 2)
+            </div>
+        </section>
+        
+        <section class="section">
+            <div class="section-label">Triggers</div>
+            <h2>What Makes an Album "Trend"?</h2>
+            
+            <div class="grid-2">
+                <div class="grid-item">
+                    <h3>Platform Metrics</h3>
+                    <ul>
+                        <li>100+ reviews on Waxfeed</li>
+                        <li>Featured in Hot Takes</li>
+                        <li>High engagement velocity</li>
+                    </ul>
+                </div>
+                <div class="grid-item">
+                    <h3>External Signals</h3>
+                    <ul>
+                        <li>Enters Billboard 200</li>
+                        <li>10K+ Spotify listeners (new artists)</li>
+                        <li>Major press coverage</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <p style="margin-top: 40px; color: #666;">The algorithm checks retroactively. Review an album today, get notified 3 months later: "Your review just earned you a Gold Spin—you were reviewer #7!"</p>
+        </section>
+        
+        <section class="section">
+            <div class="section-label">The Loop</div>
+            <h2>Why It's Viral</h2>
+            
+            <div class="flow">
+                <div class="flow-step">
+                    <div class="flow-num">1</div>
+                    <div class="flow-text">You review an album early</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-num">2</div>
+                    <div class="flow-text">Album trends → you get a Gold Spin badge</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-num">3</div>
+                    <div class="flow-text">You post the badge to Twitter/Instagram</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-num">4</div>
+                    <div class="flow-text">Music community asks: "What's a Gold Spin?"</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-num">5</div>
+                    <div class="flow-text">They sign up to prove THEIR taste</div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section">
+            <div class="section-label">Why It's Different</div>
+            <h2>Zero-to-One Mechanic</h2>
+            
+            <div class="grid-2">
+                <div class="grid-item">
+                    <h3>What Others Do</h3>
+                    <ul>
+                        <li>RYM: Reviews have no temporal value</li>
+                        <li>Letterboxd: No early reviewer reward</li>
+                        <li>Spotify: Algorithm-driven, not taste</li>
+                        <li>Twitter: Opinions ephemeral</li>
+                    </ul>
+                </div>
+                <div class="grid-item">
+                    <h3>What Waxfeed Does</h3>
+                    <ul>
+                        <li>Timestamps your taste</li>
+                        <li>Rewards being right</li>
+                        <li>Creates provable credentials</li>
+                        <li>Makes discovery a game</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <section class="cta-section">
+            <h2>Your taste has value.<br>Prove it.</h2>
+            <a href="#" class="cta-button">Join Waxfeed →</a>
+        </section>
+        
+        <footer class="footer">
+            © 2026 Polarity Lab LLC — Waxfeed
+        </footer>
+    </div>
+</body>
+</html>
