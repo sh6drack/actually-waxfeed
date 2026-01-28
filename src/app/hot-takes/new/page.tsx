@@ -28,7 +28,7 @@ export default function NewHotTakePage() {
   }
 
   return (
-    <div className="w-full px-4 lg:px-12 xl:px-20 py-6 lg:py-12">
+    <div className="w-full max-w-4xl mx-auto px-4 lg:px-12 xl:px-20 py-6 lg:py-12">
       {/* Header */}
       <header className="mb-12">
         <Link

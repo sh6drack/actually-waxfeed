@@ -111,7 +111,7 @@ export default function AdminPage() {
 
   if (status === "loading") {
     return (
-      <div className="w-full px-4 lg:px-12 xl:px-20 py-8">
+      <div className="w-full max-w-5xl mx-auto px-4 lg:px-12 xl:px-20 py-8">
         <p className="text-[#888]">Loading...</p>
       </div>
     )
@@ -119,14 +119,14 @@ export default function AdminPage() {
 
   if (!isAdmin) {
     return (
-      <div className="w-full px-4 lg:px-12 xl:px-20 py-8">
+      <div className="w-full max-w-5xl mx-auto px-4 lg:px-12 xl:px-20 py-8">
         <p className="text-[#888]">Access denied. Admin privileges required.</p>
       </div>
     )
   }
 
   return (
-    <div className="w-full px-4 lg:px-12 xl:px-20 py-8">
+    <div className="w-full max-w-5xl mx-auto px-4 lg:px-12 xl:px-20 py-8">
       <h1 className="text-4xl font-bold tracking-tighter mb-8">Admin - Album Import</h1>
 
       {/* Billboard Update Section */}
