@@ -33,6 +33,17 @@ export async function GET(request: NextRequest) {
       },
     }
 
+    const albumSelect = {
+      id: true,
+      title: true,
+      artistName: true,
+      coverArtUrl: true,
+      coverArtUrlLarge: true,
+      releaseDate: true,
+      genres: true,
+      ...trackSelect,
+    }
+
     // For onboarding, return popular albums for broader appeal
     if (isOnboarding) {
       // First try: Get Billboard charting albums (most recognizable)
@@ -42,16 +53,7 @@ export async function GET(request: NextRequest) {
           coverArtUrl: { not: null },
           billboardRank: { not: null },
         },
-        select: {
-          id: true,
-          title: true,
-          artistName: true,
-          coverArtUrl: true,
-          coverArtUrlLarge: true,
-          releaseDate: true,
-          genres: true,
-          ...trackSelect,
-        },
+        select: albumSelect,
         take: limit * 2,
         orderBy: { billboardRank: 'asc' },
       })
@@ -64,16 +66,7 @@ export async function GET(request: NextRequest) {
             coverArtUrl: { not: null },
             albumType: { not: 'single' },
           },
-          select: {
-            id: true,
-            title: true,
-            artistName: true,
-            coverArtUrl: true,
-            coverArtUrlLarge: true,
-            releaseDate: true,
-            genres: true,
-            ...trackSelect,
-          },
+          select: albumSelect,
           take: (limit * 2) - popularAlbums.length,
           orderBy: [
             { totalReviews: 'desc' },
@@ -83,7 +76,7 @@ export async function GET(request: NextRequest) {
         popularAlbums = [...popularAlbums, ...fallbackAlbums]
       }
 
-      // Deduplicate by title+artist combination (same album can have different IDs)
+      // Deduplicate by title+artist combination
       const seenOnboarding = new Set<string>()
       const deduped = popularAlbums.filter(album => {
         const key = `${album.title.toLowerCase()}|${album.artistName.toLowerCase()}`
@@ -100,6 +93,10 @@ export async function GET(request: NextRequest) {
       return successResponse(shuffled)
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // PERSONALIZED ALGORITHM - Based on TasteID + Review History
+    // ═══════════════════════════════════════════════════════════════════════
+
     // Get user's TasteID for personalization
     const tasteId = await prisma.tasteID.findUnique({
       where: { userId: user.id },
@@ -111,7 +108,7 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    // Get user's highly-rated albums for artist inference
+    // Get user's highly-rated albums for artist/genre inference
     const likedReviews = await prisma.review.findMany({
       where: {
         userId: user.id,
@@ -123,18 +120,23 @@ export async function GET(request: NextRequest) {
         },
       },
       take: 50,
+      orderBy: { createdAt: 'desc' },
     })
 
     // Extract favorite artists from reviews
     const favoriteArtists = [...new Set(likedReviews.map(r => r.album.artistName))]
 
-    // Extract genres from liked albums (more reliable than TasteID sometimes)
+    // Extract genres from liked albums
     const likedGenres = [...new Set(likedReviews.flatMap(r => r.album.genres))]
 
     // Combine with TasteID genres
     const userGenres = tasteId?.topGenres?.length
       ? [...new Set([...tasteId.topGenres, ...likedGenres])]
       : likedGenres
+
+    // Determine adventureness - more adventurous users get more discovery
+    const adventureness = tasteId?.adventurenessScore ?? 0.5
+    const discoveryRatio = 0.2 + (adventureness * 0.3) // 20-50% discovery based on score
 
     let albums: Array<{
       id: string
@@ -153,7 +155,14 @@ export async function GET(request: NextRequest) {
       }>
     }> = []
 
-    // Strategy 1: Albums by favorite artists (30% of results)
+    // Calculate allocation
+    const artistAlloc = Math.ceil(limit * 0.25) // 25% - artists you like
+    const genreAlloc = Math.ceil(limit * (0.55 - discoveryRatio)) // 35-55% - genres you like
+    const discoveryAlloc = Math.ceil(limit * discoveryRatio) // 20-50% - expand your taste
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // STRATEGY 1: Albums by favorite artists (25%)
+    // ═══════════════════════════════════════════════════════════════════════
     if (favoriteArtists.length > 0) {
       const artistAlbums = await prisma.album.findMany({
         where: {
@@ -161,111 +170,91 @@ export async function GET(request: NextRequest) {
           id: { notIn: reviewedIds },
           coverArtUrl: { not: null },
         },
-        select: {
-          id: true,
-          title: true,
-          artistName: true,
-          coverArtUrl: true,
-          coverArtUrlLarge: true,
-          releaseDate: true,
-          genres: true,
-          ...trackSelect,
-        },
-        take: Math.ceil(limit * 0.3),
-        orderBy: { totalReviews: 'desc' },
+        select: albumSelect,
+        take: artistAlloc * 2, // Get extra for shuffling
+        orderBy: { releaseDate: 'desc' }, // Prioritize newer releases
       })
-      albums.push(...artistAlbums)
+
+      // Shuffle artist albums
+      const shuffledArtist = artistAlbums.sort(() => Math.random() - 0.5).slice(0, artistAlloc)
+      albums.push(...shuffledArtist)
     }
 
-    // Strategy 2: Albums in user's genres (50% of results)
+    // ═══════════════════════════════════════════════════════════════════════
+    // STRATEGY 2: Albums in user's genres - NO social proof requirement
+    // ═══════════════════════════════════════════════════════════════════════
     if (userGenres.length > 0) {
+      // Get albums in user's genres - don't require reviews
       const genreAlbums = await prisma.album.findMany({
         where: {
           id: { notIn: [...reviewedIds, ...albums.map(a => a.id)] },
           coverArtUrl: { not: null },
-          genres: { hasSome: userGenres.slice(0, 10) },
-          totalReviews: { gte: 1 }, // Some social proof
+          genres: { hasSome: userGenres.slice(0, 15) },
+          albumType: { not: 'single' }, // Skip singles for better experience
         },
-        select: {
-          id: true,
-          title: true,
-          artistName: true,
-          coverArtUrl: true,
-          coverArtUrlLarge: true,
-          releaseDate: true,
-          genres: true,
-          ...trackSelect,
-        },
-        take: Math.ceil(limit * 0.5),
-        orderBy: [
-          { averageRating: 'desc' },
-          { totalReviews: 'desc' },
-        ],
+        select: albumSelect,
+        take: genreAlloc * 3, // Get extra pool for randomization
+        orderBy: { releaseDate: 'desc' },
       })
-      albums.push(...genreAlbums)
+
+      // Shuffle and take allocation
+      const shuffledGenre = genreAlbums.sort(() => Math.random() - 0.5).slice(0, genreAlloc)
+      albums.push(...shuffledGenre)
     }
 
-    // Strategy 3: Discovery - well-rated albums outside comfort zone (20% of results)
-    const discoveryCount = limit - albums.length
-    if (discoveryCount > 0) {
-      const discoveryAlbums = await prisma.album.findMany({
-        where: {
-          id: { notIn: [...reviewedIds, ...albums.map(a => a.id)] },
-          coverArtUrl: { not: null },
-          averageRating: { gte: 7 }, // Only highly-rated discoveries
-          totalReviews: { gte: 5 }, // Social proof
-          // Exclude user's main genres for discovery
-          ...(userGenres.length > 0 ? {
-            NOT: {
-              genres: { hasSome: userGenres.slice(0, 3) }, // Avoid top 3 genres
-            },
-          } : {}),
-        },
-        select: {
-          id: true,
-          title: true,
-          artistName: true,
-          coverArtUrl: true,
-          coverArtUrlLarge: true,
-          releaseDate: true,
-          genres: true,
-          ...trackSelect,
-        },
-        take: discoveryCount,
-        orderBy: { averageRating: 'desc' },
-      })
-      albums.push(...discoveryAlbums)
-    }
+    // ═══════════════════════════════════════════════════════════════════════
+    // STRATEGY 3: Discovery - albums OUTSIDE comfort zone
+    // ═══════════════════════════════════════════════════════════════════════
+    const currentIds = [...reviewedIds, ...albums.map(a => a.id)]
 
-    // Fallback: If we still don't have enough, get popular albums
+    // Get a random sample of albums outside user's main genres
+    const discoveryAlbums = await prisma.album.findMany({
+      where: {
+        id: { notIn: currentIds },
+        coverArtUrl: { not: null },
+        albumType: { not: 'single' },
+        // Exclude user's top genres for true discovery
+        ...(userGenres.length >= 3 ? {
+          NOT: {
+            genres: { hasSome: userGenres.slice(0, 3) },
+          },
+        } : {}),
+      },
+      select: albumSelect,
+      take: discoveryAlloc * 4, // Large pool for better randomization
+      orderBy: { releaseDate: 'desc' },
+    })
+
+    // Randomly sample from discovery pool
+    const shuffledDiscovery = discoveryAlbums.sort(() => Math.random() - 0.5).slice(0, discoveryAlloc)
+    albums.push(...shuffledDiscovery)
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // FALLBACK: Fill remaining slots with random quality albums
+    // ═══════════════════════════════════════════════════════════════════════
     const remaining = limit - albums.length
     if (remaining > 0) {
+      // Get a random sample of any albums with cover art
       const fallbackAlbums = await prisma.album.findMany({
         where: {
           id: { notIn: [...reviewedIds, ...albums.map(a => a.id)] },
           coverArtUrl: { not: null },
-          totalReviews: { gte: 1 },
+          albumType: { not: 'single' },
         },
-        select: {
-          id: true,
-          title: true,
-          artistName: true,
-          coverArtUrl: true,
-          coverArtUrlLarge: true,
-          releaseDate: true,
-          genres: true,
-          ...trackSelect,
-        },
-        take: remaining,
-        orderBy: [
-          { averageRating: 'desc' },
-          { totalReviews: 'desc' },
-        ],
+        select: albumSelect,
+        take: remaining * 3,
+        orderBy: { releaseDate: 'desc' },
       })
-      albums.push(...fallbackAlbums)
+
+      const shuffledFallback = fallbackAlbums.sort(() => Math.random() - 0.5).slice(0, remaining)
+      albums.push(...shuffledFallback)
     }
 
-    // Deduplicate by title+artist combination (same album can have different IDs)
+    // ═══════════════════════════════════════════════════════════════════════
+    // FINAL: Deduplicate and shuffle for presentation
+    // ═══════════════════════════════════════════════════════════════════════
+
+    // Deduplicate by title+artist (same album can have different IDs)
     const seen = new Set<string>()
     albums = albums.filter(album => {
       const key = `${album.title.toLowerCase()}|${album.artistName.toLowerCase()}`
@@ -274,14 +263,24 @@ export async function GET(request: NextRequest) {
       return true
     })
 
-    // Shuffle for variety (but keep some taste-matched ones near the top)
-    const shuffled = albums
-      .map((album, index) => ({ album, sortKey: index < 5 ? Math.random() * 0.5 : Math.random() }))
-      .sort((a, b) => a.sortKey - b.sortKey)
+    // Final shuffle - but weight artist matches higher (appear earlier)
+    const finalAlbums = albums
+      .map((album) => {
+        const isArtistMatch = favoriteArtists.includes(album.artistName)
+        const isGenreMatch = userGenres.some(g => album.genres.includes(g))
+        // Artist matches: 0-0.3, Genre matches: 0.3-0.6, Discovery: 0.6-1.0
+        const weight = isArtistMatch
+          ? Math.random() * 0.3
+          : isGenreMatch
+            ? 0.3 + Math.random() * 0.3
+            : 0.6 + Math.random() * 0.4
+        return { album, weight }
+      })
+      .sort((a, b) => a.weight - b.weight)
       .map(({ album }) => album)
       .slice(0, limit)
 
-    return successResponse(shuffled)
+    return successResponse(finalAlbums)
 
   } catch (error) {
     if (error instanceof Error && error.message === 'UNAUTHORIZED') {
