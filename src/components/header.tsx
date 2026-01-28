@@ -1,11 +1,11 @@
 "use client"
 
 import Link from "next/link"
-import Image from "next/image"
 import { useSession, signOut } from "next-auth/react"
 import { useState, useEffect, useRef } from "react"
 import { DefaultAvatar } from "./default-avatar"
 import { useTheme } from "./theme-provider"
+import { WaxfeedLogo } from "./waxfeed-logo"
 
 type WaxStats = {
   balance: number
@@ -121,14 +121,7 @@ export function Header() {
       <div className="w-full px-4 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 no-underline flex-shrink-0">
-          <Image
-            src="/logo/waxfeed-full-64.png"
-            alt="WAXFEED"
-            width={32}
-            height={32}
-            className="w-8 h-8"
-            priority
-          />
+          <WaxfeedLogo size="md" spinning={true} />
           <span className="font-bold text-xl tracking-tight" style={{ color: 'var(--header-text)' }}>WAXFEED</span>
         </Link>
 
