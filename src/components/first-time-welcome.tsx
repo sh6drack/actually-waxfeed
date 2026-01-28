@@ -37,13 +37,13 @@ export function FirstTimeWelcome() {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300 ${
+      className={`fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 transition-all duration-300 ${
         isAnimating ? 'bg-black/95' : 'bg-black/0'
       }`}
       style={{ pointerEvents: isAnimating ? 'auto' : 'none' }}
     >
       <div
-        className={`max-w-lg w-full transition-all duration-400 ${
+        className={`max-w-lg w-full max-h-[95vh] overflow-y-auto transition-all duration-400 ${
           isAnimating ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
         }`}
       >
@@ -51,7 +51,7 @@ export function FirstTimeWelcome() {
           {/* Close */}
           <button
             onClick={handleSkip}
-            className="absolute top-6 right-6 text-[--muted] hover:text-[--foreground] transition-colors"
+            className="absolute top-3 right-3 sm:top-6 sm:right-6 text-[--muted] hover:text-[--foreground] transition-colors z-10"
             aria-label="Close"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -59,56 +59,56 @@ export function FirstTimeWelcome() {
             </svg>
           </button>
 
-          <div className="p-10 md:p-12">
+          <div className="p-5 sm:p-10 md:p-12">
             {/* Category label */}
-            <p className="text-xs tracking-[0.3em] uppercase text-[var(--accent-primary)] font-bold mb-6">
+            <p className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-[var(--accent-primary)] font-bold mb-4 sm:mb-6">
               First of Its Kind
             </p>
 
             {/* Headline */}
-            <h2 className="text-3xl md:text-4xl font-bold leading-tight mb-5 text-white">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight mb-3 sm:mb-5 text-white pr-6">
               The world's first platform<br />
               <span className="text-[var(--accent-primary)]">that proves your taste.</span>
             </h2>
 
             {/* Subhead */}
-            <p className="text-[#ccc] text-base leading-relaxed mb-8 max-w-md">
-              Every album you rate is timestamped. When it blows up months later, 
+            <p className="text-[#ccc] text-sm sm:text-base leading-relaxed mb-5 sm:mb-8 max-w-md">
+              Every album you rate is timestamped. When it blows up months later,
               you have the proof. No more "I told you so" — just verified discovery.
             </p>
 
-            {/* The differentiator */}
-            <div className="border-l-4 border-[var(--accent-primary)] pl-5 mb-8 bg-[--surface-raised] py-4 pr-4">
+            {/* The differentiator - hidden on very small screens */}
+            <div className="hidden sm:block border-l-4 border-[var(--accent-primary)] pl-5 mb-8 bg-[--surface-raised] py-4 pr-4">
               <p className="text-sm text-[#ddd] leading-relaxed">
-                "Letterboxd proved people care about logging films. 
+                "Letterboxd proved people care about logging films.
                 WaxFeed proves people care about <span className="text-white font-bold">being first</span>."
               </p>
             </div>
 
             {/* What you get - clean list */}
-            <div className="grid grid-cols-2 gap-5 mb-10">
+            <div className="grid grid-cols-2 gap-3 sm:gap-5 mb-6 sm:mb-10">
               <div>
-                <div className="text-white font-bold mb-1">Timestamped Reviews</div>
-                <div className="text-[--muted] text-sm">Permanent proof of discovery</div>
+                <div className="text-white font-bold text-sm sm:text-base mb-0.5 sm:mb-1">Timestamped Reviews</div>
+                <div className="text-[--muted] text-xs sm:text-sm">Proof of discovery</div>
               </div>
               <div>
-                <div className="text-white font-bold mb-1">First Spin Badges</div>
-                <div className="text-[--muted] text-sm">Recognition when you're early</div>
+                <div className="text-white font-bold text-sm sm:text-base mb-0.5 sm:mb-1">First Spin Badges</div>
+                <div className="text-[--muted] text-xs sm:text-sm">Early recognition</div>
               </div>
               <div>
-                <div className="text-white font-bold mb-1">TasteID Profile</div>
-                <div className="text-[--muted] text-sm">Your musical fingerprint</div>
+                <div className="text-white font-bold text-sm sm:text-base mb-0.5 sm:mb-1">TasteID Profile</div>
+                <div className="text-[--muted] text-xs sm:text-sm">Musical fingerprint</div>
               </div>
               <div>
-                <div className="text-white font-bold mb-1">Taste Matching</div>
-                <div className="text-[--muted] text-sm">Find people who get it</div>
+                <div className="text-white font-bold text-sm sm:text-base mb-0.5 sm:mb-1">Taste Matching</div>
+                <div className="text-[--muted] text-xs sm:text-sm">Find your people</div>
               </div>
             </div>
 
             {/* CTA */}
             <button
               onClick={handleCreateTasteID}
-              className="w-full py-4 bg-[var(--accent-primary)] text-black font-bold text-sm uppercase tracking-wider hover:bg-[#ffe44d] transition-colors"
+              className="w-full py-3 sm:py-4 bg-[var(--accent-primary)] text-black font-bold text-sm uppercase tracking-wider hover:bg-[#ffe44d] transition-colors"
             >
               Join Free — Takes 30 Seconds
             </button>
@@ -116,16 +116,16 @@ export function FirstTimeWelcome() {
             {/* Skip */}
             <button
               onClick={handleSkip}
-              className="w-full mt-4 text-[--muted] text-sm hover:text-[--foreground] transition-colors"
+              className="w-full mt-3 sm:mt-4 text-[--muted] text-sm hover:text-[--foreground] transition-colors"
             >
               Continue as guest
             </button>
           </div>
 
-          {/* Bottom bar */}
-          <div className="border-t border-[--border] px-10 py-4 flex items-center justify-between text-xs text-[--muted]">
-            <span>No credit card required</span>
+          {/* Bottom bar - simplified on mobile */}
+          <div className="border-t border-[--border] px-5 sm:px-10 py-3 sm:py-4 flex items-center justify-between text-[10px] sm:text-xs text-[--muted]">
             <span>Free forever</span>
+            <span className="hidden sm:inline">No credit card</span>
             <span>2,500+ members</span>
           </div>
         </div>
