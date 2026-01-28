@@ -687,8 +687,8 @@ export default function QuickRatePage() {
                           isSelected
                             ? 'bg-[--accent-primary] text-black border border-[--accent-primary] font-bold'
                             : atMax
-                              ? 'border border-[--border] text-[--muted]/40'
-                              : 'border border-[--border] text-[--muted] active:border-[--accent-primary]'
+                              ? 'border border-[--muted-faint] text-[--muted]/40'
+                              : 'border border-[--muted-faint] text-[--muted] active:border-[--accent-primary]'
                         }`}
                       >
                         {descriptor.label}
@@ -712,7 +712,7 @@ export default function QuickRatePage() {
                   <button
                     onClick={skip}
                     disabled={submitting}
-                    className="w-20 py-3 border border-[--border] text-[--muted] font-bold uppercase tracking-wider text-xs hover:border-[--foreground] hover:text-[--foreground] transition-colors disabled:opacity-50"
+                    className="w-20 py-3 border border-[--muted-faint] text-[--muted] font-bold uppercase tracking-wider text-xs hover:border-[--foreground] hover:text-[--foreground] transition-colors disabled:opacity-50"
                   >
                     Skip
                   </button>
@@ -857,10 +857,10 @@ export default function QuickRatePage() {
                             title={descriptor.description}
                             className={`text-[10px] px-3 py-1.5 min-h-[32px] uppercase tracking-wider transition-all duration-150 ${
                               isSelected
-                                ? 'bg-[--accent-primary] text-white border border-[--accent-primary] font-bold'
+                                ? 'bg-[--accent-primary] text-black border border-[--accent-primary] font-bold'
                                 : atMax
-                                  ? 'border border-[--border] text-[--muted]/50 cursor-not-allowed'
-                                  : 'border border-[--border] text-[--muted] hover:border-[--accent-hover] hover:text-[--accent-hover]'
+                                  ? 'border border-[--muted-faint] text-[--muted]/50 cursor-not-allowed'
+                                  : 'border border-[--muted-faint] text-[--muted] hover:border-[--accent-hover] hover:text-[--accent-hover]'
                             } disabled:opacity-50`}
                           >
                             {descriptor.label}
@@ -883,7 +883,7 @@ export default function QuickRatePage() {
                     <button
                       onClick={skip}
                       disabled={submitting}
-                      className="flex-1 py-3 min-h-[48px] border border-[--border] text-[--muted] font-bold uppercase tracking-wider text-sm hover:border-[--foreground] hover:text-[--foreground] transition-colors disabled:opacity-50"
+                      className="flex-1 py-3 min-h-[48px] border border-[--muted-faint] text-[--muted] font-bold uppercase tracking-wider text-sm hover:border-[--foreground] hover:text-[--foreground] transition-colors disabled:opacity-50"
                     >
                       Skip
                     </button>
