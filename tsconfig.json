@@ -30,5 +30,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "scripts", "waxfeed-ui-design", "presentation"]
+  "exclude": ["node_modules", "scripts", "waxfeed-ui-design", "presentation", "POLARITYAPPV0"]
 }
