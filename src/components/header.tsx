@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from "react"
 import { DefaultAvatar } from "./default-avatar"
 import { useTheme } from "./theme-provider"
 import { WaxfeedLogo } from "./waxfeed-logo"
+import { BookmarkIcon } from "./icons"
 
 type WaxStats = {
   balance: number
@@ -206,6 +207,18 @@ export function Header() {
                   {unreadMessages > 9 ? '9+' : unreadMessages}
                 </span>
               )}
+            </Link>
+          )}
+
+          {/* Bookmarks Button */}
+          {isMounted && session && (
+            <Link
+              href="/bookmarks"
+              className="p-2 transition-colors hover:opacity-70"
+              style={{ color: 'var(--header-text)' }}
+              title="Saved Albums"
+            >
+              <BookmarkIcon size={20} />
             </Link>
           )}
 

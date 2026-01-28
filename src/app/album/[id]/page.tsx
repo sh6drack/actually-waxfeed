@@ -8,6 +8,7 @@ import { format } from "date-fns"
 import { StreamingLinks } from "@/components/streaming-links"
 import { TrackPlayer } from "@/components/track-player"
 import { FirstFans } from "@/components/first-fans"
+import { BookmarkButton } from "@/components/bookmark-button"
 import type { Metadata } from "next"
 
 interface Props {
@@ -277,12 +278,15 @@ export default async function AlbumPage({ params }: Props) {
                 </div>
               )}
 
-              {/* Streaming Links */}
-              {album.spotifyUrl && (
-                <div className="flex justify-center sm:justify-start">
+              {/* Streaming Links + Bookmark */}
+              <div className="flex items-center justify-center sm:justify-start gap-3">
+                {album.spotifyUrl && (
                   <StreamingLinks spotifyUrl={album.spotifyUrl} />
-                </div>
-              )}
+                )}
+                {session && (
+                  <BookmarkButton albumId={album.id} size="md" showLabel />
+                )}
+              </div>
             </div>
           </div>
         </div>

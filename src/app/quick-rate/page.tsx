@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useState, useEffect, useCallback, useRef } from "react"
 import { RatingSlider } from "@/components/rating-slider"
+import { BookmarkButton } from "@/components/bookmark-button"
 import { getCurrentTier, getProgressToNextTier, TASTEID_TIERS } from "@/lib/tasteid-tiers"
 
 const BATCH_SIZE = 20
@@ -633,36 +634,39 @@ export default function QuickRatePage() {
                       ))}
                     </div>
                   )}
-                  {/* Track preview inline */}
-                  {albumTracks.length > 0 && (
-                    <div className="flex items-center gap-1.5 mt-2">
-                      {albumTracks.slice(0, 3).map((track) => (
-                        <button
-                          key={track.id}
-                          onClick={() => playTrack(track)}
-                          disabled={!track.previewUrl}
-                          className={`w-7 h-7 flex items-center justify-center border transition-colors ${
-                            playingTrackId === track.id
-                              ? 'border-[--accent-primary] bg-[--accent-primary]/20 text-[--accent-primary]'
-                              : 'border-[--border] text-[--muted] hover:border-[--muted]'
-                          } ${!track.previewUrl ? 'opacity-30' : ''}`}
-                          title={track.name}
-                        >
-                          {playingTrackId === track.id ? (
-                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                              <rect x="6" y="4" width="4" height="16" />
-                              <rect x="14" y="4" width="4" height="16" />
-                            </svg>
-                          ) : (
-                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M8 5v14l11-7z"/>
-                            </svg>
-                          )}
-                        </button>
-                      ))}
-                      <span className="text-[9px] text-[--muted] uppercase">Preview</span>
-                    </div>
-                  )}
+                  {/* Bookmark + Track preview row */}
+                  <div className="flex items-center gap-2 mt-2">
+                    <BookmarkButton albumId={currentAlbum.id} size="sm" />
+                    {albumTracks.length > 0 && (
+                      <>
+                        {albumTracks.slice(0, 2).map((track) => (
+                          <button
+                            key={track.id}
+                            onClick={() => playTrack(track)}
+                            disabled={!track.previewUrl}
+                            className={`w-7 h-7 flex items-center justify-center border transition-colors ${
+                              playingTrackId === track.id
+                                ? 'border-[--accent-primary] bg-[--accent-primary]/20 text-[--accent-primary]'
+                                : 'border-[--muted-faint] text-[--muted] hover:border-[--muted]'
+                            } ${!track.previewUrl ? 'opacity-30' : ''}`}
+                            title={track.name}
+                          >
+                            {playingTrackId === track.id ? (
+                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                                <rect x="6" y="4" width="4" height="16" />
+                                <rect x="14" y="4" width="4" height="16" />
+                              </svg>
+                            ) : (
+                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z"/>
+                              </svg>
+                            )}
+                          </button>
+                        ))}
+                        <span className="text-[9px] text-[--muted] uppercase">Preview</span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -777,6 +781,11 @@ export default function QuickRatePage() {
                       ))}
                     </div>
                   )}
+
+                  {/* Bookmark Button - Desktop */}
+                  <div className="mb-4">
+                    <BookmarkButton albumId={currentAlbum.id} size="md" showLabel />
+                  </div>
 
                   {/* Track Previews - Desktop */}
                   <div className="mb-3 p-2 bg-[--surface] border border-[--border]">

@@ -193,6 +193,9 @@ model User {
   // First Spin badges
   firstSpinBadges FirstSpinBadge[]
 
+  // Album bookmarks
+  bookmarks AlbumBookmark[]
+
   @@index([username])
   @@index([email])
   @@index([createdAt])
@@ -295,6 +298,7 @@ model Album {
   albumRoom       AlbumRoom?
   messageContext  Message[]        @relation("messageAlbumContext")
   firstSpinBadges FirstSpinBadge[]
+  bookmarks       AlbumBookmark[]
 
   @@index([spotifyId])
   @@index([artistName])
@@ -378,6 +382,21 @@ model AlbumTag {
   @@unique([albumId, userId, tag])
   @@index([albumId])
   @@index([tag])
+}
+
+model AlbumBookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  albumId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  album Album @relation(fields: [albumId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, albumId])
+  @@index([userId])
+  @@index([albumId])
+  @@index([createdAt])
 }
 
 // ============================================
