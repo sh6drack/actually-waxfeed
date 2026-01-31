@@ -7,6 +7,37 @@ import Stripe from 'stripe'
 // Disable body parsing for webhooks
 export const runtime = 'nodejs'
 
+// Check if event has already been processed (idempotency)
+async function isEventProcessed(eventId: string): Promise<boolean> {
+  // Use a simple check against purchase table metadata or create a dedicated table
+  // For now, we'll use a lightweight approach with the Purchase model
+  const existing = await prisma.purchase.findFirst({
+    where: {
+      metadata: {
+        path: ['stripeEventId'],
+        equals: eventId
+      }
+    }
+  })
+  return !!existing
+}
+
+// Mark event as processed
+async function markEventProcessed(eventId: string, eventType: string): Promise<void> {
+  // Store in purchase metadata for tracking
+  await prisma.purchase.create({
+    data: {
+      userId: 'system',
+      type: 'SUBSCRIPTION',
+      status: 'COMPLETED',
+      amount: 0,
+      metadata: { stripeEventId: eventId, eventType, processedAt: new Date().toISOString() }
+    }
+  }).catch(() => {
+    // Ignore if already exists or fails - this is just for tracking
+  })
+}
+
 async function grantSubscriptionWax(userId: string, tier: 'WAX_PLUS' | 'WAX_PRO') {
   const tierConfig = SUBSCRIPTION_TIERS[tier]
   const waxAmount = tierConfig.monthlyWaxGrant
@@ -235,25 +266,36 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    // Idempotency check - skip if event already processed
+    if (await isEventProcessed(event.id)) {
+      console.log(`Event ${event.id} already processed, skipping`)
+      return NextResponse.json({ received: true, skipped: true })
+    }
+
     switch (event.type) {
       case 'checkout.session.completed':
         await handleCheckoutComplete(event.data.object as Stripe.Checkout.Session)
+        await markEventProcessed(event.id, event.type)
         break
 
       case 'customer.subscription.created':
         await handleSubscriptionCreated(event.data.object as Stripe.Subscription)
+        await markEventProcessed(event.id, event.type)
         break
 
       case 'customer.subscription.updated':
         await handleSubscriptionUpdated(event.data.object as Stripe.Subscription)
+        await markEventProcessed(event.id, event.type)
         break
 
       case 'customer.subscription.deleted':
         await handleSubscriptionDeleted(event.data.object as Stripe.Subscription)
+        await markEventProcessed(event.id, event.type)
         break
 
       case 'invoice.payment_succeeded':
         await handleInvoicePaid(event.data.object as Stripe.Invoice)
+        await markEventProcessed(event.id, event.type)
         break
 
       case 'invoice.payment_failed':

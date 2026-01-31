@@ -1,5 +1,5 @@
 import { prisma } from './prisma'
-import { SUBSCRIPTION_TIERS, FREE_TIER, WAX_EARN_RATES, WAX_SPEND_COSTS } from './stripe'
+import { SUBSCRIPTION_TIERS, FREE_TIER, WAX_EARN_RATES } from './stripe'
 import { TxType, SubTier } from '@prisma/client'
 
 // ============================================
@@ -70,32 +70,38 @@ export function getTierConfig(tier: SubTier): TierConfig {
 // ============================================
 
 async function checkAndResetWeeklyCap(userId: string): Promise<{ weeklyWaxEarned: number; wasReset: boolean }> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { weeklyWaxEarned: true, weeklyResetAt: true }
+  const now = new Date()
+
+  // Use transaction to atomically check and reset if needed
+  const result = await prisma.$transaction(async (tx) => {
+    const user = await tx.user.findUnique({
+      where: { id: userId },
+      select: { weeklyWaxEarned: true, weeklyResetAt: true }
+    })
+
+    if (!user) {
+      throw new Error('User not found')
+    }
+
+    const resetAt = new Date(user.weeklyResetAt)
+    const daysSinceReset = Math.floor((now.getTime() - resetAt.getTime()) / (1000 * 60 * 60 * 24))
+
+    // Reset every 7 days - atomically within transaction
+    if (daysSinceReset >= 7) {
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          weeklyWaxEarned: 0,
+          weeklyResetAt: now,
+        }
+      })
+      return { weeklyWaxEarned: 0, wasReset: true }
+    }
+
+    return { weeklyWaxEarned: user.weeklyWaxEarned, wasReset: false }
   })
 
-  if (!user) {
-    throw new Error('User not found')
-  }
-
-  const now = new Date()
-  const resetAt = new Date(user.weeklyResetAt)
-  const daysSinceReset = Math.floor((now.getTime() - resetAt.getTime()) / (1000 * 60 * 60 * 24))
-
-  // Reset every 7 days
-  if (daysSinceReset >= 7) {
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        weeklyWaxEarned: 0,
-        weeklyResetAt: now,
-      }
-    })
-    return { weeklyWaxEarned: 0, wasReset: true }
-  }
-
-  return { weeklyWaxEarned: user.weeklyWaxEarned, wasReset: false }
+  return result
 }
 
 // ============================================
@@ -193,50 +199,68 @@ export async function spendWax(
   description: string,
   metadata?: Record<string, unknown>
 ): Promise<SpendResult> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { waxBalance: true }
-  })
-
-  if (!user) {
-    return { spent: 0, newBalance: 0, success: false, error: 'User not found' }
+  // Validate amount
+  if (amount <= 0 || !Number.isFinite(amount)) {
+    return { spent: 0, newBalance: 0, success: false, error: 'Invalid amount' }
   }
 
-  if (user.waxBalance < amount) {
+  // Use transaction with atomic balance check to prevent race conditions
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      // Lock the user row and check balance atomically
+      const user = await tx.user.findUnique({
+        where: { id: userId },
+        select: { waxBalance: true }
+      })
+
+      if (!user) {
+        throw new Error('User not found')
+      }
+
+      if (user.waxBalance < amount) {
+        throw new Error(`Insufficient Wax. Need ${amount}, have ${user.waxBalance}`)
+      }
+
+      // Update balance atomically within the same transaction
+      const updated = await tx.user.update({
+        where: { id: userId },
+        data: {
+          waxBalance: { decrement: amount },
+          lifetimeWaxSpent: { increment: amount },
+        }
+      })
+
+      await tx.waxTransaction.create({
+        data: {
+          userId,
+          amount: -amount,
+          type,
+          description,
+          metadata: metadata as object,
+        }
+      })
+
+      return updated
+    })
+
+    return {
+      spent: amount,
+      newBalance: result.waxBalance,
+      success: true,
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Transaction failed'
+    // Get current balance for error response
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { waxBalance: true }
+    })
     return {
       spent: 0,
-      newBalance: user.waxBalance,
+      newBalance: user?.waxBalance ?? 0,
       success: false,
-      error: `Insufficient Wax. Need ${amount}, have ${user.waxBalance}`
+      error: message
     }
-  }
-
-  const updatedUser = await prisma.$transaction(async (tx) => {
-    const updated = await tx.user.update({
-      where: { id: userId },
-      data: {
-        waxBalance: { decrement: amount },
-        lifetimeWaxSpent: { increment: amount },
-      }
-    })
-
-    await tx.waxTransaction.create({
-      data: {
-        userId,
-        amount: -amount,
-        type,
-        description,
-        metadata: metadata as object,
-      }
-    })
-
-    return updated
-  })
-
-  return {
-    spent: amount,
-    newBalance: updatedUser.waxBalance,
-    success: true,
   }
 }
 

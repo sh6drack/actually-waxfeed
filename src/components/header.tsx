@@ -39,7 +39,7 @@ export function Header() {
     const fetchWax = async () => {
       if (!session?.user) return
       try {
-        const res = await fetch("/api/wax/balance")
+        const res = await fetch("/api/wax/balance", { credentials: 'include' })
         const data = await res.json()
         if (data.success) {
           setWaxStats({
@@ -65,7 +65,7 @@ export function Header() {
     const fetchUnread = async () => {
       if (!session?.user) return
       try {
-        const res = await fetch("/api/messages/unread")
+        const res = await fetch("/api/messages/unread", { credentials: 'include' })
         const data = await res.json()
         if (data.success) {
           setUnreadMessages(data.data.unreadCount || 0)

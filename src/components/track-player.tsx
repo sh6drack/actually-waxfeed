@@ -59,7 +59,7 @@ export function TrackPlayer({ tracks, albumId, albumTitle, artistName, coverArtU
   const fetchUserRatings = async () => {
     setLoadingRatings(true)
     try {
-      const res = await fetch(`/api/albums/${albumId}/tracks`)
+      const res = await fetch(`/api/albums/${albumId}/tracks`, { credentials: 'include' })
       const data = await res.json()
       if (data.success) {
         const ratings: Record<string, TrackRating> = {}
@@ -85,6 +85,7 @@ export function TrackPlayer({ tracks, albumId, albumTitle, artistName, coverArtU
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rating }),
+        credentials: 'include',
       })
       if (res.ok) {
         setUserRatings(prev => ({

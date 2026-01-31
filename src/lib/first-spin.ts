@@ -27,19 +27,20 @@ const TRENDING_THRESHOLD = 100 // 100 reviews = album is trending
 /**
  * Check if an album should be marked as trending
  * Called after every new review
+ * Uses atomic update to prevent race conditions
  */
 export async function checkAlbumTrending(albumId: string): Promise<boolean> {
   const album = await prisma.album.findUnique({
     where: { id: albumId },
-    select: { 
-      totalReviews: true, 
+    select: {
+      totalReviews: true,
       isTrending: true,
       trendThreshold: true,
     }
   })
 
   if (!album) return false
-  
+
   // Already trending - no need to process
   if (album.isTrending) return true
 
@@ -47,8 +48,23 @@ export async function checkAlbumTrending(albumId: string): Promise<boolean> {
 
   // Check if it crossed the threshold
   if (album.totalReviews >= threshold) {
-    // Mark as trending and award badges
-    await markAlbumTrending(albumId)
+    // Use atomic update with condition to prevent race conditions
+    // Only one concurrent request will successfully update isTrending from false to true
+    const updated = await prisma.album.updateMany({
+      where: {
+        id: albumId,
+        isTrending: false // Only update if still not trending
+      },
+      data: {
+        isTrending: true,
+        trendedAt: new Date(),
+      }
+    })
+
+    // If we updated the album (count > 0), we won the race - award badges
+    if (updated.count > 0) {
+      await awardTrendingBadges(albumId)
+    }
     return true
   }
 
@@ -56,19 +72,10 @@ export async function checkAlbumTrending(albumId: string): Promise<boolean> {
 }
 
 /**
- * Mark album as trending and award First Spin badges
- * to all early reviewers
+ * Award badges to early reviewers of a trending album
+ * Called only after successful atomic update of isTrending
  */
-export async function markAlbumTrending(albumId: string): Promise<void> {
-  // Update album
-  await prisma.album.update({
-    where: { id: albumId },
-    data: {
-      isTrending: true,
-      trendedAt: new Date(),
-    }
-  })
-
+async function awardTrendingBadges(albumId: string): Promise<void> {
   // Find all reviews with position <= 100
   const earlyReviews = await prisma.review.findMany({
     where: {
@@ -92,6 +99,30 @@ export async function markAlbumTrending(albumId: string): Promise<void> {
       albumId,
       review.reviewPosition
     )
+  }
+}
+
+/**
+ * Mark album as trending and award First Spin badges
+ * to all early reviewers
+ * @deprecated Use checkAlbumTrending instead for race-safe trending detection
+ */
+export async function markAlbumTrending(albumId: string): Promise<void> {
+  // Use atomic update to prevent race conditions
+  const updated = await prisma.album.updateMany({
+    where: {
+      id: albumId,
+      isTrending: false
+    },
+    data: {
+      isTrending: true,
+      trendedAt: new Date(),
+    }
+  })
+
+  // Only award badges if we successfully marked as trending
+  if (updated.count > 0) {
+    await awardTrendingBadges(albumId)
   }
 }
 

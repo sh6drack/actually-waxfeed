@@ -8,9 +8,18 @@ export const maxDuration = 300 // 5 minutes max
 
 export async function GET(request: Request) {
   try {
-    // Verify cron secret in production
+    // Verify cron secret - REQUIRED in production
     const authHeader = request.headers.get("authorization")
-    if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    const cronSecret = process.env.CRON_SECRET
+
+    // Always require CRON_SECRET in production
+    if (!cronSecret && process.env.NODE_ENV === 'production') {
+      console.error('CRON_SECRET environment variable is not set')
+      return NextResponse.json({ error: "Server configuration error" }, { status: 500 })
+    }
+
+    // Verify the secret if set
+    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 

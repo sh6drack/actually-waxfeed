@@ -258,9 +258,19 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth()
 
-    // Must be logged in
+    // Must be logged in AND be an admin
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    // Verify admin role
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true }
+    })
+
+    if (user?.role !== 'ADMIN') {
+      return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 })
     }
 
     const token = await getSpotifyToken()

@@ -18,7 +18,9 @@
     "remotion:render:frequency": "remotion render WaxFeedFrequency out/frequency.mp4",
     "remotion:render:frequency:square": "remotion render WaxFeedFrequencySquare out/frequency-square.mp4",
     "remotion:render:showcase": "remotion render WaxFeedShowcase out/showcase.mp4",
-    "remotion:render:showcase:square": "remotion render WaxFeedShowcaseSquare out/showcase-square.mp4"
+    "remotion:render:showcase:square": "remotion render WaxFeedShowcaseSquare out/showcase-square.mp4",
+    "remotion:render:investor": "remotion render WaxFeedInvestorPromo out/investor-promo.mp4",
+    "remotion:render:investor:square": "remotion render WaxFeedInvestorPromoSquare out/investor-promo-square.mp4"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
@@ -55,6 +57,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "better-sqlite3": "^12.5.0",
+    "epub2": "^3.0.2",
+    "epubjs": "^0.3.93",
     "eslint": "^9",
     "eslint-config-next": "16.0.4",
     "puppeteer": "^24.36.1",

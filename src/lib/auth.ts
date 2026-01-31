@@ -6,6 +6,33 @@ import { prisma } from "./prisma"
 import bcrypt from "bcryptjs"
 import type { Provider } from "next-auth/providers"
 
+// Rate limiting for login attempts
+const loginAttempts = new Map<string, { count: number; resetAt: number }>()
+const MAX_LOGIN_ATTEMPTS = 5 // Max attempts per window
+const LOGIN_WINDOW_MS = 15 * 60 * 1000 // 15 minutes
+
+function checkLoginRateLimit(email: string): boolean {
+  const now = Date.now()
+  const key = email.toLowerCase()
+  const attempt = loginAttempts.get(key)
+
+  if (!attempt || now > attempt.resetAt) {
+    loginAttempts.set(key, { count: 1, resetAt: now + LOGIN_WINDOW_MS })
+    return true
+  }
+
+  if (attempt.count >= MAX_LOGIN_ATTEMPTS) {
+    return false // Rate limited
+  }
+
+  attempt.count++
+  return true
+}
+
+function resetLoginAttempts(email: string): void {
+  loginAttempts.delete(email.toLowerCase())
+}
+
 // Build providers array conditionally
 const providers: Provider[] = []
 
@@ -32,22 +59,34 @@ providers.push(
         return null
       }
 
-      const user = await prisma.user.findUnique({
-        where: { email: credentials.email as string },
-      })
+      const email = credentials.email as string
 
-      if (!user || !user.password) {
+      // Check rate limit before processing
+      if (!checkLoginRateLimit(email)) {
+        // Rate limited - return null (failed auth)
+        // Note: NextAuth doesn't support custom error messages in authorize
         return null
       }
+
+      const user = await prisma.user.findUnique({
+        where: { email },
+      })
+
+      // Always hash something to prevent timing attacks
+      // This makes response time consistent whether user exists or not
+      const passwordToCompare = user?.password || '$2a$10$fakehashtopreventtimingattacks000000000000000000'
 
       const passwordMatch = await bcrypt.compare(
         credentials.password as string,
-        user.password
+        passwordToCompare
       )
 
-      if (!passwordMatch) {
+      if (!user || !user.password || !passwordMatch) {
         return null
       }
+
+      // Successful login - reset rate limit counter
+      resetLoginAttempts(email)
 
       return {
         id: user.id,

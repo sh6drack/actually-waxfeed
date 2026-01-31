@@ -68,7 +68,7 @@ export function MessageThread({ conversationId }: MessageThreadProps) {
   const fetchMessages = async () => {
     try {
       setLoading(true)
-      const res = await fetch(`/api/messages/${conversationId}?limit=100`)
+      const res = await fetch(`/api/messages/${conversationId}?limit=100`, { credentials: 'include' })
       const data = await res.json()
       if (data.success) {
         setMessages(data.data.messages)
@@ -85,7 +85,7 @@ export function MessageThread({ conversationId }: MessageThreadProps) {
 
   const markAsRead = async () => {
     try {
-      await fetch(`/api/messages/${conversationId}/read`, { method: 'PATCH' })
+      await fetch(`/api/messages/${conversationId}/read`, { method: 'PATCH', credentials: 'include' })
     } catch {
       // Silent fail
     }
@@ -100,6 +100,7 @@ export function MessageThread({ conversationId }: MessageThreadProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content }),
+        credentials: 'include',
       })
       const data = await res.json()
       if (data.success) {

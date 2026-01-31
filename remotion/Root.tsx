@@ -4,6 +4,7 @@ import { WaxFeedPromoSquare } from "./WaxFeedPromoSquare";
 import { WaxFeedFrequency, WaxFeedFrequencySquare } from "./WaxFeedFrequency";
 import { WaxFeedFrequency2, WaxFeedFrequency2Vertical } from "./WaxFeedFrequency2";
 import { WaxFeedShowcase, WaxFeedShowcaseSquare } from "./WaxFeedShowcase";
+import { WaxFeedInvestorPromo, WaxFeedInvestorPromoSquare } from "./WaxFeedInvestorPromo";
 
 export const RemotionRoot = () => {
   return (
@@ -24,6 +25,24 @@ export const RemotionRoot = () => {
         fps={30}
         width={1080}
         height={1920}
+      />
+
+      {/* INVESTOR PROMO - Brutalist pitch video: 35 seconds */}
+      <Composition
+        id="WaxFeedInvestorPromo"
+        component={WaxFeedInvestorPromo}
+        durationInFrames={1050}
+        fps={30}
+        width={1920}
+        height={1080}
+      />
+      <Composition
+        id="WaxFeedInvestorPromoSquare"
+        component={WaxFeedInvestorPromoSquare}
+        durationInFrames={1050}
+        fps={30}
+        width={1080}
+        height={1080}
       />
 
       {/* FREQUENCY - Cinematic 90s promo with data visualization */}

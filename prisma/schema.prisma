@@ -306,6 +306,8 @@ model Album {
   @@index([averageRating])
   @@index([totalReviews])
   @@index([billboardRank])
+  // Compound index for trending queries
+  @@index([isTrending, totalReviews])
 }
 
 model Track {
@@ -452,6 +454,9 @@ model Review {
   @@index([likeCount])
   @@index([rating])
   @@index([reviewPosition])
+  // Compound indexes for common query patterns
+  @@index([userId, createdAt])
+  @@index([albumId, createdAt])
 }
 
 model ReviewDraft {

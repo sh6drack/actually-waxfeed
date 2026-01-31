@@ -18,29 +18,30 @@ export function CustomCursor() {
       cursor.style.top = `${e.clientY}px`
     }
 
-    const onMouseEnterInteractive = () => {
-      cursor.classList.add("active")
+    // Use event delegation on document to handle all interactive elements
+    // This handles dynamically added elements and prevents memory leaks
+    const onMouseOver = (e: MouseEvent) => {
+      const target = e.target as Element
+      if (target.matches("a, button, [role='button'], input, textarea, [data-interactive]")) {
+        cursor.classList.add("active")
+      }
     }
 
-    const onMouseLeaveInteractive = () => {
-      cursor.classList.remove("active")
+    const onMouseOut = (e: MouseEvent) => {
+      const target = e.target as Element
+      if (target.matches("a, button, [role='button'], input, textarea, [data-interactive]")) {
+        cursor.classList.remove("active")
+      }
     }
 
     document.addEventListener("mousemove", onMouseMove)
-
-    // Add hover effect to interactive elements
-    const interactiveElements = document.querySelectorAll("a, button, [role='button'], input, textarea")
-    interactiveElements.forEach((el) => {
-      el.addEventListener("mouseenter", onMouseEnterInteractive)
-      el.addEventListener("mouseleave", onMouseLeaveInteractive)
-    })
+    document.addEventListener("mouseover", onMouseOver)
+    document.addEventListener("mouseout", onMouseOut)
 
     return () => {
       document.removeEventListener("mousemove", onMouseMove)
-      interactiveElements.forEach((el) => {
-        el.removeEventListener("mouseenter", onMouseEnterInteractive)
-        el.removeEventListener("mouseleave", onMouseLeaveInteractive)
-      })
+      document.removeEventListener("mouseover", onMouseOver)
+      document.removeEventListener("mouseout", onMouseOut)
     }
   }, [])
 

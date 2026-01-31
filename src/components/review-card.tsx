@@ -114,6 +114,7 @@ export const ReviewCard = memo(function ReviewCard({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ waxType }),
+        credentials: 'include',
       })
       const data = await res.json()
       if (data.success) {
@@ -156,6 +157,7 @@ export const ReviewCard = memo(function ReviewCard({
     try {
       const res = await fetch(`/api/reviews/${id}/like`, {
         method: liked ? "DELETE" : "POST",
+        credentials: 'include',
       })
       if (res.ok) {
         setLiked(!liked)
@@ -176,6 +178,7 @@ export const ReviewCard = memo(function ReviewCard({
         method: hasReaction ? "DELETE" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type }),
+        credentials: 'include',
       })
       if (res.ok) {
         if (hasReaction) {

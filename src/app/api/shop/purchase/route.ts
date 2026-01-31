@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, requireAuth } from '@/lib/api-utils'
-import { spendWax, getTierConfig } from '@/lib/wax-engine'
 import { SubTier } from '@prisma/client'
 
 // POST /api/shop/purchase - Purchase a shop item with Wax
@@ -31,11 +30,6 @@ export async function POST(request: NextRequest) {
 
     if (item.expiresAt && new Date(item.expiresAt) < new Date()) {
       return errorResponse('Item has expired', 400)
-    }
-
-    // Check stock for limited items
-    if (item.stock !== null && item.soldCount >= item.stock) {
-      return errorResponse('Item is sold out', 400)
     }
 
     // Check tier requirement
@@ -68,54 +62,107 @@ export async function POST(request: NextRequest) {
     }
 
     // Determine transaction type based on item type
-    const txType = item.type === 'BADGE' ? 'BUY_BADGE' 
-      : item.type === 'FRAME' ? 'BUY_FRAME' 
+    const txType = item.type === 'BADGE' ? 'BUY_BADGE'
+      : item.type === 'FRAME' ? 'BUY_FRAME'
       : 'BUY_BADGE'
 
-    // Spend the wax
-    const result = await spendWax(
-      user.id,
-      item.waxPrice,
-      txType,
-      `Purchased ${item.name}`,
-      { itemId, itemType: item.type }
-    )
+    // Use a transaction to atomically check stock, spend wax, and create item
+    // This prevents overselling of limited items
+    try {
+      const purchaseResult = await prisma.$transaction(async (tx) => {
+        // Re-check stock inside transaction to prevent race conditions
+        const currentItem = await tx.shopItem.findUnique({
+          where: { id: itemId },
+          select: { stock: true, soldCount: true, isLimited: true }
+        })
 
-    if (!result.success) {
-      return errorResponse(result.error || 'Insufficient Wax', 400)
-    }
-
-    // Create user item and update sold count in a transaction
-    const purchaseNum = item.isLimited ? item.soldCount + 1 : null
-
-    await prisma.$transaction([
-      prisma.userItem.create({
-        data: {
-          userId: user.id,
-          itemId,
-          purchaseNum,
+        if (!currentItem) {
+          throw new Error('Item not found')
         }
-      }),
-      prisma.shopItem.update({
-        where: { id: itemId },
-        data: { soldCount: { increment: 1 } }
-      })
-    ])
 
-    return successResponse({
-      success: true,
-      spent: item.waxPrice,
-      newBalance: result.newBalance,
-      item: {
-        id: item.id,
-        name: item.name,
-        type: item.type,
-      },
-      purchaseNum,
-      message: purchaseNum 
-        ? `You got #${purchaseNum} of ${item.stock}!`
-        : `Successfully purchased ${item.name}!`,
-    })
+        // Check stock for limited items (inside transaction)
+        if (currentItem.stock !== null && currentItem.soldCount >= currentItem.stock) {
+          throw new Error('Item is sold out')
+        }
+
+        // Check and spend wax atomically
+        const userWithBalance = await tx.user.findUnique({
+          where: { id: user.id },
+          select: { waxBalance: true }
+        })
+
+        if (!userWithBalance || userWithBalance.waxBalance < item.waxPrice) {
+          throw new Error(`Insufficient Wax. Need ${item.waxPrice}, have ${userWithBalance?.waxBalance ?? 0}`)
+        }
+
+        // Deduct wax
+        await tx.user.update({
+          where: { id: user.id },
+          data: {
+            waxBalance: { decrement: item.waxPrice },
+            lifetimeWaxSpent: { increment: item.waxPrice },
+          }
+        })
+
+        // Log wax transaction
+        await tx.waxTransaction.create({
+          data: {
+            userId: user.id,
+            amount: -item.waxPrice,
+            type: txType,
+            description: `Purchased ${item.name}`,
+            metadata: { itemId, itemType: item.type }
+          }
+        })
+
+        // Calculate purchase number
+        const purchaseNum = currentItem.isLimited ? currentItem.soldCount + 1 : null
+
+        // Create user item
+        await tx.userItem.create({
+          data: {
+            userId: user.id,
+            itemId,
+            purchaseNum,
+          }
+        })
+
+        // Update sold count
+        await tx.shopItem.update({
+          where: { id: itemId },
+          data: { soldCount: { increment: 1 } }
+        })
+
+        // Get new balance
+        const updatedUser = await tx.user.findUnique({
+          where: { id: user.id },
+          select: { waxBalance: true }
+        })
+
+        return {
+          purchaseNum,
+          newBalance: updatedUser?.waxBalance ?? 0
+        }
+      })
+
+      return successResponse({
+        success: true,
+        spent: item.waxPrice,
+        newBalance: purchaseResult.newBalance,
+        item: {
+          id: item.id,
+          name: item.name,
+          type: item.type,
+        },
+        purchaseNum: purchaseResult.purchaseNum,
+        message: purchaseResult.purchaseNum
+          ? `You got #${purchaseResult.purchaseNum} of ${item.stock}!`
+          : `Successfully purchased ${item.name}!`,
+      })
+    } catch (txError) {
+      const message = txError instanceof Error ? txError.message : 'Purchase failed'
+      return errorResponse(message, 400)
+    }
 
   } catch (error) {
     if (error instanceof Error && error.message === 'UNAUTHORIZED') {
