@@ -104,6 +104,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   session: {
     strategy: "jwt",
   },
+  trustHost: true,
   callbacks: {
     // Handle account linking - if user signs in with Google but already has an email account, link them
     async signIn({ user, account }) {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, type ReactNode } from "react"
 import { StripeProvider } from "./StripeProvider"
 import { PaymentForm } from "./PaymentForm"
 
@@ -14,6 +14,25 @@ interface CheckoutModalProps {
   onSuccess?: () => void
 }
 
+function CloseIcon(): ReactNode {
+  return (
+    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  )
+}
+
+function LoadingSpinner(): ReactNode {
+  return (
+    <div className="flex items-center justify-center py-12">
+      <svg className="animate-spin h-8 w-8 text-[var(--accent-primary)]" fill="none" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+      </svg>
+    </div>
+  )
+}
+
 export function CheckoutModal({
   isOpen,
   onClose,
@@ -22,18 +41,20 @@ export function CheckoutModal({
   productName,
   amount,
   onSuccess,
-}: CheckoutModalProps) {
+}: CheckoutModalProps): ReactNode {
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const creatingRef = useRef(false)
 
   useEffect(() => {
-    if (isOpen && !clientSecret) {
+    if (isOpen && !clientSecret && !creatingRef.current) {
+      creatingRef.current = true
       createPaymentIntent()
     }
-  }, [isOpen])
+  }, [isOpen, clientSecret])
 
-  const createPaymentIntent = async () => {
+  async function createPaymentIntent(): Promise<void> {
     setLoading(true)
     setError(null)
 
@@ -50,92 +71,52 @@ export function CheckoutModal({
         setClientSecret(data.data.clientSecret)
       } else {
         setError(data.error || "Failed to initialize payment")
+        creatingRef.current = false
       }
-    } catch (err) {
-      setError("Something went wrong")
+    } catch {
+      setError("Failed to initialize payment")
+      creatingRef.current = false
     } finally {
       setLoading(false)
     }
   }
 
-  const handleClose = () => {
+  function handleClose(): void {
     setClientSecret(null)
     setError(null)
+    creatingRef.current = false
     onClose()
   }
 
-  const handleSuccess = () => {
+  function handleSuccess(): void {
     onSuccess?.()
-    setTimeout(() => {
-      handleClose()
-    }, 2000)
+    setTimeout(handleClose, 2000)
   }
 
   if (!isOpen) return null
 
+  const showPaymentForm = clientSecret && !loading && !error
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-        onClick={handleClose}
-      />
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={handleClose} />
 
-      {/* Modal */}
       <div className="relative w-full max-w-md mx-4 bg-[--background] border border-[--border] max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-[--border]">
           <div>
-            <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted]">
-              Checkout
-            </p>
+            <p className="text-[10px] tracking-[0.3em] uppercase text-[--muted]">Checkout</p>
             <p className="font-bold">{productName}</p>
           </div>
           <button
             onClick={handleClose}
             className="w-8 h-8 flex items-center justify-center border border-[--border] hover:border-white transition"
           >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            <CloseIcon />
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-6">
-          {loading && (
-            <div className="flex items-center justify-center py-12">
-              <svg
-                className="animate-spin h-8 w-8 text-[var(--accent-primary)]"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                />
-              </svg>
-            </div>
-          )}
+          {loading && <LoadingSpinner />}
 
           {error && (
             <div className="p-4 border border-red-500/30 bg-red-500/10">
@@ -149,7 +130,7 @@ export function CheckoutModal({
             </div>
           )}
 
-          {clientSecret && !loading && !error && (
+          {showPaymentForm && (
             <StripeProvider clientSecret={clientSecret}>
               <PaymentForm
                 amount={amount}

@@ -60,6 +60,27 @@ const REACTIONS = [
   { type: "controversial", Icon: BoltIcon, label: "Hot Take" },
 ] as const
 
+function getFirstSpinBadgeStyle(position: number): string {
+  if (position <= 10) {
+    return "border border-[--accent-primary] text-[--accent-primary]"
+  }
+  if (position <= 50) {
+    return "border border-gray-400 text-gray-400"
+  }
+  return "border border-amber-700 text-amber-700"
+}
+
+function FirstSpinBadge({ position }: { position: number }) {
+  return (
+    <div
+      className={`px-1.5 py-0.5 text-[10px] font-bold ${getFirstSpinBadgeStyle(position)}`}
+      title={`Reviewer #${position}`}
+    >
+      #{position}
+    </div>
+  )
+}
+
 export const ReviewCard = memo(function ReviewCard({
   id,
   rating,
@@ -268,20 +289,8 @@ export const ReviewCard = memo(function ReviewCard({
 
             {/* Rating + First Spin Badge */}
             <div className="flex items-center gap-2 flex-shrink-0">
-              {/* First Spin Position Badge */}
               {reviewPosition && reviewPosition <= 100 && (
-                <div
-                  className={`px-1.5 py-0.5 text-[10px] font-bold ${
-                    reviewPosition <= 10
-                      ? "border border-[--accent-primary] text-[--accent-primary]"
-                      : reviewPosition <= 50
-                        ? "border border-gray-400 text-gray-400"
-                        : "border border-amber-700 text-amber-700"
-                  }`}
-                  title={`Reviewer #${reviewPosition}`}
-                >
-                  #{reviewPosition}
-                </div>
+                <FirstSpinBadge position={reviewPosition} />
               )}
               <div className="bg-white text-black px-2 sm:px-3 py-0.5 sm:py-1 font-bold text-base sm:text-lg">
                 {rating.toFixed(1)}

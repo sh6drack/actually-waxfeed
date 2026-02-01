@@ -76,30 +76,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get current user to check for existing image
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { image: true },
-    })
-
-    // Delete old Cloudinary image if exists
-    if (user?.image?.includes("cloudinary.com")) {
-      try {
-        // Extract public_id from Cloudinary URL
-        const urlParts = user.image.split("/")
-        const filename = urlParts[urlParts.length - 1]
-        const publicId = `waxfeed/avatars/${filename.split(".")[0]}`
-        await cloudinary.uploader.destroy(publicId)
-      } catch {
-        // Ignore deletion errors
-      }
-    }
-
     // Convert to base64 using the validated MIME type (not client-provided)
     const base64 = buffer.toString("base64")
     const dataUri = `data:${validatedMimeType};base64,${base64}`
 
-    // Upload to Cloudinary
+    // Upload to Cloudinary first
     const result = await cloudinary.uploader.upload(dataUri, {
       folder: "waxfeed/avatars",
       public_id: `${session.user.id}-${Date.now()}`,
@@ -109,11 +90,33 @@ export async function POST(request: NextRequest) {
       ],
     })
 
-    // Update user's image URL
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: { image: result.secure_url },
+    // Atomically update user and get old image URL
+    // Use a transaction to prevent race conditions
+    const oldImage = await prisma.$transaction(async (tx) => {
+      const user = await tx.user.findUnique({
+        where: { id: session.user.id },
+        select: { image: true },
+      })
+
+      await tx.user.update({
+        where: { id: session.user.id },
+        data: { image: result.secure_url },
+      })
+
+      return user?.image
     })
+
+    // Delete old Cloudinary image after successful update
+    if (oldImage?.includes("cloudinary.com")) {
+      try {
+        const urlParts = oldImage.split("/")
+        const filename = urlParts[urlParts.length - 1]
+        const publicId = `waxfeed/avatars/${filename.split(".")[0]}`
+        await cloudinary.uploader.destroy(publicId)
+      } catch {
+        // Ignore deletion errors - old image cleanup is best-effort
+      }
+    }
 
     return NextResponse.json({ url: result.secure_url })
   } catch (error) {

@@ -52,15 +52,6 @@ export async function POST(request: NextRequest) {
       return errorResponse(`This item requires ${item.minTier} subscription`, 403)
     }
 
-    // Check if already owned
-    const existing = await prisma.userItem.findUnique({
-      where: { userId_itemId: { userId: user.id, itemId } }
-    })
-
-    if (existing) {
-      return errorResponse('You already own this item', 400)
-    }
-
     // Determine transaction type based on item type
     const txType = item.type === 'BADGE' ? 'BUY_BADGE'
       : item.type === 'FRAME' ? 'BUY_FRAME'
@@ -83,6 +74,15 @@ export async function POST(request: NextRequest) {
         // Check stock for limited items (inside transaction)
         if (currentItem.stock !== null && currentItem.soldCount >= currentItem.stock) {
           throw new Error('Item is sold out')
+        }
+
+        // Check if already owned (inside transaction to prevent race condition)
+        const existing = await tx.userItem.findUnique({
+          where: { userId_itemId: { userId: user.id, itemId } }
+        })
+
+        if (existing) {
+          throw new Error('You already own this item')
         }
 
         // Check and spend wax atomically

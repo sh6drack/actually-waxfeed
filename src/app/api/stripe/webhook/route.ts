@@ -7,11 +7,21 @@ import Stripe from 'stripe'
 // Disable body parsing for webhooks
 export const runtime = 'nodejs'
 
+// In-memory cache for processed events (with TTL)
+// Events are also tracked in WaxTransaction metadata for persistence
+const processedEvents = new Map<string, number>()
+const EVENT_TTL_MS = 24 * 60 * 60 * 1000 // 24 hours
+
 // Check if event has already been processed (idempotency)
 async function isEventProcessed(eventId: string): Promise<boolean> {
-  // Use a simple check against purchase table metadata or create a dedicated table
-  // For now, we'll use a lightweight approach with the Purchase model
-  const existing = await prisma.purchase.findFirst({
+  // Check in-memory cache first
+  const cachedAt = processedEvents.get(eventId)
+  if (cachedAt && Date.now() - cachedAt < EVENT_TTL_MS) {
+    return true
+  }
+
+  // Check database for persistent tracking
+  const existing = await prisma.waxTransaction.findFirst({
     where: {
       metadata: {
         path: ['stripeEventId'],
@@ -19,23 +29,26 @@ async function isEventProcessed(eventId: string): Promise<boolean> {
       }
     }
   })
-  return !!existing
+
+  if (existing) {
+    processedEvents.set(eventId, Date.now())
+    return true
+  }
+
+  return false
 }
 
-// Mark event as processed
-async function markEventProcessed(eventId: string, eventType: string): Promise<void> {
-  // Store in purchase metadata for tracking
-  await prisma.purchase.create({
-    data: {
-      userId: 'system',
-      type: 'SUBSCRIPTION',
-      status: 'COMPLETED',
-      amount: 0,
-      metadata: { stripeEventId: eventId, eventType, processedAt: new Date().toISOString() }
+// Mark event as processed (in-memory only, actual record created during processing)
+function markEventProcessed(eventId: string): void {
+  processedEvents.set(eventId, Date.now())
+
+  // Clean up old entries
+  const now = Date.now()
+  for (const [key, timestamp] of processedEvents.entries()) {
+    if (now - timestamp > EVENT_TTL_MS) {
+      processedEvents.delete(key)
     }
-  }).catch(() => {
-    // Ignore if already exists or fails - this is just for tracking
-  })
+  }
 }
 
 async function grantSubscriptionWax(userId: string, tier: 'WAX_PLUS' | 'WAX_PRO') {
@@ -64,47 +77,21 @@ async function grantSubscriptionWax(userId: string, tier: 'WAX_PLUS' | 'WAX_PRO'
 
 async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   const userId = session.metadata?.userId
-  const type = session.metadata?.type
 
   if (!userId) {
     console.error('No userId in checkout session metadata')
     return
   }
 
-  // Update purchase record
+  // Update purchase record status only
+  // Wax granting is handled by payment_intent.succeeded to avoid double-granting
   await prisma.purchase.updateMany({
     where: { stripeSessionId: session.id },
-    data: { 
+    data: {
       status: 'COMPLETED',
       stripePaymentId: session.payment_intent as string,
     }
   })
-
-  if (type === 'wax_pax') {
-    const waxAmount = parseInt(session.metadata?.waxAmount || '0')
-    const paxId = session.metadata?.paxId
-
-    if (waxAmount > 0) {
-      await prisma.$transaction([
-        prisma.user.update({
-          where: { id: userId },
-          data: {
-            waxBalance: { increment: waxAmount },
-            lifetimeWaxEarned: { increment: waxAmount },
-          }
-        }),
-        prisma.waxTransaction.create({
-          data: {
-            userId,
-            amount: waxAmount,
-            type: 'PURCHASE',
-            description: `Purchased ${paxId} Wax pax`,
-            metadata: { paxId, sessionId: session.id }
-          }
-        })
-      ])
-    }
-  }
   // Subscription activation is handled by subscription.created event
 }
 
@@ -243,7 +230,7 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
   await grantSubscriptionWax(userId, tier)
 }
 
-async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent) {
+async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent, stripeEventId: string) {
   const userId = paymentIntent.metadata?.userId
   const type = paymentIntent.metadata?.type
 
@@ -280,7 +267,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
             amount: waxAmount,
             type: 'PURCHASE',
             description: `Purchased ${paxId} Wax pax`,
-            metadata: { paxId, paymentIntentId: paymentIntent.id }
+            metadata: { paxId, paymentIntentId: paymentIntent.id, stripeEventId }
           }
         })
       ])
@@ -320,27 +307,27 @@ export async function POST(request: NextRequest) {
     switch (event.type) {
       case 'checkout.session.completed':
         await handleCheckoutComplete(event.data.object as Stripe.Checkout.Session)
-        await markEventProcessed(event.id, event.type)
+        markEventProcessed(event.id)
         break
 
       case 'customer.subscription.created':
         await handleSubscriptionCreated(event.data.object as Stripe.Subscription)
-        await markEventProcessed(event.id, event.type)
+        markEventProcessed(event.id)
         break
 
       case 'customer.subscription.updated':
         await handleSubscriptionUpdated(event.data.object as Stripe.Subscription)
-        await markEventProcessed(event.id, event.type)
+        markEventProcessed(event.id)
         break
 
       case 'customer.subscription.deleted':
         await handleSubscriptionDeleted(event.data.object as Stripe.Subscription)
-        await markEventProcessed(event.id, event.type)
+        markEventProcessed(event.id)
         break
 
       case 'invoice.payment_succeeded':
         await handleInvoicePaid(event.data.object as Stripe.Invoice)
-        await markEventProcessed(event.id, event.type)
+        markEventProcessed(event.id)
         break
 
       case 'invoice.payment_failed':
@@ -349,8 +336,8 @@ export async function POST(request: NextRequest) {
         break
 
       case 'payment_intent.succeeded':
-        await handlePaymentIntentSucceeded(event.data.object as Stripe.PaymentIntent)
-        await markEventProcessed(event.id, event.type)
+        await handlePaymentIntentSucceeded(event.data.object as Stripe.PaymentIntent, event.id)
+        markEventProcessed(event.id)
         break
 
       default:

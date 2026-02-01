@@ -32,7 +32,6 @@ export async function requireAuth() {
   return user
 }
 
-// Check if user is admin
 export async function requireAdmin() {
   const user = await getAuthenticatedUser()
   if (!user) {
@@ -44,13 +43,11 @@ export async function requireAdmin() {
   return user
 }
 
-// Check if user has premium features (ADMIN or PREMIUM role, or isPremium flag)
-export function hasPremiumAccess(user: { role?: string; isPremium?: boolean }) {
+export function hasPremiumAccess(user: { role?: string; isPremium?: boolean }): boolean {
   return user.role === 'ADMIN' || user.role === 'PREMIUM' || user.isPremium === true
 }
 
-// Check if user is admin
-export function isAdmin(user: { role?: string }) {
+export function isAdmin(user: { role?: string }): boolean {
   return user.role === 'ADMIN'
 }
 
@@ -75,8 +72,7 @@ export async function areFriends(userId1: string, userId2: string): Promise<bool
   return !!friendship
 }
 
-// Update album stats
-export async function updateAlbumStats(albumId: string) {
+export async function updateAlbumStats(albumId: string): Promise<void> {
   const reviews = await prisma.review.findMany({
     where: { albumId },
     select: { rating: true }
@@ -87,7 +83,6 @@ export async function updateAlbumStats(albumId: string) {
     ? reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
     : null
 
-  // Calculate rating distribution
   const distribution: Record<string, number> = {}
   for (let i = 0; i <= 10; i++) {
     distribution[i.toString()] = 0
@@ -107,38 +102,34 @@ export async function updateAlbumStats(albumId: string) {
     }
   })
 
-  // First Spin: Check if album should be marked trending
-  // Import dynamically to avoid circular dependencies
+  // Dynamic import to avoid circular dependencies
   const { checkAlbumTrending } = await import('./first-spin')
   await checkAlbumTrending(albumId)
 }
 
-// Create notification helper
+const NOTIFICATION_SETTINGS_MAP: Record<string, string> = {
+  reply: 'replies',
+  like: 'likes',
+  friend_request: 'friendRequests',
+  friend_accept: 'friendRequests',
+  friend_review: 'friendReviews',
+  review_trending: 'reviewTrending',
+}
+
 export async function createNotification(
   userId: string,
   type: string,
   content: Record<string, unknown>
 ) {
-  // Check notification settings
   const settings = await prisma.notificationSettings.findUnique({
     where: { userId }
   })
 
-  // Map notification types to settings fields
-  const settingsMap: Record<string, string> = {
-    reply: 'replies',
-    like: 'likes',
-    friend_request: 'friendRequests',
-    friend_accept: 'friendRequests',
-    friend_review: 'friendReviews',
-    review_trending: 'reviewTrending',
-  }
-
-  const settingKey = settingsMap[type]
+  const settingKey = NOTIFICATION_SETTINGS_MAP[type]
   if (settings && settingKey) {
     const isEnabled = settings[settingKey as keyof typeof settings]
     if (!isEnabled) {
-      return null // User has disabled this notification type
+      return null
     }
   }
 
@@ -151,8 +142,7 @@ export async function createNotification(
   })
 }
 
-// Pagination helper
-export function getPagination(searchParams: URLSearchParams) {
+export function getPagination(searchParams: URLSearchParams): { page: number; limit: number; skip: number } {
   const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
   const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '20')))
   const skip = (page - 1) * limit
