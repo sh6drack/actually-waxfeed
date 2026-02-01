@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { WAX_PAX as WAX_PAX_CONFIG, formatPrice } from "@/lib/stripe"
+import { CheckoutModal } from "@/components/CheckoutModal"
 
 // Transform the WAX_PAX config object into an array for display
 const WAX_PAX = Object.values(WAX_PAX_CONFIG).map(pax => ({
@@ -19,11 +20,16 @@ const WAX_PAX = Object.values(WAX_PAX_CONFIG).map(pax => ({
 }))
 
 export default function ShopPage() {
-  const { data: session, status } = useSession()
+  const { data: session } = useSession()
   const router = useRouter()
-  const [loading, setLoading] = useState<string | null>(null)
   const [message, setMessage] = useState("")
   const [balance, setBalance] = useState(0)
+  const [checkoutModal, setCheckoutModal] = useState<{
+    isOpen: boolean
+    paxId: string
+    paxName: string
+    amount: number
+  }>({ isOpen: false, paxId: "", paxName: "", amount: 0 })
 
   useEffect(() => {
     const fetchBalance = async () => {
@@ -41,37 +47,36 @@ export default function ShopPage() {
     fetchBalance()
   }, [session])
 
-  const handlePurchase = async (paxId: string) => {
+  const handlePurchase = (paxId: string) => {
     if (!session) {
       router.push("/login?redirect=/shop")
       return
     }
 
-    setLoading(paxId)
-    setMessage("")
+    const pax = WAX_PAX.find(p => p.id === paxId)
+    if (!pax) return
 
+    // Open embedded checkout modal
+    setCheckoutModal({
+      isOpen: true,
+      paxId: pax.id,
+      paxName: pax.name,
+      amount: pax.price,
+    })
+  }
+
+  const handleCheckoutSuccess = async () => {
+    // Refresh balance after successful purchase
     try {
-      const res = await fetch("/api/stripe/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "wax_pax",
-          productId: paxId,
-        }),
-      })
-
+      const res = await fetch("/api/wax/balance")
       const data = await res.json()
-
-      if (data.success && data.data.url) {
-        window.location.href = data.data.url
-      } else {
-        setMessage(data.error || "Failed to start checkout")
+      if (data.success) {
+        setBalance(data.data.balance || 0)
       }
     } catch (error) {
-      setMessage("Something went wrong")
-    } finally {
-      setLoading(null)
+      console.error("Failed to refresh balance:", error)
     }
+    setMessage("Purchase successful! Wax added to your wallet.")
   }
 
   return (
@@ -191,14 +196,13 @@ export default function ShopPage() {
               
               <button
                 onClick={() => handlePurchase(pax.id)}
-                disabled={loading === pax.id}
-                className={`w-full py-3 text-[11px] tracking-[0.15em] uppercase font-medium transition disabled:opacity-50 ${
+                className={`w-full py-3 text-[11px] tracking-[0.15em] uppercase font-medium transition ${
                   pax.best
                     ? 'bg-[var(--accent-primary)] text-black hover:bg-[var(--accent-hover)]'
                     : 'bg-white text-black hover:bg-[#e5e5e5]'
                 }`}
               >
-                {loading === pax.id ? "Loading..." : pax.priceDisplay}
+                {pax.priceDisplay}
               </button>
             </div>
           ))}
@@ -285,6 +289,17 @@ export default function ShopPage() {
           </Link>
         </div>
       </footer>
+
+      {/* Embedded Checkout Modal */}
+      <CheckoutModal
+        isOpen={checkoutModal.isOpen}
+        onClose={() => setCheckoutModal({ isOpen: false, paxId: "", paxName: "", amount: 0 })}
+        type="wax_pax"
+        productId={checkoutModal.paxId}
+        productName={checkoutModal.paxName}
+        amount={checkoutModal.amount}
+        onSuccess={handleCheckoutSuccess}
+      />
     </div>
   )
 }

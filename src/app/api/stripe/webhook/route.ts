@@ -243,6 +243,51 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
   await grantSubscriptionWax(userId, tier)
 }
 
+async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent) {
+  const userId = paymentIntent.metadata?.userId
+  const type = paymentIntent.metadata?.type
+
+  if (!userId) {
+    console.error('No userId in payment intent metadata')
+    return
+  }
+
+  // Update purchase record
+  await prisma.purchase.updateMany({
+    where: { stripeSessionId: paymentIntent.id },
+    data: {
+      status: 'COMPLETED',
+      stripePaymentId: paymentIntent.id,
+    }
+  })
+
+  if (type === 'wax_pax') {
+    const waxAmount = parseInt(paymentIntent.metadata?.waxAmount || '0')
+    const paxId = paymentIntent.metadata?.paxId
+
+    if (waxAmount > 0) {
+      await prisma.$transaction([
+        prisma.user.update({
+          where: { id: userId },
+          data: {
+            waxBalance: { increment: waxAmount },
+            lifetimeWaxEarned: { increment: waxAmount },
+          }
+        }),
+        prisma.waxTransaction.create({
+          data: {
+            userId,
+            amount: waxAmount,
+            type: 'PURCHASE',
+            description: `Purchased ${paxId} Wax pax`,
+            metadata: { paxId, paymentIntentId: paymentIntent.id }
+          }
+        })
+      ])
+    }
+  }
+}
+
 export async function POST(request: NextRequest) {
   const body = await request.text()
   const headersList = await headers()
@@ -301,6 +346,11 @@ export async function POST(request: NextRequest) {
       case 'invoice.payment_failed':
         // Could notify user, but subscription.deleted will handle downgrade
         console.log('Payment failed for invoice:', event.data.object.id)
+        break
+
+      case 'payment_intent.succeeded':
+        await handlePaymentIntentSucceeded(event.data.object as Stripe.PaymentIntent)
+        await markEventProcessed(event.id, event.type)
         break
 
       default:

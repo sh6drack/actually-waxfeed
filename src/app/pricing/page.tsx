@@ -6,6 +6,8 @@ import { useSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useState, useEffect, Suspense } from "react"
 import Link from "next/link"
+import { CheckoutModal } from "@/components/CheckoutModal"
+import { SUBSCRIPTION_TIERS } from "@/lib/stripe"
 
 function PricingContent() {
   const { data: session, status } = useSession()
@@ -14,6 +16,10 @@ function PricingContent() {
   const [currentTier, setCurrentTier] = useState<string>("FREE")
   const [loading, setLoading] = useState<string | null>(null)
   const [message, setMessage] = useState("")
+  const [checkoutModal, setCheckoutModal] = useState<{
+    isOpen: boolean
+    tier: "WAX_PLUS" | "WAX_PRO" | null
+  }>({ isOpen: false, tier: null })
 
   const canceled = searchParams.get("canceled")
 
@@ -39,37 +45,19 @@ function PricingContent() {
     fetchUserTier()
   }, [session])
 
-  const handleSubscribe = async (tier: "WAX_PLUS" | "WAX_PRO") => {
+  const handleSubscribe = (tier: "WAX_PLUS" | "WAX_PRO") => {
     if (!session) {
       router.push("/login?redirect=/pricing")
       return
     }
 
-    setLoading(tier)
-    setMessage("")
+    // Open embedded checkout modal
+    setCheckoutModal({ isOpen: true, tier })
+  }
 
-    try {
-      const res = await fetch("/api/stripe/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "subscription",
-          productId: tier,
-        }),
-      })
-
-      const data = await res.json()
-
-      if (data.success && data.data.url) {
-        window.location.href = data.data.url
-      } else {
-        setMessage(data.error || "Failed to start checkout")
-      }
-    } catch (error) {
-      setMessage("Something went wrong")
-    } finally {
-      setLoading(null)
-    }
+  const handleCheckoutSuccess = () => {
+    setMessage("Subscription activated! Welcome to " + (checkoutModal.tier === "WAX_PLUS" ? "Wax+" : "Wax Pro") + "!")
+    setCurrentTier(checkoutModal.tier || "FREE")
   }
 
   const handleManageSubscription = async () => {
@@ -323,10 +311,10 @@ function PricingContent() {
               ) : (
                 <button
                   onClick={() => handleSubscribe("WAX_PLUS")}
-                  disabled={loading === "WAX_PLUS" || currentTier === "WAX_PRO"}
+                  disabled={currentTier === "WAX_PRO"}
                   className="w-full py-4 bg-white text-black text-[11px] tracking-[0.15em] uppercase font-bold hover:bg-[#e5e5e5] transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading === "WAX_PLUS" ? "Loading..." : currentTier === "WAX_PRO" ? "Current Pro" : "Get Started"}
+                  {currentTier === "WAX_PRO" ? "Current Pro" : "Get Started"}
                 </button>
               )}
             </div>
@@ -390,10 +378,9 @@ function PricingContent() {
               ) : (
                 <button
                   onClick={() => handleSubscribe("WAX_PRO")}
-                  disabled={loading === "WAX_PRO"}
-                  className="w-full py-4 bg-[var(--accent-primary)] text-black text-[11px] tracking-[0.15em] uppercase font-bold hover:bg-[var(--accent-hover)] transition disabled:opacity-50"
+                  className="w-full py-4 bg-[var(--accent-primary)] text-black text-[11px] tracking-[0.15em] uppercase font-bold hover:bg-[var(--accent-hover)] transition"
                 >
-                  {loading === "WAX_PRO" ? "Loading..." : "Go Pro"}
+                  Go Pro
                 </button>
               )}
             </div>
@@ -516,6 +503,21 @@ function PricingContent() {
           </div>
         </div>
       </footer>
+
+      {/* Embedded Checkout Modal */}
+      {checkoutModal.tier && (
+        <CheckoutModal
+          isOpen={checkoutModal.isOpen}
+          onClose={() => setCheckoutModal({ isOpen: false, tier: null })}
+          type="subscription"
+          productId={checkoutModal.tier}
+          productName={checkoutModal.tier === "WAX_PLUS" ? "Wax+ Monthly" : "Wax Pro Monthly"}
+          amount={checkoutModal.tier === "WAX_PLUS"
+            ? SUBSCRIPTION_TIERS.WAX_PLUS.monthlyPriceCents
+            : SUBSCRIPTION_TIERS.WAX_PRO.monthlyPriceCents}
+          onSuccess={handleCheckoutSuccess}
+        />
+      )}
     </div>
   )
 }
