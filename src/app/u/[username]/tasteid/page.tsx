@@ -22,6 +22,7 @@ import {
   MUSIC_NETWORKS,
 } from "@/components/tasteid"
 import { DefaultAvatar } from "@/components/default-avatar"
+import { CCXGraphMini, DyadicIndicator } from "@/components/polarity-system"
 import {
   getArchetypeInfo,
   formatListeningSignature,
@@ -313,7 +314,7 @@ export default async function TasteIDPage({ params }: Props) {
   const genreVector = (tasteId.genreVector as Record<string, number>) || {}
   const decadePrefs = (tasteId.decadePreferences as Record<string, number>) || {}
 
-  // Polarity 1.2 data
+  // Polarity 1.9 Dyad data
   const listeningSignature = tasteId.listeningSignature as ListeningSignature | null
   const signaturePatterns = tasteId.signaturePatterns || []
   const memorableMoments = (tasteId.memorableMoments as unknown as MemorableMoment[]) || []
@@ -623,7 +624,7 @@ export default async function TasteIDPage({ params }: Props) {
           </div>
         </div>
 
-        {/* POLARITY 1.2 - Listening Signature */}
+        {/* POLARITY 1.9 DYAD - Listening Signature */}
         {listeningSignature && (() => {
           const signatureData = formatListeningSignature(listeningSignature)
           const uniqueness = computeSignatureUniqueness(listeningSignature)
@@ -639,7 +640,10 @@ export default async function TasteIDPage({ params }: Props) {
                   LISTENING SIGNATURE
                 </h2>
                 <span className="text-[10px] px-2 py-0.5 border border-border text-muted-foreground uppercase tracking-wider">
-                  POLARITY 1.2
+                  POLARITY 1.9
+                </span>
+                <span className="text-[8px] px-1.5 py-0.5 bg-cyan-400/20 text-cyan-400 uppercase tracking-widest">
+                  DYAD
                 </span>
               </div>
 
@@ -769,6 +773,41 @@ export default async function TasteIDPage({ params }: Props) {
             </div>
           )
         })()}
+
+        {/* CCX TASTE CONNECTOME - Polarity 1.9 Dyad */}
+        {listeningSignature && (
+          <div className="mb-6 sm:mb-8 ccx-frame p-4 sm:p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <CCXGraphMini nodes={7} className="shrink-0" />
+              <div>
+                <h2 className="text-xs uppercase tracking-[0.3em] text-foreground font-bold">
+                  TASTE CONNECTOME
+                </h2>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Your music identity as a cognitive graph
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+              <div className="p-3 border border-border">
+                <DyadicIndicator
+                  strength={polarityScore2 ? polarityScore2 / 100 : 0.5}
+                  label="IDENTITY STRENGTH"
+                />
+              </div>
+              <div className="p-3 border border-border">
+                <div className="font-mono text-[9px] tracking-wider text-muted-foreground mb-2">
+                  CCX METRICS
+                </div>
+                <div className="flex items-center gap-4 text-xs">
+                  <span><span className="text-[var(--accent-primary)]">7</span> Networks</span>
+                  <span><span className="text-cyan-400">14</span> Node Types</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 7 Music Networks Visualization */}
         {listeningSignature && (() => {

@@ -1,5 +1,5 @@
 /**
- * TasteID Components - Powered by Polarity 1.2
+ * TasteID Components - Powered by Polarity 1.9 "Dyad"
  * How WaxFeed understands your music taste
  */
 
@@ -31,7 +31,7 @@ export { ArtistDNAStrip, ArtistDNAStripSkeleton } from "./ArtistDNAStrip"
 export { TasteCardShare } from "./TasteCardShare"
 export { TierProgress, TierProgressRing } from "./TierProgress"
 
-// Polarity 1.2 Music Networks
+// Polarity 1.9 Music Networks
 export {
   MusicNetworksVisualization,
   MusicNetworksMini,

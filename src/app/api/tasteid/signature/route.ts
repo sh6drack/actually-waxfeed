@@ -14,7 +14,7 @@ import {
 
 /**
  * GET /api/tasteid/signature
- * Get the current user's Polarity 1.2 Listening Signature
+ * Get the current user's Polarity 1.9 Listening Signature
  *
  * The Listening Signature is analogous to Polarity's BrainID -
  * a cognitive fingerprint for how you engage with music.
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (!tasteId.listeningSignature) {
-      return errorResponse('Listening signature not yet computed. Recompute your TasteID to get Polarity 1.2 data.', 404)
+      return errorResponse('Listening signature not yet computed. Recompute your TasteID to get Polarity 1.9 data.', 404)
     }
 
     const signature = tasteId.listeningSignature as unknown as ListeningSignature

@@ -1,12 +1,12 @@
 /**
  * TASTEID - Music Taste Fingerprint System
- * POLARITY 1.2 - Cognitive Modeling for Music
+ * POLARITY 1.9 DYAD - Cognitive Modeling for Music
  *
  * Core algorithm for computing persistent taste profiles.
  * Connects WaxFeed to Polarity's CCX (Conversational Connectomics) research.
  * Taste graphs ARE knowledge graphs.
  *
- * Polarity 1.2 adds:
+ * Polarity 1.9 adds:
  * - Music Networks (like Yeo 7-Networks) - HOW you engage with music
  * - Listening Signature (like BrainID) - Your characteristic patterns
  * - Memory Architecture - Consolidation of taste over time
@@ -16,7 +16,7 @@
 import { prisma } from '@/lib/prisma'
 
 // ============================================
-// POLARITY 1.2 - MUSIC NETWORKS
+// POLARITY 1.9 DYAD - MUSIC NETWORKS
 // ============================================
 
 /**
@@ -752,7 +752,7 @@ export interface TasteIDComputation {
   signatureAlbums: string[]
   polarityScore: number
 
-  // Polarity 1.2 fields
+  // Polarity 1.9 fields
   listeningSignature: ListeningSignature
   signaturePatterns: string[]
   memorableMoments: MemorableMoment[]
@@ -920,7 +920,7 @@ export async function computeTasteID(userId: string): Promise<TasteIDComputation
   const polarityScore = computePolarityScore(reviews, genreVector, adventurenessScore)
 
   // ============================================
-  // POLARITY 1.2 COMPUTATIONS
+  // POLARITY 1.9 DYAD COMPUTATIONS
   // ============================================
 
   // 11. Compute Listening Signature (like BrainID)
@@ -957,7 +957,7 @@ export async function computeTasteID(userId: string): Promise<TasteIDComputation
     signatureAlbums,
     polarityScore,
 
-    // Polarity 1.2
+    // Polarity 1.9
     listeningSignature,
     signaturePatterns,
     memorableMoments,
@@ -1891,7 +1891,7 @@ function computePolarityScore(
 }
 
 // ============================================
-// POLARITY 1.2 - LISTENING SIGNATURE COMPUTATION
+// POLARITY 1.9 DYAD - LISTENING SIGNATURE COMPUTATION
 // ============================================
 
 /**
@@ -1971,7 +1971,7 @@ function computeListeningSignature(reviews: ReviewWithAlbum[]): ListeningSignatu
 
 /**
  * Detect signature patterns from listening behavior
- * Enhanced with more nuanced patterns from Polarity 1.2
+ * Enhanced with more nuanced patterns from Polarity 1.9
  */
 function detectSignaturePatterns(
   reviews: ReviewWithAlbum[],
@@ -2521,7 +2521,7 @@ export async function saveTasteID(userId: string, computation: TasteIDComputatio
       topArtists: computation.topArtists,
       signatureAlbums: computation.signatureAlbums,
       polarityScore: computation.polarityScore,
-      // Polarity 1.2 fields
+      // Polarity 1.9 fields
       listeningSignature: computation.listeningSignature as object,
       signaturePatterns: computation.signaturePatterns,
       memorableMoments: computation.memorableMoments as unknown as object,
@@ -2548,7 +2548,7 @@ export async function saveTasteID(userId: string, computation: TasteIDComputatio
       topArtists: computation.topArtists,
       signatureAlbums: computation.signatureAlbums,
       polarityScore: computation.polarityScore,
-      // Polarity 1.2 fields
+      // Polarity 1.9 fields
       listeningSignature: computation.listeningSignature as object,
       signaturePatterns: computation.signaturePatterns,
       memorableMoments: computation.memorableMoments as unknown as object,
@@ -2585,7 +2585,7 @@ export async function createTasteIDSnapshot(tasteId: string) {
       primaryArchetype: taste.primaryArchetype,
       adventurenessScore: taste.adventurenessScore,
       reviewCount: taste.reviewCount,
-      // Polarity 1.2
+      // Polarity 1.9
       listeningSignature: taste.listeningSignature ? (taste.listeningSignature as object) : undefined,
       polarityScore2: taste.polarityScore2,
       month: now.getMonth() + 1,
@@ -2597,7 +2597,7 @@ export async function createTasteIDSnapshot(tasteId: string) {
       primaryArchetype: taste.primaryArchetype,
       adventurenessScore: taste.adventurenessScore,
       reviewCount: taste.reviewCount,
-      // Polarity 1.2
+      // Polarity 1.9
       listeningSignature: taste.listeningSignature ? (taste.listeningSignature as object) : undefined,
       polarityScore2: taste.polarityScore2,
     },
@@ -2765,7 +2765,7 @@ export function computeSignatureUniqueness(signature: ListeningSignature): {
 }
 
 // ============================================
-// POLARITY 1.2 - CONSOLIDATION TRACKING
+// POLARITY 1.9 DYAD - CONSOLIDATION TRACKING
 // ============================================
 
 export interface ConsolidatedTaste {
@@ -2994,7 +2994,7 @@ export function compareSignatures(
 }
 
 // ============================================
-// POLARITY 1.2 - ENHANCED TASTE MATCHING
+// POLARITY 1.9 DYAD - ENHANCED TASTE MATCHING
 // Dating-app style connection discovery
 // ============================================
 
@@ -3286,7 +3286,7 @@ export function findPotentialIntroductions(
 }
 
 /**
- * Enhanced taste match discovery - Polarity 1.2 powered
+ * Enhanced taste match discovery - Polarity 1.9 powered
  * Find potential connections with rich comparison data
  */
 export async function discoverTasteConnections(
@@ -3350,7 +3350,7 @@ export async function discoverTasteConnections(
     const ratingDiff = Math.abs(userTaste.averageRating - candidate.averageRating)
     const ratingAlignment = Math.max(0, 1 - ratingDiff / 5)
 
-    // 4. Signature-based analysis (Polarity 1.2)
+    // 4. Signature-based analysis (Polarity 1.9)
     let signatureSimilarity = 0.5  // Default if no signatures
     let networkResonance: Record<string, number> = {}
     let networkContrast: Record<string, number> = {}

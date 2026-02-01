@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
         reviewCount: tasteId.reviewCount,
         avgReviewLength: tasteId.avgReviewLength,
 
-        // Polarity 1.2 - Cognitive modeling
+        // Polarity 1.9 Dyad - Cognitive modeling
         polarity12: tasteId.listeningSignature ? {
           listeningSignature: tasteId.listeningSignature as unknown as ListeningSignature,
           signatureFormatted: formatListeningSignature(tasteId.listeningSignature as unknown as ListeningSignature),

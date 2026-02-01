@@ -240,7 +240,7 @@ export default async function DiscoverPage() {
         </div>
       </section>
 
-      {/* Taste Connections - Polarity 1.2 Powered */}
+      {/* Taste Connections - Polarity 1.9 Dyad Powered */}
       <section className="border-b border-[--border]">
         <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20">
           <div className="lg:grid lg:grid-cols-12 border-l border-r border-[--border]">
