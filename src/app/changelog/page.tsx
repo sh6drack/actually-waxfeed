@@ -8,10 +8,44 @@ export const metadata: Metadata = {
 
 const CHANGELOG_ENTRIES = [
   {
+    version: "2.0",
+    codename: "Revival",
+    date: "2026-02-02",
+    highlight: true,
+    summary: "Critical infrastructure fixes and Stripe payments integration.",
+    changes: [
+      {
+        type: "feature" as const,
+        title: "Stripe Payments",
+        description: "Live Stripe Elements integration for Wax purchases and subscriptions. Secure payment processing with webhook fulfillment.",
+      },
+      {
+        type: "fix" as const,
+        title: "Deployment Recovery",
+        description: "Fixed 4-day deployment outage caused by Git LFS provisioning and turbopack configuration issues.",
+      },
+      {
+        type: "fix" as const,
+        title: "Vercel Project Sync",
+        description: "Resolved CLI linking to wrong Vercel project. Documented correct project: actually-waxfeed-bkk6.",
+      },
+      {
+        type: "enhancement" as const,
+        title: "Build Optimization",
+        description: "Removed prisma db push from build command to prevent deployment timeouts. Cleaned unused dependencies.",
+      },
+      {
+        type: "enhancement" as const,
+        title: "Documentation",
+        description: "Updated CLAUDE.md with critical deployment instructions and troubleshooting guides.",
+      },
+    ],
+  },
+  {
     version: "1.9",
     codename: "Dyad",
     date: "2026-02",
-    highlight: true,
+    highlight: false,
     summary: "Relationship-based identity. The dyad represents user-taste connection.",
     changes: [
       {
