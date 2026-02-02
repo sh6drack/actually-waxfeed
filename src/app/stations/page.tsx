@@ -2,6 +2,9 @@ import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import { StationApplicationForm } from "./station-form"
 
+// Force dynamic rendering - this page needs DB access
+export const dynamic = 'force-dynamic'
+
 // Constants for the Founding Station program
 const FOUNDING_STATION_LIMIT = 50
 
