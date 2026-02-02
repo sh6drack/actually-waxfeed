@@ -129,6 +129,34 @@ async function getTasteID(username: string) {
   return user
 }
 
+// Helper to extract Polarity OS data from tasteId
+function getPolarityOSData(tasteId: any) {
+  if (!tasteId) return null
+
+  // Extract pattern states
+  const patternStates = tasteId.patternStates as any[] | null
+  const confirmedPatterns = patternStates?.filter((p: any) => p.status === 'confirmed') || []
+  const emergingPatterns = patternStates?.filter((p: any) => p.status === 'emerging') || []
+
+  // Extract drift alerts
+  const driftData = tasteId.driftAlerts as { alerts?: any[] } | null
+  const driftAlerts = driftData?.alerts?.slice(0, 5) || []
+
+  return {
+    patterns: {
+      confirmed: confirmedPatterns,
+      emerging: emergingPatterns,
+      total: patternStates?.length || 0,
+    },
+    driftAlerts,
+    metrics: {
+      patternStability: tasteId.patternStability || 0,
+      explorationRate: tasteId.explorationRate || 0,
+      graphDensity: tasteId.graphDensity || 0,
+    },
+  }
+}
+
 export default async function TasteIDPage({ params }: Props) {
   const { username } = await params
   const session = await auth()
@@ -310,6 +338,9 @@ export default async function TasteIDPage({ params }: Props) {
   const secondaryInfo = tasteId.secondaryArchetype
     ? getArchetypeInfo(tasteId.secondaryArchetype)
     : null
+
+  // Polarity OS 2.1 - Cognitive modeling data
+  const polarityOS = getPolarityOSData(tasteId)
 
   const genreVector = (tasteId.genreVector as Record<string, number>) || {}
   const decadePrefs = (tasteId.decadePreferences as Record<string, number>) || {}
@@ -903,6 +934,95 @@ export default async function TasteIDPage({ params }: Props) {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* POLARITY OS 2.1 - Cognitive Modeling */}
+        {polarityOS && (polarityOS.patterns.total > 0 || polarityOS.driftAlerts.length > 0) && (
+          <div className="mb-6 sm:mb-8 border-2 border-cyan-500/30 p-4 sm:p-6 relative overflow-hidden">
+            {/* Glow effect */}
+            <div className="absolute -top-20 -right-20 w-40 h-40 bg-cyan-500/10 blur-3xl pointer-events-none" />
+
+            <div className="flex items-center gap-3 mb-4 relative">
+              <div className="w-2 h-2 bg-cyan-400 animate-pulse" />
+              <h2 className="text-xs uppercase tracking-[0.3em] text-foreground font-bold">
+                POLARITY OS
+              </h2>
+              <span className="text-[10px] px-2 py-0.5 border border-cyan-400/30 text-cyan-400 uppercase tracking-wider">
+                2.1 COGNITIVE
+              </span>
+            </div>
+
+            <p className="text-muted-foreground text-sm mb-6 relative">
+              Advanced cognitive modeling from Polarity OS — detecting behavioral patterns and taste evolution.
+            </p>
+
+            {/* Metrics Grid */}
+            <div className="grid grid-cols-3 gap-3 mb-6">
+              <div className="p-3 bg-white/5 border border-border text-center">
+                <div className="text-2xl font-bold text-cyan-400">{polarityOS.patterns.total}</div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Patterns</div>
+              </div>
+              <div className="p-3 bg-white/5 border border-border text-center">
+                <div className="text-2xl font-bold text-emerald-400">{(polarityOS.metrics.patternStability * 100).toFixed(0)}%</div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Stability</div>
+              </div>
+              <div className="p-3 bg-white/5 border border-border text-center">
+                <div className="text-2xl font-bold text-amber-400">{(polarityOS.metrics.explorationRate * 100).toFixed(0)}%</div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Exploration</div>
+              </div>
+            </div>
+
+            {/* Confirmed Patterns */}
+            {polarityOS.patterns.confirmed.length > 0 && (
+              <div className="mb-4">
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />
+                  Confirmed Patterns
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {polarityOS.patterns.confirmed.slice(0, 5).map((p: any) => (
+                    <span key={p.id} className="text-xs px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+                      {p.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Emerging Patterns */}
+            {polarityOS.patterns.emerging.length > 0 && (
+              <div className="mb-4">
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-amber-400 rounded-full" />
+                  Emerging Patterns
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {polarityOS.patterns.emerging.slice(0, 3).map((p: any) => (
+                    <span key={p.id} className="text-xs px-3 py-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-400">
+                      {p.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Drift Alerts */}
+            {polarityOS.driftAlerts.length > 0 && (
+              <div className="pt-4 border-t border-border">
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-rose-400 rounded-full animate-pulse" />
+                  Taste Drift Alerts
+                </div>
+                <div className="space-y-2">
+                  {polarityOS.driftAlerts.slice(0, 3).map((alert: any, i: number) => (
+                    <div key={i} className="text-xs p-2 bg-rose-500/5 border border-rose-500/20 text-rose-300">
+                      {alert.message || alert.type}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

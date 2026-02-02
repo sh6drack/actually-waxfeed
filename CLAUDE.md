@@ -33,18 +33,15 @@ Music taste platform with social features.
 - Vercel deployment
 - Tailwind CSS with CSS variables for theming
 
-### Critical Layout (DO NOT BREAK)
-Homepage has a two-column layout:
-- **Left**: Trending albums grid (48 albums, 4 columns)
-- **Right**: Recent reviews (12 reviews)
-- Grid: `grid grid-cols-1 lg:grid-cols-2`
-
 ### Commands
-- `npm run dev` - Development server
+- `npm run dev` - Development server (usually runs on port 3000, fallback 3004)
 - `npm run build` - Production build
 - `npx vercel --prod` - Deploy to production
 
-### CRITICAL: Vercel Deployment
+---
+
+## CRITICAL: Vercel Deployment
+
 **ALWAYS use project `actually-waxfeed-bkk6`** (www.wax-feed.com)
 
 There are TWO Vercel projects - only ONE is correct:
@@ -56,14 +53,194 @@ If CLI links to wrong project, run:
 rm -rf .vercel && npx vercel link --yes --project actually-waxfeed-bkk6
 ```
 
-**Never remove or modify `.vercel/project.json` without checking the projectName.**
-
 **If deployments fail with "Resource provisioning failed":**
 - Go to Vercel dashboard → Project Settings → Git
 - Toggle Git LFS setting (this fixed a 4-day outage in Feb 2026)
 
-### CSS Variables
-Theme colors defined in `globals.css`:
-- `--accent-primary` - Gold accent color
-- `--background`, `--foreground` - Base colors
-- `--surface`, `--border`, `--muted` - UI colors
+---
+
+## Homepage Layout (CRITICAL - DO NOT BREAK)
+
+Two-column layout with specific requirements:
+
+### Left Column: Trending Albums
+- **Must show 48 albums** (not 15, not 50 - exactly 48 for 4x12 grid)
+- Grid: 4 columns on desktop
+- Source: Billboard 200 (scraped and imported)
+- API: `/api/cron/billboard` updates the chart
+- Query: `prisma.album.findMany({ where: { billboardRank: { not: null } }, take: 50 })`
+- **If showing less than 48**: Billboard scrape might be failing or too many singles being skipped
+
+### Right Column: Recent Reviews
+- Shows 12 reviews with actual text (not quick rates)
+- Query filters: `{ text: { not: null }, text: { not: '' } }`
+
+### Grid CSS
+```tsx
+<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+  <TrendingAlbums /> {/* 48 albums, 4 cols */}
+  <RecentReviews />  {/* 12 reviews */}
+</div>
+```
+
+---
+
+## Quick Rate Page (`/quick-rate`)
+
+### Design (Feb 2026 Redesign)
+- **Cinematic split layout** on desktop: Album art (55% left), controls (45% right)
+- **Ambient album glow**: Blurred album art as background
+- **Grain texture overlay**: Premium analog feel
+- **Pill-shaped vibes buttons**: Rounded-full with hover scale effects
+- **Gold accent (#ffd700)** for primary actions
+- **Cyan (#22d3ee)** for Spotify waveform indicator
+
+### Key Features
+- 30-second track previews from Deezer API
+- Real waveforms from Spotify Audio Analysis (cyan colored)
+- Pseudo-waveforms for tracks without Spotify data (gray)
+- Vibes selection (0-5 descriptors from POLARITY_DESCRIPTORS)
+- Keyboard shortcuts: Enter=Rate, S=Skip, B/Backspace=Back
+- TasteID tier progress bar at bottom
+
+### Files
+- `src/app/quick-rate/page.tsx` - Main component
+- `src/app/api/albums/[id]/tracks/route.ts` - Fetches tracks from Deezer + waveforms from Spotify
+- `src/lib/spotify.ts` - Spotify API integration including `getTrackWaveform()`
+
+---
+
+## Spotify Integration
+
+### Credentials (in .env.local)
+```
+SPOTIFY_CLIENT_ID=555cda9a4ce144ae97215f443af0bbe7
+SPOTIFY_CLIENT_SECRET=c0db665ecf584e739dd20be206a7e947
+```
+
+### Key Functions (`src/lib/spotify.ts`)
+- `getAccessToken()` - Client credentials flow
+- `searchAlbum()` - Find album on Spotify
+- `getAlbum()` - Full album details with tracks
+- `importAlbumToDatabase()` - Import to Prisma
+- `getTrackWaveform(trackName, artistName)` - Get real waveform data
+- `getAudioAnalysis(spotifyTrackId)` - Raw audio analysis
+- `segmentsToWaveform()` - Convert segments to 40-bar array
+
+### Waveform Data
+- 40 bars, values 0-1
+- Comes from Spotify's `audio-analysis` endpoint
+- Cached in `SpotifyCache` table
+- Displayed cyan when real, gray when pseudo-generated
+
+---
+
+## TasteID System
+
+### Tiers (in `src/lib/tasteid-tiers.ts`)
+- **Listener** (0-19 ratings): 40% accuracy
+- **Enthusiast** (20-49 ratings): 60% accuracy
+- **Connoisseur** (50-99 ratings): 75% accuracy
+- **Sommelier** (100-199 ratings): 85% accuracy
+- **Curator** (200-499 ratings): 92% accuracy
+- **Oracle** (500+ ratings): 98% accuracy
+
+### Computation
+- API: `POST /api/tasteid/compute`
+- Background recompute every 5 ratings after unlock (20)
+- Stores: primaryArchetype, genreProfile, vibeSignature, etc.
+
+### Polarity OS Integration (v2.1)
+- Pattern learning engine with lifecycle: emerging → confirmed → fading → dormant
+- Drift detection for taste changes
+- Cognitive graph with PageRank scoring
+- Files in `src/lib/polarity/`
+
+---
+
+## API Routes
+
+### Albums
+- `GET /api/albums/[id]` - Album details
+- `GET /api/albums/[id]/tracks` - Tracks with previews and waveforms (Deezer + Spotify)
+- `GET /api/albums/swipe` - Albums for quick-rate (excludes already rated)
+
+### Reviews
+- `POST /api/reviews` - Submit review/rating
+- `GET /api/reviews/[id]` - Single review
+
+### Cron Jobs
+- `GET /api/cron/billboard` - Scrape Billboard 200, import to DB
+- `GET /api/cron/fetch-lyrics` - Background lyrics fetching
+
+### TasteID
+- `POST /api/tasteid/compute` - Recompute user's TasteID
+- `GET /api/tasteid/[userId]` - Get TasteID data
+
+---
+
+## Design System
+
+### Colors (CSS Variables in `globals.css`)
+```css
+--accent-primary: #ffd700;      /* Gold - primary actions */
+--accent-hover: #ffe44d;        /* Gold hover state */
+--background: #0a0a0a;          /* Near-black */
+--foreground: #fafafa;          /* Near-white */
+--surface: #141414;             /* Card backgrounds */
+--border: #262626;              /* Borders */
+--muted: #a3a3a3;               /* Secondary text */
+```
+
+### Secondary Colors
+- **Cyan (#22d3ee)**: Spotify data indicator
+- **Emerald (#00ff88)**: Success states, unlocks
+- **Red (#ef4444)**: Errors
+
+### Typography
+- Use tracking-wide/tracking-wider for labels
+- Uppercase for labels and small UI text
+- Font weights: font-medium, font-semibold, font-bold
+
+### Components
+- Rounded-full buttons for primary actions
+- Pill-shaped tags and chips
+- Subtle borders (border-white/10 or border-[--border])
+- Backdrop blur for floating elements
+
+---
+
+## Site-Wide Policies
+
+### NO SINGLES
+- Singles (`album_type === 'single'`) are NEVER allowed anywhere on the site
+- All queries filter: `albumType: { not: 'single' }`
+- Import functions skip singles automatically
+
+### No Guess URLs
+- Never generate or guess URLs for the user
+- Only use URLs provided by user or from known sources
+
+---
+
+## Common Issues & Fixes
+
+### Billboard shows less than 48 albums
+- Check `/api/cron/billboard` response
+- Singles are being skipped (correct behavior)
+- Billboard website structure may have changed (update cheerio selectors)
+- Spotify search not finding albums (check API)
+
+### Quick Rate not updating
+- Hard refresh the page (Cmd+Shift+R)
+- Dev server may be caching - restart with `npm run dev`
+
+### Waveforms not showing
+- Check Spotify credentials in .env.local
+- Tracks may not have audio analysis available
+- Deezer may not have the album
+
+### Deployment fails
+- Check correct Vercel project (`actually-waxfeed-bkk6`)
+- Toggle Git LFS in project settings
+- Check build logs for TypeScript errors

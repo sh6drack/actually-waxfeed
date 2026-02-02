@@ -121,7 +121,7 @@ export function PaymentForm({
             type="button"
             onClick={onCancel}
             disabled={processing}
-            className="flex-1 py-3 px-4 border border-[--border] text-[11px] tracking-[0.15em] uppercase hover:border-white transition disabled:opacity-50"
+            className="flex-1 py-3 px-4 border border-[--border] text-white text-[11px] tracking-[0.15em] uppercase hover:border-white hover:text-white transition disabled:opacity-50"
           >
             Cancel
           </button>

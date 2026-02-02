@@ -931,6 +931,18 @@ model TasteID {
   // Vocabulary Analysis - Word/sentiment analysis from review text (Nathan's request)
   vocabularyProfile    Json? // { writingStyle, dominantMood, keyDescriptors, musicVocabulary, etc. }
 
+  // Polarity OS - Advanced cognitive modeling (ported from polarity-os)
+  cognitiveGraph       Json?    // Serialized CognitiveGraph with nodes and edges
+  patternStates        Json?    // PatternState[] - detected patterns with lifecycle
+  brainIdSignature     Json?    // BrainIDSignature - cognitive mode, energy, decision style
+  driftAlerts          Json?    // DriftAlert[] - last 100 behavioral change alerts
+  episodeHistory       Json?    // Episode[] - last 50 listening sessions
+
+  // Polarity OS - Enhanced metrics
+  graphDensity         Float?   // How connected their taste graph is (0-1)
+  patternStability     Float?   // How stable their patterns are over time (0-1)
+  explorationRate      Float?   // Rate of new genre/artist discovery (0-1)
+
   // Timestamps
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
