@@ -44,6 +44,20 @@ Homepage has a two-column layout:
 - `npm run build` - Production build
 - `npx vercel --prod` - Deploy to production
 
+### CRITICAL: Vercel Deployment
+**ALWAYS use project `actually-waxfeed-bkk6`** (www.wax-feed.com)
+
+There are TWO Vercel projects - only ONE is correct:
+- ✅ `actually-waxfeed-bkk6` → www.wax-feed.com (THE REAL ONE)
+- ❌ `waxfeed2.0` → wax-feed.com (WRONG - DO NOT USE)
+
+If CLI links to wrong project, run:
+```bash
+rm -rf .vercel && npx vercel link --yes --project actually-waxfeed-bkk6
+```
+
+**Never remove or modify `.vercel/project.json` without checking the projectName.**
+
 ### CSS Variables
 Theme colors defined in `globals.css`:
 - `--accent-primary` - Gold accent color
