@@ -607,16 +607,20 @@ export default function QuickRatePage() {
                 </div>
                 {/* Album Info */}
                 <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
-                  <h2 className="text-sm font-bold leading-tight line-clamp-2">{currentAlbum.title}</h2>
-                  <p className="text-xs text-[--muted] truncate">{currentAlbum.artistName}</p>
-                  <div className="flex items-center gap-1.5 mt-1">
-                    {currentAlbum.genres?.slice(0, 2).map((genre) => (
-                      <span key={genre} className="text-[8px] px-1 py-0.5 bg-[--surface] border border-[--border] text-[--muted] uppercase">
-                        {genre}
-                      </span>
-                    ))}
+                  <div className="flex items-start justify-between gap-2">
+                    <h2 className="text-sm font-bold leading-tight line-clamp-2">{currentAlbum.title}</h2>
                     <BookmarkButton albumId={currentAlbum.id} size="sm" />
                   </div>
+                  <p className="text-xs text-[--muted] truncate">{currentAlbum.artistName}</p>
+                  {currentAlbum.genres?.length > 0 && (
+                    <div className="flex items-center gap-1 mt-1">
+                      {currentAlbum.genres.slice(0, 2).map((genre) => (
+                        <span key={genre} className="text-[7px] px-1 py-0.5 border border-[--border] text-[--muted] uppercase tracking-wide">
+                          {genre}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -771,13 +775,17 @@ export default function QuickRatePage() {
                             key={track.id}
                             onClick={() => playTrack(track)}
                             disabled={!track.previewUrl}
-                            className={`w-full px-2 py-1 flex items-center gap-2 text-left transition-colors border-b border-[--border]/30 ${
+                            className={`w-full px-2 py-1.5 flex items-center gap-2 text-left transition-colors border-b border-[--border]/30 ${
                               isPlaying ? 'bg-[var(--accent-primary)]/10' : 'hover:bg-[--surface]'
                             } ${!track.previewUrl ? 'opacity-30' : ''}`}
                           >
                             {/* Track number */}
-                            <span className={`w-5 text-[9px] font-mono flex-shrink-0 ${isPlaying ? 'text-[var(--accent-primary)]' : 'text-[--muted]'}`}>
+                            <span className={`w-4 text-[9px] font-mono flex-shrink-0 ${isPlaying ? 'text-[var(--accent-primary)]' : 'text-[--muted]'}`}>
                               {track.trackNumber}
+                            </span>
+                            {/* Track name */}
+                            <span className={`w-28 lg:w-36 text-[10px] truncate flex-shrink-0 ${isPlaying ? 'text-[var(--accent-primary)] font-medium' : 'text-[--foreground]'}`}>
+                              {track.name}
                             </span>
                             {/* Waveform */}
                             <TrackWaveform trackId={track.id} isPlaying={isPlaying} waveform={track.waveform} />
@@ -796,32 +804,34 @@ export default function QuickRatePage() {
               </div>
 
               {/* RIGHT: Info & Rating */}
-              <div className="p-3 flex flex-col">
-                {/* Album info */}
-                <div className="mb-2">
-                  <h2 className="text-base lg:text-lg font-bold leading-tight">{currentAlbum.title}</h2>
-                  <p className="text-[--muted] text-sm">{currentAlbum.artistName}</p>
-                </div>
-
-                {/* Genres + Bookmark */}
-                <div className="flex items-center gap-2 mb-3">
-                  {currentAlbum.genres?.slice(0, 2).map((genre) => (
-                    <span key={genre} className="text-[8px] px-1.5 py-0.5 border border-[--border] text-[--muted] uppercase">
-                      {genre}
-                    </span>
-                  ))}
-                  <div className="ml-auto">
-                    <BookmarkButton albumId={currentAlbum.id} size="sm" />
+              <div className="p-4 flex flex-col">
+                {/* Album Header - Title + Bookmark inline */}
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-lg lg:text-xl font-bold leading-tight tracking-tight">{currentAlbum.title}</h2>
+                    <p className="text-[--muted] text-sm mt-0.5">{currentAlbum.artistName}</p>
                   </div>
+                  <BookmarkButton albumId={currentAlbum.id} size="sm" />
                 </div>
 
-                {/* Vibes */}
-                <div className="mb-3 flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[9px] text-[--muted] uppercase tracking-wider">Vibes</span>
-                    {selectedDescriptors.length > 0 && (
-                      <span className="text-[9px] text-[var(--accent-primary)]">{selectedDescriptors.length}/5</span>
-                    )}
+                {/* Genres */}
+                {currentAlbum.genres?.length > 0 && (
+                  <div className="flex items-center gap-1.5 mb-4">
+                    {currentAlbum.genres.slice(0, 3).map((genre) => (
+                      <span key={genre} className="text-[8px] px-1.5 py-0.5 border border-[--border] text-[--muted] uppercase tracking-wide">
+                        {genre}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Vibes Section */}
+                <div className="mb-4 flex-1">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] text-[--muted] uppercase tracking-[0.15em] font-medium">Vibes</span>
+                    <span className={`text-[10px] font-mono ${selectedDescriptors.length > 0 ? 'text-[var(--accent-primary)]' : 'text-[--muted]/50'}`}>
+                      {selectedDescriptors.length}/5
+                    </span>
                   </div>
                   <div className="flex flex-wrap gap-1">
                     {shuffledDescriptors.slice(0, 16).map((descriptor) => {
@@ -833,12 +843,12 @@ export default function QuickRatePage() {
                           onClick={() => toggleDescriptor(descriptor.id)}
                           disabled={submitting || atMax}
                           title={descriptor.description}
-                          className={`text-[8px] px-1.5 py-0.5 uppercase ${
+                          className={`text-[8px] px-2 py-1 uppercase tracking-wide transition-all ${
                             isSelected
                               ? 'bg-[var(--accent-primary)] text-black border border-[var(--accent-primary)] font-bold'
                               : atMax
-                                ? 'border border-[--muted-faint] text-[--muted]/40'
-                                : 'border border-[--muted-faint] text-[--muted] hover:border-[var(--accent-hover)]'
+                                ? 'border border-[--border]/30 text-[--muted]/30 cursor-not-allowed'
+                                : 'border border-[--border] text-[--muted] hover:border-[var(--accent-primary)]/50 hover:text-[--foreground]'
                           }`}
                         >
                           {descriptor.label}
@@ -849,21 +859,21 @@ export default function QuickRatePage() {
                 </div>
 
                 {/* Rating + Actions */}
-                <div className="mt-auto pt-2 border-t border-[--border] space-y-2">
+                <div className="mt-auto pt-3 border-t border-[--border] space-y-3">
                   <RatingSlider value={rating} onChange={setRating} disabled={submitting} />
                   {error && <p className="text-red-500 text-xs text-center">{error}</p>}
                   <div className="flex gap-2">
                     <button
                       onClick={skip}
                       disabled={submitting}
-                      className="w-16 py-2 border border-[--muted-faint] text-[--muted] font-bold uppercase text-[10px] hover:border-[--foreground] hover:text-[--foreground] disabled:opacity-50"
+                      className="w-16 py-2.5 border border-[--border] text-[--muted] font-bold uppercase text-[10px] tracking-wide hover:border-[--foreground] hover:text-[--foreground] transition-colors disabled:opacity-50"
                     >
                       Skip
                     </button>
                     <button
                       onClick={submitRating}
                       disabled={submitting}
-                      className="flex-1 py-2 font-bold uppercase text-xs disabled:opacity-50 bg-[var(--accent-primary)] text-black hover:bg-[var(--accent-hover)]"
+                      className="flex-1 py-2.5 font-bold uppercase text-xs tracking-wide disabled:opacity-50 bg-[var(--accent-primary)] text-black hover:bg-[var(--accent-hover)] transition-colors"
                     >
                       {submitting ? '...' : 'Rate'}
                     </button>
