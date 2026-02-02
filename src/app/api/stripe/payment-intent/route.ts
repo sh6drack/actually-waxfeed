@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     if (!customerId) {
       // Create Stripe customer
       const customer = await stripe.customers.create({
-        email: dbUser.email,
+        email: dbUser.email || undefined,
         metadata: {
           userId: user.id,
         }
@@ -75,16 +75,18 @@ export async function POST(request: NextRequest) {
         return errorResponse('Failed to create subscription', 500)
       }
 
-      // Record pending purchase
-      await prisma.purchase.create({
-        data: {
+      // Record pending purchase (upsert to handle retries)
+      await prisma.purchase.upsert({
+        where: { stripeSessionId: subscription.id },
+        create: {
           userId: user.id,
           stripeSessionId: subscription.id,
           type: 'SUBSCRIPTION',
           amount: tierConfig.monthlyPriceCents,
           productId: tier,
           status: 'PENDING',
-        }
+        },
+        update: {} // No update needed, just prevent duplicate
       })
 
       return successResponse({
@@ -118,9 +120,10 @@ export async function POST(request: NextRequest) {
         }
       })
 
-      // Record pending purchase
-      await prisma.purchase.create({
-        data: {
+      // Record pending purchase (upsert to handle retries)
+      await prisma.purchase.upsert({
+        where: { stripeSessionId: paymentIntent.id },
+        create: {
           userId: user.id,
           stripeSessionId: paymentIntent.id,
           type: 'WAX_PAX',
@@ -128,7 +131,8 @@ export async function POST(request: NextRequest) {
           waxAmount: pax.waxAmount,
           productId: paxId,
           status: 'PENDING',
-        }
+        },
+        update: {} // No update needed, just prevent duplicate
       })
 
       return successResponse({
@@ -146,6 +150,15 @@ export async function POST(request: NextRequest) {
       return errorResponse('Authentication required', 401)
     }
     console.error('Error creating payment intent:', error)
+
+    // Return more specific Stripe errors in development
+    if (error instanceof Error) {
+      const stripeError = error as { type?: string; code?: string; message?: string }
+      if (stripeError.type === 'StripeInvalidRequestError' || stripeError.code) {
+        return errorResponse(stripeError.message || 'Stripe error', 400)
+      }
+    }
+
     return errorResponse('Failed to create payment intent', 500)
   }
 }
