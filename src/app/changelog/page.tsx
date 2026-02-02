@@ -3,7 +3,7 @@ import { Metadata } from "next"
 
 export const metadata: Metadata = {
   title: "Changelog | WAXFEED",
-  description: "WAXFEED platform updates and Polarity system evolution",
+  description: "WAXFEED platform updates and new features",
 }
 
 const CHANGELOG_ENTRIES = [
@@ -12,37 +12,37 @@ const CHANGELOG_ENTRIES = [
     codename: "Cognitive",
     date: "2026-02-01",
     highlight: true,
-    summary: "Full Polarity OS integration - advanced cognitive modeling for music taste.",
+    summary: "Smarter taste intelligence that learns how you listen.",
     changes: [
       {
         type: "feature" as const,
-        title: "Polarity OS Engine",
-        description: "Complete port of Polarity OS cognitive modeling system. Graph-based pattern detection with PageRank, HITS, and betweenness centrality scoring.",
+        title: "Enhanced Taste Engine",
+        description: "Deeper analysis of your listening patterns to surface what makes your taste unique.",
       },
       {
         type: "feature" as const,
-        title: "Pattern Learning",
-        description: "PatternLearningEngine detects 10+ taste patterns (Critical Ear, Genre Explorer, Discography Completionist) with lifecycle tracking: emerging → confirmed → fading → dormant.",
+        title: "Pattern Recognition",
+        description: "We now detect behavioral patterns in how you rate and discover music.",
       },
       {
         type: "feature" as const,
-        title: "Drift Detection",
-        description: "DriftDetector monitors behavioral changes - pattern disappearance, contradictions, emotional shifts, and genre expansion/contraction.",
+        title: "Taste Evolution",
+        description: "Track how your preferences shift over time with new drift indicators.",
       },
       {
         type: "feature" as const,
-        title: "Episode Consolidation",
-        description: "ConsolidationEngine extracts listening sessions from review history, tracking taste consolidation and edge weights between patterns.",
+        title: "Session Insights",
+        description: "Better understanding of your listening sessions and rating habits.",
       },
       {
         type: "enhancement" as const,
         title: "Mobile Optimization",
-        description: "Fixed responsive layouts across TasteComparison, MusicNetworks, PatternBadges, TasteConsolidation, and TierProgress components.",
+        description: "Improved responsive layouts across all TasteID components.",
       },
       {
         type: "enhancement" as const,
-        title: "Cognitive Metrics",
-        description: "New TasteID fields: patternStability, explorationRate, graphDensity - all computed from Polarity OS engines.",
+        title: "New Metrics",
+        description: "Additional TasteID stats for stability, exploration, and connection density.",
       },
     ],
   },
@@ -51,32 +51,22 @@ const CHANGELOG_ENTRIES = [
     codename: "Revival",
     date: "2026-02-02",
     highlight: false,
-    summary: "Critical infrastructure fixes and Stripe payments integration.",
+    summary: "Platform stability and payments.",
     changes: [
       {
         type: "feature" as const,
-        title: "Stripe Payments",
-        description: "Live Stripe Elements integration for Wax purchases and subscriptions. Secure payment processing with webhook fulfillment.",
+        title: "Payments",
+        description: "Secure checkout for Wax purchases and subscriptions.",
       },
       {
         type: "fix" as const,
-        title: "Deployment Recovery",
-        description: "Fixed 4-day deployment outage caused by Git LFS provisioning and turbopack configuration issues.",
-      },
-      {
-        type: "fix" as const,
-        title: "Vercel Project Sync",
-        description: "Resolved CLI linking to wrong Vercel project. Documented correct project: actually-waxfeed-bkk6.",
+        title: "Platform Stability",
+        description: "Resolved deployment issues and improved reliability.",
       },
       {
         type: "enhancement" as const,
-        title: "Build Optimization",
-        description: "Removed prisma db push from build command to prevent deployment timeouts. Cleaned unused dependencies.",
-      },
-      {
-        type: "enhancement" as const,
-        title: "Documentation",
-        description: "Updated CLAUDE.md with critical deployment instructions and troubleshooting guides.",
+        title: "Performance",
+        description: "Faster builds and optimized infrastructure.",
       },
     ],
   },
@@ -85,32 +75,27 @@ const CHANGELOG_ENTRIES = [
     codename: "Dyad",
     date: "2026-02",
     highlight: false,
-    summary: "Relationship-based identity. The dyad represents user-taste connection.",
+    summary: "Your connection to your taste, visualized.",
     changes: [
       {
         type: "feature" as const,
-        title: "CCX Integration",
-        description: "Conversational Connectomics powers taste relationships. 14 node types, 13 edge types for deeper connection mapping.",
+        title: "Relationship Mapping",
+        description: "New ways to understand how your taste connects across genres and artists.",
       },
       {
         type: "feature" as const,
-        title: "Dyadic Indicators",
-        description: "Visual representation of connection strength between you and your music taste identity.",
+        title: "Connection Indicators",
+        description: "Visual cues showing the strength of your musical identity.",
       },
       {
         type: "enhancement" as const,
-        title: "Enhanced Visual System",
-        description: "New CCX graph visualizations, dyadic pulse effects, and connection indicators throughout the interface.",
+        title: "Visual Refresh",
+        description: "New animations and UI elements throughout the interface.",
       },
       {
         type: "enhancement" as const,
-        title: "Agent Context",
-        description: "Session continuity for AI-powered taste analysis and recommendations.",
-      },
-      {
-        type: "enhancement" as const,
-        title: "Corner Brackets 2.0",
-        description: "CCX node indicators at screen corners with alternating gold/cyan pulse patterns.",
+        title: "Smarter Recommendations",
+        description: "Improved context for personalized suggestions.",
       },
     ],
   },
@@ -119,27 +104,22 @@ const CHANGELOG_ENTRIES = [
     codename: null,
     date: "2025-06",
     highlight: false,
-    summary: "Cognitive listening signatures and BrainID integration.",
+    summary: "Understanding how you engage with music.",
     changes: [
       {
         type: "feature" as const,
         title: "Listening Signature",
-        description: "7-Network cognitive model for music engagement patterns based on neuroscience research.",
+        description: "A unique fingerprint of your music engagement style.",
       },
       {
         type: "feature" as const,
-        title: "BrainID Visualization",
-        description: "Yeo 7-Network inspired cognitive mapping for music taste.",
+        title: "Cognitive Mapping",
+        description: "Visualize the different ways you connect with music.",
       },
       {
         type: "feature" as const,
-        title: "Pattern Detection",
-        description: "20+ behavioral patterns including Discovery-Comfort Oscillation and Temporal Anchoring.",
-      },
-      {
-        type: "enhancement" as const,
-        title: "Memory Architecture",
-        description: "Tiered memory system for taste consolidation tracking.",
+        title: "Behavioral Insights",
+        description: "Discover patterns in how you explore and rate music.",
       },
     ],
   },
@@ -148,27 +128,22 @@ const CHANGELOG_ENTRIES = [
     codename: null,
     date: "2025-01",
     highlight: false,
-    summary: "Platform launch with TasteID and Polarity Score.",
+    summary: "Platform launch.",
     changes: [
       {
         type: "feature" as const,
-        title: "TasteID Launch",
-        description: "Music taste fingerprint system with archetype classification across 8 dimensions.",
-      },
-      {
-        type: "feature" as const,
-        title: "CCX POLARITY Model",
-        description: "8-dimensional taste profiling: Commercial-Underground, Retro-Forward, Acoustic-Electronic, and more.",
+        title: "TasteID",
+        description: "Your music taste fingerprint with archetype classification.",
       },
       {
         type: "feature" as const,
         title: "Polarity Score",
-        description: "Taste distinctiveness metric measuring uniqueness from mainstream listening patterns.",
+        description: "See how unique your taste is compared to the mainstream.",
       },
       {
         type: "feature" as const,
-        title: "First Spin Tracking",
-        description: "Be first to discover and review albums, tracked with First Spin badges.",
+        title: "First Spin",
+        description: "Be first to discover and review albums, earn badges.",
       },
     ],
   },
@@ -189,7 +164,7 @@ export default function ChangelogPage() {
             </Link>
             <span className="text-[--muted]/30">|</span>
             <span className="font-mono text-[9px] tracking-[0.3em] uppercase text-[var(--accent-primary)]">
-              POLARITY EVOLUTION
+              UPDATES
             </span>
           </div>
 
@@ -197,11 +172,10 @@ export default function ChangelogPage() {
             Changelog
           </h1>
           <p className="text-[--muted] max-w-2xl text-lg leading-relaxed">
-            Track the evolution of WAXFEED&apos;s Polarity taste intelligence system.
-            From basic profiling to cognitive connectomics.
+            What&apos;s new on WAXFEED. Features, fixes, and improvements.
           </p>
 
-          {/* CCX Graph indicator */}
+          {/* Decorative indicator */}
           <div className="mt-8 flex items-center gap-4">
             <div className="relative w-16 h-16">
               <svg className="w-full h-full" viewBox="0 0 64 64">
@@ -221,10 +195,10 @@ export default function ChangelogPage() {
             </div>
             <div>
               <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-[--muted]">
-                TASTE CONNECTOME
+                TASTE INTELLIGENCE
               </span>
               <p className="text-sm text-[--muted]/70">
-                Your music identity, visualized
+                Always evolving
               </p>
             </div>
           </div>
@@ -289,11 +263,10 @@ export default function ChangelogPage() {
           ))}
         </div>
 
-        {/* Polarity badge footer */}
+        {/* Footer */}
         <footer className="mt-20 pt-8 border-t border-[--border]">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              {/* Dyadic indicator */}
               <div className="flex items-center gap-1">
                 <div className="w-2 h-2 bg-[var(--accent-primary)] animate-pulse" />
                 <div className="w-4 h-px bg-gradient-to-r from-[var(--accent-primary)] to-cyan-400 opacity-60" />
@@ -305,27 +278,15 @@ export default function ChangelogPage() {
                 <div className="absolute inset-0 w-2 h-2 bg-green-500/50 animate-ping" />
               </div>
               <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-[--foreground]/40">
-                polarity
+                waxfeed
               </span>
               <span className="font-mono text-[10px] text-[var(--accent-primary)]">
                 2.1
               </span>
-              <span className="font-mono text-[8px] text-cyan-400/60 tracking-widest uppercase">
-                cognitive
-              </span>
             </div>
             <span className="text-xs text-[--muted]">
-              WAXFEED &times; Polarity Lab LLC
+              WAXFEED
             </span>
-          </div>
-
-          {/* Technical readout */}
-          <div className="mt-6 font-mono text-[9px] text-[--muted]/40 tracking-wider">
-            <span>CCX: 14 NODE TYPES</span>
-            <span className="mx-2">|</span>
-            <span>13 EDGE TYPES</span>
-            <span className="mx-2">|</span>
-            <span>DYADIC AUTH: ENABLED</span>
           </div>
         </footer>
       </div>
