@@ -28,7 +28,7 @@ export function TierProgress({
         <span className="text-xs font-bold" style={{ color: currentTier.color }}>
           {currentTier.name}
         </span>
-        <div className="flex-1 h-1.5 bg-[#222] rounded-full overflow-hidden max-w-[100px]">
+        <div className="flex-1 h-1.5 bg-[#222] rounded-full overflow-hidden max-w-[80px] sm:max-w-[100px]">
           <div 
             className="h-full transition-all duration-500"
             style={{ 

@@ -318,7 +318,7 @@ export function MusicNetworksLegend({
       <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
         7 Music Networks
       </p>
-      <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
         {networks.map(([key, network]) => {
           const libNetwork = MUSIC_NETWORKS[key.toUpperCase() as keyof typeof MUSIC_NETWORKS]
           return (

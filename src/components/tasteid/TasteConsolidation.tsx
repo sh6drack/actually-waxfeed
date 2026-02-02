@@ -112,7 +112,7 @@ export function TasteConsolidation({ consolidatedTastes, className = "" }: Taste
         <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-3">
           Consolidation Thresholds
         </p>
-        <div className="grid grid-cols-2 gap-y-2 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 text-xs">
           <span className="text-muted-foreground">{"\u2265"}2</span>
           <span className="text-muted-foreground/70">Reviews per period for genre</span>
           <span className="text-muted-foreground">{"\u2265"}3</span>

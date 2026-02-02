@@ -108,6 +108,7 @@ interface Track {
   trackNumber: number
   previewUrl: string | null
   durationMs: number
+  waveform?: number[] | null // Real Spotify waveform (40 bars, 0-1 values)
 }
 
 interface Album {
@@ -139,7 +140,7 @@ export default function QuickRatePage() {
   const [showCompletion, setShowCompletion] = useState(false)
   const [playingTrackId, setPlayingTrackId] = useState<string | null>(null)
   const [albumTracks, setAlbumTracks] = useState<Track[]>([])
-  const [loadingTracks, setLoadingTracks] = useState(false)
+  const [, setLoadingTracks] = useState(false)
   const [milestoneReached, setMilestoneReached] = useState<typeof TASTEID_TIERS[0] | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   
@@ -423,81 +424,65 @@ export default function QuickRatePage() {
 
   const currentAlbum = albums[currentAlbumIndex]
   const isUnlocked = actualRatedCount >= TASTEID_UNLOCK
-  const unlockProgress = Math.min(100, (actualRatedCount / TASTEID_UNLOCK) * 100)
   const remaining = Math.max(0, TASTEID_UNLOCK - actualRatedCount)
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
-      <div className="w-full px-4 lg:px-12 xl:px-20 py-4 flex flex-col flex-1 overflow-hidden">
-        {/* Header Row */}
-        <div className="flex items-center justify-between mb-3 flex-shrink-0">
+    <div className="min-h-screen flex flex-col pt-14" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
+      <div className="w-full px-3 lg:px-8 xl:px-16 py-2 flex flex-col flex-1">
+        {/* Header Row - Compact */}
+        <div className="flex items-center justify-between mb-2 flex-shrink-0">
           <div className="min-w-0 flex-1">
-            <h1 className="text-lg sm:text-xl font-bold tracking-tighter">Quick Rate</h1>
-            <p className="text-[10px] sm:text-xs text-[var(--muted)] truncate">
-              Build your TasteID. Skip what you haven't heard.
-            </p>
+            <div className="flex items-center gap-2">
+              <h1 className="text-base sm:text-lg font-bold tracking-tight">Quick Rate</h1>
+              <span className="text-[9px] text-[--muted] hidden sm:inline">Build your TasteID</span>
+            </div>
           </div>
           <button
             onClick={() => router.push('/')}
-            className="text-[--muted] hover:text-[--foreground] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center flex-shrink-0"
+            className="text-[--muted] hover:text-[--foreground] transition-colors w-8 h-8 flex items-center justify-center flex-shrink-0"
           >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        {/* Stats Bar */}
-        <div className="mb-3 p-2 border border-[--border] bg-[--surface] flex-shrink-0">
+        {/* Stats Bar - Compact */}
+        <div className="mb-2 px-2 py-1.5 border border-[--border] bg-[--surface] flex-shrink-0">
           {!isStatsLoaded ? (
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 border-2 border-[--border] border-t-[var(--accent-primary)] rounded-full animate-spin" />
-              <span className="text-sm text-[--muted]">Loading your progress...</span>
+              <div className="w-3 h-3 border-2 border-[--border] border-t-[var(--accent-primary)] rounded-full animate-spin" />
+              <span className="text-xs text-[--muted]">Loading...</span>
             </div>
           ) : (
             <>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-4 text-sm">
-                  {/* Status message */}
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center gap-3 text-xs">
                   {isUnlocked ? (
                     <span className="text-[#00ff88] font-bold flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
-                      TasteID Unlocked — Keep Building!
+                      Unlocked
                     </span>
                   ) : (
-                    <span className="text-white">
-                      <span className="font-bold text-[var(--accent-primary)]">{remaining}</span> more to unlock
+                    <span className="text-[--foreground]">
+                      <span className="font-bold text-[var(--accent-primary)]">{remaining}</span> to unlock
                     </span>
                   )}
-                  
-                  {/* Session count */}
                   {sessionRatedCount > 0 && (
                     <span className="text-[--muted]">
-                      <span className="text-[var(--accent-primary)] font-bold">+{sessionRatedCount}</span> this session
+                      <span className="text-[var(--accent-primary)]">+{sessionRatedCount}</span>
                     </span>
                   )}
                 </div>
-                
-                {/* Total ratings */}
-                <span className="text-sm">
+                <span className="text-xs">
                   <span className="text-[--foreground] font-bold">{actualRatedCount}</span>
-                  <span className="text-[--muted]"> ratings</span>
-                  {!isUnlocked && (
-                    <span className="text-[--muted] ml-2">{Math.round(unlockProgress)}%</span>
-                  )}
+                  <span className="text-[--muted]"> rated</span>
+                  {skippedCount > 0 && <span className="text-[--muted] ml-1">· {skippedCount} skip</span>}
                 </span>
               </div>
-              
-              {/* Tier Progress Bar - always show */}
               <TierProgressBar ratingCount={actualRatedCount} />
-              
-              {skippedCount > 0 && (
-                <p className="text-[10px] text-[--muted] mt-1 text-right">
-                  {skippedCount} skipped
-                </p>
-              )}
             </>
           )}
         </div>
@@ -588,13 +573,13 @@ export default function QuickRatePage() {
             <span className="text-xs tracking-[0.2em] uppercase text-[--muted]">Loading albums</span>
           </div>
         ) : currentAlbum ? (
-          <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex flex-col">
             {/* MOBILE LAYOUT (default) */}
-            <div className="flex-1 flex flex-col md:hidden overflow-hidden">
-              {/* Album Card with Art + Info */}
-              <div className="flex gap-3 p-3 flex-shrink-0">
-                {/* Album Art with Back Button Overlay */}
-                <div className="w-24 h-24 flex-shrink-0 relative">
+            <div className="flex flex-col md:hidden">
+              {/* Album Card - Compact */}
+              <div className="flex gap-2.5 p-2 flex-shrink-0">
+                {/* Album Art */}
+                <div className="w-20 h-20 flex-shrink-0 relative">
                   {currentAlbum.coverArtUrlLarge || currentAlbum.coverArtUrl ? (
                     <img
                       src={currentAlbum.coverArtUrlLarge || currentAlbum.coverArtUrl!}
@@ -603,83 +588,82 @@ export default function QuickRatePage() {
                     />
                   ) : (
                     <div className="w-full h-full bg-[--surface] flex items-center justify-center">
-                      <svg className="w-8 h-8 text-[--muted]/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-6 h-6 text-[--muted]/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                       </svg>
                     </div>
                   )}
-                  {/* Back button overlay */}
                   {canGoBack && (
                     <button
                       onClick={goBack}
-                      className="absolute -left-1 -top-1 w-7 h-7 bg-black/80 border border-[--border] flex items-center justify-center text-[--muted] hover:text-white transition-colors"
+                      className="absolute -left-1 -top-1 w-6 h-6 bg-black/80 border border-[--border] flex items-center justify-center text-[--muted] hover:text-white"
                       title="Go back"
                     >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                       </svg>
                     </button>
                   )}
                 </div>
                 {/* Album Info */}
-                <div className="flex-1 min-w-0 flex flex-col justify-center">
-                  <h2 className="text-base font-bold leading-tight line-clamp-2">{currentAlbum.title}</h2>
-                  <p className="text-sm text-[--muted] truncate">{currentAlbum.artistName}</p>
-                  {currentAlbum.genres && currentAlbum.genres.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1.5">
-                      {currentAlbum.genres.slice(0, 2).map((genre) => (
-                        <span key={genre} className="text-[9px] px-1.5 py-0.5 bg-[--surface] border border-[--border] text-[--muted] uppercase tracking-wide">
-                          {genre}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  {/* Bookmark + Track preview row */}
-                  <div className="flex items-center gap-2 mt-2">
+                <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
+                  <h2 className="text-sm font-bold leading-tight line-clamp-2">{currentAlbum.title}</h2>
+                  <p className="text-xs text-[--muted] truncate">{currentAlbum.artistName}</p>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    {currentAlbum.genres?.slice(0, 2).map((genre) => (
+                      <span key={genre} className="text-[8px] px-1 py-0.5 bg-[--surface] border border-[--border] text-[--muted] uppercase">
+                        {genre}
+                      </span>
+                    ))}
                     <BookmarkButton albumId={currentAlbum.id} size="sm" />
-                    {albumTracks.length > 0 && (
-                      <>
-                        {albumTracks.slice(0, 2).map((track) => (
-                          <button
-                            key={track.id}
-                            onClick={() => playTrack(track)}
-                            disabled={!track.previewUrl}
-                            className={`w-7 h-7 flex items-center justify-center border transition-colors ${
-                              playingTrackId === track.id
-                                ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]'
-                                : 'border-[--muted-faint] text-[--muted] hover:border-[--muted]'
-                            } ${!track.previewUrl ? 'opacity-30' : ''}`}
-                            title={track.name}
-                          >
-                            {playingTrackId === track.id ? (
-                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                                <rect x="6" y="4" width="4" height="16" />
-                                <rect x="14" y="4" width="4" height="16" />
-                              </svg>
-                            ) : (
-                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M8 5v14l11-7z"/>
-                              </svg>
-                            )}
-                          </button>
-                        ))}
-                        <span className="text-[9px] text-[--muted] uppercase">Preview</span>
-                      </>
-                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Vibes - Horizontal Scroll */}
-              <div className="px-3 pb-2 flex-shrink-0">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-[9px] text-[--muted] uppercase tracking-wider">Vibes</span>
+              {/* Mobile Tracklist - Horizontal scroll */}
+              {albumTracks.length > 0 && (
+                <div className="px-2 pb-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[8px] text-[--muted] uppercase tracking-wider">Preview</span>
+                    <span className="text-[8px] text-[--muted]">{albumTracks.length} tracks</span>
+                  </div>
+                  <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-2 px-2 scrollbar-hide">
+                    {albumTracks.map((track) => {
+                      const isPlaying = playingTrackId === track.id
+                      return (
+                        <button
+                          key={track.id}
+                          onClick={() => playTrack(track)}
+                          disabled={!track.previewUrl}
+                          className={`flex-shrink-0 flex items-center gap-1.5 px-2 py-1 border ${
+                            isPlaying
+                              ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
+                              : 'border-[--border] bg-[--surface]'
+                          } ${!track.previewUrl ? 'opacity-40' : ''}`}
+                        >
+                          <span className={`text-[9px] font-mono ${isPlaying ? 'text-[var(--accent-primary)]' : 'text-[--muted]'}`}>
+                            {isPlaying ? <AudioWaveform /> : track.trackNumber}
+                          </span>
+                          <span className={`text-[9px] max-w-[80px] truncate ${isPlaying ? 'text-[var(--accent-primary)]' : 'text-[--foreground]'}`}>
+                            {track.name}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Vibes - Compact horizontal scroll */}
+              <div className="px-2 pb-1.5 flex-shrink-0">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className="text-[8px] text-[--muted] uppercase tracking-wider">Vibes</span>
                   {selectedDescriptors.length > 0 && (
-                    <span className="text-[9px] text-[var(--accent-primary)] font-bold">{selectedDescriptors.length}/5</span>
+                    <span className="text-[8px] text-[var(--accent-primary)] font-bold">{selectedDescriptors.length}/5</span>
                   )}
                 </div>
-                <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-3 px-3 scrollbar-hide">
-                  {shuffledDescriptors.slice(0, 12).map((descriptor) => {
+                <div className="flex gap-1 overflow-x-auto pb-0.5 -mx-2 px-2 scrollbar-hide">
+                  {shuffledDescriptors.slice(0, 10).map((descriptor) => {
                     const isSelected = selectedDescriptors.includes(descriptor.id)
                     const atMax = selectedDescriptors.length >= MAX_DESCRIPTORS && !isSelected
                     return (
@@ -687,12 +671,12 @@ export default function QuickRatePage() {
                         key={descriptor.id}
                         onClick={() => toggleDescriptor(descriptor.id)}
                         disabled={submitting || atMax}
-                        className={`flex-shrink-0 text-[10px] px-2.5 py-1.5 uppercase tracking-wider transition-all whitespace-nowrap ${
+                        className={`flex-shrink-0 text-[9px] px-2 py-1 uppercase tracking-wide whitespace-nowrap ${
                           isSelected
                             ? 'bg-[var(--accent-primary)] text-black border border-[var(--accent-primary)] font-bold'
                             : atMax
                               ? 'border border-[--muted-faint] text-[--muted]/40'
-                              : 'border border-[--muted-faint] text-[--muted] active:border-[var(--accent-primary)]'
+                              : 'border border-[--muted-faint] text-[--muted]'
                         }`}
                       >
                         {descriptor.label}
@@ -702,40 +686,38 @@ export default function QuickRatePage() {
                 </div>
               </div>
 
-              {/* Rating Slider */}
-              <div className="px-3 py-3 flex-shrink-0">
+              {/* Rating Slider - Compact */}
+              <div className="px-2 py-2 flex-shrink-0">
                 <RatingSlider value={rating} onChange={setRating} disabled={submitting} />
               </div>
 
-              {/* Action Buttons - Fixed at bottom */}
-              <div className="mt-auto px-3 pb-4 pt-2 border-t border-[--border] flex-shrink-0 bg-[--background]">
-                {error && (
-                  <p className="text-red-500 text-xs text-center mb-2">{error}</p>
-                )}
+              {/* Action Buttons */}
+              <div className="mt-auto px-2 pb-3 pt-1.5 border-t border-[--border] flex-shrink-0 bg-[--background]">
+                {error && <p className="text-red-500 text-[10px] text-center mb-1">{error}</p>}
                 <div className="flex gap-2">
                   <button
                     onClick={skip}
                     disabled={submitting}
-                    className="w-20 py-3 border border-[--muted-faint] text-[--muted] font-bold uppercase tracking-wider text-xs hover:border-[--foreground] hover:text-[--foreground] transition-colors disabled:opacity-50"
+                    className="w-16 py-2.5 border border-[--muted-faint] text-[--muted] font-bold uppercase tracking-wider text-[10px] hover:border-[--foreground] hover:text-[--foreground] disabled:opacity-50"
                   >
                     Skip
                   </button>
                   <button
                     onClick={submitRating}
                     disabled={submitting}
-                    className="flex-1 py-3 font-bold uppercase tracking-wider text-sm transition-colors disabled:opacity-50 bg-[var(--accent-primary)] text-black hover:bg-[var(--accent-hover)]"
+                    className="flex-1 py-2.5 font-bold uppercase tracking-wider text-xs disabled:opacity-50 bg-[var(--accent-primary)] text-black hover:bg-[var(--accent-hover)]"
                   >
-                    {submitting ? 'Saving...' : 'Rate'}
+                    {submitting ? '...' : 'Rate'}
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* DESKTOP LAYOUT */}
-            <div className="hidden md:flex border border-[--border] flex-1 overflow-hidden">
-              {/* Album Art - Left Side */}
-              <div className="w-[280px] lg:w-[320px] flex-shrink-0 relative">
-                <div className="aspect-square relative max-h-[320px]">
+            {/* DESKTOP LAYOUT - 3 Column */}
+            <div className="hidden md:grid md:grid-cols-[240px_1fr_280px] lg:grid-cols-[280px_1fr_320px] border border-[--border]">
+              {/* LEFT: Album Art */}
+              <div className="relative">
+                <div className="aspect-square sticky top-0">
                   {currentAlbum.coverArtUrlLarge || currentAlbum.coverArtUrl ? (
                     <img
                       src={currentAlbum.coverArtUrlLarge || currentAlbum.coverArtUrl!}
@@ -744,19 +726,18 @@ export default function QuickRatePage() {
                     />
                   ) : (
                     <div className="w-full h-full bg-[--surface] flex items-center justify-center">
-                      <svg className="w-20 h-20 text-[--muted]/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-16 h-16 text-[--muted]/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                       </svg>
                     </div>
                   )}
-                  {/* Back button overlay - Desktop */}
                   {canGoBack && (
                     <button
                       onClick={goBack}
-                      className="absolute left-2 top-2 w-10 h-10 bg-black/70 border border-[--border] flex items-center justify-center text-[--muted] hover:text-white hover:bg-black/90 transition-colors"
+                      className="absolute left-1.5 top-1.5 w-8 h-8 bg-black/70 border border-[--border] flex items-center justify-center text-[--muted] hover:text-white"
                       title="Go back (B)"
                     >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                       </svg>
                     </button>
@@ -764,150 +745,129 @@ export default function QuickRatePage() {
                 </div>
               </div>
 
-              {/* Info & Rating - Right Side */}
-              <div className="flex-1 p-4 flex flex-col overflow-hidden">
-                <div className="flex-1 overflow-y-auto">
-                  <h2 className="text-xl lg:text-2xl font-bold mb-1">{currentAlbum.title}</h2>
-                  <p className="text-[--muted] text-base mb-3">{currentAlbum.artistName}</p>
-                  {currentAlbum.genres && currentAlbum.genres.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {currentAlbum.genres.slice(0, 3).map((genre) => (
-                        <span
-                          key={genre}
-                          className="text-[10px] px-2 py-1 border border-[--border] text-[--muted] uppercase tracking-wider"
-                        >
-                          {genre}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Bookmark Button - Desktop */}
-                  <div className="mb-4">
-                    <BookmarkButton albumId={currentAlbum.id} size="md" showLabel />
+              {/* CENTER: Tracklist with Waveforms */}
+              <div className="border-x border-[--border] flex flex-col max-h-[360px]">
+                <div className="px-2 py-1 border-b border-[--border] flex items-center justify-between bg-[--surface]">
+                  <span className="text-[8px] text-[--muted] uppercase tracking-wider">{albumTracks.length} tracks</span>
+                  <div className="flex items-center gap-2">
+                    {albumTracks.some(t => t.waveform) && (
+                      <span className="text-[7px] text-cyan-400 uppercase tracking-wider flex items-center gap-1">
+                        <svg className="w-2 h-2" viewBox="0 0 24 24" fill="currentColor">
+                          <circle cx="12" cy="12" r="10" />
+                        </svg>
+                        Spotify
+                      </span>
+                    )}
+                    <span className="text-[8px] text-[--muted]">30s</span>
                   </div>
-
-                  {/* Track Previews - Desktop */}
-                  <div className="mb-3 p-2 bg-[--surface] border border-[--border]">
-                    <p className="text-[10px] text-[--muted] uppercase tracking-wider mb-2 flex items-center gap-2">
-                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
-                      </svg>
-                      Preview tracks (15s)
-                    </p>
-                    {loadingTracks ? (
-                      <div className="flex items-center gap-2 text-[--muted] text-xs py-2">
-                        <div className="w-4 h-4 border-2 border-[--border] border-t-[var(--accent-primary)] rounded-full animate-spin" />
-                        Loading...
-                      </div>
-                    ) : albumTracks.length > 0 ? (
-                      <div className="space-y-1">
-                        {albumTracks.map((track) => (
+                </div>
+                <div className="flex-1 overflow-y-auto">
+                  {albumTracks.length > 0 ? (
+                    <div>
+                      {albumTracks.map((track) => {
+                        const isPlaying = playingTrackId === track.id
+                        return (
                           <button
                             key={track.id}
                             onClick={() => playTrack(track)}
                             disabled={!track.previewUrl}
-                            className={`w-full flex items-center gap-3 p-2 text-left transition-colors ${
-                              playingTrackId === track.id
-                                ? 'bg-[var(--accent-primary)]/20 border border-[var(--accent-primary)]'
-                                : 'hover:bg-[--surface-raised] border border-transparent'
-                            } ${!track.previewUrl ? 'opacity-40 cursor-not-allowed' : ''}`}
+                            className={`w-full px-2 py-1 flex items-center gap-2 text-left transition-colors border-b border-[--border]/30 ${
+                              isPlaying ? 'bg-[var(--accent-primary)]/10' : 'hover:bg-[--surface]'
+                            } ${!track.previewUrl ? 'opacity-30' : ''}`}
                           >
-                            <div className={`w-8 h-8 flex items-center justify-center border ${
-                              playingTrackId === track.id ? 'border-[var(--accent-primary)] text-[var(--accent-primary)]' : 'border-[--border] text-[--muted]'
-                            }`}>
-                              {playingTrackId === track.id ? (
-                                <svg className="w-4 h-4 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
-                                  <rect x="6" y="4" width="4" height="16" />
-                                  <rect x="14" y="4" width="4" height="16" />
-                                </svg>
-                              ) : (
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                  <path d="M8 5v14l11-7z"/>
-                                </svg>
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm text-[--foreground] truncate">{track.name}</p>
-                              <p className="text-[10px] text-[--muted]">
-                                Track {track.trackNumber} · {Math.floor(track.durationMs / 60000)}:{String(Math.floor((track.durationMs % 60000) / 1000)).padStart(2, '0')}
-                              </p>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-[--muted]/70 text-xs py-2">No previews available</p>
-                    )}
-                  </div>
-
-                  {/* Polarity Descriptors - Desktop */}
-                  <div className="mb-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-[10px] text-[--muted] uppercase tracking-wider">
-                        Describe this album{' '}
-                        <span className="text-[--muted]">(optional)</span>
-                      </p>
-                      {selectedDescriptors.length > 0 && (
-                        <span className="text-[10px] text-[var(--accent-primary)]">
-                          {selectedDescriptors.length} selected
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {shuffledDescriptors.map((descriptor) => {
-                        const isSelected = selectedDescriptors.includes(descriptor.id)
-                        const atMax = selectedDescriptors.length >= MAX_DESCRIPTORS && !isSelected
-                        return (
-                          <button
-                            key={descriptor.id}
-                            onClick={() => toggleDescriptor(descriptor.id)}
-                            disabled={submitting || atMax}
-                            title={descriptor.description}
-                            className={`text-[10px] px-3 py-1.5 min-h-[32px] uppercase tracking-wider transition-all duration-150 ${
-                              isSelected
-                                ? 'bg-[var(--accent-primary)] text-black border border-[var(--accent-primary)] font-bold'
-                                : atMax
-                                  ? 'border border-[--muted-faint] text-[--muted]/50 cursor-not-allowed'
-                                  : 'border border-[--muted-faint] text-[--muted] hover:border-[var(--accent-hover)] hover:text-[var(--accent-hover)]'
-                            } disabled:opacity-50`}
-                          >
-                            {descriptor.label}
+                            {/* Track number */}
+                            <span className={`w-5 text-[9px] font-mono flex-shrink-0 ${isPlaying ? 'text-[var(--accent-primary)]' : 'text-[--muted]'}`}>
+                              {track.trackNumber}
+                            </span>
+                            {/* Waveform */}
+                            <TrackWaveform trackId={track.id} isPlaying={isPlaying} waveform={track.waveform} />
+                            {/* Duration */}
+                            <span className="text-[9px] text-[--muted] tabular-nums flex-shrink-0">
+                              {Math.floor(track.durationMs / 60000)}:{String(Math.floor((track.durationMs % 60000) / 1000)).padStart(2, '0')}
+                            </span>
                           </button>
                         )
                       })}
                     </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-[--muted] text-xs">No previews</div>
+                  )}
+                </div>
+              </div>
+
+              {/* RIGHT: Info & Rating */}
+              <div className="p-3 flex flex-col">
+                {/* Album info */}
+                <div className="mb-2">
+                  <h2 className="text-base lg:text-lg font-bold leading-tight">{currentAlbum.title}</h2>
+                  <p className="text-[--muted] text-sm">{currentAlbum.artistName}</p>
+                </div>
+
+                {/* Genres + Bookmark */}
+                <div className="flex items-center gap-2 mb-3">
+                  {currentAlbum.genres?.slice(0, 2).map((genre) => (
+                    <span key={genre} className="text-[8px] px-1.5 py-0.5 border border-[--border] text-[--muted] uppercase">
+                      {genre}
+                    </span>
+                  ))}
+                  <div className="ml-auto">
+                    <BookmarkButton albumId={currentAlbum.id} size="sm" />
                   </div>
                 </div>
 
-                {/* Rating Controls - Desktop */}
-                <div className="space-y-3 flex-shrink-0 pt-3 border-t border-[--border]">
+                {/* Vibes */}
+                <div className="mb-3 flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[9px] text-[--muted] uppercase tracking-wider">Vibes</span>
+                    {selectedDescriptors.length > 0 && (
+                      <span className="text-[9px] text-[var(--accent-primary)]">{selectedDescriptors.length}/5</span>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {shuffledDescriptors.slice(0, 16).map((descriptor) => {
+                      const isSelected = selectedDescriptors.includes(descriptor.id)
+                      const atMax = selectedDescriptors.length >= MAX_DESCRIPTORS && !isSelected
+                      return (
+                        <button
+                          key={descriptor.id}
+                          onClick={() => toggleDescriptor(descriptor.id)}
+                          disabled={submitting || atMax}
+                          title={descriptor.description}
+                          className={`text-[8px] px-1.5 py-0.5 uppercase ${
+                            isSelected
+                              ? 'bg-[var(--accent-primary)] text-black border border-[var(--accent-primary)] font-bold'
+                              : atMax
+                                ? 'border border-[--muted-faint] text-[--muted]/40'
+                                : 'border border-[--muted-faint] text-[--muted] hover:border-[var(--accent-hover)]'
+                          }`}
+                        >
+                          {descriptor.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Rating + Actions */}
+                <div className="mt-auto pt-2 border-t border-[--border] space-y-2">
                   <RatingSlider value={rating} onChange={setRating} disabled={submitting} />
-
-                  {error && (
-                    <p className="text-red-500 text-sm text-center">{error}</p>
-                  )}
-
-                  <div className="flex gap-3">
+                  {error && <p className="text-red-500 text-xs text-center">{error}</p>}
+                  <div className="flex gap-2">
                     <button
                       onClick={skip}
                       disabled={submitting}
-                      className="flex-1 py-3 min-h-[48px] border border-[--muted-faint] text-[--muted] font-bold uppercase tracking-wider text-sm hover:border-[--foreground] hover:text-[--foreground] transition-colors disabled:opacity-50"
+                      className="w-16 py-2 border border-[--muted-faint] text-[--muted] font-bold uppercase text-[10px] hover:border-[--foreground] hover:text-[--foreground] disabled:opacity-50"
                     >
                       Skip
                     </button>
                     <button
                       onClick={submitRating}
                       disabled={submitting}
-                      className="flex-1 py-3 min-h-[48px] font-bold uppercase tracking-wider text-sm transition-colors disabled:opacity-50 bg-[var(--accent-primary)] text-black hover:bg-[var(--accent-hover)]"
+                      className="flex-1 py-2 font-bold uppercase text-xs disabled:opacity-50 bg-[var(--accent-primary)] text-black hover:bg-[var(--accent-hover)]"
                     >
-                      {submitting ? 'Saving...' : 'Rate'}
+                      {submitting ? '...' : 'Rate'}
                     </button>
                   </div>
-
-                  <p className="text-center text-xs text-[--muted]">
-                    <kbd className="px-1.5 py-0.5 border border-[--border] text-[10px]">Enter</kbd> rate · <kbd className="px-1.5 py-0.5 border border-[--border] text-[10px]">S</kbd> skip · <kbd className="px-1.5 py-0.5 border border-[--border] text-[10px]">B</kbd> back
-                  </p>
                 </div>
               </div>
             </div>
@@ -924,17 +884,14 @@ export default function QuickRatePage() {
           </div>
         )}
 
-        {/* Quick navigation */}
+        {/* Quick navigation - compact */}
         {sessionRatedCount >= 10 && (
-          <div className="mt-6 text-center">
-            <p className="text-sm text-[--muted] mb-3">
-              You've rated {sessionRatedCount} albums this session!
-            </p>
+          <div className="mt-3 text-center">
             <button
               onClick={() => router.push('/tasteid/me')}
-              className="text-[var(--accent-primary)] text-sm hover:underline"
+              className="text-[var(--accent-primary)] text-xs hover:underline"
             >
-              View Your TasteID →
+              {sessionRatedCount} rated → View TasteID
             </button>
           </div>
         )}
@@ -943,66 +900,84 @@ export default function QuickRatePage() {
   )
 }
 
-// Inline Tier Progress Bar for Quick Rate - CLEAR LABELS
+// Animated Audio Waveform (playing state)
+function AudioWaveform() {
+  return (
+    <div className="flex items-end justify-center gap-[2px] h-4">
+      <div className="w-[3px] bg-[var(--accent-primary)] rounded-full" style={{ animation: 'waveform 0.4s ease-in-out infinite', height: '10px' }} />
+      <div className="w-[3px] bg-[var(--accent-primary)] rounded-full" style={{ animation: 'waveform 0.4s ease-in-out infinite 0.1s', height: '14px' }} />
+      <div className="w-[3px] bg-[var(--accent-primary)] rounded-full" style={{ animation: 'waveform 0.4s ease-in-out infinite 0.2s', height: '8px' }} />
+    </div>
+  )
+}
+
+// Track Waveform - uses real Spotify data when available, falls back to pseudo-waveform
+function TrackWaveform({ trackId, isPlaying, waveform }: { trackId: string; isPlaying: boolean; waveform?: number[] | null }) {
+  // Use real Spotify waveform if available, otherwise generate from track ID hash
+  const bars = waveform && waveform.length === 40
+    ? waveform
+    : Array.from({ length: 40 }, (_, i) => {
+        const hash = trackId.split('').reduce((a, c, idx) => a + c.charCodeAt(0) * (idx + 1 + i), 0)
+        return 0.2 + (hash % 80) / 100
+      })
+
+  const hasRealWaveform = waveform && waveform.length === 40
+
+  return (
+    <div className="flex items-center gap-[1px] h-6 flex-1">
+      {bars.map((height, i) => (
+        <div
+          key={i}
+          className={`w-[2px] rounded-sm transition-colors ${
+            isPlaying
+              ? 'bg-[var(--accent-primary)]'
+              : hasRealWaveform
+                ? 'bg-cyan-400/60' // Cyan for real Spotify data
+                : 'bg-[--muted]/40'
+          }`}
+          style={{
+            height: `${height * 100}%`,
+            opacity: isPlaying ? 1 : hasRealWaveform ? 0.8 : 0.6,
+            animation: isPlaying ? `waveform 0.5s ease-in-out infinite ${i * 0.02}s` : 'none',
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
+// Compact Tier Progress Bar
 function TierProgressBar({ ratingCount }: { ratingCount: number }) {
   const { progress, ratingsToNext, currentTier, nextTier } = getProgressToNextTier(ratingCount)
-  const tiers = TASTEID_TIERS.slice(1) // Skip 'locked'
-  
+  const tiers = TASTEID_TIERS.slice(1)
+
   return (
-    <div className="space-y-2">
-      {/* Header with current tier */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span 
-            className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-black"
-            style={{ backgroundColor: currentTier.color }}
-          >
-            {currentTier.name}
+    <div className="space-y-1">
+      {/* Compact header */}
+      <div className="flex items-center justify-between text-[9px]">
+        <div className="flex items-center gap-1.5">
+          <span className="px-1.5 py-0.5 font-bold uppercase text-black" style={{ backgroundColor: currentTier.color }}>
+            {currentTier.shortName || currentTier.name}
           </span>
-          <span className="text-[10px] text-[--muted]">{currentTier.maxConfidence}% accuracy</span>
+          <span className="text-[--muted]">{currentTier.maxConfidence}%</span>
         </div>
         {nextTier && (
-          <span className="text-[10px] text-[--muted]">
-            {ratingsToNext} ratings to <span style={{ color: nextTier.color }}>{nextTier.name}</span>
+          <span className="text-[--muted]">
+            {ratingsToNext}→<span style={{ color: nextTier.color }}>{nextTier.shortName || nextTier.name}</span>
           </span>
         )}
       </div>
-      
-      {/* Segmented progress bar with labels */}
-      <div className="flex gap-0.5">
-        {tiers.map((tier, index) => {
+
+      {/* Compact segmented bar */}
+      <div className="flex gap-px">
+        {tiers.map((tier) => {
           const isCompleted = ratingCount >= tier.minRatings
           const isCurrent = tier.id === currentTier.id
-          
-          let fillPercent = 0
-          if (isCompleted && !isCurrent) fillPercent = 100
-          else if (isCurrent) fillPercent = progress
-          
+          let fillPercent = isCompleted && !isCurrent ? 100 : isCurrent ? progress : 0
+
           return (
-            <div 
-              key={tier.id}
-              className="flex-1"
-            >
-              {/* Progress segment */}
-              <div
-                className="h-2 bg-[--surface] rounded-sm overflow-hidden mb-1"
-                title={`${tier.name}: ${tier.minRatings}+ ratings`}
-              >
-                <div 
-                  className="h-full transition-all duration-500"
-                  style={{ 
-                    width: `${fillPercent}%`,
-                    backgroundColor: tier.color
-                  }}
-                />
-              </div>
-              {/* Tier name label */}
-              <div
-                className={`text-[8px] sm:text-[9px] text-center uppercase tracking-wider ${isCurrent ? 'font-bold' : ''}`}
-                style={{ color: isCompleted || isCurrent ? tier.color : 'var(--muted)' }}
-              >
-                {tier.name}
-              </div>
+            <div key={tier.id} className="flex-1 h-1.5 bg-[--surface] overflow-hidden" title={tier.name}>
+              <div className="h-full transition-all duration-500" style={{ width: `${fillPercent}%`, backgroundColor: tier.color }} />
             </div>
           )
         })}

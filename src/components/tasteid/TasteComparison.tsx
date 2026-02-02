@@ -78,7 +78,7 @@ export function TasteComparison({
       </div>
 
       {/* Breakdown */}
-      <div className="grid grid-cols-3 gap-4 border-2 border-white p-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-2 border-white p-4">
         <BreakdownBar label="GENRE OVERLAP" value={breakdown.genreOverlap} />
         <BreakdownBar label="ARTIST OVERLAP" value={breakdown.artistOverlap} />
         <BreakdownBar label="RATING STYLE" value={breakdown.ratingAlignment} />
@@ -154,7 +154,7 @@ export function TasteComparison({
 
 function UserColumn({ user, label }: { user: UserTaste; label: string }) {
   return (
-    <div className="flex flex-col items-center text-center space-y-3 w-32">
+    <div className="flex flex-col items-center text-center space-y-3 w-24 sm:w-32">
       <span className="text-[10px] uppercase tracking-widest text-neutral-500 font-bold">
         {label}
       </span>

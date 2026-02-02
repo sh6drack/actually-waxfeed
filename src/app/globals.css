@@ -445,6 +445,12 @@ img[src=""] {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* Audio waveform animation */
+@keyframes waveform {
+  0%, 100% { transform: scaleY(0.5); }
+  50% { transform: scaleY(1); }
+}
+
 /* Better text rendering for large headings */
 .text-display {
   text-rendering: optimizeLegibility;

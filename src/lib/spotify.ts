@@ -441,3 +441,157 @@ export async function cleanupExpiredCache(): Promise<number> {
   })
   return result.count
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AUDIO ANALYSIS - Real waveform data from Spotify
+// ═══════════════════════════════════════════════════════════════════════════════
+
+interface SpotifyAudioAnalysis {
+  segments: Array<{
+    start: number
+    duration: number
+    loudness_start: number
+    loudness_max: number
+    loudness_max_time: number
+  }>
+  track: {
+    duration: number
+    tempo: number
+    time_signature: number
+  }
+}
+
+interface TrackSearchResult {
+  tracks: {
+    items: Array<{
+      id: string
+      name: string
+      artists: Array<{ name: string }>
+      duration_ms: number
+    }>
+  }
+}
+
+// Search for a track on Spotify to get its ID
+export async function searchTrack(
+  trackName: string,
+  artistName: string
+): Promise<string | null> {
+  const cacheKey = `track:search:${trackName}:${artistName}`
+  const cached = await getFromCache<{ trackId: string }>(cacheKey)
+
+  if (cached) {
+    return cached.trackId
+  }
+
+  const token = await getAccessToken()
+  const query = encodeURIComponent(`track:${trackName} artist:${artistName}`)
+
+  const response = await fetch(
+    `${SPOTIFY_API_BASE}/search?q=${query}&type=track&limit=1`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  )
+
+  if (!response.ok) {
+    console.error('Spotify track search failed:', response.statusText)
+    return null
+  }
+
+  const data: TrackSearchResult = await response.json()
+  const track = data.tracks?.items?.[0]
+
+  if (!track) {
+    return null
+  }
+
+  await setCache(cacheKey, { trackId: track.id }, CACHE_DURATION.ALBUM)
+  return track.id
+}
+
+// Get audio analysis for a track - returns waveform data
+export async function getAudioAnalysis(
+  spotifyTrackId: string
+): Promise<number[] | null> {
+  const cacheKey = `audio:analysis:${spotifyTrackId}`
+  const cached = await getFromCache<{ waveform: number[] }>(cacheKey)
+
+  if (cached) {
+    return cached.waveform
+  }
+
+  const token = await getAccessToken()
+
+  const response = await fetch(
+    `${SPOTIFY_API_BASE}/audio-analysis/${spotifyTrackId}`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  )
+
+  if (!response.ok) {
+    console.error('Audio analysis failed:', response.statusText)
+    return null
+  }
+
+  const data: SpotifyAudioAnalysis = await response.json()
+
+  // Convert segments to 40-bar waveform
+  // Normalize loudness values (typically -60 to 0 dB) to 0-1 range
+  const waveform = segmentsToWaveform(data.segments, 40)
+
+  await setCache(cacheKey, { waveform }, CACHE_DURATION.ALBUM)
+  return waveform
+}
+
+// Convert audio segments to a fixed-length waveform array
+function segmentsToWaveform(
+  segments: SpotifyAudioAnalysis['segments'],
+  barCount: number
+): number[] {
+  if (!segments || segments.length === 0) {
+    return Array(barCount).fill(0.3)
+  }
+
+  const totalDuration = segments[segments.length - 1].start + segments[segments.length - 1].duration
+  const segmentDuration = totalDuration / barCount
+  const waveform: number[] = []
+
+  for (let i = 0; i < barCount; i++) {
+    const startTime = i * segmentDuration
+    const endTime = (i + 1) * segmentDuration
+
+    // Find segments in this time range
+    const relevantSegments = segments.filter(
+      s => s.start < endTime && s.start + s.duration > startTime
+    )
+
+    if (relevantSegments.length === 0) {
+      waveform.push(0.2)
+      continue
+    }
+
+    // Average the loudness_max values
+    const avgLoudness = relevantSegments.reduce((sum, s) => sum + s.loudness_max, 0) / relevantSegments.length
+
+    // Normalize: loudness typically ranges from -60 to 0 dB
+    // Map to 0.15 - 1.0 range for visual appeal
+    const normalized = Math.max(0.15, Math.min(1, (avgLoudness + 60) / 60))
+    waveform.push(normalized)
+  }
+
+  return waveform
+}
+
+// Get waveform for a track by searching Spotify
+export async function getTrackWaveform(
+  trackName: string,
+  artistName: string
+): Promise<number[] | null> {
+  try {
+    const trackId = await searchTrack(trackName, artistName)
+    if (!trackId) return null
+
+    return await getAudioAnalysis(trackId)
+  } catch (error) {
+    console.error('Failed to get track waveform:', error)
+    return null
+  }
+}

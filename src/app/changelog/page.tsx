@@ -8,10 +8,49 @@ export const metadata: Metadata = {
 
 const CHANGELOG_ENTRIES = [
   {
+    version: "2.1",
+    codename: "Cognitive",
+    date: "2026-02-01",
+    highlight: true,
+    summary: "Full Polarity OS integration - advanced cognitive modeling for music taste.",
+    changes: [
+      {
+        type: "feature" as const,
+        title: "Polarity OS Engine",
+        description: "Complete port of Polarity OS cognitive modeling system. Graph-based pattern detection with PageRank, HITS, and betweenness centrality scoring.",
+      },
+      {
+        type: "feature" as const,
+        title: "Pattern Learning",
+        description: "PatternLearningEngine detects 10+ taste patterns (Critical Ear, Genre Explorer, Discography Completionist) with lifecycle tracking: emerging → confirmed → fading → dormant.",
+      },
+      {
+        type: "feature" as const,
+        title: "Drift Detection",
+        description: "DriftDetector monitors behavioral changes - pattern disappearance, contradictions, emotional shifts, and genre expansion/contraction.",
+      },
+      {
+        type: "feature" as const,
+        title: "Episode Consolidation",
+        description: "ConsolidationEngine extracts listening sessions from review history, tracking taste consolidation and edge weights between patterns.",
+      },
+      {
+        type: "enhancement" as const,
+        title: "Mobile Optimization",
+        description: "Fixed responsive layouts across TasteComparison, MusicNetworks, PatternBadges, TasteConsolidation, and TierProgress components.",
+      },
+      {
+        type: "enhancement" as const,
+        title: "Cognitive Metrics",
+        description: "New TasteID fields: patternStability, explorationRate, graphDensity - all computed from Polarity OS engines.",
+      },
+    ],
+  },
+  {
     version: "2.0",
     codename: "Revival",
     date: "2026-02-02",
-    highlight: true,
+    highlight: false,
     summary: "Critical infrastructure fixes and Stripe payments integration.",
     changes: [
       {
@@ -269,10 +308,10 @@ export default function ChangelogPage() {
                 polarity
               </span>
               <span className="font-mono text-[10px] text-[var(--accent-primary)]">
-                1.9
+                2.1
               </span>
               <span className="font-mono text-[8px] text-cyan-400/60 tracking-widest uppercase">
-                dyad
+                cognitive
               </span>
             </div>
             <span className="text-xs text-[--muted]">

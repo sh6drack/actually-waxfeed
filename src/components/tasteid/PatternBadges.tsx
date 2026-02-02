@@ -165,7 +165,7 @@ function PatternCategorySection({
       <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
         {title}
       </p>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {patterns.map(pattern => (
           <PatternBadge
             key={pattern}
