@@ -153,19 +153,12 @@ export function Header() {
         {/* Desktop Navigation - Clean & Complete */}
         <nav className="hidden lg:flex items-center gap-4">
           {/* Core Navigation */}
-          <Link 
-            href="/discover" 
+          <Link
+            href="/discover"
             className="text-sm transition-colors hover:opacity-70"
             style={{ color: 'var(--header-text)' }}
           >
             Discover
-          </Link>
-          <Link 
-            href="/trending" 
-            className="text-sm transition-colors hover:opacity-70"
-            style={{ color: 'var(--header-text)' }}
-          >
-            Trending
           </Link>
           
           {/* KEEP BUILDING - Primary CTA for users building TasteID */}
@@ -495,15 +488,6 @@ export function Header() {
               onClick={() => setMobileMenuOpen(false)}
             >
               Discover
-              <ChevronRightIcon />
-            </Link>
-            <Link
-              href="/trending"
-              className="flex items-center justify-between px-6 py-4 text-base font-medium"
-              style={{ color: 'var(--header-text)', borderBottom: '1px solid var(--header-border)' }}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Trending
               <ChevronRightIcon />
             </Link>
             <Link

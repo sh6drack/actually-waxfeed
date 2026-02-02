@@ -167,11 +167,11 @@ async function getNewReleases() {
 async function getTrending() {
   return prisma.album.findMany({
     where: { billboardRank: { not: null }, albumType: { not: 'single' } },
-    take: 12,
+    take: 50,
     orderBy: { billboardRank: "asc" },
     select: {
       id: true, spotifyId: true, title: true, artistName: true,
-      coverArtUrl: true, averageRating: true, totalReviews: true, billboardRank: true, genres: true,
+      coverArtUrl: true, coverArtUrlLarge: true, averageRating: true, totalReviews: true, billboardRank: true, genres: true,
     }
   })
 }

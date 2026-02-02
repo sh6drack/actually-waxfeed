@@ -11,6 +11,7 @@ interface Album {
   title: string
   artistName: string
   coverArtUrl: string | null
+  coverArtUrlLarge?: string | null
   averageRating: number | null
   totalReviews: number
   genres: string[]
@@ -48,6 +49,176 @@ const TABS = [
   { id: "trending" as TabId, label: "Trending", icon: "↗" },
   { id: "new" as TabId, label: "New", icon: "✦" },
 ]
+
+// Trending Tab Content - Full Billboard 200 grid with expand/collapse
+function TrendingTabContent({ albums }: { albums: Album[] }) {
+  const [isExpanded, setIsExpanded] = useState(false)
+  const mobileCount = 18
+  const desktopCount = 24
+  const displayedAlbums = isExpanded ? albums : albums.slice(0, desktopCount)
+
+  return (
+    <div className="animate-in fade-in duration-300">
+      <section className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 py-8 lg:py-12">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-[--dyad-connection]/10 border border-[--dyad-connection]/20 flex items-center justify-center">
+              <span className="text-[--dyad-connection]">↗</span>
+            </div>
+            <div>
+              <h2 className="text-lg font-bold">Billboard 200</h2>
+              <p className="text-xs text-white/40">Review trending albums early</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-[--dyad-connection] animate-pulse" />
+            <span className="text-[10px] tracking-[0.2em] uppercase text-white/40 font-mono">
+              Week of {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            </span>
+          </div>
+        </div>
+
+        {/* Mobile Grid - 3 columns */}
+        <div className="md:hidden">
+          <div className="grid grid-cols-3 gap-3">
+            {displayedAlbums.slice(0, isExpanded ? albums.length : mobileCount).map((album) => (
+              <Link
+                key={album.id}
+                href={`/album/${album.spotifyId}`}
+                className="group block"
+              >
+                <div className="relative aspect-square overflow-hidden bg-white/5">
+                  {album.coverArtUrl && (
+                    <img
+                      src={album.coverArtUrlLarge || album.coverArtUrl}
+                      alt=""
+                      className="w-full h-full object-cover group-active:scale-[0.98] transition-transform duration-150"
+                    />
+                  )}
+                  <div
+                    className={`absolute top-0 left-0 px-1.5 py-0.5 text-[10px] font-bold ${
+                      (album.billboardRank || 0) <= 10
+                        ? 'bg-[--dyad-connection] text-black'
+                        : 'bg-black/80 text-white/80'
+                    }`}
+                  >
+                    #{album.billboardRank}
+                  </div>
+                  {album.averageRating !== null && (
+                    <div className="absolute bottom-0 right-0 px-1.5 py-0.5 bg-black/80 backdrop-blur-sm">
+                      <span className="text-[10px] font-mono text-[--dyad-primary]">
+                        {album.averageRating.toFixed(1)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div className="mt-2">
+                  <p className="text-[11px] font-semibold leading-tight truncate group-hover:text-[--dyad-connection] transition-colors">
+                    {album.title}
+                  </p>
+                  <p className="text-[10px] text-white/40 truncate mt-0.5">
+                    {album.artistName}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          {albums.length > mobileCount && (
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="w-full mt-6 py-4 flex items-center justify-center gap-2 text-xs font-bold tracking-[0.1em] uppercase active:opacity-70 transition-all min-h-[52px] bg-[--dyad-connection] text-black"
+            >
+              <span>{isExpanded ? "Show Less" : `View All ${albums.length}`}</span>
+              <svg
+                className={`w-3.5 h-3.5 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.5}
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="square" strokeLinejoin="miter" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          )}
+        </div>
+
+        {/* Desktop Grid - 6 columns */}
+        <div className="hidden md:block">
+          <div className="grid grid-cols-4 lg:grid-cols-6 gap-4">
+            {displayedAlbums.map((album) => (
+              <Link
+                key={album.id}
+                href={`/album/${album.spotifyId}`}
+                className="group block"
+              >
+                <div className="relative aspect-square overflow-hidden bg-white/5">
+                  {album.coverArtUrl && (
+                    <img
+                      src={album.coverArtUrlLarge || album.coverArtUrl}
+                      alt=""
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  )}
+                  <div
+                    className={`absolute top-0 left-0 px-2 py-1 text-xs font-bold ${
+                      (album.billboardRank || 0) <= 10
+                        ? 'bg-[--dyad-connection] text-black'
+                        : (album.billboardRank || 0) <= 25
+                          ? 'bg-white/90 text-black'
+                          : 'bg-black/80 text-white/80'
+                    }`}
+                  >
+                    #{album.billboardRank}
+                  </div>
+                  {album.averageRating !== null && (
+                    <div className="absolute bottom-0 right-0 px-2 py-1 bg-black/80 backdrop-blur-sm">
+                      <span className="text-xs font-mono text-[--dyad-primary]">
+                        {album.averageRating.toFixed(1)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div className="mt-2">
+                  <p className="text-sm font-semibold leading-tight truncate group-hover:text-[--dyad-connection] transition-colors">
+                    {album.title}
+                  </p>
+                  <p className="text-xs text-white/40 truncate mt-0.5">
+                    {album.artistName}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          {albums.length > desktopCount && (
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="w-full mt-6 py-3 flex items-center justify-center gap-2 text-xs font-bold tracking-[0.1em] uppercase transition-all border border-white/10 hover:border-[--dyad-connection] hover:text-[--dyad-connection] text-white/50"
+            >
+              <span>{isExpanded ? "Show Less" : `Show All ${albums.length}`}</span>
+              <svg
+                className={`w-3.5 h-3.5 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="square" strokeLinejoin="miter" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          )}
+        </div>
+
+        {albums.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-white/40">No trending albums available</p>
+          </div>
+        )}
+      </section>
+    </div>
+  )
+}
 
 export function DiscoverTabs({
   session,
@@ -267,57 +438,7 @@ export function DiscoverTabs({
 
         {/* TRENDING TAB */}
         {activeTab === "trending" && (
-          <div className="animate-in fade-in duration-300">
-            <section className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 py-8 lg:py-12">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-[--dyad-connection]/10 border border-[--dyad-connection]/20 flex items-center justify-center">
-                    <span className="text-[--dyad-connection]">↗</span>
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-bold">Billboard 200</h2>
-                    <p className="text-xs text-white/40">Review trending albums early</p>
-                  </div>
-                </div>
-                <Link href="/trending" className="text-xs text-white/40 hover:text-white/70 transition-colors">
-                  Full Chart →
-                </Link>
-              </div>
-
-              {/* Trending Grid - Card style */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {recommendations.trending.map((album, i) => (
-                  <Link
-                    key={album.id}
-                    href={`/album/${album.spotifyId}`}
-                    className="flex items-center gap-4 p-3 bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 transition-colors group"
-                  >
-                    <div className="relative">
-                      <span className="absolute -top-1 -left-1 w-6 h-6 bg-[--dyad-connection] text-black text-xs font-black flex items-center justify-center z-10">
-                        {album.billboardRank}
-                      </span>
-                      <div className="w-14 h-14 bg-white/5 overflow-hidden">
-                        {album.coverArtUrl && (
-                          <img src={album.coverArtUrl} alt="" className="w-full h-full object-cover" />
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate group-hover:text-[--dyad-connection] transition-colors">
-                        {album.title}
-                      </p>
-                      <p className="text-xs text-white/40 truncate">{album.artistName}</p>
-                    </div>
-                    {album.averageRating ? (
-                      <span className="text-sm font-mono text-white/60">{album.averageRating.toFixed(1)}</span>
-                    ) : (
-                      <span className="text-[10px] text-[--dyad-connection] uppercase">Rate First</span>
-                    )}
-                  </Link>
-                ))}
-              </div>
-            </section>
-          </div>
+          <TrendingTabContent albums={recommendations.trending} />
         )}
 
         {/* NEW TAB */}

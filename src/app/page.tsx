@@ -677,9 +677,9 @@ export default async function Home() {
             <div className="border-r border-[var(--border)] py-10 lg:py-14 px-6 flex flex-col">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-bold">Trending</h2>
-                <Link href="/trending" className="text-[10px] tracking-[0.15em] uppercase text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
-                  See All Trending →
-                </Link>
+                <span className="text-[10px] tracking-[0.15em] uppercase text-[var(--muted)]">
+                  Billboard 200
+                </span>
               </div>
 
               <div className="album-grid grid grid-cols-4 gap-2 flex-1 content-start">
@@ -943,7 +943,6 @@ export default async function Home() {
             </div>
             <nav className="flex flex-wrap gap-6">
               <Link href="/discover" className="text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Discover</Link>
-              <Link href="/trending" className="text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Trending</Link>
               <Link href="/pricing" className="text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Pricing</Link>
               <Link href="/stations" className="text-sm text-[--accent-primary] hover:text-[--accent-hover] transition-colors">College Radio</Link>
             </nav>
