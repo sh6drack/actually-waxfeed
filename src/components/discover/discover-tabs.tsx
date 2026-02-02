@@ -29,7 +29,15 @@ interface Props {
   }
   userTaste: any
   connections: any[]
-  getPositionBadge: (totalReviews: number) => { text: string; color: string } | null
+}
+
+// Position badge helper - defined here since functions can't be passed from server to client
+function getPositionBadge(totalReviews: number): { text: string; color: string } | null {
+  const nextPosition = totalReviews + 1
+  if (nextPosition <= 10) return { text: `#${nextPosition}`, color: "text-[#ffd700]" }
+  if (nextPosition <= 50) return { text: `#${nextPosition}`, color: "text-gray-400" }
+  if (nextPosition <= 100) return { text: `#${nextPosition}`, color: "text-amber-600" }
+  return null
 }
 
 type TabId = "explore" | "network" | "trending" | "new"
@@ -47,7 +55,6 @@ export function DiscoverTabs({
   recommendations,
   userTaste,
   connections,
-  getPositionBadge,
 }: Props) {
   const [activeTab, setActiveTab] = useState<TabId>("explore")
 

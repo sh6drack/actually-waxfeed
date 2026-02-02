@@ -395,7 +395,6 @@ export default async function DiscoverPage() {
         recommendations={recommendations}
         userTaste={userTaste}
         connections={connections}
-        getPositionBadge={getPositionBadge}
       />
     </div>
   )
