@@ -58,6 +58,10 @@ rm -rf .vercel && npx vercel link --yes --project actually-waxfeed-bkk6
 
 **Never remove or modify `.vercel/project.json` without checking the projectName.**
 
+**If deployments fail with "Resource provisioning failed":**
+- Go to Vercel dashboard → Project Settings → Git
+- Toggle Git LFS setting (this fixed a 4-day outage in Feb 2026)
+
 ### CSS Variables
 Theme colors defined in `globals.css`:
 - `--accent-primary` - Gold accent color
