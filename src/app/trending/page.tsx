@@ -79,88 +79,147 @@ export default async function TrendingPage() {
   ])
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
-      {/* Editorial masthead */}
-      <header style={{ borderBottom: '1px solid var(--border)' }}>
+    <div className="min-h-screen bg-black text-white overflow-x-hidden">
+      {/* Neural Network Background */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        {/* Gradient mesh */}
+        <div
+          className="absolute top-0 right-1/4 w-[600px] h-[600px] rounded-full blur-[150px] opacity-15"
+          style={{ background: 'radial-gradient(circle, var(--dyad-connection) 0%, transparent 70%)' }}
+        />
+        <div
+          className="absolute bottom-1/3 left-1/4 w-[500px] h-[500px] rounded-full blur-[120px] opacity-10"
+          style={{ background: 'radial-gradient(circle, var(--ccx-node) 0%, transparent 70%)' }}
+        />
+        <div
+          className="absolute top-1/2 left-0 w-[400px] h-[400px] rounded-full blur-[100px] opacity-10"
+          style={{ background: 'radial-gradient(circle, var(--dyad-primary) 0%, transparent 70%)' }}
+        />
+
+        {/* Grid lines */}
+        <svg className="absolute inset-0 w-full h-full opacity-[0.02]">
+          <defs>
+            <pattern id="grid-trending" width="80" height="80" patternUnits="userSpaceOnUse">
+              <path d="M 80 0 L 0 0 0 80" fill="none" stroke="white" strokeWidth="0.5"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid-trending)" />
+        </svg>
+      </div>
+
+      {/* Hero Header */}
+      <header className="relative border-b border-white/10">
         <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 py-8 sm:py-12 lg:py-16">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8 items-end">
-            <div className="lg:col-span-8">
-              <p className="text-[10px] sm:text-xs tracking-[0.4em] uppercase mb-2 sm:mb-4" style={{ color: 'var(--muted)' }}>
-                Week of {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
-              </p>
-              <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold tracking-[-0.04em] leading-[0.85]">
-                Trending
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-2 h-2 rounded-full bg-[--dyad-connection] animate-pulse" />
+                <span className="text-[10px] tracking-[0.4em] uppercase text-[--dyad-connection] font-mono">
+                  Week of {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+                </span>
+              </div>
+
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em]">
+                <span className="bg-gradient-to-r from-white via-white to-white/60 bg-clip-text text-transparent">
+                  Trending
+                </span>
               </h1>
             </div>
-            <div className="lg:col-span-4 lg:text-right hidden sm:block">
-              <p className="text-[11px] tracking-[0.15em] uppercase leading-relaxed" style={{ color: 'var(--muted)' }}>
-                Billboard 200<br />
-                Hot Reviews<br />
-                New Releases
-              </p>
+
+            <div className="flex items-center gap-6">
+              <div className="hidden sm:flex items-center gap-4 text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-[--dyad-connection]" />
+                  <span className="text-white/40">Billboard 200</span>
+                </div>
+                <div className="w-px h-4 bg-white/10" />
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-[--ccx-node]" />
+                  <span className="text-white/40">Hot Reviews</span>
+                </div>
+                <div className="w-px h-4 bg-white/10" />
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-[--dyad-primary]" />
+                  <span className="text-white/40">New Releases</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main content split */}
-      <section className="border-b border-[--border]">
+      {/* Main Content - Two Column Split */}
+      <section className="relative border-b border-white/5">
         <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20">
-          <div className="grid grid-cols-1 lg:grid-cols-2 sm:border-l sm:border-r border-[--border]">
-            {/* Billboard Chart - 50% width */}
-            <div className="border-r border-[--border]">
-              <div className="px-6 lg:px-8 py-6 border-b border-[--border]">
-                <h2 className="text-xl font-bold tracking-tight">Billboard 200</h2>
-                <p className="text-[11px] text-[--muted] mt-1">Full chart rankings</p>
+          <div className="grid grid-cols-1 lg:grid-cols-2">
+            {/* Billboard Chart */}
+            <div className="lg:border-r border-white/5">
+              <div className="py-6 lg:pr-8 border-b border-white/5">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-[--dyad-connection]/10 border border-[--dyad-connection]/20 flex items-center justify-center">
+                    <span className="text-[--dyad-connection]">↗</span>
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold">Billboard 200</h2>
+                    <p className="text-xs text-white/40">Full chart rankings</p>
+                  </div>
+                </div>
               </div>
 
-              <div className="p-4 lg:p-6">
+              <div className="py-6 lg:pr-8">
                 {trendingAlbums.length === 0 ? (
-                  <p className="text-[--muted] py-8 text-center">No trending albums yet</p>
+                  <p className="text-white/40 py-8 text-center">No trending albums yet</p>
                 ) : (
                   <BillboardList albums={trendingAlbums} />
                 )}
               </div>
             </div>
 
-            {/* Hot Reviews - 50% width */}
+            {/* Hot Reviews */}
             <div>
-              <div className="px-6 lg:px-8 py-6 border-b border-[--border]">
-                <h2 className="text-xl font-bold tracking-tight">Hot Reviews</h2>
-                <p className="text-[11px] text-[--muted] mt-1">Most engaged this week</p>
+              <div className="py-6 lg:pl-8 border-b border-white/5">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-[--ccx-node]/10 border border-[--ccx-node]/20 flex items-center justify-center">
+                    <span className="text-[--ccx-node]">✧</span>
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold">Hot Reviews</h2>
+                    <p className="text-xs text-white/40">Most engaged this week</p>
+                  </div>
+                </div>
               </div>
 
               {trendingReviews.length === 0 ? (
-                <div className="px-6 lg:px-8 py-12 text-center">
-                  <p className="text-[--muted]">No reviews this week yet</p>
+                <div className="py-12 lg:pl-8 text-center">
+                  <p className="text-white/40">No reviews this week yet</p>
                 </div>
               ) : (
-                <div className="divide-y divide-[--border]">
-                  {trendingReviews.map((review) => (
+                <div className="divide-y divide-white/5">
+                  {trendingReviews.slice(0, 15).map((review) => (
                     <Link
                       key={review.id}
                       href={`/album/${review.album.spotifyId}`}
-                      className="block px-6 lg:px-8 py-5 hover:opacity-80 transition-colors group"
+                      className="block py-4 lg:pl-8 hover:bg-white/[0.02] transition-colors group"
                     >
                       <div className="flex gap-4">
-                        <div className="w-14 h-14 bg-[--border] flex-shrink-0 overflow-hidden">
+                        <div className="w-14 h-14 bg-white/5 flex-shrink-0 overflow-hidden">
                           {review.album.coverArtUrl && (
                             <img src={review.album.coverArtUrl} alt="" className="w-full h-full object-cover" />
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-baseline gap-2 mb-1">
-                            <span className="text-[13px] font-semibold truncate group-hover:text-[--muted] transition-colors">
+                            <span className="text-sm font-semibold truncate group-hover:text-[--ccx-node] transition-colors">
                               {review.album.title}
                             </span>
-                            <span className="text-[12px] font-bold tabular-nums flex-shrink-0">
+                            <span className="text-sm font-bold tabular-nums text-[--dyad-connection] flex-shrink-0">
                               {review.rating.toFixed(1)}
                             </span>
                           </div>
-                          <p className="text-[11px] text-[--muted] truncate">{review.album.artistName}</p>
+                          <p className="text-xs text-white/40 truncate">{review.album.artistName}</p>
 
                           {review.text && (
-                            <p className="text-[11px] text-[--muted] mt-2 line-clamp-2 leading-relaxed">
+                            <p className="text-xs text-white/50 mt-2 line-clamp-2 leading-relaxed">
                               {review.text}
                             </p>
                           )}
@@ -171,15 +230,15 @@ export default async function TrendingPage() {
                             ) : (
                               <DefaultAvatar size="xs" />
                             )}
-                            <span className="text-[10px] sm:text-xs text-[--muted]">@{review.user.username}</span>
-                            <span className="text-[10px] sm:text-xs text-[--border]">·</span>
-                            <span className="text-[10px] sm:text-xs text-[--border]">
+                            <span className="text-[10px] text-white/40">@{review.user.username}</span>
+                            <span className="text-[10px] text-white/20">·</span>
+                            <span className="text-[10px] text-white/30">
                               {formatDistanceToNow(new Date(review.createdAt), { addSuffix: true })}
                             </span>
                             {review.likeCount > 0 && (
                               <>
-                                <span className="text-[10px] sm:text-xs text-[--border]">·</span>
-                                <span className="text-[10px] sm:text-xs text-[--muted]">{review.likeCount} likes</span>
+                                <span className="text-[10px] text-white/20">·</span>
+                                <span className="text-[10px] text-[--ccx-node]">{review.likeCount} likes</span>
                               </>
                             )}
                           </div>
@@ -195,61 +254,78 @@ export default async function TrendingPage() {
       </section>
 
       {/* Recent Releases */}
-      <section className="border-b border-[--border]">
-        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20">
-          <div className="lg:grid lg:grid-cols-12 sm:border-l sm:border-r border-[--border]">
-            <div className="hidden lg:flex col-span-1 border-r border-[--border] py-8 flex-col items-start justify-start gap-4">
-              <span className="text-[10px] tracking-[0.3em] uppercase text-[--muted]" style={{ writingMode: 'vertical-rl' as const }}>
-                New
-              </span>
-              <span className="text-4xl lg:text-6xl font-bold text-[--muted]">02</span>
+      <section className="relative border-b border-white/5">
+        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 py-8 lg:py-12">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-[--dyad-primary]/10 border border-[--dyad-primary]/20 flex items-center justify-center">
+                <span className="text-[--dyad-primary]">✦</span>
+              </div>
+              <div>
+                <h2 className="text-lg font-bold">New Releases</h2>
+                <p className="text-xs text-white/40">Albums from the past 30 days</p>
+              </div>
             </div>
-
-            <div className="col-span-12 lg:col-span-11 py-8 sm:py-10 lg:py-14 px-0 sm:px-6 lg:px-8">
-              <h2 className="text-xl font-bold tracking-tight mb-2">Recent Releases</h2>
-              <p className="text-[11px] text-[--muted] mb-8">Albums from the past 30 days</p>
-
-              {recentReleases.length === 0 ? (
-                <p className="text-[--muted]">No recent releases</p>
-              ) : (
-                <div className="album-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-5">
-                  {recentReleases.map((album, index) => (
-                    <Link
-                      key={album.id}
-                      href={`/album/${album.spotifyId}`}
-                      className={`group ${index >= 4 ? 'hidden sm:block' : ''}`}
-                    >
-                      <div className="album-cover aspect-square bg-[--border] overflow-hidden mb-3">
-                        {album.coverArtUrl && (
-                          <img
-                            src={album.coverArtUrl}
-                            alt={album.title}
-                            className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
-                          />
-                        )}
-                      </div>
-                      <p className="text-[12px] font-semibold truncate group-hover:text-[--muted] transition-colors">
-                        {album.title}
-                      </p>
-                      <p className="text-[11px] text-[--muted] truncate">{album.artistName}</p>
-                      <p className="text-[10px] text-[--muted] mt-1">
-                        {new Date(album.releaseDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      </p>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
+            <Link
+              href="/discover?tab=new"
+              className="text-xs text-[--dyad-primary] hover:underline"
+            >
+              View All →
+            </Link>
           </div>
+
+          {recentReleases.length === 0 ? (
+            <p className="text-white/40 text-center py-8">No recent releases</p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8 gap-4">
+              {recentReleases.map((album) => (
+                <Link
+                  key={album.id}
+                  href={`/album/${album.spotifyId}`}
+                  className="group"
+                >
+                  <div className="aspect-square bg-white/5 overflow-hidden mb-2 relative">
+                    {album.coverArtUrl && (
+                      <img
+                        src={album.coverArtUrl}
+                        alt={album.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    )}
+                    {album.averageRating && (
+                      <div className="absolute bottom-0 right-0 px-2 py-1 bg-black/80 backdrop-blur-sm text-xs font-mono text-[--dyad-primary]">
+                        {album.averageRating.toFixed(1)}
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs font-medium truncate group-hover:text-[--dyad-primary] transition-colors">
+                    {album.title}
+                  </p>
+                  <p className="text-[10px] text-white/40 truncate">{album.artistName}</p>
+                  <p className="text-[10px] text-white/30 mt-1">
+                    {album.releaseDate && new Date(album.releaseDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
-      {/* Footer colophon */}
-      <footer className="border-t border-[--border]">
-        <div className="w-full px-6 lg:px-12 xl:px-20 py-8">
-          <p className="text-[10px] tracking-[0.2em] uppercase text-[--border]">
-            WAXFEED · Trending · {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-          </p>
+      {/* Footer */}
+      <footer className="relative">
+        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 py-8">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] tracking-[0.2em] uppercase text-white/20 font-mono">
+              WAXFEED · Trending · {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+            </p>
+            <Link
+              href="/discover"
+              className="text-xs text-white/40 hover:text-[--dyad-primary] transition-colors"
+            >
+              ← Back to Discover
+            </Link>
+          </div>
         </div>
       </footer>
     </div>

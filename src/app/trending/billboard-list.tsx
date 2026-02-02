@@ -22,7 +22,6 @@ interface BillboardListProps {
 export function BillboardList({ albums }: BillboardListProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
-  // Mobile: 18 albums, Desktop: 50 albums
   const mobileCount = 18
   const desktopCount = 50
   const displayedAlbums = isExpanded ? albums : albums.slice(0, desktopCount)
@@ -30,23 +29,16 @@ export function BillboardList({ albums }: BillboardListProps) {
 
   return (
     <div>
-      {/* Mobile Grid Layout - 3 columns, hidden on md+ */}
+      {/* Mobile Grid Layout - 3 columns */}
       <div className="md:hidden">
-        <div className="album-grid grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           {displayedAlbums.slice(0, isExpanded ? albums.length : mobileCount).map((album) => (
             <Link
               key={album.id}
               href={`/album/${album.spotifyId}`}
               className="group block"
             >
-              {/* Album artwork with subtle border */}
-              <div
-                className="album-cover relative aspect-square overflow-hidden"
-                style={{
-                  border: '1px solid var(--border)',
-                  background: 'var(--surface)'
-                }}
-              >
+              <div className="relative aspect-square overflow-hidden bg-white/5">
                 {album.coverArtUrl && (
                   <img
                     src={album.coverArtUrlLarge || album.coverArtUrl}
@@ -55,45 +47,32 @@ export function BillboardList({ albums }: BillboardListProps) {
                   />
                 )}
 
-                {/* Rating badge - bottom right, always visible */}
+                {/* Rank badge - gold for top 10 */}
+                <div
+                  className={`absolute top-0 left-0 px-1.5 py-0.5 text-[10px] font-bold ${
+                    (album.billboardRank || 0) <= 10
+                      ? 'bg-[--dyad-connection] text-black'
+                      : 'bg-black/80 text-white/80'
+                  }`}
+                >
+                  #{album.billboardRank}
+                </div>
+
+                {/* Rating badge */}
                 {album.averageRating !== null && (
-                  <div
-                    className="absolute bottom-0 right-0 px-1.5 py-0.5"
-                    style={{
-                      background: 'var(--foreground)',
-                      color: 'var(--background)'
-                    }}
-                  >
-                    <span className="text-[10px] font-bold tabular-nums tracking-tight">
+                  <div className="absolute bottom-0 right-0 px-1.5 py-0.5 bg-black/80 backdrop-blur-sm">
+                    <span className="text-[10px] font-mono text-[--dyad-primary]">
                       {album.averageRating.toFixed(1)}
                     </span>
                   </div>
                 )}
               </div>
 
-              {/* Info section with prominent rank */}
               <div className="mt-2">
-                {/* Rank - large, bold, editorial style */}
-                <div
-                  className="text-[10px] font-bold tracking-[0.15em] uppercase mb-0.5"
-                  style={{ color: 'var(--muted)' }}
-                >
-                  #{album.billboardRank}
-                </div>
-
-                {/* Title */}
-                <p
-                  className="text-[11px] font-semibold leading-tight truncate"
-                  style={{ color: 'var(--foreground)' }}
-                >
+                <p className="text-[11px] font-semibold leading-tight truncate group-hover:text-[--dyad-connection] transition-colors">
                   {album.title}
                 </p>
-
-                {/* Artist */}
-                <p
-                  className="text-[10px] truncate mt-0.5"
-                  style={{ color: 'var(--muted)' }}
-                >
+                <p className="text-[10px] text-white/40 truncate mt-0.5">
                   {album.artistName}
                 </p>
               </div>
@@ -104,11 +83,7 @@ export function BillboardList({ albums }: BillboardListProps) {
         {albums.length > mobileCount && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="w-full mt-6 py-4 flex items-center justify-center gap-2 text-xs font-bold tracking-[0.1em] uppercase active:opacity-70 transition-opacity min-h-[52px]"
-            style={{
-              background: 'var(--foreground)',
-              color: 'var(--background)'
-            }}
+            className="w-full mt-6 py-4 flex items-center justify-center gap-2 text-xs font-bold tracking-[0.1em] uppercase active:opacity-70 transition-all min-h-[52px] bg-[--dyad-connection] text-black"
           >
             <span>{isExpanded ? "Show Less" : `View All ${albums.length}`}</span>
             <svg
@@ -124,72 +99,52 @@ export function BillboardList({ albums }: BillboardListProps) {
         )}
       </div>
 
-      {/* Desktop Grid Layout - 5 columns, hidden on mobile */}
+      {/* Desktop Grid Layout - 5 columns */}
       <div className="hidden md:block">
-        <div className="album-grid grid grid-cols-5 gap-4">
+        <div className="grid grid-cols-5 gap-4">
           {displayedAlbums.slice(0, desktopCount).map((album) => (
             <Link
               key={album.id}
               href={`/album/${album.spotifyId}`}
               className="group block"
             >
-              {/* Album artwork */}
-              <div
-                className="album-cover relative aspect-square overflow-hidden"
-                style={{
-                  border: '1px solid var(--border)',
-                  background: 'var(--surface)'
-                }}
-              >
+              <div className="relative aspect-square overflow-hidden bg-white/5">
                 {album.coverArtUrl && (
                   <img
                     src={album.coverArtUrlLarge || album.coverArtUrl}
                     alt=""
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 )}
 
-                {/* Rank badge - top left */}
+                {/* Rank badge - gold styling for top 10 */}
                 <div
-                  className="absolute top-0 left-0 px-2 py-1"
-                  style={{
-                    background: 'var(--foreground)',
-                    color: 'var(--background)'
-                  }}
+                  className={`absolute top-0 left-0 px-2 py-1 text-xs font-bold ${
+                    (album.billboardRank || 0) <= 10
+                      ? 'bg-[--dyad-connection] text-black'
+                      : (album.billboardRank || 0) <= 50
+                        ? 'bg-white/90 text-black'
+                        : 'bg-black/80 text-white/80'
+                  }`}
                 >
-                  <span className="text-xs font-bold tabular-nums">
-                    #{album.billboardRank}
-                  </span>
+                  #{album.billboardRank}
                 </div>
 
-                {/* Rating badge - bottom right */}
+                {/* Rating badge */}
                 {album.averageRating !== null && (
-                  <div
-                    className="absolute bottom-0 right-0 px-2 py-1"
-                    style={{
-                      background: 'var(--foreground)',
-                      color: 'var(--background)'
-                    }}
-                  >
-                    <span className="text-xs font-bold tabular-nums">
+                  <div className="absolute bottom-0 right-0 px-2 py-1 bg-black/80 backdrop-blur-sm">
+                    <span className="text-xs font-mono text-[--dyad-primary]">
                       {album.averageRating.toFixed(1)}
                     </span>
                   </div>
                 )}
               </div>
 
-              {/* Info section */}
               <div className="mt-2">
-                <p
-                  className="text-sm font-semibold leading-tight truncate group-hover:underline"
-                  style={{ color: 'var(--foreground)' }}
-                >
+                <p className="text-sm font-semibold leading-tight truncate group-hover:text-[--dyad-connection] transition-colors">
                   {album.title}
                 </p>
-                <p
-                  className="text-xs truncate mt-0.5"
-                  style={{ color: 'var(--muted)' }}
-                >
+                <p className="text-xs text-white/40 truncate mt-0.5">
                   {album.artistName}
                 </p>
               </div>
@@ -200,12 +155,7 @@ export function BillboardList({ albums }: BillboardListProps) {
         {hasMore && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="w-full mt-6 py-3 flex items-center justify-center gap-2 text-xs font-bold tracking-[0.1em] uppercase transition-colors hover:border-[--foreground] hover:text-[--foreground]"
-            style={{
-              border: '1px solid var(--border)',
-              color: 'var(--muted)',
-              background: 'transparent'
-            }}
+            className="w-full mt-6 py-3 flex items-center justify-center gap-2 text-xs font-bold tracking-[0.1em] uppercase transition-all border border-white/10 hover:border-[--dyad-connection] hover:text-[--dyad-connection] text-white/50"
           >
             <span>{isExpanded ? "Show Less" : `Show All ${albums.length}`}</span>
             <svg
