@@ -151,12 +151,9 @@ export async function POST(request: NextRequest) {
     }
     console.error('Error creating payment intent:', error)
 
-    // Return more specific Stripe errors in development
+    // Return actual error message for debugging
     if (error instanceof Error) {
-      const stripeError = error as { type?: string; code?: string; message?: string }
-      if (stripeError.type === 'StripeInvalidRequestError' || stripeError.code) {
-        return errorResponse(stripeError.message || 'Stripe error', 400)
-      }
+      return errorResponse(error.message, 500)
     }
 
     return errorResponse('Failed to create payment intent', 500)
