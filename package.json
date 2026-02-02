@@ -59,8 +59,6 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "better-sqlite3": "^12.5.0",
-    "epub2": "^3.0.2",
-    "epubjs": "^0.3.93",
     "eslint": "^9",
     "eslint-config-next": "16.0.4",
     "puppeteer": "^24.36.1",
