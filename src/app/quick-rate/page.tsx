@@ -414,8 +414,8 @@ export default function QuickRatePage() {
     return (
       <div className="min-h-[80vh] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-2 border-[--border] border-t-[--accent-primary] animate-spin" />
-          <span className="text-xs tracking-[0.2em] uppercase text-[--muted]">Loading</span>
+          <div className="w-10 h-10 border-2 border-[var(--border)] border-t-[var(--accent-primary)] animate-spin" />
+          <span className="text-xs tracking-[0.2em] uppercase text-[var(--muted)]">Loading</span>
         </div>
       </div>
     )
@@ -433,7 +433,7 @@ export default function QuickRatePage() {
         <div className="flex items-center justify-between mb-3 flex-shrink-0">
           <div className="min-w-0 flex-1">
             <h1 className="text-lg sm:text-xl font-bold tracking-tighter">Quick Rate</h1>
-            <p className="text-[10px] sm:text-xs text-[--muted] truncate">
+            <p className="text-[10px] sm:text-xs text-[var(--muted)] truncate">
               Build your TasteID. Skip what you haven't heard.
             </p>
           </div>
@@ -451,7 +451,7 @@ export default function QuickRatePage() {
         <div className="mb-3 p-2 border border-[--border] bg-[--surface] flex-shrink-0">
           {!isStatsLoaded ? (
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 border-2 border-[--border] border-t-[--accent-primary] rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-[--border] border-t-[var(--accent-primary)] rounded-full animate-spin" />
               <span className="text-sm text-[--muted]">Loading your progress...</span>
             </div>
           ) : (
@@ -468,14 +468,14 @@ export default function QuickRatePage() {
                     </span>
                   ) : (
                     <span className="text-white">
-                      <span className="font-bold text-[--accent-primary]">{remaining}</span> more to unlock
+                      <span className="font-bold text-[var(--accent-primary)]">{remaining}</span> more to unlock
                     </span>
                   )}
                   
                   {/* Session count */}
                   {sessionRatedCount > 0 && (
                     <span className="text-[--muted]">
-                      <span className="text-[--accent-primary] font-bold">+{sessionRatedCount}</span> this session
+                      <span className="text-[var(--accent-primary)] font-bold">+{sessionRatedCount}</span> this session
                     </span>
                   )}
                 </div>
@@ -584,7 +584,7 @@ export default function QuickRatePage() {
         {/* Content */}
         {loadingAlbums && albums.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center">
-            <div className="w-10 h-10 border-2 border-[--border] border-t-[--accent-primary] animate-spin mb-4" />
+            <div className="w-10 h-10 border-2 border-[--border] border-t-[var(--accent-primary)] animate-spin mb-4" />
             <span className="text-xs tracking-[0.2em] uppercase text-[--muted]">Loading albums</span>
           </div>
         ) : currentAlbum ? (
@@ -646,7 +646,7 @@ export default function QuickRatePage() {
                             disabled={!track.previewUrl}
                             className={`w-7 h-7 flex items-center justify-center border transition-colors ${
                               playingTrackId === track.id
-                                ? 'border-[--accent-primary] bg-[--accent-primary]/20 text-[--accent-primary]'
+                                ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]'
                                 : 'border-[--muted-faint] text-[--muted] hover:border-[--muted]'
                             } ${!track.previewUrl ? 'opacity-30' : ''}`}
                             title={track.name}
@@ -675,7 +675,7 @@ export default function QuickRatePage() {
                 <div className="flex items-center gap-2 mb-1.5">
                   <span className="text-[9px] text-[--muted] uppercase tracking-wider">Vibes</span>
                   {selectedDescriptors.length > 0 && (
-                    <span className="text-[9px] text-[--accent-primary] font-bold">{selectedDescriptors.length}/5</span>
+                    <span className="text-[9px] text-[var(--accent-primary)] font-bold">{selectedDescriptors.length}/5</span>
                   )}
                 </div>
                 <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-3 px-3 scrollbar-hide">
@@ -689,10 +689,10 @@ export default function QuickRatePage() {
                         disabled={submitting || atMax}
                         className={`flex-shrink-0 text-[10px] px-2.5 py-1.5 uppercase tracking-wider transition-all whitespace-nowrap ${
                           isSelected
-                            ? 'bg-[--accent-primary] text-black border border-[--accent-primary] font-bold'
+                            ? 'bg-[var(--accent-primary)] text-black border border-[var(--accent-primary)] font-bold'
                             : atMax
                               ? 'border border-[--muted-faint] text-[--muted]/40'
-                              : 'border border-[--muted-faint] text-[--muted] active:border-[--accent-primary]'
+                              : 'border border-[--muted-faint] text-[--muted] active:border-[var(--accent-primary)]'
                         }`}
                       >
                         {descriptor.label}
@@ -723,7 +723,7 @@ export default function QuickRatePage() {
                   <button
                     onClick={submitRating}
                     disabled={submitting}
-                    className="flex-1 py-3 font-bold uppercase tracking-wider text-sm transition-colors disabled:opacity-50 bg-[--accent-primary] text-black hover:bg-[--accent-hover]"
+                    className="flex-1 py-3 font-bold uppercase tracking-wider text-sm transition-colors disabled:opacity-50 bg-[var(--accent-primary)] text-black hover:bg-[var(--accent-hover)]"
                   >
                     {submitting ? 'Saving...' : 'Rate'}
                   </button>
@@ -797,7 +797,7 @@ export default function QuickRatePage() {
                     </p>
                     {loadingTracks ? (
                       <div className="flex items-center gap-2 text-[--muted] text-xs py-2">
-                        <div className="w-4 h-4 border-2 border-[--border] border-t-[--accent-primary] rounded-full animate-spin" />
+                        <div className="w-4 h-4 border-2 border-[--border] border-t-[var(--accent-primary)] rounded-full animate-spin" />
                         Loading...
                       </div>
                     ) : albumTracks.length > 0 ? (
@@ -809,12 +809,12 @@ export default function QuickRatePage() {
                             disabled={!track.previewUrl}
                             className={`w-full flex items-center gap-3 p-2 text-left transition-colors ${
                               playingTrackId === track.id
-                                ? 'bg-[--accent-primary]/20 border border-[--accent-primary]'
+                                ? 'bg-[var(--accent-primary)]/20 border border-[var(--accent-primary)]'
                                 : 'hover:bg-[--surface-raised] border border-transparent'
                             } ${!track.previewUrl ? 'opacity-40 cursor-not-allowed' : ''}`}
                           >
                             <div className={`w-8 h-8 flex items-center justify-center border ${
-                              playingTrackId === track.id ? 'border-[--accent-primary] text-[--accent-primary]' : 'border-[--border] text-[--muted]'
+                              playingTrackId === track.id ? 'border-[var(--accent-primary)] text-[var(--accent-primary)]' : 'border-[--border] text-[--muted]'
                             }`}>
                               {playingTrackId === track.id ? (
                                 <svg className="w-4 h-4 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
@@ -849,7 +849,7 @@ export default function QuickRatePage() {
                         <span className="text-[--muted]">(optional)</span>
                       </p>
                       {selectedDescriptors.length > 0 && (
-                        <span className="text-[10px] text-[--accent-primary]">
+                        <span className="text-[10px] text-[var(--accent-primary)]">
                           {selectedDescriptors.length} selected
                         </span>
                       )}
@@ -866,10 +866,10 @@ export default function QuickRatePage() {
                             title={descriptor.description}
                             className={`text-[10px] px-3 py-1.5 min-h-[32px] uppercase tracking-wider transition-all duration-150 ${
                               isSelected
-                                ? 'bg-[--accent-primary] text-black border border-[--accent-primary] font-bold'
+                                ? 'bg-[var(--accent-primary)] text-black border border-[var(--accent-primary)] font-bold'
                                 : atMax
                                   ? 'border border-[--muted-faint] text-[--muted]/50 cursor-not-allowed'
-                                  : 'border border-[--muted-faint] text-[--muted] hover:border-[--accent-hover] hover:text-[--accent-hover]'
+                                  : 'border border-[--muted-faint] text-[--muted] hover:border-[var(--accent-hover)] hover:text-[var(--accent-hover)]'
                             } disabled:opacity-50`}
                           >
                             {descriptor.label}
@@ -899,7 +899,7 @@ export default function QuickRatePage() {
                     <button
                       onClick={submitRating}
                       disabled={submitting}
-                      className="flex-1 py-3 min-h-[48px] font-bold uppercase tracking-wider text-sm transition-colors disabled:opacity-50 bg-[--accent-primary] text-black hover:bg-[--accent-hover]"
+                      className="flex-1 py-3 min-h-[48px] font-bold uppercase tracking-wider text-sm transition-colors disabled:opacity-50 bg-[var(--accent-primary)] text-black hover:bg-[var(--accent-hover)]"
                     >
                       {submitting ? 'Saving...' : 'Rate'}
                     </button>
@@ -917,7 +917,7 @@ export default function QuickRatePage() {
             <p className="text-[--muted] mb-4">No more albums available right now.</p>
             <button
               onClick={() => router.push('/')}
-              className="bg-[--accent-primary] text-black px-8 py-4 font-bold text-lg hover:bg-[--accent-hover] transition-colors"
+              className="bg-[var(--accent-primary)] text-black px-8 py-4 font-bold text-lg hover:bg-[var(--accent-hover)] transition-colors"
             >
               Back to Home
             </button>
@@ -932,7 +932,7 @@ export default function QuickRatePage() {
             </p>
             <button
               onClick={() => router.push('/tasteid/me')}
-              className="text-[--accent-primary] text-sm hover:underline"
+              className="text-[var(--accent-primary)] text-sm hover:underline"
             >
               View Your TasteID →
             </button>
