@@ -623,7 +623,7 @@ export default async function Home() {
               </div>
 
               <div className="space-y-0 flex-1">
-                {recentReviews.slice(0, 12).map((review) => (
+                {recentReviews.slice(0, 18).map((review) => (
                   <Link
                     key={review.id}
                     href={`/album/${review.album.spotifyId}`}
