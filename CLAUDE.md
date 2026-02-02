@@ -18,8 +18,6 @@
 ### Working Style
 - Knows what he's doing. Trust his visual feedback immediately.
 - Don't second-guess when he says something is broken - act on it.
-- He pays for this tool. Don't waste his time with lazy debugging.
-
 ---
 
 ## Project: WAXFEED
@@ -220,6 +218,36 @@ SPOTIFY_CLIENT_SECRET=c0db665ecf584e739dd20be206a7e947
 ### No Guess URLs
 - Never generate or guess URLs for the user
 - Only use URLs provided by user or from known sources
+
+---
+
+## Stripe Integration
+
+### MCP Server
+Use the Stripe MCP plugin for debugging payment issues:
+- Plugin enabled in `.claude/settings.json`
+- Skills: `stripe:explain-error`, `stripe:test-cards`, `stripe:stripe-best-practices`
+
+### Environment Variables
+**Stored in `.env` (gitignored) and Vercel Production:**
+- `STRIPE_SECRET_KEY` - Live secret key (`sk_live_51St5aA...`)
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` - Live publishable key (`pk_live_51St5aA...`)
+- `STRIPE_WEBHOOK_SECRET` - Webhook signing secret
+- `STRIPE_WAX_*_PRICE_ID` - Product price IDs for Wax Pax
+
+**Keys are saved in `.env` file (gitignored, safe).**
+
+### Key Files
+- `src/lib/stripe.ts` - Stripe config, pricing tiers, Wax Pax definitions
+- `src/app/api/stripe/payment-intent/route.ts` - Creates payment intents
+- `src/app/api/stripe/webhook/route.ts` - Handles Stripe webhooks
+- `src/components/CheckoutModal.tsx` - Embedded checkout UI
+- `src/components/PaymentForm.tsx` - Stripe Elements form
+
+### Important
+- **Never mix test and live keys** - both must match environment
+- Test keys (`sk_test_`, `pk_test_`) only work with test card numbers
+- Live keys (`sk_live_`, `pk_live_`) process real payments
 
 ---
 

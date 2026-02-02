@@ -266,51 +266,156 @@ export default async function Home() {
                     )}
                   </h1>
                   
-                  {/* TasteID Progress Bar - Always visible for engagement */}
-                  <div className="mb-6 p-4 border border-[var(--border)] bg-[var(--surface)] rounded-sm">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-gradient-to-br from-[#ff6b6b] to-[#ffd700] rounded-sm flex items-center justify-center">
-                          <svg className="w-3.5 h-3.5 text-black" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M10 2L3 7l7 5 7-5-7-5zM3 17l7 5 7-5M3 12l7 5 7-5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                  {/* TasteID Progress - Vinyl Record Design */}
+                  <div className="mb-6">
+                    <div className="flex items-start gap-6">
+                      {/* Vinyl Record Progress Visualization */}
+                      <div className="relative flex-shrink-0">
+                        {/* Outer glow based on progress */}
+                        <div
+                          className="absolute -inset-2 blur-xl opacity-40 rounded-full transition-all duration-1000"
+                          style={{
+                            background: userStatus.hasTasteID
+                              ? `conic-gradient(from 0deg, #ffd700, #00ff88, #00bfff, #ff6b6b, #ffd700)`
+                              : `conic-gradient(from -90deg, #ffd700 ${userStatus.tasteIDProgress * 3.6}deg, transparent ${userStatus.tasteIDProgress * 3.6}deg)`
+                          }}
+                        />
+
+                        {/* Vinyl record base */}
+                        <div className="relative w-28 h-28">
+                          {/* Outer ring - progress track */}
+                          <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
+                            {/* Background track */}
+                            <circle
+                              cx="50" cy="50" r="46"
+                              fill="none"
+                              stroke="rgba(255,255,255,0.08)"
+                              strokeWidth="6"
+                            />
+                            {/* Progress arc */}
+                            <circle
+                              cx="50" cy="50" r="46"
+                              fill="none"
+                              stroke="url(#progressGradient)"
+                              strokeWidth="6"
+                              strokeLinecap="round"
+                              strokeDasharray={`${(userStatus.hasTasteID ? 100 : userStatus.tasteIDProgress) * 2.89} 289`}
+                              className="transition-all duration-1000 ease-out"
+                            />
+                            {/* Gradient definition */}
+                            <defs>
+                              <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stopColor="#ffd700" />
+                                <stop offset="50%" stopColor="#00ff88" />
+                                <stop offset="100%" stopColor="#00bfff" />
+                              </linearGradient>
+                            </defs>
                           </svg>
+
+                          {/* Inner vinyl grooves */}
+                          <div className="absolute inset-3 rounded-full bg-[#0a0a0a] border border-white/5">
+                            {/* Groove lines */}
+                            <div className="absolute inset-2 rounded-full border border-white/[0.03]" />
+                            <div className="absolute inset-4 rounded-full border border-white/[0.03]" />
+                            <div className="absolute inset-6 rounded-full border border-white/[0.03]" />
+
+                            {/* Center label */}
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div
+                                className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500"
+                                style={{
+                                  background: userStatus.hasTasteID
+                                    ? 'linear-gradient(135deg, #ffd700 0%, #ff6b6b 100%)'
+                                    : 'linear-gradient(135deg, #333 0%, #1a1a1a 100%)'
+                                }}
+                              >
+                                <span className={`text-xs font-black ${userStatus.hasTasteID ? 'text-black' : 'text-white/60'}`}>
+                                  {userStatus.hasTasteID ? '✓' : userStatus.tasteIDProgress + '%'}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Spinning highlight when complete */}
+                          {userStatus.hasTasteID && (
+                            <div className="absolute inset-0 rounded-full overflow-hidden">
+                              <div
+                                className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent animate-spin"
+                                style={{ animationDuration: '3s' }}
+                              />
+                            </div>
+                          )}
                         </div>
-                        <span className="text-xs font-bold uppercase tracking-wider">TasteID Progress</span>
                       </div>
-                      <span className="text-xs font-bold text-[--accent-primary]">
-                        {userStatus.hasTasteID ? '100%' : `${userStatus.tasteIDProgress}%`}
-                      </span>
+
+                      {/* Progress Details */}
+                      <div className="flex-1 pt-1">
+                        {/* Tier badges track */}
+                        <div className="flex items-center gap-1 mb-3">
+                          {[
+                            { min: 0, label: 'L', color: '#666', name: 'Locked' },
+                            { min: 20, label: '1', color: '#ffd700', name: 'Emerging' },
+                            { min: 50, label: '2', color: '#00ff88', name: 'Developing' },
+                            { min: 100, label: '3', color: '#00bfff', name: 'Established' },
+                            { min: 200, label: '4', color: '#ff6b6b', name: 'Expert' },
+                          ].map((tier, i) => {
+                            const isActive = userStatus.reviewCount >= tier.min
+                            const isCurrent = i < 4
+                              ? userStatus.reviewCount >= tier.min && userStatus.reviewCount < [20, 50, 100, 200, Infinity][i + 1]
+                              : userStatus.reviewCount >= 200
+                            return (
+                              <div
+                                key={tier.label}
+                                className={`relative flex items-center justify-center w-7 h-7 rounded-full text-[10px] font-black transition-all duration-300 ${
+                                  isCurrent ? 'scale-110 ring-2 ring-offset-1 ring-offset-black' : ''
+                                }`}
+                                style={{
+                                  backgroundColor: isActive ? tier.color : 'rgba(255,255,255,0.05)',
+                                  color: isActive ? '#000' : 'rgba(255,255,255,0.3)',
+                                  '--tw-ring-color': isCurrent ? tier.color : 'transparent'
+                                } as React.CSSProperties}
+                                title={tier.name}
+                              >
+                                {tier.label}
+                              </div>
+                            )
+                          })}
+                          <span className="text-[10px] text-[var(--muted)] ml-2">+4 more</span>
+                        </div>
+
+                        {/* Current status */}
+                        <div className="space-y-1">
+                          <p className="text-sm font-bold">
+                            {userStatus.hasTasteID ? (
+                              <span className="bg-gradient-to-r from-[#ffd700] via-[#00ff88] to-[#00bfff] bg-clip-text text-transparent">
+                                TasteID Active
+                              </span>
+                            ) : (
+                              <span>{Math.max(0, 20 - userStatus.reviewCount)} ratings to unlock</span>
+                            )}
+                          </p>
+                          <p className="text-xs text-[var(--muted)]">
+                            {userStatus.hasTasteID
+                              ? 'Every rating deepens your profile accuracy'
+                              : `${userStatus.reviewCount} of 20 minimum rated`
+                            }
+                          </p>
+                        </div>
+
+                        {/* Quick action */}
+                        {!userStatus.hasTasteID && (
+                          <Link
+                            href="/quick-rate"
+                            className="inline-flex items-center gap-2 mt-3 px-3 py-1.5 bg-[#ffd700] text-black text-[10px] font-bold uppercase tracking-wider hover:bg-[#ffe44d] transition-all hover:scale-105"
+                          >
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                            </svg>
+                            Rate Now
+                          </Link>
+                        )}
+                      </div>
                     </div>
-                    
-                    {/* Progress Bar */}
-                    <div className="h-2.5 bg-[var(--border)] overflow-hidden rounded-full mb-3">
-                      <div 
-                        className="h-full bg-gradient-to-r from-[#ff6b6b] via-[#ffd700] to-[#00ff88] transition-all duration-700 ease-out rounded-full"
-                        style={{ width: `${userStatus.hasTasteID ? 100 : userStatus.tasteIDProgress}%` }}
-                      />
-                    </div>
-                    
-                    {/* Progress Milestones */}
-                    <div className="flex justify-between text-[10px] text-[var(--muted)] mb-2">
-                      <span className={userStatus.reviewCount >= 5 ? 'text-[--accent-primary]' : ''}>5 ratings</span>
-                      <span className={userStatus.reviewCount >= 10 ? 'text-[--accent-primary]' : ''}>10 ratings</span>
-                      <span className={userStatus.reviewCount >= 25 ? 'text-[#00ff88]' : ''}>25 ratings</span>
-                    </div>
-                    
-                    {/* Status Message */}
-                    <p className="text-xs text-[var(--muted)]">
-                      {userStatus.hasTasteID ? (
-                        <span className="text-[#00ff88]">TasteID Complete! Your musical identity is established.</span>
-                      ) : userStatus.tasteIDProgress < 20 ? (
-                        <>Start your journey! Rate <span className="text-[--accent-primary] font-medium">{25 - userStatus.reviewCount}</span> more albums to unlock your TasteID.</>
-                      ) : userStatus.tasteIDProgress < 40 ? (
-                        <>Nice start! Your taste profile is forming. <span className="text-[--accent-primary] font-medium">{25 - userStatus.reviewCount}</span> to go.</>
-                      ) : userStatus.tasteIDProgress < 80 ? (
-                        <>Making progress! Your musical identity is taking shape. <span className="text-[--accent-primary] font-medium">{25 - userStatus.reviewCount}</span> more.</>
-                      ) : (
-                        <>Almost there! Just <span className="text-[--accent-primary] font-medium">{25 - userStatus.reviewCount}</span> more ratings to complete your TasteID!</>
-                      )}
-                    </p>
                   </div>
                   
                   <div className="flex flex-wrap gap-2">
