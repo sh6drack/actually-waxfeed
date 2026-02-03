@@ -1,6 +1,7 @@
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import Google from "next-auth/providers/google"
+import GitHub from "next-auth/providers/github"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "./prisma"
 import bcrypt from "bcryptjs"
@@ -42,6 +43,16 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    })
+  )
+}
+
+// Only add GitHub if credentials are present
+if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+  providers.push(
+    GitHub({
+      clientId: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
     })
   )
 }
@@ -106,22 +117,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   trustHost: true,
   callbacks: {
-    // Handle account linking - if user signs in with Google but already has an email account, link them
+    // Handle account linking - if user signs in with OAuth but already has an email account, link them
     async signIn({ user, account }) {
-      if (account?.provider === "google" && user.email) {
+      if ((account?.provider === "google" || account?.provider === "github") && user.email) {
         const existingUser = await prisma.user.findUnique({
           where: { email: user.email },
           include: { accounts: true },
         })
 
         if (existingUser) {
-          // Check if this Google account is already linked
-          const hasGoogleAccount = existingUser.accounts.some(
-            (acc) => acc.provider === "google"
+          // Check if this OAuth account is already linked
+          const hasOAuthAccount = existingUser.accounts.some(
+            (acc) => acc.provider === account.provider
           )
 
-          if (!hasGoogleAccount) {
-            // Link the Google account to the existing user
+          if (!hasOAuthAccount) {
+            // Link the OAuth account to the existing user
             await prisma.account.create({
               data: {
                 userId: existingUser.id,
@@ -137,7 +148,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               },
             })
 
-            // Update user image from Google if they don't have one
+            // Update user image from OAuth if they don't have one
             if (!existingUser.image && user.image) {
               await prisma.user.update({
                 where: { id: existingUser.id },
