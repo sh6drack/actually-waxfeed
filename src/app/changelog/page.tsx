@@ -8,10 +8,34 @@ export const metadata: Metadata = {
 
 const CHANGELOG_ENTRIES = [
   {
+    version: "2.3",
+    codename: "Gateway",
+    date: "2026-02-03",
+    highlight: true,
+    summary: "More ways to sign in, better account security.",
+    changes: [
+      {
+        type: "feature" as const,
+        title: "GitHub Login",
+        description: "Sign in with your GitHub account for faster access.",
+      },
+      {
+        type: "feature" as const,
+        title: "Account Linking",
+        description: "Multiple sign-in methods automatically link to one account.",
+      },
+      {
+        type: "enhancement" as const,
+        title: "Login Security",
+        description: "Rate limiting protects against brute force attempts.",
+      },
+    ],
+  },
+  {
     version: "2.2",
     codename: "Clarity",
     date: "2026-02-03",
-    highlight: true,
+    highlight: false,
     summary: "Accessibility improvements and visual polish.",
     changes: [
       {
@@ -310,7 +334,7 @@ export default function ChangelogPage() {
                 waxfeed
               </span>
               <span className="font-mono text-[10px] text-[var(--accent-primary)]">
-                2.2
+                2.3
               </span>
             </div>
             <span className="text-xs text-[--muted]">
