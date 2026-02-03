@@ -8,10 +8,39 @@ export const metadata: Metadata = {
 
 const CHANGELOG_ENTRIES = [
   {
+    version: "2.2",
+    codename: "Clarity",
+    date: "2026-02-03",
+    highlight: true,
+    summary: "Accessibility improvements and visual polish.",
+    changes: [
+      {
+        type: "enhancement" as const,
+        title: "WCAG AA Compliance",
+        description: "Improved color contrast across the platform to meet accessibility standards.",
+      },
+      {
+        type: "enhancement" as const,
+        title: "Profile Social Links",
+        description: "Redesigned social links with platform icons and brand hover colors.",
+      },
+      {
+        type: "enhancement" as const,
+        title: "Image Performance",
+        description: "Added lazy loading to album grids for faster page loads.",
+      },
+      {
+        type: "fix" as const,
+        title: "Heading Hierarchy",
+        description: "Fixed heading structure for improved screen reader navigation.",
+      },
+    ],
+  },
+  {
     version: "2.1",
     codename: "Cognitive",
     date: "2026-02-01",
-    highlight: true,
+    highlight: false,
     summary: "Smarter taste intelligence that learns how you listen.",
     changes: [
       {
@@ -281,7 +310,7 @@ export default function ChangelogPage() {
                 waxfeed
               </span>
               <span className="font-mono text-[10px] text-[var(--accent-primary)]">
-                2.1
+                2.2
               </span>
             </div>
             <span className="text-xs text-[--muted]">
