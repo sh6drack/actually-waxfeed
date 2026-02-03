@@ -268,8 +268,8 @@ export function HotTakeCard({ hotTake, onVote, compact = false }: HotTakeCardPro
               disabled={isVoting}
               className={`py-4 font-bold text-sm tracking-wide transition-all border ${
                 localVote === "disagree"
-                  ? "bg-[#ff3b3b] text-white border-[#ff3b3b]"
-                  : "bg-transparent text-[--foreground] border-[--border] hover:border-[#ff3b3b]"
+                  ? "bg-[#d32f2f] text-white border-[#d32f2f]"
+                  : "bg-transparent text-[--foreground] border-[--border] hover:border-[#d32f2f]"
               }`}
             >
               <span className="block text-2xl mb-1">{localDisagree}</span>

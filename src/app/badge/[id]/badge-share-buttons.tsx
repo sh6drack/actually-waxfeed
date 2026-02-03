@@ -40,7 +40,7 @@ export function BadgeShareButtons({ badgeId, albumTitle, label }: BadgeShareButt
         href={shareUrl ? `https://twitter.com/intent/tweet?text=${tweetText}&url=${tweetUrl}` : "#"}
         target="_blank"
         rel="noopener noreferrer"
-        className="px-5 py-2.5 bg-[#1DA1F2] text-white text-sm hover:bg-[#1a8cd8] transition-colors"
+        className="px-5 py-2.5 bg-black text-white text-sm hover:bg-neutral-800 transition-colors"
         onClick={(e) => {
           if (!shareUrl) e.preventDefault()
         }}

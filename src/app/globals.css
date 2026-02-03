@@ -9,8 +9,8 @@ html.dark {
   --background: #0a0a0a;
   --foreground: #ededed;
   --muted: #888888;
-  --muted-dim: #666666;
-  --muted-faint: #444444;
+  --muted-dim: #8a8a8a;
+  --muted-faint: #6b6b6b;
   --border: #222222;
   --border-dim: #333333;
   --surface: #111111;
@@ -46,8 +46,8 @@ html.light {
   --background: #f5f5f0;
   --foreground: #1a1a1a;
   --muted: #5a5a5a;
-  --muted-dim: #777777;
-  --muted-faint: #999999;
+  --muted-dim: #595959;
+  --muted-faint: #757575;
   --border: #d5d5d0;
   --border-dim: #c5c5c0;
   --surface: #eaeae5;

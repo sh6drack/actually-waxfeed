@@ -439,7 +439,7 @@ export default async function Home() {
                     </Link>
                     <Link
                       href={`/u/${userStatus.username}/tasteid`}
-                      className="px-4 py-2.5 bg-[#ff6b6b] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#ff8585] transition-all hover:scale-105"
+                      className="px-4 py-2.5 bg-[#ff6b6b] text-black text-xs font-bold uppercase tracking-wider hover:bg-[#ff8585] transition-all hover:scale-105"
                     >
                       TasteID
                     </Link>
@@ -449,7 +449,7 @@ export default async function Home() {
                 {/* Right - Recent Activity */}
                 <div className="border border-[var(--border)] p-4">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xs tracking-[0.2em] uppercase text-[var(--muted)]">Your Recent Ratings</h3>
+                    <h2 className="text-xs tracking-[0.2em] uppercase text-[var(--muted)]">Your Recent Ratings</h2>
                     <Link href={`/u/${userStatus.username}`} className="text-[10px] tracking-[0.15em] uppercase text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
                       View All →
                     </Link>
@@ -465,7 +465,7 @@ export default async function Home() {
                         >
                           <div className="w-10 h-10 flex-shrink-0 bg-[var(--surface)]">
                             {review.album.coverArtUrl && (
-                              <img src={review.album.coverArtUrl} alt="" className="w-full h-full object-cover" />
+                              <img src={review.album.coverArtUrl} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -562,7 +562,7 @@ export default async function Home() {
                     </Link>
                     <Link
                       href="/signup"
-                      className="px-4 py-2.5 bg-[#ff6b6b] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#ff8585] transition-all hover:scale-105"
+                      className="px-4 py-2.5 bg-[#ff6b6b] text-black text-xs font-bold uppercase tracking-wider hover:bg-[#ff8585] transition-all hover:scale-105"
                     >
                       TasteID
                     </Link>
@@ -576,7 +576,7 @@ export default async function Home() {
                 
                 {/* Right Column - Feature Highlights */}
                 <div className="border border-[var(--border)] p-4">
-                  <h3 className="text-xs tracking-[0.2em] uppercase text-[var(--muted)] mb-4">What You'll Unlock</h3>
+                  <h2 className="text-xs tracking-[0.2em] uppercase text-[var(--muted)] mb-4">What You'll Unlock</h2>
                   
                   <div className="space-y-4">
                     <div className="flex items-start gap-3 p-3 border-b border-[var(--border)]">
@@ -692,8 +692,10 @@ export default async function Home() {
                     <div className="album-cover aspect-square w-full bg-[var(--surface)] overflow-hidden relative">
                       {album.coverArtUrl && (
                         <img
-                          src={album.coverArtUrlLarge || album.coverArtUrl}
+                          src={album.coverArtUrl}
                           alt={album.title}
+                          loading={index < 12 ? "eager" : "lazy"}
+                          decoding="async"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       )}
@@ -736,7 +738,7 @@ export default async function Home() {
                   >
                     <div className="w-12 h-12 flex-shrink-0 bg-[var(--surface)]">
                       {review.album.coverArtUrl && (
-                        <img src={review.album.coverArtUrl} alt="" className="w-full h-full object-cover" />
+                        <img src={review.album.coverArtUrl} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -754,7 +756,7 @@ export default async function Home() {
                       )}
                       <div className="flex items-center gap-2 mt-2">
                         {review.user.image ? (
-                          <img src={review.user.image} alt="" className="w-4 h-4 rounded-full" />
+                          <img src={review.user.image} alt="" loading="lazy" decoding="async" className="w-4 h-4 rounded-full" />
                         ) : (
                           <DefaultAvatar size="xs" />
                         )}
