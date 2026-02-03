@@ -19,9 +19,15 @@ const sizeMap = {
 }
 
 const paddingMap = {
-  sm: 'p-1.5',
+  sm: 'p-1',
   md: 'p-2',
   lg: 'p-2.5',
+}
+
+const minSizeMap = {
+  sm: '',
+  md: 'min-w-[44px] min-h-[44px]',
+  lg: 'min-w-[44px] min-h-[44px]',
 }
 
 export function BookmarkButton({
@@ -87,6 +93,7 @@ export function BookmarkButton({
 
   const iconSize = sizeMap[size]
   const padding = paddingMap[size]
+  const minSize = minSizeMap[size]
 
   return (
     <button
@@ -94,12 +101,12 @@ export function BookmarkButton({
       disabled={isLoading}
       className={`
         ${padding}
-        flex items-center gap-1.5
-        border transition-all duration-150
-        min-w-[44px] min-h-[44px]
+        ${minSize}
+        flex items-center justify-center gap-1.5
+        border transition-all duration-150 rounded
         ${isBookmarked
           ? 'border-[--accent-primary] text-[--accent-primary] bg-[--accent-primary]/10'
-          : 'border-[--muted-faint] text-[--muted] hover:border-[--accent-primary] hover:text-[--accent-primary]'
+          : 'border-white/20 text-white/40 hover:border-[--accent-primary] hover:text-[--accent-primary]'
         }
         disabled:opacity-50
         ${className}

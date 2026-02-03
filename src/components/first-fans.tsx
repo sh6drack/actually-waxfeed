@@ -117,6 +117,7 @@ export function FirstFans({ fans, albumTrending, totalReviews, className = "" }:
             </div>
             <p className="text-[10px] text-[--muted]/70 mt-2 leading-relaxed">
               When this album hits 100 reviews, early fans get their badges.
+              <span className="block mt-1 text-[var(--accent-primary)]/70">Only written reviews count—quick rates don't qualify.</span>
             </p>
           </div>
         )}

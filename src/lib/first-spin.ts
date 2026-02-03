@@ -288,11 +288,14 @@ export async function getTastemakerLeaderboard(limit = 50) {
   })
 }
 
+const MIN_TEXT_LENGTH_FOR_BADGE = 20
+
 /**
  * Backfill: Calculate and set reviewPosition for existing reviews
- * Run this once to populate positions for old reviews
+ * ONLY reviews with text (20+ chars) get positions - others get null
+ * Run this once to fix positions for badge eligibility
  */
-export async function backfillReviewPositions(): Promise<{ processed: number }> {
+export async function backfillReviewPositions(): Promise<{ processed: number; cleared: number }> {
   // Get all albums with reviews
   const albums = await prisma.album.findMany({
     where: { totalReviews: { gt: 0 } },
@@ -300,32 +303,45 @@ export async function backfillReviewPositions(): Promise<{ processed: number }> 
   })
 
   let processed = 0
+  let cleared = 0
 
   for (const album of albums) {
     // Get all reviews for this album, ordered by creation date
     const reviews = await prisma.review.findMany({
       where: { albumId: album.id },
       orderBy: { createdAt: 'asc' },
-      select: { id: true, reviewPosition: true }
+      select: { id: true, text: true, reviewPosition: true }
     })
 
-    // Update each review with its position
-    for (let i = 0; i < reviews.length; i++) {
-      const review = reviews[i]
-      const position = i + 1
+    // Only reviews with sufficient text get positions
+    let textPosition = 0
+    for (const review of reviews) {
+      const hasValidText = review.text && review.text.trim().length >= MIN_TEXT_LENGTH_FOR_BADGE
 
-      // Only update if position not set or wrong
-      if (review.reviewPosition !== position) {
-        await prisma.review.update({
-          where: { id: review.id },
-          data: { reviewPosition: position }
-        })
-        processed++
+      if (hasValidText) {
+        textPosition++
+        // Assign position only to text reviews
+        if (review.reviewPosition !== textPosition) {
+          await prisma.review.update({
+            where: { id: review.id },
+            data: { reviewPosition: textPosition }
+          })
+          processed++
+        }
+      } else {
+        // Clear position for non-text reviews
+        if (review.reviewPosition !== null) {
+          await prisma.review.update({
+            where: { id: review.id },
+            data: { reviewPosition: null }
+          })
+          cleared++
+        }
       }
     }
   }
 
-  return { processed }
+  return { processed, cleared }
 }
 
 /**

@@ -103,6 +103,7 @@ export default function QuickRatePage() {
   const [albums, setAlbums] = useState<Album[]>([])
   const [currentAlbumIndex, setCurrentAlbumIndex] = useState(0)
   const [rating, setRating] = useState(5)
+  const [reviewText, setReviewText] = useState("")
   const [selectedDescriptors, setSelectedDescriptors] = useState<DescriptorId[]>([])
   const [shuffledDescriptors, setShuffledDescriptors] = useState<readonly Descriptor[]>(() => shuffleArray([...POLARITY_DESCRIPTORS]))
   const [ratedCount, setRatedCount] = useState<number | null>(null)
@@ -252,8 +253,8 @@ export default function QuickRatePage() {
         body: JSON.stringify({
           albumId: album.id,
           rating,
-          text: '',
-          isQuickRate: true,
+          text: reviewText.trim() || '',
+          isQuickRate: !reviewText.trim(),
           vibes: selectedDescriptors,
         }),
       })
@@ -316,6 +317,7 @@ export default function QuickRatePage() {
     }
 
     setRating(5)
+    setReviewText("")
     setSelectedDescriptors([])
     setShuffledDescriptors(shuffleArray([...POLARITY_DESCRIPTORS]))
     setError("")
@@ -621,6 +623,21 @@ export default function QuickRatePage() {
               </div>
             </div>
 
+            {/* Review Text */}
+            <div className="px-4 mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] tracking-[0.2em] uppercase text-white/30">Review</span>
+                <span className="text-[10px] text-white/20">optional</span>
+              </div>
+              <textarea
+                value={reviewText}
+                onChange={(e) => setReviewText(e.target.value)}
+                placeholder="Share your thoughts..."
+                disabled={submitting}
+                className="w-full h-20 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/30 resize-none focus:outline-none focus:border-[#ffd700]/50 transition-colors"
+              />
+            </div>
+
             {/* Rating */}
             <div className="px-6 py-4 border-t border-white/5">
               <RatingSlider value={rating} onChange={setRating} disabled={submitting} />
@@ -766,7 +783,7 @@ export default function QuickRatePage() {
                 )}
 
                 {/* Vibes Section */}
-                <div className="mb-8">
+                <div className="mb-6">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-[10px] tracking-[0.2em] uppercase text-white/30">Vibes</span>
                     <span className={`text-[10px] font-mono ${selectedDescriptors.length > 0 ? 'text-[#ffd700]' : 'text-white/20'}`}>
@@ -796,6 +813,21 @@ export default function QuickRatePage() {
                       )
                     })}
                   </div>
+                </div>
+
+                {/* Review Text */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] tracking-[0.2em] uppercase text-white/30">Review</span>
+                    <span className="text-[10px] text-white/20">optional</span>
+                  </div>
+                  <textarea
+                    value={reviewText}
+                    onChange={(e) => setReviewText(e.target.value)}
+                    placeholder="Share your thoughts on this album..."
+                    disabled={submitting}
+                    className="w-full h-24 px-4 py-3 bg-white/[0.03] border border-white/10 rounded-xl text-sm text-white placeholder:text-white/30 resize-none focus:outline-none focus:border-[#ffd700]/50 transition-colors"
+                  />
                 </div>
 
                 {/* Rating Slider */}

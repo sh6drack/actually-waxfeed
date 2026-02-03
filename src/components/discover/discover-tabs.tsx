@@ -3,7 +3,6 @@
 import { useState } from "react"
 import Link from "next/link"
 import { SpinWheel } from "@/components/spin-wheel"
-import { ConnectionsSection } from "@/components/connections"
 
 interface Album {
   id: string
@@ -41,11 +40,10 @@ function getPositionBadge(totalReviews: number): { text: string; color: string }
   return null
 }
 
-type TabId = "explore" | "network" | "trending" | "new"
+type TabId = "explore" | "trending" | "new"
 
 const TABS = [
   { id: "explore" as TabId, label: "Explore", icon: "◎" },
-  { id: "network" as TabId, label: "Network", icon: "⬡" },
   { id: "trending" as TabId, label: "Trending", icon: "↗" },
   { id: "new" as TabId, label: "New", icon: "✦" },
 ]
@@ -406,33 +404,6 @@ export function DiscoverTabs({
                 </div>
               </section>
             )}
-          </div>
-        )}
-
-        {/* NETWORK TAB */}
-        {activeTab === "network" && (
-          <div className="animate-in fade-in duration-300">
-            <section className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 py-8 lg:py-12">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-[--ccx-node]/10 border border-[--ccx-node]/20 flex items-center justify-center">
-                    <span className="text-[--ccx-node]">⬡</span>
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-bold">Taste Network</h2>
-                    <p className="text-xs text-white/40">Connect with similar listeners</p>
-                  </div>
-                </div>
-                <Link
-                  href="/discover/connections"
-                  className="text-xs text-[--ccx-node] hover:underline"
-                >
-                  View All →
-                </Link>
-              </div>
-
-              <ConnectionsSection userId={session?.user?.id} />
-            </section>
           </div>
         )}
 

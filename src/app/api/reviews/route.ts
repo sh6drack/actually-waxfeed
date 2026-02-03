@@ -134,28 +134,26 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate review position (First Spin tracking)
-    const currentReviewCount = await prisma.review.count({
-      where: { albumId }
-    })
-    const reviewPosition = currentReviewCount + 1
+    // IMPORTANT: Only reviews with text count toward badges
+    // Quick rates and empty reviews don't get a position
+    const MIN_REVIEW_LENGTH = 20 // At least 20 characters for badge eligibility
+    const hasValidText = text && text.trim().length >= MIN_REVIEW_LENGTH
 
-    // ANTI-GAMING: First 100 reviews MUST have written text
-    // This prevents people from spamming empty reviews just to get Gold/Silver/Bronze Spins
-    // Exception: Quick rate mode (swipe) bypasses this but doesn't qualify for First Spin badges
-    const MIN_REVIEW_LENGTH = 20 // At least 20 characters
-    const FIRST_SPIN_THRESHOLD = 100
+    let reviewPosition: number | null = null
 
-    if (reviewPosition <= FIRST_SPIN_THRESHOLD && !isQuickRate) {
-      if (!text || text.trim().length < MIN_REVIEW_LENGTH) {
-        return errorResponse(
-          `The first ${FIRST_SPIN_THRESHOLD} reviews must include a written review (at least ${MIN_REVIEW_LENGTH} characters). ` +
-          `You're position #${reviewPosition} - share your thoughts to earn your spot!`,
-          400
-        )
-      }
+    if (hasValidText && !isQuickRate) {
+      // Count only reviews with text for position
+      const textReviewCount = await prisma.review.count({
+        where: {
+          albumId,
+          reviewPosition: { not: null } // Only count reviews that have positions (i.e., had text)
+        }
+      })
+      reviewPosition = textReviewCount + 1
     }
 
     // Create review with position and vibes
+    // reviewPosition is only set for reviews with text (badge-eligible)
     const review = await prisma.review.create({
       data: {
         userId: user.id,
@@ -163,7 +161,7 @@ export async function POST(request: NextRequest) {
         rating,
         text,
         vibes: vibes || [], // Store vibe tags for TasteID Polarity Model
-        reviewPosition,
+        ...(reviewPosition !== null ? { reviewPosition } : {}),
       },
       include: {
         user: {
@@ -246,7 +244,7 @@ export async function POST(request: NextRequest) {
           amount: 1,
           type: 'REVIEW_REWARD',
           description: `Rated: ${album.title}`,
-          metadata: { albumId, reviewId: review.id, position: reviewPosition }
+          metadata: { albumId, reviewId: review.id, ...(reviewPosition !== null ? { position: reviewPosition } : {}) }
         }
       })
     } catch (error) {
@@ -274,8 +272,8 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Quick rates don't qualify for First Spin badges
-    const firstSpinMessage = isQuickRate ? null : (
+    // Only reviews with text qualify for First Spin badges
+    const firstSpinMessage = reviewPosition === null ? null : (
       reviewPosition <= 10
         ? `You're reviewer #${reviewPosition}! If this album trends, you'll earn a Gold Spin.`
         : reviewPosition <= 50

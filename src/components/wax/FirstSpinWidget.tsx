@@ -62,7 +62,10 @@ export function FirstSpinWidget() {
         {/* The Hook */}
         <div className="p-4 border-b border-[--border]">
           <p className="text-sm text-[--muted] mb-4">
-            Every album you review records your position. If it trends later you get credited.
+            Write thoughtful reviews to earn badges. When an album trends, early reviewers get credited.
+          </p>
+          <p className="text-[10px] text-[--muted]/70 mb-4 border-l-2 border-[var(--accent-primary)]/30 pl-2">
+            Only reviews with text count toward First Spin badges. Quick rates don't qualify.
           </p>
           <div className="p-3 border border-[var(--accent-primary)]/30 mb-4">
             <p className="text-sm">
@@ -202,7 +205,7 @@ export function FirstSpinWidget() {
               </p>
             ) : (
               <p className="text-xs text-[--muted] mb-3">
-                Review albums before they trend to earn badges.
+                Write reviews before albums trend to earn badges.
               </p>
             )}
             <Link

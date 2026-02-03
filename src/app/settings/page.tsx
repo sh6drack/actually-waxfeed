@@ -883,6 +883,37 @@ export default function SettingsPage() {
         </div>
       </section>
 
+      {/* Help */}
+      <section className="mt-16 pt-8 border-t border-[--border]">
+        <h2 className="text-xl font-bold mb-6">Help</h2>
+        <div className="space-y-3">
+          <a
+            href="/faq"
+            className="flex items-center justify-between p-4 border border-[--border] hover:border-[--muted] transition-colors"
+          >
+            <div>
+              <p className="text-sm font-bold">FAQ</p>
+              <p className="text-xs text-[--muted]">Answers to common questions about badges, ratings, and more</p>
+            </div>
+            <svg className="w-4 h-4 text-[--muted]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </a>
+          <a
+            href="mailto:shadrack@brown.edu"
+            className="flex items-center justify-between p-4 border border-[--border] hover:border-[--muted] transition-colors"
+          >
+            <div>
+              <p className="text-sm font-bold">Contact Support</p>
+              <p className="text-xs text-[--muted]">Get help with your account</p>
+            </div>
+            <svg className="w-4 h-4 text-[--muted]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </a>
+        </div>
+      </section>
+
       {/* Danger Zone */}
       <section className="mt-16 pt-8 border-t border-[--border]">
         <h2 className="text-xl font-bold mb-6 text-red-500">Danger Zone</h2>
