@@ -16,14 +16,18 @@
 
 ### 1. Authentication System
 - [x] Google OAuth login via NextAuth.js v5
+- [x] GitHub OAuth login (Feb 2026)
+- [x] Email/Password credentials with rate limiting
 - [x] Session management with PrismaAdapter
 - [x] Custom login page (`/login`)
 - [x] Onboarding flow for username selection (`/onboarding`)
 - [x] Automatic notification settings creation on user signup
+- [x] Automatic account linking (same email = merged accounts)
 
 **Files:**
-- `src/lib/auth.ts` - NextAuth configuration
-- `src/app/login/page.tsx` - Login UI
+- `src/lib/auth.ts` - NextAuth configuration with Google, GitHub, and Credentials providers
+- `src/app/login/page.tsx` - Login UI with OAuth buttons
+- `src/app/signup/page.tsx` - Signup UI with OAuth buttons
 - `src/app/onboarding/page.tsx` - Username setup
 - `src/app/api/auth/[...nextauth]/route.ts` - Auth API routes
 

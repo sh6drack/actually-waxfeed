@@ -272,3 +272,31 @@ Use the Stripe MCP plugin for debugging payment issues:
 - Check correct Vercel project (`actually-waxfeed-bkk6`)
 - Toggle Git LFS in project settings
 - Check build logs for TypeScript errors
+
+---
+
+## After Sizeable Updates
+
+**Always update FEATURE_LOG.md** after implementing significant features or changes:
+- New authentication methods
+- New pages or components
+- API changes
+- Database schema changes
+- Major UI/UX updates
+
+This keeps the project documentation current and helps track progress.
+
+---
+
+## Authentication Providers
+
+Currently enabled:
+- **Google OAuth** - Client ID in Vercel env vars
+- **GitHub OAuth** - Added Feb 2026
+- **Email/Password** - With rate limiting (5 attempts per 15 min)
+
+Callback URLs (must be set in provider dashboards):
+- Google: `https://www.wax-feed.com/api/auth/callback/google`
+- GitHub: `https://www.wax-feed.com/api/auth/callback/github`
+
+Account linking is automatic - if a user signs up with email then later uses Google/GitHub with the same email, accounts are merged.
