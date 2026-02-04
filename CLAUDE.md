@@ -300,3 +300,30 @@ Callback URLs (must be set in provider dashboards):
 - GitHub: `https://www.wax-feed.com/api/auth/callback/github`
 
 Account linking is automatic - if a user signs up with email then later uses Google/GitHub with the same email, accounts are merged.
+
+### Google OAuth Credentials (Feb 2026)
+```
+GOOGLE_CLIENT_ID=853701019564-uheh07y0egjmbsetq7jggoreserkke.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=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
+```
+
+**Google Cloud Console:** Project with OAuth client named "waxfeed"
+- Authorized JavaScript origins: `https://www.wax-feed.com`
+- Authorized redirect URIs: `https://www.wax-feed.com/api/auth/callback/google`
+
+**If Google OAuth breaks with "invalid_client":**
+1. Go to [Google Cloud Console → Credentials](https://console.cloud.google.com/apis/credentials)
+2. Check if the OAuth client still exists
+3. If deleted, create new one with above settings
+4. Update credentials in `.env.local` AND Vercel env vars
+5. Redeploy
+
+### GitHub OAuth Credentials (Feb 2026)
+```
+GITHUB_CLIENT_ID=Ov23liotc8cUK0dw4LTe
+GITHUB_CLIENT_SECRET=c664f9993e4bbdd6c2c69a236bda6fc399201094
+```
+
+**GitHub Developer Settings:** OAuth App named "WAXFEED"
+- Homepage URL: `https://www.wax-feed.com`
+- Authorization callback URL: `https://www.wax-feed.com/api/auth/callback/github`
