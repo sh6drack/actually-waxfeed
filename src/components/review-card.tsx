@@ -116,6 +116,7 @@ export const ReviewCard = memo(function ReviewCard({
   })
   const [hasAwardedWax, setHasAwardedWax] = useState(false)
   const [awardingWax, setAwardingWax] = useState<string | null>(null)
+  const [waxError, setWaxError] = useState<string | null>(null)
   const [reactionCounts, setReactionCounts] = useState({
     fire: initialFireCount,
     insightful: initialInsightfulCount,
@@ -129,6 +130,7 @@ export const ReviewCard = memo(function ReviewCard({
   const handleAwardWax = useCallback(async (waxType: "standard" | "premium" | "gold") => {
     if (!session || hasAwardedWax) return
     setAwardingWax(waxType)
+    setWaxError(null)
 
     try {
       const res = await fetch(`/api/reviews/${id}/wax`, {
@@ -142,9 +144,13 @@ export const ReviewCard = memo(function ReviewCard({
         setWaxCounts(prev => ({ ...prev, [waxType]: prev[waxType] + 1 }))
         setHasAwardedWax(true)
         setShowWaxMenu(false)
+        setWaxError(null)
+      } else {
+        setWaxError(data.error || "Failed to award")
       }
     } catch (error) {
       console.error("Failed to award wax:", error)
+      setWaxError("Something went wrong")
     } finally {
       setAwardingWax(null)
     }
@@ -332,33 +338,50 @@ export const ReviewCard = memo(function ReviewCard({
 
               {showWaxMenu && !hasAwardedWax && session && (
                 <>
-                  <div className="fixed inset-0 z-40" onClick={() => setShowWaxMenu(false)} />
-                  <div className="absolute bottom-full left-0 sm:left-0 right-auto mb-1 z-50 border border-[--border] p-2 min-w-[140px] max-w-[calc(100vw-2rem)]" style={{ backgroundColor: 'var(--background)' }}>
+                  <div className="fixed inset-0 z-40" onClick={() => { setShowWaxMenu(false); setWaxError(null); }} />
+                  <div className="absolute bottom-full left-0 sm:left-0 right-auto mb-1 z-50 border border-[--border] p-2 min-w-[160px] max-w-[calc(100vw-2rem)]" style={{ backgroundColor: 'var(--background)' }}>
                     <p className="text-[9px] tracking-[0.15em] uppercase mb-2 px-1" style={{ color: 'var(--muted)' }}>Award Wax</p>
+
+                    {waxError && (
+                      <div className="px-2 py-2 mb-2 text-[11px] text-red-400 bg-red-500/10 border border-red-500/20">
+                        {waxError}
+                      </div>
+                    )}
+
                     <button
                       onClick={() => handleAwardWax("standard")}
-                      disabled={awardingWax === "standard"}
+                      disabled={!!awardingWax}
                       className="w-full flex items-center justify-between px-2 py-1.5 hover:bg-[--border]/30 transition text-left disabled:opacity-50"
                     >
                       <span>Standard</span>
-                      <span className="text-[10px]" style={{ color: 'var(--muted)' }}>5</span>
+                      <span className="text-[10px]" style={{ color: 'var(--muted)' }}>{awardingWax === "standard" ? "..." : "5"}</span>
                     </button>
                     <button
                       onClick={() => handleAwardWax("premium")}
-                      disabled={awardingWax === "premium"}
+                      disabled={!!awardingWax}
                       className="w-full flex items-center justify-between px-2 py-1.5 hover:bg-[--border]/30 transition text-left text-purple-400 disabled:opacity-50"
                     >
                       <span>Premium</span>
-                      <span className="text-[10px]">20</span>
+                      <span className="text-[10px]">{awardingWax === "premium" ? "..." : "20"}</span>
                     </button>
                     <button
                       onClick={() => handleAwardWax("gold")}
-                      disabled={awardingWax === "gold"}
+                      disabled={!!awardingWax}
                       className="w-full flex items-center justify-between px-2 py-1.5 hover:bg-[--border]/30 transition text-left text-[--accent-primary] disabled:opacity-50"
                     >
                       <span>GOLD</span>
-                      <span className="text-[10px]">100</span>
+                      <span className="text-[10px]">{awardingWax === "gold" ? "..." : "100"}</span>
                     </button>
+
+                    <div className="border-t border-[--border] mt-2 pt-2">
+                      <a
+                        href="/wallet"
+                        className="block text-center text-[10px] tracking-wider uppercase hover:text-[--foreground] transition-colors"
+                        style={{ color: 'var(--muted)' }}
+                      >
+                        Get More Wax →
+                      </a>
+                    </div>
                   </div>
                 </>
               )}
