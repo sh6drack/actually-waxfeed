@@ -8,10 +8,34 @@ export const metadata: Metadata = {
 
 const CHANGELOG_ENTRIES = [
   {
+    version: "2.4",
+    codename: "Polish",
+    date: "2026-02-04",
+    highlight: true,
+    summary: "Refined experience with better feedback and navigation.",
+    changes: [
+      {
+        type: "fix" as const,
+        title: "Wax Award Feedback",
+        description: "Clear error messages when awarding Wax fails, with quick link to get more.",
+      },
+      {
+        type: "enhancement" as const,
+        title: "Footer Navigation",
+        description: "FAQ and Changelog now accessible from homepage footer.",
+      },
+      {
+        type: "enhancement" as const,
+        title: "Code Quality",
+        description: "Fixed 70+ lint errors across the platform for improved stability.",
+      },
+    ],
+  },
+  {
     version: "2.3",
     codename: "Gateway",
     date: "2026-02-03",
-    highlight: true,
+    highlight: false,
     summary: "More ways to sign in, better account security.",
     changes: [
       {
@@ -334,7 +358,7 @@ export default function ChangelogPage() {
                 waxfeed
               </span>
               <span className="font-mono text-[10px] text-[var(--accent-primary)]">
-                2.3
+                2.4
               </span>
             </div>
             <span className="text-xs text-[--muted]">

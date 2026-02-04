@@ -1001,6 +1001,8 @@ export default async function Home() {
               <Link href="/discover" className="text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Discover</Link>
               <Link href="/pricing" className="text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Pricing</Link>
               <Link href="/stations" className="text-sm text-[--accent-primary] hover:text-[--accent-hover] transition-colors">College Radio</Link>
+              <Link href="/faq" className="text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">FAQ</Link>
+              <Link href="/changelog" className="text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Changelog</Link>
             </nav>
           </div>
         </div>
