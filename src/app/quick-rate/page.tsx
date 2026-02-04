@@ -868,12 +868,16 @@ export default function QuickRatePage() {
               )}
 
               {/* Mobile Audio DNA / Decipher Progress - Inline compact */}
-              {audioDNA && audioDNA.totalPredictions > 0 && !predictionData?.hasPrediction && (
+              {audioDNA && !predictionData?.hasPrediction && (
                 <div className="px-5 mb-4">
-                  <MobileDecipherProgress
-                    decipherProgress={audioDNA.decipherProgress}
-                    currentStreak={audioDNA.currentStreak}
-                  />
+                  {audioDNA.totalPredictions > 0 ? (
+                    <MobileDecipherProgress
+                      decipherProgress={audioDNA.decipherProgress}
+                      currentStreak={audioDNA.currentStreak}
+                    />
+                  ) : (
+                    <MobileAudioDNAOnboarding />
+                  )}
                 </div>
               )}
 
@@ -1068,13 +1072,17 @@ export default function QuickRatePage() {
 
               <div className="max-w-md mx-auto w-full">
                 {/* Audio DNA / Decipher Progress */}
-                {audioDNA && audioDNA.totalPredictions > 0 && (
+                {audioDNA && (
                   <div className="mb-6">
-                    <DecipherProgressBar
-                      decipherProgress={audioDNA.decipherProgress}
-                      currentStreak={audioDNA.currentStreak}
-                      totalPredictions={audioDNA.totalPredictions}
-                    />
+                    {audioDNA.totalPredictions > 0 ? (
+                      <DecipherProgressBar
+                        decipherProgress={audioDNA.decipherProgress}
+                        currentStreak={audioDNA.currentStreak}
+                        totalPredictions={audioDNA.totalPredictions}
+                      />
+                    ) : (
+                      <AudioDNAOnboarding />
+                    )}
                   </div>
                 )}
 
@@ -1489,6 +1497,150 @@ function DecipherProgressBar({
           </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+// Audio DNA Onboarding - "First Read" waiting state for new users
+function AudioDNAOnboarding() {
+  return (
+    <div className="relative group">
+      {/* Subtle breathing glow */}
+      <div
+        className="absolute inset-0 rounded-2xl blur-xl animate-pulse"
+        style={{
+          background: `linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(34, 211, 238, 0.08))`,
+          animation: 'pulse 3s ease-in-out infinite',
+        }}
+      />
+
+      <div className="relative p-4 rounded-2xl bg-[#0d0d0d] border border-white/[0.06] overflow-hidden">
+        {/* Background texture */}
+        <div
+          className="absolute inset-0 opacity-[0.015]"
+          style={{
+            backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
+            backgroundSize: '16px 16px',
+          }}
+        />
+
+        <div className="relative">
+          {/* Header row */}
+          <div className="flex items-center gap-3 mb-3">
+            {/* DNA Helix Icon - with subtle rotation animation */}
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500/15 to-cyan-500/15 flex items-center justify-center border border-white/[0.06]">
+              <svg
+                className="w-4 h-4 text-violet-400/70"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                style={{ animation: 'spin 20s linear infinite' }}
+              >
+                <path d="M12 2v20M4 6c4 0 4 4 8 4s4-4 8-4M4 18c4 0 4-4 8-4s4 4 8 4" strokeLinecap="round" />
+              </svg>
+            </div>
+            <div>
+              <span className="text-[10px] tracking-[0.2em] uppercase text-white/30 font-medium">Audio DNA</span>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-sm font-medium text-white/50">Awaiting First Read</span>
+                <span className="flex gap-0.5">
+                  <span className="w-1 h-1 rounded-full bg-violet-400/50 animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <span className="w-1 h-1 rounded-full bg-cyan-400/50 animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <span className="w-1 h-1 rounded-full bg-violet-400/50 animate-bounce" style={{ animationDelay: '300ms' }} />
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Dormant signal bars - showing potential */}
+          <div className="flex items-center gap-[2px] h-8 mb-2">
+            {Array.from({ length: 24 }, (_, i) => {
+              const baseHeight = Math.sin(i * 0.5) * 0.2 + 0.15
+              return (
+                <div
+                  key={i}
+                  className="flex-1 rounded-sm transition-all duration-1000"
+                  style={{
+                    height: `${Math.max(baseHeight * 100, 10)}%`,
+                    background: 'rgba(139, 92, 246, 0.15)',
+                    animation: `pulse 2s ease-in-out ${i * 0.08}s infinite`,
+                  }}
+                />
+              )
+            })}
+          </div>
+
+          {/* Empty progress track */}
+          <div className="relative h-1 rounded-full bg-white/[0.04] overflow-hidden">
+            {/* Scanning line animation */}
+            <div
+              className="absolute inset-y-0 w-8 rounded-full"
+              style={{
+                background: 'linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.3), transparent)',
+                animation: 'scanLine 3s ease-in-out infinite',
+              }}
+            />
+          </div>
+
+          {/* Hint text */}
+          <p className="text-[10px] text-white/20 mt-3 text-center">
+            Rate your first album to begin building your taste profile
+          </p>
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes scanLine {
+          0%, 100% { transform: translateX(-100%); opacity: 0; }
+          50% { transform: translateX(calc(100vw / 2)); opacity: 1; }
+        }
+      `}</style>
+    </div>
+  )
+}
+
+// Mobile Audio DNA Onboarding - Compact version
+function MobileAudioDNAOnboarding() {
+  return (
+    <div className="flex items-center gap-3 p-3 rounded-xl bg-[#0a0a0a] border border-white/[0.05]">
+      {/* Mini DNA icon with breathing */}
+      <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500/15 to-cyan-500/15 flex items-center justify-center flex-shrink-0 animate-pulse">
+        <svg className="w-3.5 h-3.5 text-violet-400/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+          <path d="M12 2v20M4 6c4 0 4 4 8 4s4-4 8-4M4 18c4 0 4-4 8-4s4 4 8 4" strokeLinecap="round" />
+        </svg>
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[9px] tracking-wider uppercase text-white/25">Audio DNA</span>
+          <span className="text-[10px] text-violet-400/50 flex items-center gap-1">
+            Initializing
+            <span className="flex gap-0.5">
+              <span className="w-0.5 h-0.5 rounded-full bg-violet-400/50 animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-0.5 h-0.5 rounded-full bg-violet-400/50 animate-bounce" style={{ animationDelay: '100ms' }} />
+              <span className="w-0.5 h-0.5 rounded-full bg-violet-400/50 animate-bounce" style={{ animationDelay: '200ms' }} />
+            </span>
+          </span>
+        </div>
+        {/* Empty progress with scan */}
+        <div className="h-1 rounded-full bg-white/[0.04] overflow-hidden relative">
+          <div
+            className="absolute inset-y-0 w-4 rounded-full"
+            style={{
+              background: 'linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.3), transparent)',
+              animation: 'scanLineMobile 2s ease-in-out infinite',
+            }}
+          />
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes scanLineMobile {
+          0%, 100% { transform: translateX(-100%); }
+          50% { transform: translateX(calc(100% + 4rem)); }
+        }
+      `}</style>
     </div>
   )
 }
