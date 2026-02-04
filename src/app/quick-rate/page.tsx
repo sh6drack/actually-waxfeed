@@ -1542,7 +1542,7 @@ function MobileDecipherProgress({
   )
 }
 
-// Prediction Display Component - "Oracle Reading" Design
+// Prediction Display Component - "Cybernetic Oracle" Design
 function PredictionDisplay({
   prediction,
   albumAudio,
@@ -1556,122 +1556,191 @@ function PredictionDisplay({
 
   // Confidence ring calculation
   const confidenceAngle = (prediction.confidence / 100) * 360
+  const breatheIntensity = prediction.confidence > 60 ? 'animate-pulse' : ''
 
   return (
     <div className="relative mb-6 group">
-      {/* Ambient glow on hover */}
+      {/* Multi-layer ambient glow */}
       <div
-        className="absolute -inset-2 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-2xl pointer-events-none"
-        style={{ background: 'radial-gradient(circle at center, rgba(34, 211, 238, 0.15), transparent 70%)' }}
+        className="absolute -inset-4 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000 blur-3xl pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse at center, rgba(139, 92, 246, 0.12), transparent 60%)' }}
+      />
+      <div
+        className="absolute -inset-2 rounded-3xl opacity-30 group-hover:opacity-50 transition-opacity duration-700 blur-xl pointer-events-none"
+        style={{ background: 'radial-gradient(circle at 30% 20%, rgba(34, 211, 238, 0.1), transparent 50%)' }}
       />
 
-      <div className="relative p-5 rounded-2xl bg-[#0a0a0a] border border-white/[0.06] overflow-hidden">
+      <div className="relative p-6 rounded-2xl bg-gradient-to-b from-[#0c0c0c] to-[#080808] border border-white/[0.04] overflow-hidden">
+        {/* DNA Helix decoration - right edge */}
+        <div className="absolute right-0 top-0 bottom-0 w-8 opacity-[0.04] pointer-events-none overflow-hidden">
+          <svg className="w-full h-full" viewBox="0 0 32 200" preserveAspectRatio="xMidYMid slice">
+            <path
+              d="M16 0 Q32 25 16 50 Q0 75 16 100 Q32 125 16 150 Q0 175 16 200"
+              fill="none"
+              stroke="url(#helixGradient)"
+              strokeWidth="1"
+            />
+            <path
+              d="M16 0 Q0 25 16 50 Q32 75 16 100 Q0 125 16 150 Q32 175 16 200"
+              fill="none"
+              stroke="url(#helixGradient)"
+              strokeWidth="1"
+            />
+            {/* Cross bars */}
+            {[25, 75, 125, 175].map(y => (
+              <line key={y} x1="8" y1={y} x2="24" y2={y} stroke="rgba(34, 211, 238, 0.3)" strokeWidth="0.5" />
+            ))}
+            <defs>
+              <linearGradient id="helixGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#8b5cf6" />
+                <stop offset="50%" stopColor="#22d3ee" />
+                <stop offset="100%" stopColor="#8b5cf6" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+
         {/* Subtle scan lines effect */}
         <div
-          className="absolute inset-0 opacity-[0.02] pointer-events-none"
+          className="absolute inset-0 opacity-[0.015] pointer-events-none"
           style={{
-            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px)',
+            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.05) 3px, rgba(255,255,255,0.05) 4px)',
           }}
         />
 
+        {/* Corner accent */}
+        <div className="absolute top-0 left-0 w-12 h-12 pointer-events-none">
+          <div className="absolute top-0 left-0 w-6 h-[1px] bg-gradient-to-r from-cyan-500/40 to-transparent" />
+          <div className="absolute top-0 left-0 w-[1px] h-6 bg-gradient-to-b from-cyan-500/40 to-transparent" />
+        </div>
+
         {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
-            {/* Confidence Ring */}
-            <div className="relative w-11 h-11">
-              <svg className="w-11 h-11 -rotate-90" viewBox="0 0 44 44">
+        <div className="flex items-start justify-between mb-5">
+          <div className="flex items-center gap-4">
+            {/* Confidence Ring - Enhanced */}
+            <div className={`relative w-14 h-14 ${breatheIntensity}`} style={{ animationDuration: '3s' }}>
+              {/* Outer glow ring */}
+              <div
+                className="absolute -inset-1 rounded-full opacity-30 blur-sm"
+                style={{
+                  background: `conic-gradient(from 0deg, #8b5cf6, #22d3ee ${prediction.confidence}%, transparent ${prediction.confidence}%)`,
+                }}
+              />
+              <svg className="w-14 h-14 -rotate-90 relative" viewBox="0 0 56 56">
                 {/* Background track */}
-                <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="3" />
+                <circle cx="28" cy="28" r="22" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="4" />
                 {/* Progress arc */}
                 <circle
-                  cx="22" cy="22" r="18"
+                  cx="28" cy="28" r="22"
                   fill="none"
-                  stroke="url(#confidenceGradient)"
-                  strokeWidth="3"
+                  stroke="url(#confidenceGradientEnhanced)"
+                  strokeWidth="4"
                   strokeLinecap="round"
-                  strokeDasharray={`${(confidenceAngle / 360) * 113} 113`}
-                  className="transition-all duration-1000"
+                  strokeDasharray={`${(confidenceAngle / 360) * 138} 138`}
+                  className="transition-all duration-1000 ease-out"
+                  style={{ filter: 'drop-shadow(0 0 4px rgba(34, 211, 238, 0.4))' }}
                 />
                 <defs>
-                  <linearGradient id="confidenceGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#8b5cf6" />
-                    <stop offset="100%" stopColor="#22d3ee" />
+                  <linearGradient id="confidenceGradientEnhanced" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#a855f7" />
+                    <stop offset="50%" stopColor="#22d3ee" />
+                    <stop offset="100%" stopColor="#06b6d4" />
                   </linearGradient>
                 </defs>
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-[10px] font-semibold text-white/70 tabular-nums">{prediction.confidence}%</span>
+                <div className="text-center">
+                  <span className="text-sm font-semibold text-white/80 tabular-nums tracking-tight">{prediction.confidence}</span>
+                  <span className="text-[8px] text-white/40 block -mt-0.5">%</span>
+                </div>
               </div>
             </div>
 
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[9px] tracking-[0.25em] uppercase text-white/30 font-medium">Predicted Rating</span>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[8px] tracking-[0.3em] uppercase text-white/25 font-medium">Predicted</span>
                 {prediction.confidence < 35 && (
-                  <span className="text-[8px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400/60 uppercase tracking-wide border border-purple-500/20">
-                    Learning
+                  <span className="text-[7px] px-1.5 py-0.5 rounded-sm bg-violet-500/10 text-violet-400/70 uppercase tracking-wider border border-violet-500/20">
+                    Calibrating
                   </span>
                 )}
               </div>
-              <div className="flex items-baseline gap-2 mt-0.5">
+              <div className="flex items-baseline gap-2">
                 <span
-                  className="text-3xl font-bold tabular-nums"
+                  className="text-4xl font-bold tabular-nums tracking-tighter"
                   style={{
-                    background: 'linear-gradient(135deg, #22d3ee, #8b5cf6)',
+                    background: 'linear-gradient(135deg, #22d3ee 0%, #8b5cf6 50%, #a855f7 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
+                    filter: 'drop-shadow(0 0 20px rgba(34, 211, 238, 0.2))',
                   }}
                 >
                   {prediction.rating.toFixed(1)}
                 </span>
-                <span className="text-xs text-white/20 tabular-nums">
-                  ±{((prediction.ratingRange.max - prediction.ratingRange.min) / 2).toFixed(1)}
-                </span>
+                <div className="flex flex-col">
+                  <span className="text-[10px] text-white/15 tabular-nums leading-none">
+                    ±{((prediction.ratingRange.max - prediction.ratingRange.min) / 2).toFixed(1)}
+                  </span>
+                  <span className="text-[7px] text-white/10 uppercase tracking-wider">range</span>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Streak indicator */}
+          {/* Streak indicator - Enhanced */}
           {streak > 0 && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#ffd700]/5 border border-[#ffd700]/15">
-              <div className="relative">
-                <div className="w-2 h-2 rounded-full bg-[#ffd700]" />
-                <div className="absolute inset-0 w-2 h-2 rounded-full bg-[#ffd700] animate-ping opacity-75" />
+            <div className="flex flex-col items-end gap-1">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#ffd700]/[0.06] border border-[#ffd700]/10">
+                <div className="relative">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#ffd700]" style={{ boxShadow: '0 0 8px #ffd700' }} />
+                  <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-[#ffd700] animate-ping opacity-50" />
+                </div>
+                <span className="text-base font-semibold text-[#ffd700]/90 tabular-nums tracking-tight">{streak}</span>
               </div>
-              <span className="text-[11px] font-medium text-[#ffd700]/80 tabular-nums">{streak}</span>
+              <span className="text-[7px] text-[#ffd700]/30 uppercase tracking-widest">streak</span>
             </div>
           )}
         </div>
 
-        {/* Reasoning quote */}
+        {/* Reasoning quote - Enhanced with typing feel */}
         {prediction.reasoning.length > 0 && (
-          <div className="relative mb-4 pl-3 py-2">
-            <div className="absolute left-0 top-0 bottom-0 w-[2px] rounded-full bg-gradient-to-b from-violet-500/50 to-cyan-500/50" />
-            <p className="text-[11px] text-white/35 leading-relaxed">
-              {prediction.reasoning[0]}
+          <div className="relative mb-5 pl-4 py-2">
+            <div
+              className="absolute left-0 top-0 bottom-0 w-[2px] rounded-full"
+              style={{
+                background: 'linear-gradient(180deg, #8b5cf6 0%, #22d3ee 50%, transparent 100%)',
+                boxShadow: '0 0 8px rgba(139, 92, 246, 0.3)',
+              }}
+            />
+            <p className="text-[11px] text-white/40 leading-relaxed italic">
+              &quot;{prediction.reasoning[0]}&quot;
             </p>
           </div>
         )}
 
         {/* Audio Spectrum Visualization */}
         {albumAudio && (
-          <div className="grid grid-cols-4 gap-3 mb-4">
-            <AudioFeatureBar label="Energy" value={albumAudio.energy} color="#22d3ee" icon="⚡" />
-            <AudioFeatureBar label="Mood" value={albumAudio.valence} color="#a855f7" icon="◐" />
-            <AudioFeatureBar label="Dance" value={albumAudio.danceability} color="#ffd700" icon="◎" />
-            <AudioFeatureBar label="Acoustic" value={albumAudio.acousticness} color="#10b981" icon="◈" />
+          <div className="grid grid-cols-4 gap-4 mb-5">
+            <AudioFeatureBar label="Energy" value={albumAudio.energy} color="#22d3ee" icon="◇" />
+            <AudioFeatureBar label="Mood" value={albumAudio.valence} color="#a855f7" icon="◈" />
+            <AudioFeatureBar label="Dance" value={albumAudio.danceability} color="#ffd700" icon="◉" />
+            <AudioFeatureBar label="Organic" value={albumAudio.acousticness} color="#10b981" icon="◎" />
           </div>
         )}
 
-        {/* Suggested Vibes - Compact Tags */}
+        {/* Suggested Vibes - Refined Tags */}
         {prediction.suggestedVibes.length > 0 && (
-          <div className="flex items-center gap-2 pt-3 border-t border-white/[0.04]">
-            <span className="text-[9px] text-white/20 uppercase tracking-wider">Vibes:</span>
-            <div className="flex flex-wrap gap-1.5">
-              {prediction.suggestedVibes.slice(0, 3).map(vibe => (
+          <div className="flex items-center gap-3 pt-4 border-t border-white/[0.03]">
+            <span className="text-[8px] text-white/15 uppercase tracking-[0.2em]">Vibes</span>
+            <div className="flex flex-wrap gap-2">
+              {prediction.suggestedVibes.slice(0, 3).map((vibe, i) => (
                 <span
                   key={vibe}
-                  className="text-[9px] px-2 py-1 rounded-md bg-white/[0.03] text-white/40 uppercase tracking-wide border border-white/[0.04] hover:border-cyan-500/30 hover:text-cyan-400/70 transition-colors cursor-default"
+                  className="text-[9px] px-2.5 py-1 rounded-md text-white/45 uppercase tracking-wider border border-white/[0.05] hover:border-cyan-500/30 hover:text-cyan-400/80 transition-all duration-300 cursor-default"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(255,255,255,0.02), transparent)',
+                    animationDelay: `${i * 0.1}s`,
+                  }}
                 >
                   {vibe.replace('_', '-')}
                 </span>
@@ -1786,48 +1855,91 @@ function StreakBadge({
   )
 }
 
-// Audio Feature Bar - VU Meter Inspired Design
+// Audio Feature Bar - Plasma Tube Design with Organic Animation
 function AudioFeatureBar({ label, value, color, icon }: { label: string; value: number; color: string; icon?: string }) {
-  // Generate segments for VU meter effect
-  const segments = 8
-  const activeSegments = Math.ceil((value / 100) * segments)
+  // Organic fluid fill with subtle animation
+  const fillHeight = Math.max(8, value) // Minimum visible fill
 
   return (
-    <div className="group">
-      <div className="relative h-14 w-full rounded-lg bg-[#050505] border border-white/[0.04] overflow-hidden p-1.5">
-        {/* Segments */}
-        <div className="flex flex-col-reverse gap-[2px] h-full">
-          {Array.from({ length: segments }, (_, i) => {
-            const isActive = i < activeSegments
-            const intensity = i / segments // Higher segments = more intense
-            return (
+    <div className="group relative">
+      {/* Outer container with glass morphism */}
+      <div className="relative h-16 w-full rounded-xl bg-[#030303] border border-white/[0.03] overflow-hidden">
+        {/* Inner tube capsule */}
+        <div className="absolute inset-[3px] rounded-lg overflow-hidden bg-[#0a0a0a]">
+          {/* Animated plasma fill */}
+          <div
+            className="absolute bottom-0 left-0 right-0 transition-all duration-700 ease-out"
+            style={{
+              height: `${fillHeight}%`,
+              background: `linear-gradient(to top, ${color}15, ${color}35 40%, ${color}50 80%, ${color}70)`,
+              boxShadow: `0 0 20px ${color}30, inset 0 0 15px ${color}20`,
+            }}
+          >
+            {/* Surface tension line at top */}
+            <div
+              className="absolute top-0 left-0 right-0 h-[2px]"
+              style={{
+                background: `linear-gradient(90deg, transparent, ${color}, transparent)`,
+                boxShadow: `0 0 8px ${color}80`,
+              }}
+            />
+            {/* Bubbles effect */}
+            <div className="absolute inset-0 opacity-30">
               <div
-                key={i}
-                className="flex-1 rounded-[2px] transition-all duration-300"
-                style={{
-                  backgroundColor: isActive
-                    ? color
-                    : 'rgba(255, 255, 255, 0.02)',
-                  opacity: isActive ? 0.4 + (intensity * 0.6) : 1,
-                  boxShadow: isActive && i === activeSegments - 1
-                    ? `0 0 10px ${color}40, inset 0 0 4px ${color}20`
-                    : 'none',
-                }}
+                className="absolute w-1 h-1 rounded-full animate-pulse"
+                style={{ backgroundColor: color, left: '20%', bottom: '30%', animationDelay: '0s' }}
               />
-            )
-          })}
+              <div
+                className="absolute w-0.5 h-0.5 rounded-full animate-pulse"
+                style={{ backgroundColor: color, left: '60%', bottom: '50%', animationDelay: '0.5s' }}
+              />
+              <div
+                className="absolute w-1.5 h-1.5 rounded-full animate-pulse"
+                style={{ backgroundColor: color, left: '40%', bottom: '15%', animationDelay: '1s' }}
+              />
+            </div>
+          </div>
+
+          {/* Measurement notches */}
+          <div className="absolute inset-0 flex flex-col justify-between py-1 px-0.5 pointer-events-none">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex items-center">
+                <div className="w-1 h-[1px] bg-white/10" />
+              </div>
+            ))}
+          </div>
+
+          {/* Value on hover */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/70 backdrop-blur-sm">
+            <span
+              className="text-lg font-bold tabular-nums tracking-tight"
+              style={{ color, textShadow: `0 0 20px ${color}` }}
+            >
+              {value}
+            </span>
+          </div>
         </div>
 
-        {/* Value overlay on hover */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 backdrop-blur-sm">
-          <span className="text-sm font-bold tabular-nums" style={{ color }}>{value}</span>
-        </div>
+        {/* Reflection highlight */}
+        <div className="absolute top-[3px] left-[3px] right-[60%] bottom-[60%] rounded-tl-lg bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
       </div>
 
-      {/* Label */}
-      <div className="flex items-center justify-center gap-1 mt-1.5">
-        {icon && <span className="text-[8px] opacity-40">{icon}</span>}
-        <span className="text-[8px] text-white/30 uppercase tracking-wider">{label}</span>
+      {/* Label with icon */}
+      <div className="flex items-center justify-center gap-1.5 mt-2">
+        {icon && (
+          <span
+            className="text-[9px] transition-all duration-300 group-hover:scale-110"
+            style={{ color: `${color}60` }}
+          >
+            {icon}
+          </span>
+        )}
+        <span
+          className="text-[9px] uppercase tracking-[0.15em] transition-colors duration-300"
+          style={{ color: 'rgba(255,255,255,0.35)' }}
+        >
+          {label}
+        </span>
       </div>
     </div>
   )
