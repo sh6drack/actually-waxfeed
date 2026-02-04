@@ -972,6 +972,8 @@ export default function QuickRatePage() {
                         key={descriptor.id}
                         onClick={() => toggleDescriptor(descriptor.id)}
                         disabled={submitting || atMax}
+                        aria-pressed={isSelected}
+                        aria-label={`${descriptor.label}${isSuggested ? ' (suggested)' : ''}${isSelected ? ' (selected)' : ''}`}
                         className={`text-[10px] px-3.5 py-2 rounded-full uppercase tracking-wider font-medium transition-all active:scale-95 relative ${
                           isSelected
                             ? 'bg-[#ffd700] text-black shadow-lg shadow-[#ffd700]/20'
@@ -983,7 +985,7 @@ export default function QuickRatePage() {
                         }`}
                       >
                         {isSuggested && !isSelected && (
-                          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-cyan-400 border border-[#0a0a0a]" />
+                          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-cyan-400 border border-[#0a0a0a]" aria-hidden="true" />
                         )}
                         {descriptor.label}
                       </button>
@@ -1192,6 +1194,8 @@ export default function QuickRatePage() {
                           onClick={() => toggleDescriptor(descriptor.id)}
                           disabled={submitting || atMax}
                           title={descriptor.description}
+                          aria-pressed={isSelected}
+                          aria-label={`${descriptor.label}${isSuggested ? ' (suggested)' : ''}${isSelected ? ' (selected)' : ''}`}
                           className={`text-[9px] px-3 py-1.5 rounded-full uppercase tracking-wide transition-all relative ${
                             isSelected
                               ? 'bg-[#ffd700] text-black font-semibold scale-105'
@@ -1203,7 +1207,7 @@ export default function QuickRatePage() {
                           }`}
                         >
                           {isSuggested && !isSelected && (
-                            <span className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                            <span className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-cyan-400" aria-hidden="true" />
                           )}
                           {descriptor.label}
                         </button>
@@ -2168,8 +2172,23 @@ function PredictionCelebration({
   // Show for matches, surprises, OR misses (streak loss feedback)
   if (!isMatch && !isSurprise && !isMiss) return null
 
+  // Generate accessible label for screen readers
+  const celebrationLabel = isPerfect
+    ? `Perfect prediction! Predicted ${result.predictedRating?.toFixed(1)}, you rated ${result.actualRating?.toFixed(1)}`
+    : isClose
+    ? `Close prediction! Predicted ${result.predictedRating?.toFixed(1)}, you rated ${result.actualRating?.toFixed(1)}`
+    : isSurprise
+    ? `Surprise! Predicted ${result.predictedRating?.toFixed(1)}, you rated ${result.actualRating?.toFixed(1)}. Learning from this`
+    : isMiss
+    ? `Prediction miss. Adjusting parameters`
+    : `Prediction result. Predicted ${result.predictedRating?.toFixed(1)}, you rated ${result.actualRating?.toFixed(1)}`
+
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={celebrationLabel}
+      aria-live="polite"
       className={`fixed inset-0 z-[60] flex items-center justify-center transition-all duration-300 ${
         isExiting
           ? 'opacity-0 scale-105'
