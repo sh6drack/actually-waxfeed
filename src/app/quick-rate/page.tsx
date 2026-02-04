@@ -966,19 +966,25 @@ export default function QuickRatePage() {
                   {shuffledDescriptors.slice(0, 15).map((descriptor) => {
                     const isSelected = selectedDescriptors.includes(descriptor.id)
                     const atMax = selectedDescriptors.length >= MAX_DESCRIPTORS && !isSelected
+                    const isSuggested = predictionData?.prediction?.suggestedVibes?.includes(descriptor.id)
                     return (
                       <button
                         key={descriptor.id}
                         onClick={() => toggleDescriptor(descriptor.id)}
                         disabled={submitting || atMax}
-                        className={`text-[10px] px-3.5 py-2 rounded-full uppercase tracking-wider font-medium transition-all active:scale-95 ${
+                        className={`text-[10px] px-3.5 py-2 rounded-full uppercase tracking-wider font-medium transition-all active:scale-95 relative ${
                           isSelected
                             ? 'bg-[#ffd700] text-black shadow-lg shadow-[#ffd700]/20'
                             : atMax
                               ? 'bg-white/5 text-white/15 border border-white/5'
-                              : 'bg-white/5 text-white/60 border border-white/10 active:bg-white/10'
+                              : isSuggested
+                                ? 'bg-cyan-500/10 text-cyan-300/80 border border-cyan-500/25 active:bg-cyan-500/20'
+                                : 'bg-white/5 text-white/60 border border-white/10 active:bg-white/10'
                         }`}
                       >
+                        {isSuggested && !isSelected && (
+                          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-cyan-400 border border-[#0a0a0a]" />
+                        )}
                         {descriptor.label}
                       </button>
                     )
@@ -1179,20 +1185,26 @@ export default function QuickRatePage() {
                     {shuffledDescriptors.slice(0, 18).map((descriptor) => {
                       const isSelected = selectedDescriptors.includes(descriptor.id)
                       const atMax = selectedDescriptors.length >= MAX_DESCRIPTORS && !isSelected
+                      const isSuggested = predictionData?.prediction?.suggestedVibes?.includes(descriptor.id)
                       return (
                         <button
                           key={descriptor.id}
                           onClick={() => toggleDescriptor(descriptor.id)}
                           disabled={submitting || atMax}
                           title={descriptor.description}
-                          className={`text-[9px] px-3 py-1.5 rounded-full uppercase tracking-wide transition-all ${
+                          className={`text-[9px] px-3 py-1.5 rounded-full uppercase tracking-wide transition-all relative ${
                             isSelected
                               ? 'bg-[#ffd700] text-black font-semibold scale-105'
                               : atMax
                                 ? 'bg-white/5 text-white/15 cursor-not-allowed'
-                                : 'bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/70 hover:scale-105'
+                                : isSuggested
+                                  ? 'bg-cyan-500/10 text-cyan-300/80 border border-cyan-500/20 hover:bg-cyan-500/20 hover:scale-105'
+                                  : 'bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/70 hover:scale-105'
                           }`}
                         >
+                          {isSuggested && !isSelected && (
+                            <span className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                          )}
                           {descriptor.label}
                         </button>
                       )
