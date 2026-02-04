@@ -514,7 +514,7 @@ export function SpinWheel({ userId, userReviewCount = 0 }: SpinWheelProps) {
                 </Link>
                 <button
                   onClick={reset}
-                  className="border border-[--border] px-6 py-3 font-semibold text-sm tracking-wide hover:border-[--foreground] hover:text-[--foreground] transition-colors"
+                  className="border border-[--border] px-6 py-3 font-semibold text-sm tracking-wide text-[--foreground] hover:border-[--foreground] transition-colors"
                 >
                   SPIN AGAIN
                 </button>

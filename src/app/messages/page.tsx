@@ -77,7 +77,7 @@ export default function MessagesPage() {
               )}
               <Link
                 href="/discover/similar-tasters"
-                className="hidden sm:block px-4 py-2 border border-[--border] text-xs uppercase tracking-wider hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-colors"
+                className="hidden sm:block px-4 py-2 border border-[--border] text-[--foreground] text-xs uppercase tracking-wider hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-colors"
               >
                 Find Matches
               </Link>

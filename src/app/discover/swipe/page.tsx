@@ -264,7 +264,7 @@ export default function QuickRatePage() {
               </button>
               <Link
                 href="/discover/connections"
-                className="px-6 py-3 border border-[--border] font-medium text-sm tracking-wide uppercase hover:border-white transition-colors"
+                className="px-6 py-3 border border-[--border] text-[--foreground] font-medium text-sm tracking-wide uppercase hover:border-white transition-colors"
               >
                 Check Connections
               </Link>
@@ -419,7 +419,7 @@ export default function QuickRatePage() {
             <p className="text-[--muted] mb-4">No more albums to rate right now.</p>
             <button
               onClick={fetchAlbums}
-              className="px-6 py-3 border border-[--border] text-sm hover:border-white transition-colors"
+              className="px-6 py-3 border border-[--border] text-[--foreground] text-sm hover:border-white transition-colors"
             >
               Load More
             </button>

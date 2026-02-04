@@ -308,7 +308,7 @@ export function CreateChallengeModal({
         <div className="flex gap-3 p-4 border-t border-[--border]">
           <button
             onClick={onClose}
-            className="flex-1 py-2 border border-[--border] text-sm font-medium hover:border-white transition-colors"
+            className="flex-1 py-2 border border-[--border] text-[--foreground] text-sm font-medium hover:border-white transition-colors"
           >
             Cancel
           </button>

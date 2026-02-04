@@ -182,7 +182,7 @@ export function MessageButton({ targetUserId, className = '' }: MessageButtonPro
             <div className="flex gap-3 mt-4">
               <button
                 onClick={() => setShowModal(false)}
-                className="flex-1 px-4 py-2 border border-[--border] text-sm hover:bg-[--muted]/10"
+                className="flex-1 px-4 py-2 border border-[--border] text-[--foreground] text-sm hover:bg-[--muted]/10"
               >
                 Cancel
               </button>

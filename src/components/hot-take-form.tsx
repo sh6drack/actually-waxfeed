@@ -306,7 +306,7 @@ export function HotTakeForm({ album, onSubmit, onCancel }: HotTakeFormProps) {
           <button
             type="button"
             onClick={onCancel}
-            className="px-6 py-4 border border-[--border] font-bold text-sm tracking-wide hover:border-[--foreground] transition-colors"
+            className="px-6 py-4 border border-[--border] text-[--foreground] font-bold text-sm tracking-wide hover:border-[--foreground] transition-colors"
           >
             CANCEL
           </button>

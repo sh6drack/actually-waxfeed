@@ -32,7 +32,7 @@ export function BadgeShareButtons({ badgeId, albumTitle, label }: BadgeShareButt
     <div className="flex justify-center gap-3">
       <button
         onClick={handleCopy}
-        className="px-5 py-2.5 border border-[--border] text-sm hover:border-[#ffd700] hover:text-[#ffd700] transition-colors"
+        className="px-5 py-2.5 border border-[--border] text-[--foreground] text-sm hover:border-[#ffd700] hover:text-[#ffd700] transition-colors"
       >
         {copied ? "Copied!" : "Copy Link"}
       </button>
