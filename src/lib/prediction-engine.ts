@@ -227,51 +227,40 @@ async function computeSimilarAlbumAverage(
 }
 
 /**
+ * Check if a value falls within a range
+ */
+function isInRange(value: number, range: { min: number; max: number }): boolean {
+  return value >= range.min && value <= range.max
+}
+
+/**
  * Suggest vibes based on album audio features
  */
 function suggestVibes(albumProfile: AlbumAudioProfile): string[] {
-  const suggestions: Array<{ vibe: string; score: number }> = []
-
-  for (const [vibe, ranges] of Object.entries(VIBE_AUDIO_BASELINE)) {
-    let matchScore = 0
-    let totalChecks = 0
-
-    if (ranges.energy) {
-      totalChecks++
-      if (albumProfile.avgEnergy >= ranges.energy.min && albumProfile.avgEnergy <= ranges.energy.max) {
-        matchScore++
-      }
-    }
-    if (ranges.valence) {
-      totalChecks++
-      if (albumProfile.avgValence >= ranges.valence.min && albumProfile.avgValence <= ranges.valence.max) {
-        matchScore++
-      }
-    }
-    if (ranges.danceability) {
-      totalChecks++
-      if (albumProfile.avgDanceability >= ranges.danceability.min && albumProfile.avgDanceability <= ranges.danceability.max) {
-        matchScore++
-      }
-    }
-    if (ranges.acousticness) {
-      totalChecks++
-      if (albumProfile.avgAcousticness >= ranges.acousticness.min && albumProfile.avgAcousticness <= ranges.acousticness.max) {
-        matchScore++
-      }
-    }
-
-    if (totalChecks > 0) {
-      suggestions.push({ vibe, score: matchScore / totalChecks })
-    }
+  const featureMap: Record<string, number> = {
+    energy: albumProfile.avgEnergy,
+    valence: albumProfile.avgValence,
+    danceability: albumProfile.avgDanceability,
+    acousticness: albumProfile.avgAcousticness,
   }
 
-  // Sort by score and return top 5 with score >= 0.5
-  suggestions.sort((a, b) => b.score - a.score)
-  return suggestions
-    .filter(s => s.score >= 0.5)
+  const suggestions = Object.entries(VIBE_AUDIO_BASELINE)
+    .map(([vibe, ranges]) => {
+      const checks = Object.entries(ranges).filter(([key]) => key in featureMap)
+      if (checks.length === 0) return null
+
+      const matchScore = checks.filter(([key, range]) =>
+        isInRange(featureMap[key], range as { min: number; max: number })
+      ).length / checks.length
+
+      return { vibe, score: matchScore }
+    })
+    .filter((s): s is { vibe: string; score: number } => s !== null && s.score >= 0.5)
+    .sort((a, b) => b.score - a.score)
     .slice(0, 5)
     .map(s => s.vibe)
+
+  return suggestions
 }
 
 /**
@@ -308,8 +297,14 @@ function computeConfidence(
 }
 
 /**
+ * Pick a random item from an array
+ */
+function pickRandom<T>(options: T[]): T {
+  return options[Math.floor(Math.random() * options.length)]
+}
+
+/**
  * Generate reasoning strings for why this prediction was made
- * Now with more personality and variety
  */
 function generateReasoning(
   albumProfile: AlbumAudioProfile,
@@ -317,103 +312,86 @@ function generateReasoning(
   featureSimilarity: number
 ): string[] {
   const reasons: string[] = []
-  const energy = albumProfile.avgEnergy
-  const valence = albumProfile.avgValence
-  const dance = albumProfile.avgDanceability
-  const acoustic = albumProfile.avgAcousticness
-  const tempo = albumProfile.avgTempo
-  const ec = userDNA.featureCorrelations.energy
-  const vc = userDNA.featureCorrelations.valence
-  const dc = userDNA.featureCorrelations.danceability
-  const ac = userDNA.featureCorrelations.acousticness
+  const { avgEnergy: energy, avgValence: valence, avgDanceability: dance, avgAcousticness: acoustic, avgTempo: tempo } = albumProfile
+  const { energy: ec, valence: vc, danceability: dc, acousticness: ac } = userDNA.featureCorrelations
 
-  // Energy reasoning with personality
+  // Energy reasoning
   if (energy > 0.8 && ec > 0.3) {
-    const options = [
+    reasons.push(pickRandom([
       'This hits hard – exactly what you crave',
       'High octane energy, right in your wheelhouse',
       'The intensity here matches your taste perfectly',
       'Maximum energy – you live for this',
       'Power levels aligned with your preferences',
-    ]
-    reasons.push(options[Math.floor(Math.random() * options.length)])
+    ]))
   } else if (energy < 0.3 && ec < -0.2) {
-    const options = [
+    reasons.push(pickRandom([
       'Subdued energy you tend to vibe with',
       'The restrained sound suits your sensibilities',
       'Understated power – your kind of thing',
       'Calm intensity that resonates with you',
       'The quiet energy matches your wavelength',
-    ]
-    reasons.push(options[Math.floor(Math.random() * options.length)])
+    ]))
   } else if (energy > 0.7 && ec < -0.2) {
-    const options = [
+    reasons.push(pickRandom([
       'More intense than your usual picks',
       'Higher energy than you typically prefer',
       'Pushing your energy comfort zone',
-    ]
-    reasons.push(options[Math.floor(Math.random() * options.length)])
+    ]))
   } else if (energy < 0.3 && ec > 0.3) {
     reasons.push('Lower energy than your usual – could be a wildcard')
   }
 
   // Valence/mood reasoning
   if (valence > 0.75 && vc > 0.25) {
-    const options = [
+    reasons.push(pickRandom([
       'The uplifting mood aligns with what you love',
       'Positive vibes that match your taste',
       'This brightness tends to click with you',
       'Joyful energy that hits your sweet spot',
       'The optimistic tone suits your profile',
-    ]
-    reasons.push(options[Math.floor(Math.random() * options.length)])
+    ]))
   } else if (valence < 0.3 && vc < -0.2) {
-    const options = [
+    reasons.push(pickRandom([
       'The melancholy here resonates with you',
       'Darker mood that suits your palette',
       'The emotional weight matches your preferences',
       'This heaviness is your comfort zone',
       'The brooding atmosphere speaks to you',
-    ]
-    reasons.push(options[Math.floor(Math.random() * options.length)])
+    ]))
   } else if (valence > 0.7 && vc < -0.3) {
     reasons.push('Brighter than your usual fare')
   } else if (valence < 0.3 && vc > 0.3) {
     reasons.push('Darker mood than you typically gravitate toward')
-  } else if (valence > 0.4 && valence < 0.6) {
-    // Neutral valence observations
-    const neutralOptions = [
+  } else if (valence > 0.4 && valence < 0.6 && Math.random() > 0.7) {
+    reasons.push(pickRandom([
       'Emotionally balanced – could go either way',
       'Neither dark nor bright, interesting middle ground',
-    ]
-    if (Math.random() > 0.7) reasons.push(neutralOptions[Math.floor(Math.random() * neutralOptions.length)])
+    ]))
   }
 
   // Danceability reasoning
   if (dance > 0.75 && dc > 0.3) {
-    const options = [
+    reasons.push(pickRandom([
       'The groove factor is high – you love that',
       'Highly danceable, which you rate well',
       'Strong rhythmic pull that works for you',
-    ]
-    reasons.push(options[Math.floor(Math.random() * options.length)])
+    ]))
   } else if (dance < 0.4 && dc < -0.2) {
     reasons.push('Less focused on groove – which you appreciate')
   }
 
   // Acousticness reasoning
   if (acoustic > 0.65 && ac > 0.25) {
-    const options = [
+    reasons.push(pickRandom([
       'Organic/acoustic elements you enjoy',
       'The natural instrumentation fits your taste',
-    ]
-    reasons.push(options[Math.floor(Math.random() * options.length)])
+    ]))
   } else if (acoustic < 0.25 && ac < -0.2) {
-    const options = [
+    reasons.push(pickRandom([
       'Produced/electronic sound you prefer',
       'The polished production style suits you',
-    ]
-    reasons.push(options[Math.floor(Math.random() * options.length)])
+    ]))
   }
 
   // Tempo reasoning
@@ -425,42 +403,38 @@ function generateReasoning(
 
   // Similarity reasoning
   if (featureSimilarity > 0.75) {
-    const options = [
+    reasons.push(pickRandom([
       'Sonically similar to albums you\'ve loved',
       'This has the DNA of your favorites',
       'Sound profile matches your top-rated albums',
-    ]
-    reasons.push(options[Math.floor(Math.random() * options.length)])
+    ]))
   } else if (featureSimilarity < 0.25) {
-    const options = [
+    reasons.push(pickRandom([
       'Outside your typical sonic comfort zone',
       'Different from your usual picks',
       'A departure from your established preferences',
-    ]
-    reasons.push(options[Math.floor(Math.random() * options.length)])
+    ]))
   }
 
-  // If no specific reasons, add contextual fallback
+  // Fallback if no specific reasons
   if (reasons.length === 0) {
-    const fallbacks = [
+    reasons.push(pickRandom([
       'Based on patterns in your rating history',
       'Drawing from your overall listening profile',
       'Analyzing your established preferences',
       'Cross-referencing similar albums you\'ve rated',
       'Consulting your taste fingerprint',
       'Running the numbers on your profile',
-    ]
-    reasons.push(fallbacks[Math.floor(Math.random() * fallbacks.length)])
+    ]))
   }
 
-  // Occasionally add a second contextual reason
+  // Occasionally add a secondary reason
   if (reasons.length === 1 && Math.random() > 0.6) {
-    const secondaryReasons = [
+    reasons.push(pickRandom([
       'Your history suggests a pattern here',
       'This fits a trend in your ratings',
       'Similar sonic territory to past favorites',
-    ]
-    reasons.push(secondaryReasons[Math.floor(Math.random() * secondaryReasons.length)])
+    ]))
   }
 
   return reasons.slice(0, 3)

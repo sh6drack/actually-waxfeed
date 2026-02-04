@@ -1399,6 +1399,15 @@ function PauseIcon({ className }: { className?: string }) {
   )
 }
 
+// DNA Helix Icon - reusable across the page
+function DNAIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+      <path d="M12 2v20M4 6c4 0 4 4 8 4s4-4 8-4M4 18c4 0 4-4 8-4s4 4 8 4" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 // Track Waveform
 function TrackWaveform({ trackId, isPlaying, waveform }: { trackId: string; isPlaying: boolean; waveform?: number[] | null }) {
   const bars = waveform && waveform.length === 40
@@ -1555,9 +1564,7 @@ function DecipherProgressBar({
             <div className="flex items-center gap-3">
               {/* DNA Helix Icon */}
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500/20 to-cyan-500/20 flex items-center justify-center border border-white/[0.06]">
-                <svg className="w-4 h-4 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-                  <path d="M12 2v20M4 6c4 0 4 4 8 4s4-4 8-4M4 18c4 0 4-4 8-4s4 4 8 4" strokeLinecap="round" />
-                </svg>
+                <DNAIcon className="w-4 h-4 text-cyan-400" />
               </div>
               <div>
                 <span className="text-[10px] tracking-[0.2em] uppercase text-white/30 font-medium">Audio DNA</span>
@@ -1740,9 +1747,7 @@ function MobileAudioDNAOnboarding() {
     <div className="flex items-center gap-3 p-3 rounded-xl bg-[#0a0a0a] border border-white/[0.05]">
       {/* Mini DNA icon with breathing */}
       <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500/15 to-cyan-500/15 flex items-center justify-center flex-shrink-0 animate-pulse">
-        <svg className="w-3.5 h-3.5 text-violet-400/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-          <path d="M12 2v20M4 6c4 0 4 4 8 4s4-4 8-4M4 18c4 0 4-4 8-4s4 4 8 4" strokeLinecap="round" />
-        </svg>
+        <DNAIcon className="w-3.5 h-3.5 text-violet-400/50" />
       </div>
 
       <div className="flex-1 min-w-0">
@@ -1791,9 +1796,7 @@ function MobileDecipherProgress({
     <div className="flex items-center gap-3 p-3 rounded-xl bg-[#0a0a0a] border border-white/[0.05]">
       {/* Mini DNA icon */}
       <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500/15 to-cyan-500/15 flex items-center justify-center flex-shrink-0">
-        <svg className="w-3.5 h-3.5 text-cyan-400/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-          <path d="M12 2v20M4 6c4 0 4 4 8 4s4-4 8-4M4 18c4 0 4-4 8-4s4 4 8 4" strokeLinecap="round" />
-        </svg>
+        <DNAIcon className="w-3.5 h-3.5 text-cyan-400/70" />
       </div>
 
       {/* Progress section */}
@@ -2051,6 +2054,38 @@ function PredictionDisplay({
   )
 }
 
+// Streak intensity configuration
+type StreakIntensity = 'normal' | 'major' | 'epic' | 'legendary'
+
+interface IntensityConfig {
+  bgOpacity: number
+  borderOpacity: number
+  shadow: string
+  textGlow: boolean
+  messageOpacity: number
+  rings: number
+}
+
+const INTENSITY_CONFIGS: Record<StreakIntensity, IntensityConfig> = {
+  normal: { bgOpacity: 0.08, borderOpacity: 0.2, shadow: 'none', textGlow: false, messageOpacity: 0.6, rings: 0 },
+  major: { bgOpacity: 0.12, borderOpacity: 0.35, shadow: '0 0 15px rgba(255, 215, 0, 0.15)', textGlow: false, messageOpacity: 0.6, rings: 0 },
+  epic: { bgOpacity: 0.15, borderOpacity: 0.4, shadow: '0 0 20px rgba(255, 215, 0, 0.2)', textGlow: false, messageOpacity: 0.7, rings: 1 },
+  legendary: { bgOpacity: 0.2, borderOpacity: 0.5, shadow: '0 0 30px rgba(255, 215, 0, 0.3), inset 0 0 20px rgba(255, 215, 0, 0.1)', textGlow: true, messageOpacity: 0.8, rings: 2 },
+}
+
+const SIZE_CLASSES = {
+  small: { container: 'px-2 py-1', number: 'text-xl', dot: 'w-2 h-2', label: 'text-[9px]' },
+  medium: { container: 'px-4 py-2.5', number: 'text-2xl', dot: 'w-3 h-3', label: 'text-xs' },
+  large: { container: 'px-6 py-4', number: 'text-3xl', dot: 'w-4 h-4', label: 'text-xs' },
+} as const
+
+function getStreakIntensity(streak: number): StreakIntensity {
+  if (streak >= 50) return 'legendary'
+  if (streak >= 25) return 'epic'
+  if (streak >= 10) return 'major'
+  return 'normal'
+}
+
 // Streak Badge with escalating intensity
 function StreakBadge({
   streak,
@@ -2063,56 +2098,27 @@ function StreakBadge({
   streakMessage: string | null
   size?: 'small' | 'medium' | 'large'
 }) {
-  // Determine intensity tier
-  const isLegendary = streak >= 50
-  const isEpic = streak >= 25
-  const isMajor = streak >= 10
-
-  const sizeClasses = {
-    small: { container: 'px-2 py-1', number: 'text-xl', dot: 'w-2 h-2', label: 'text-[9px]' },
-    medium: { container: 'px-4 py-2.5', number: 'text-2xl', dot: 'w-3 h-3', label: 'text-xs' },
-    large: { container: 'px-6 py-4', number: 'text-3xl', dot: 'w-4 h-4', label: 'text-xs' },
-  }[size]
+  const intensity = getStreakIntensity(streak)
+  const config = INTENSITY_CONFIGS[intensity]
+  const sizeClasses = SIZE_CLASSES[size]
 
   return (
     <div className="inline-flex flex-col items-center gap-2">
       <div className="relative">
-        {/* Extra rings for major milestones */}
-        {isLegendary && (
-          <>
-            <div className="absolute -inset-3 rounded-3xl border border-[#ffd700]/10 animate-ping" style={{ animationDuration: '2s' }} />
-            <div className="absolute -inset-2 rounded-2xl border border-[#ffd700]/20 animate-ping" style={{ animationDuration: '1.5s' }} />
-          </>
+        {/* Extra rings for milestones */}
+        {config.rings >= 2 && (
+          <div className="absolute -inset-3 rounded-3xl border border-[#ffd700]/10 animate-ping" style={{ animationDuration: '2s' }} />
         )}
-        {isEpic && !isLegendary && (
-          <div className="absolute -inset-2 rounded-2xl border border-[#ffd700]/15 animate-ping" style={{ animationDuration: '1.5s' }} />
+        {config.rings >= 1 && (
+          <div className="absolute -inset-2 rounded-2xl border border-[#ffd700]/20 animate-ping" style={{ animationDuration: '1.5s' }} />
         )}
 
         <div
-          className={`flex items-center gap-3 ${sizeClasses.container} rounded-2xl transition-all`}
+          className={`flex items-center gap-3 ${sizeClasses.container} rounded-2xl transition-all border`}
           style={{
-            backgroundColor: isLegendary
-              ? 'rgba(255, 215, 0, 0.2)'
-              : isEpic
-              ? 'rgba(255, 215, 0, 0.15)'
-              : isMajor
-              ? 'rgba(255, 215, 0, 0.12)'
-              : 'rgba(255, 215, 0, 0.08)',
-            borderWidth: 1,
-            borderColor: isLegendary
-              ? 'rgba(255, 215, 0, 0.5)'
-              : isEpic
-              ? 'rgba(255, 215, 0, 0.4)'
-              : isMajor
-              ? 'rgba(255, 215, 0, 0.35)'
-              : 'rgba(255, 215, 0, 0.2)',
-            boxShadow: isLegendary
-              ? '0 0 30px rgba(255, 215, 0, 0.3), inset 0 0 20px rgba(255, 215, 0, 0.1)'
-              : isEpic
-              ? '0 0 20px rgba(255, 215, 0, 0.2)'
-              : isMajor
-              ? '0 0 15px rgba(255, 215, 0, 0.15)'
-              : 'none',
+            backgroundColor: `rgba(255, 215, 0, ${config.bgOpacity})`,
+            borderColor: `rgba(255, 215, 0, ${config.borderOpacity})`,
+            boxShadow: config.shadow,
           }}
         >
           <div className="relative">
@@ -2120,15 +2126,12 @@ function StreakBadge({
             <div className={`absolute inset-0 ${sizeClasses.dot} rounded-full bg-[#ffd700] animate-ping`} />
           </div>
           <span
-            className={`${sizeClasses.number} font-bold tabular-nums`}
-            style={{
-              color: isLegendary ? '#ffd700' : isEpic ? '#ffd700' : '#ffd700',
-              textShadow: isLegendary ? '0 0 20px rgba(255, 215, 0, 0.5)' : 'none',
-            }}
+            className={`${sizeClasses.number} font-bold tabular-nums text-[#ffd700]`}
+            style={{ textShadow: config.textGlow ? '0 0 20px rgba(255, 215, 0, 0.5)' : 'none' }}
           >
             {streak}
           </span>
-          <span className={`${sizeClasses.label} uppercase tracking-wider`} style={{ color: 'rgba(255, 215, 0, 0.7)' }}>
+          <span className={`${sizeClasses.label} uppercase tracking-wider text-[#ffd700]/70`}>
             streak
           </span>
         </div>
@@ -2138,12 +2141,8 @@ function StreakBadge({
         <span
           className="text-[11px]"
           style={{
-            color: isLegendary
-              ? 'rgba(255, 215, 0, 0.8)'
-              : isEpic
-              ? 'rgba(255, 215, 0, 0.7)'
-              : 'rgba(255, 215, 0, 0.6)',
-            textShadow: isLegendary ? '0 0 10px rgba(255, 215, 0, 0.3)' : 'none',
+            color: `rgba(255, 215, 0, ${config.messageOpacity})`,
+            textShadow: config.textGlow ? '0 0 10px rgba(255, 215, 0, 0.3)' : 'none',
           }}
         >
           {streakMessage}

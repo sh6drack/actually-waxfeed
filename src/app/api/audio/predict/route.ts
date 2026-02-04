@@ -5,6 +5,61 @@ import { predictRating, checkPredictionMatch } from '@/lib/prediction-engine'
 import { updateAudioDNAFromRating, getStreakMessage, getDecipherMessage } from '@/lib/audio-dna'
 import { prisma } from '@/lib/prisma'
 
+type CelebrationType = 'predicted' | 'surprise' | 'perfect' | 'close' | 'miss'
+
+interface Celebration {
+  type: CelebrationType
+  message: string
+}
+
+function pickRandom<T>(options: T[]): T {
+  return options[Math.floor(Math.random() * options.length)]
+}
+
+function generateCelebration(
+  matchResult: ReturnType<typeof checkPredictionMatch>,
+  actualRating: number,
+  predictedRating: number,
+  streakLost: boolean
+): Celebration | null {
+  if (matchResult.isPerfect) {
+    return {
+      type: 'perfect',
+      message: pickRandom(['Nailed it!', 'Spot on!', 'Perfect read!', 'Exactly as predicted', 'We know your taste']),
+    }
+  }
+
+  if (matchResult.matchQuality === 'close') {
+    return {
+      type: 'close',
+      message: pickRandom(['So close!', 'Nearly perfect!', 'Right on target', 'Almost nailed it', 'Just a hair off']),
+    }
+  }
+
+  if (matchResult.isMatch) {
+    return {
+      type: 'predicted',
+      message: pickRandom(['Close enough!', 'In the ballpark', 'Prediction confirmed', 'We got it']),
+    }
+  }
+
+  if (matchResult.isSurprise) {
+    const messages = actualRating > predictedRating
+      ? ['You loved it more than expected!', 'A pleasant surprise!', 'Exceeded predictions', 'You found something special']
+      : ['Not quite your thing, noted!', 'Unexpected twist', 'Learning from this one', 'Taste is unpredictable']
+    return { type: 'surprise', message: pickRandom(messages) }
+  }
+
+  if (matchResult.matchQuality === 'miss') {
+    const messages = streakLost
+      ? ['Streak broken – recalibrating', 'Reset. Still learning.', 'Back to zero. Taste evolves.']
+      : ['Just outside the range', 'Close, but not quite', 'Noted for next time', 'Adjusting parameters']
+    return { type: 'miss', message: pickRandom(messages) }
+  }
+
+  return null
+}
+
 /**
  * POST /api/audio/predict
  * Get a prediction for how the user will rate an album
@@ -192,81 +247,8 @@ export async function PUT(request: NextRequest) {
     // Track if streak was lost
     const streakLost = updateResult.newStreak === 0 && !matchResult.isMatch && !matchResult.isSurprise
 
-    // Generate celebration messages with more variety
-    let celebration: { type: 'predicted' | 'surprise' | 'perfect' | 'close' | 'miss'; message: string } | null = null
-
-    if (matchResult.isPerfect) {
-      const perfectMessages = [
-        'Nailed it! 🎯',
-        'Spot on!',
-        'Perfect read!',
-        'Exactly as predicted',
-        'We know your taste',
-      ]
-      celebration = {
-        type: 'perfect',
-        message: perfectMessages[Math.floor(Math.random() * perfectMessages.length)],
-      }
-    } else if (matchResult.matchQuality === 'close') {
-      const closeMessages = [
-        'So close!',
-        'Nearly perfect!',
-        'Right on target',
-        'Almost nailed it',
-        'Just a hair off',
-      ]
-      celebration = {
-        type: 'close',
-        message: closeMessages[Math.floor(Math.random() * closeMessages.length)],
-      }
-    } else if (matchResult.isMatch) {
-      const matchMessages = [
-        'Close enough!',
-        'In the ballpark',
-        'Prediction confirmed',
-        'We got it',
-      ]
-      celebration = {
-        type: 'predicted',
-        message: matchMessages[Math.floor(Math.random() * matchMessages.length)],
-      }
-    } else if (matchResult.isSurprise) {
-      const surpriseMessages = actualRating > predictedRating
-        ? [
-          'You loved it more than expected!',
-          'A pleasant surprise!',
-          'Exceeded predictions',
-          'You found something special',
-        ]
-        : [
-          'Not quite your thing, noted!',
-          'Unexpected twist',
-          'Learning from this one',
-          'Taste is unpredictable',
-        ]
-      celebration = {
-        type: 'surprise',
-        message: surpriseMessages[Math.floor(Math.random() * surpriseMessages.length)],
-      }
-    } else if (matchResult.matchQuality === 'miss') {
-      // Near miss - didn't quite match but wasn't a surprise either
-      const missMessages = streakLost
-        ? [
-            'Streak broken – recalibrating',
-            'Reset. Still learning.',
-            'Back to zero. Taste evolves.',
-          ]
-        : [
-            'Just outside the range',
-            'Close, but not quite',
-            'Noted for next time',
-            'Adjusting parameters',
-          ]
-      celebration = {
-        type: 'miss',
-        message: missMessages[Math.floor(Math.random() * missMessages.length)],
-      }
-    }
+    // Generate celebration message
+    const celebration = generateCelebration(matchResult, actualRating, predictedRating, streakLost)
 
     return successResponse({
       result: {

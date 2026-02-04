@@ -6,18 +6,27 @@ interface RatingSliderProps {
   value: number
   onChange: (value: number) => void
   disabled?: boolean
-  predictedRating?: number // Optional: show prediction marker
+  predictedRating?: number
 }
 
-// Rating tier descriptors
-const getTierLabel = (value: number): { label: string; color: string } => {
-  if (value <= 2) return { label: "Skip", color: "#ef4444" }
-  if (value <= 4) return { label: "Meh", color: "#f97316" }
-  if (value <= 5.5) return { label: "Decent", color: "#eab308" }
-  if (value <= 7) return { label: "Solid", color: "#84cc16" }
-  if (value <= 8.5) return { label: "Great", color: "#22c55e" }
-  if (value <= 9.5) return { label: "Fire", color: "#10b981" }
-  return { label: "Classic", color: "#ffd700" }
+interface TierInfo {
+  label: string
+  color: string
+}
+
+const TIER_THRESHOLDS: Array<{ max: number; label: string; color: string }> = [
+  { max: 2, label: "Skip", color: "#ef4444" },
+  { max: 4, label: "Meh", color: "#f97316" },
+  { max: 5.5, label: "Decent", color: "#eab308" },
+  { max: 7, label: "Solid", color: "#84cc16" },
+  { max: 8.5, label: "Great", color: "#22c55e" },
+  { max: 9.5, label: "Fire", color: "#10b981" },
+  { max: 10, label: "Classic", color: "#ffd700" },
+]
+
+function getTierLabel(value: number): TierInfo {
+  const tier = TIER_THRESHOLDS.find(t => value <= t.max)
+  return tier ? { label: tier.label, color: tier.color } : { label: "Classic", color: "#ffd700" }
 }
 
 // Get track gradient based on value
@@ -37,42 +46,37 @@ const getTrackGradient = (value: number): string => {
 
 export function RatingSlider({ value, onChange, disabled, predictedRating }: RatingSliderProps) {
   const [isDragging, setIsDragging] = useState(false)
-  const [showTooltip, setShowTooltip] = useState(false)
   const trackRef = useRef<HTMLDivElement>(null)
   const tier = getTierLabel(value)
 
-  // Handle mouse/touch interactions for custom slider
-  const handleInteraction = (clientX: number) => {
+  function handleInteraction(clientX: number): void {
     if (!trackRef.current || disabled) return
     const rect = trackRef.current.getBoundingClientRect()
     const percent = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
-    const newValue = Math.round(percent * 100) / 10 // Round to 0.1
+    const newValue = Math.round(percent * 100) / 10
     onChange(newValue)
   }
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+  function handleMouseDown(e: React.MouseEvent): void {
     setIsDragging(true)
-    setShowTooltip(true)
     handleInteraction(e.clientX)
   }
 
-  const handleTouchStart = (e: React.TouchEvent) => {
+  function handleTouchStart(e: React.TouchEvent): void {
     setIsDragging(true)
-    setShowTooltip(true)
     handleInteraction(e.touches[0].clientX)
   }
 
   useEffect(() => {
     if (!isDragging) return
 
-    const handleMove = (e: MouseEvent | TouchEvent) => {
+    function handleMove(e: MouseEvent | TouchEvent): void {
       const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
       handleInteraction(clientX)
     }
 
-    const handleEnd = () => {
+    function handleEnd(): void {
       setIsDragging(false)
-      setTimeout(() => setShowTooltip(false), 500)
     }
 
     window.addEventListener('mousemove', handleMove)
@@ -152,12 +156,9 @@ export function RatingSlider({ value, onChange, disabled, predictedRating }: Rat
             {[0, 2, 4, 5, 6, 8, 10].map((tick) => (
               <div
                 key={tick}
-                className="w-px h-3 transition-colors duration-200"
-                style={{
-                  background: tick <= value ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.08)',
-                  marginLeft: tick === 0 ? 0 : undefined,
-                  marginRight: tick === 10 ? 0 : undefined,
-                }}
+                className={`w-px h-3 transition-colors duration-200 ${
+                  tick <= value ? 'bg-white/30' : 'bg-white/[0.08]'
+                }`}
               />
             ))}
           </div>
@@ -231,8 +232,6 @@ export function RatingSlider({ value, onChange, disabled, predictedRating }: Rat
         step="0.1"
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        onFocus={() => setShowTooltip(true)}
-        onBlur={() => setShowTooltip(false)}
         disabled={disabled}
         className="sr-only"
         aria-label={`Rating: ${value.toFixed(1)} out of 10 (${tier.label})`}
