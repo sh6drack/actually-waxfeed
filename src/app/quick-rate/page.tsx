@@ -535,11 +535,31 @@ export default function QuickRatePage() {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="flex flex-col items-center gap-6">
-          <div className="relative">
-            <div className="w-16 h-16 border border-[#333] rounded-full animate-pulse" />
-            <div className="absolute inset-0 w-16 h-16 border-t border-[#ffd700] rounded-full animate-spin" />
+          {/* DNA-themed loading animation */}
+          <div className="relative w-16 h-16">
+            {/* Outer ring */}
+            <div className="absolute inset-0 rounded-full border border-white/5" />
+            {/* Spinning gradient ring */}
+            <div
+              className="absolute inset-0 rounded-full animate-spin"
+              style={{
+                background: 'conic-gradient(from 0deg, transparent, #8b5cf6 25%, #22d3ee 50%, transparent)',
+                mask: 'radial-gradient(circle, transparent 60%, black 61%)',
+                WebkitMask: 'radial-gradient(circle, transparent 60%, black 61%)',
+                animationDuration: '1.5s',
+              }}
+            />
+            {/* Inner DNA icon */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <svg className="w-6 h-6 text-cyan-400/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                <path d="M12 2v20M4 6c4 0 4 4 8 4s4-4 8-4M4 18c4 0 4-4 8-4s4 4 8 4" strokeLinecap="round" />
+              </svg>
+            </div>
           </div>
-          <span className="text-[10px] tracking-[0.4em] uppercase text-neutral-600 font-light">Loading</span>
+          <div className="flex flex-col items-center gap-1">
+            <span className="text-[10px] tracking-[0.3em] uppercase text-white/30 font-medium">Quick Rate</span>
+            <span className="text-[8px] tracking-wider text-white/15">Initializing</span>
+          </div>
         </div>
       </div>
     )
@@ -691,11 +711,31 @@ export default function QuickRatePage() {
       {/* Main Content */}
       {loadingAlbums && albums.length === 0 ? (
         <div className="min-h-screen flex flex-col items-center justify-center">
-          <div className="relative mb-6">
-            <div className="w-20 h-20 border border-white/10 rounded-full animate-pulse" />
-            <div className="absolute inset-0 w-20 h-20 border-t border-[#ffd700] rounded-full animate-spin" />
+          {/* DNA-themed album loading */}
+          <div className="relative w-20 h-20 mb-6">
+            {/* Outer ring */}
+            <div className="absolute inset-0 rounded-full border border-white/5" />
+            {/* Spinning gradient ring */}
+            <div
+              className="absolute inset-0 rounded-full animate-spin"
+              style={{
+                background: 'conic-gradient(from 0deg, transparent, #ffd700 30%, #22d3ee 60%, transparent)',
+                mask: 'radial-gradient(circle, transparent 60%, black 61%)',
+                WebkitMask: 'radial-gradient(circle, transparent 60%, black 61%)',
+                animationDuration: '1.2s',
+              }}
+            />
+            {/* Inner vinyl icon */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                <div className="w-2 h-2 rounded-full bg-[#ffd700]/50" />
+              </div>
+            </div>
           </div>
-          <span className="text-[10px] tracking-[0.4em] uppercase text-neutral-600">Loading albums</span>
+          <div className="flex flex-col items-center gap-1">
+            <span className="text-[10px] tracking-[0.3em] uppercase text-white/30 font-medium">Finding Albums</span>
+            <span className="text-[8px] tracking-wider text-white/15">Curating your queue</span>
+          </div>
         </div>
       ) : currentAlbum ? (
         <>
@@ -1242,7 +1282,16 @@ export default function QuickRatePage() {
                 </div>
 
                 {/* Actions */}
-                {error && <p className="text-red-400 text-xs text-center mb-3">{error}</p>}
+                {error && (
+                  <div className="flex items-center justify-center gap-2 px-4 py-2.5 mb-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                    <svg className="w-4 h-4 text-red-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    <p className="text-red-400 text-xs">{error}</p>
+                  </div>
+                )}
                 <div className="flex gap-3 mb-6">
                   <button
                     onClick={skip}
@@ -1256,7 +1305,12 @@ export default function QuickRatePage() {
                     disabled={submitting}
                     className="flex-1 py-4 rounded-full bg-[#ffd700] text-black font-semibold text-sm uppercase tracking-wider hover:bg-[#ffe44d] transition-all disabled:opacity-50 hover:scale-[1.01]"
                   >
-                    {submitting ? '...' : 'Rate Album'}
+                    {submitting ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                        Saving
+                      </span>
+                    ) : 'Rate Album'}
                   </button>
                 </div>
 
