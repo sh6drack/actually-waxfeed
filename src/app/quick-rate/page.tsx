@@ -780,6 +780,12 @@ export default function QuickRatePage() {
                           <span className="text-[9px] tracking-[0.2em] uppercase text-white/30">Prediction</span>
                         </div>
                         <div className="flex items-center gap-2">
+                          {predictionData.prediction.confidence >= 75 && (
+                            <span className="text-[7px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400/60 uppercase tracking-wide border border-emerald-500/20 flex items-center gap-1">
+                              <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
+                              Locked
+                            </span>
+                          )}
                           {predictionData.prediction.confidence < 35 && (
                             <span className="text-[7px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400/60 uppercase tracking-wide border border-purple-500/20">
                               Learning
@@ -1659,6 +1665,12 @@ function PredictionDisplay({
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-[8px] tracking-[0.3em] uppercase text-white/25 font-medium">Predicted</span>
+                {prediction.confidence >= 75 && (
+                  <span className="text-[7px] px-1.5 py-0.5 rounded-sm bg-emerald-500/10 text-emerald-400/70 uppercase tracking-wider border border-emerald-500/20 flex items-center gap-1">
+                    <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
+                    Locked In
+                  </span>
+                )}
                 {prediction.confidence < 35 && (
                   <span className="text-[7px] px-1.5 py-0.5 rounded-sm bg-violet-500/10 text-violet-400/70 uppercase tracking-wider border border-violet-500/20">
                     Calibrating
@@ -1994,7 +2006,7 @@ function PredictionCelebration({
         />
       </div>
 
-      <div className="relative text-center p-12 max-w-md animate-in zoom-in-95 slide-in-from-bottom-4 duration-500">
+      <div className="relative text-center p-6 sm:p-12 max-w-md mx-4 animate-in zoom-in-95 slide-in-from-bottom-4 duration-500">
         {/* First prediction badge */}
         {isFirstPrediction && (
           <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-to-r from-violet-500/20 to-cyan-500/20 border border-violet-400/30 animate-in slide-in-from-top duration-500">
