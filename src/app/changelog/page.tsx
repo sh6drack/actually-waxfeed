@@ -29,6 +29,11 @@ const CHANGELOG_ENTRIES = [
         title: "Code Quality",
         description: "Fixed 70+ lint errors across the platform for improved stability.",
       },
+      {
+        type: "fix" as const,
+        title: "Button Visibility",
+        description: "Ghost buttons now have explicit text colors for better visibility across themes.",
+      },
     ],
   },
   {
