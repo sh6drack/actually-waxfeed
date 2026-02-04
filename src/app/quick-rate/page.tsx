@@ -52,7 +52,7 @@ interface PredictionResult {
     decipherMessage: string | null
   }
   celebration: {
-    type: 'predicted' | 'surprise' | 'perfect'
+    type: 'predicted' | 'surprise' | 'perfect' | 'close'
     message: string
   } | null
   // For showing comparison in celebration
@@ -1667,6 +1667,108 @@ function PredictionDisplay({
   )
 }
 
+// Streak Badge with escalating intensity
+function StreakBadge({
+  streak,
+  isNewMilestone,
+  streakMessage,
+  size = 'medium',
+}: {
+  streak: number
+  isNewMilestone: boolean
+  streakMessage: string | null
+  size?: 'small' | 'medium' | 'large'
+}) {
+  // Determine intensity tier
+  const isLegendary = streak >= 50
+  const isEpic = streak >= 25
+  const isMajor = streak >= 10
+
+  const sizeClasses = {
+    small: { container: 'px-2 py-1', number: 'text-xl', dot: 'w-2 h-2', label: 'text-[9px]' },
+    medium: { container: 'px-4 py-2.5', number: 'text-2xl', dot: 'w-3 h-3', label: 'text-xs' },
+    large: { container: 'px-6 py-4', number: 'text-3xl', dot: 'w-4 h-4', label: 'text-xs' },
+  }[size]
+
+  return (
+    <div className="inline-flex flex-col items-center gap-2">
+      <div className="relative">
+        {/* Extra rings for major milestones */}
+        {isLegendary && (
+          <>
+            <div className="absolute -inset-3 rounded-3xl border border-[#ffd700]/10 animate-ping" style={{ animationDuration: '2s' }} />
+            <div className="absolute -inset-2 rounded-2xl border border-[#ffd700]/20 animate-ping" style={{ animationDuration: '1.5s' }} />
+          </>
+        )}
+        {isEpic && !isLegendary && (
+          <div className="absolute -inset-2 rounded-2xl border border-[#ffd700]/15 animate-ping" style={{ animationDuration: '1.5s' }} />
+        )}
+
+        <div
+          className={`flex items-center gap-3 ${sizeClasses.container} rounded-2xl transition-all`}
+          style={{
+            backgroundColor: isLegendary
+              ? 'rgba(255, 215, 0, 0.2)'
+              : isEpic
+              ? 'rgba(255, 215, 0, 0.15)'
+              : isMajor
+              ? 'rgba(255, 215, 0, 0.12)'
+              : 'rgba(255, 215, 0, 0.08)',
+            borderWidth: 1,
+            borderColor: isLegendary
+              ? 'rgba(255, 215, 0, 0.5)'
+              : isEpic
+              ? 'rgba(255, 215, 0, 0.4)'
+              : isMajor
+              ? 'rgba(255, 215, 0, 0.35)'
+              : 'rgba(255, 215, 0, 0.2)',
+            boxShadow: isLegendary
+              ? '0 0 30px rgba(255, 215, 0, 0.3), inset 0 0 20px rgba(255, 215, 0, 0.1)'
+              : isEpic
+              ? '0 0 20px rgba(255, 215, 0, 0.2)'
+              : isMajor
+              ? '0 0 15px rgba(255, 215, 0, 0.15)'
+              : 'none',
+          }}
+        >
+          <div className="relative">
+            <div className={`${sizeClasses.dot} rounded-full bg-[#ffd700]`} />
+            <div className={`absolute inset-0 ${sizeClasses.dot} rounded-full bg-[#ffd700] animate-ping`} />
+          </div>
+          <span
+            className={`${sizeClasses.number} font-bold tabular-nums`}
+            style={{
+              color: isLegendary ? '#ffd700' : isEpic ? '#ffd700' : '#ffd700',
+              textShadow: isLegendary ? '0 0 20px rgba(255, 215, 0, 0.5)' : 'none',
+            }}
+          >
+            {streak}
+          </span>
+          <span className={`${sizeClasses.label} uppercase tracking-wider`} style={{ color: 'rgba(255, 215, 0, 0.7)' }}>
+            streak
+          </span>
+        </div>
+      </div>
+
+      {isNewMilestone && streakMessage && (
+        <span
+          className="text-[11px]"
+          style={{
+            color: isLegendary
+              ? 'rgba(255, 215, 0, 0.8)'
+              : isEpic
+              ? 'rgba(255, 215, 0, 0.7)'
+              : 'rgba(255, 215, 0, 0.6)',
+            textShadow: isLegendary ? '0 0 10px rgba(255, 215, 0, 0.3)' : 'none',
+          }}
+        >
+          {streakMessage}
+        </span>
+      )}
+    </div>
+  )
+}
+
 // Audio Feature Bar - VU Meter Inspired Design
 function AudioFeatureBar({ label, value, color, icon }: { label: string; value: number; color: string; icon?: string }) {
   // Generate segments for VU meter effect
@@ -1723,6 +1825,7 @@ function PredictionCelebration({
   onClose: () => void
 }) {
   const isPerfect = result.result.perfect
+  const isClose = result.celebration?.type === 'close'
   const isMatch = result.result.match
   const isSurprise = result.result.surprise
 
@@ -1742,6 +1845,8 @@ function PredictionCelebration({
           style={{
             background: isPerfect
               ? 'radial-gradient(circle at center, rgba(255, 215, 0, 0.15) 0%, transparent 50%)'
+              : isClose
+              ? 'radial-gradient(circle at center, rgba(34, 211, 238, 0.12) 0%, rgba(255, 215, 0, 0.05) 30%, transparent 50%)'
               : isMatch
               ? 'radial-gradient(circle at center, rgba(34, 211, 238, 0.1) 0%, transparent 50%)'
               : 'radial-gradient(circle at center, rgba(168, 85, 247, 0.1) 0%, transparent 50%)',
@@ -1814,21 +1919,82 @@ function PredictionCelebration({
 
             <p className="text-white/50 text-sm mb-6">{result.celebration?.message || 'Exact prediction!'}</p>
 
-            {/* Streak badge - extra prominent for perfect */}
+            {/* Streak badge - scales with milestone intensity */}
             {result.streakUpdate.newStreak > 0 && (
-              <div className="inline-flex flex-col items-center gap-2">
-                <div className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-[#ffd700]/10 border border-[#ffd700]/30">
-                  <div className="relative">
-                    <div className="w-4 h-4 rounded-full bg-[#ffd700]" />
-                    <div className="absolute inset-0 w-4 h-4 rounded-full bg-[#ffd700] animate-ping" />
-                  </div>
-                  <span className="text-3xl font-bold text-[#ffd700] tabular-nums">{result.streakUpdate.newStreak}</span>
-                  <span className="text-xs text-[#ffd700]/70 uppercase tracking-wider">streak</span>
-                </div>
-                {result.streakUpdate.isNewMilestone && result.streakUpdate.streakMessage && (
-                  <span className="text-[11px] text-[#ffd700]/60">{result.streakUpdate.streakMessage}</span>
-                )}
+              <StreakBadge
+                streak={result.streakUpdate.newStreak}
+                isNewMilestone={result.streakUpdate.isNewMilestone}
+                streakMessage={result.streakUpdate.streakMessage}
+                size="large"
+              />
+            )}
+          </>
+        ) : isClose ? (
+          <>
+            {/* Close call celebration - cyan to gold gradient theme */}
+            <div className="relative mb-6">
+              {/* Multiple rings with gradient effect */}
+              <div className="absolute inset-0 w-26 h-26 mx-auto -mt-1 rounded-full border border-cyan-400/20 animate-ping" style={{ animationDuration: '1.2s' }} />
+              <div className="absolute inset-0 w-24 h-24 mx-auto rounded-full border-2 border-[#ffd700]/25 animate-ping" style={{ animationDuration: '1s' }} />
+              {/* Inner glow with gradient */}
+              <div
+                className="w-24 h-24 mx-auto rounded-full flex items-center justify-center"
+                style={{
+                  background: 'radial-gradient(circle, rgba(34, 211, 238, 0.25) 0%, rgba(255, 215, 0, 0.1) 60%, transparent 70%)',
+                  boxShadow: '0 0 70px rgba(34, 211, 238, 0.3), 0 0 40px rgba(255, 215, 0, 0.15), inset 0 0 35px rgba(34, 211, 238, 0.1)',
+                }}
+              >
+                <svg className="w-11 h-11" viewBox="0 0 24 24" fill="none" stroke="url(#closeGradient)" strokeWidth={2}>
+                  <defs>
+                    <linearGradient id="closeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#22d3ee" />
+                      <stop offset="100%" stopColor="#ffd700" />
+                    </linearGradient>
+                  </defs>
+                  <circle cx="12" cy="12" r="10" className="opacity-30" />
+                  <circle cx="12" cy="12" r="6" className="opacity-60" />
+                  <circle cx="12" cy="12" r="2" fill="url(#closeGradient)" />
+                </svg>
               </div>
+            </div>
+
+            <p className="text-[10px] tracking-[0.4em] uppercase text-cyan-400/50 mb-2">Almost There</p>
+            <h3
+              className="text-3xl font-bold mb-3"
+              style={{
+                background: 'linear-gradient(135deg, #22d3ee, #ffd700)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              SO CLOSE
+            </h3>
+
+            {/* Rating comparison - shows how close */}
+            {result.predictedRating !== undefined && result.actualRating !== undefined && (
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <div className="flex flex-col items-center">
+                  <span className="text-[9px] text-white/30 uppercase tracking-wider">Predicted</span>
+                  <span className="text-lg font-bold text-cyan-400 tabular-nums">{result.predictedRating.toFixed(1)}</span>
+                </div>
+                <div className="text-[#ffd700]/60">≈</div>
+                <div className="flex flex-col items-center">
+                  <span className="text-[9px] text-white/30 uppercase tracking-wider">You gave</span>
+                  <span className="text-lg font-bold text-[#ffd700] tabular-nums">{result.actualRating.toFixed(1)}</span>
+                </div>
+              </div>
+            )}
+
+            <p className="text-white/45 text-sm mb-6">{result.celebration?.message || 'Nearly nailed it!'}</p>
+
+            {/* Streak badge */}
+            {result.streakUpdate.newStreak > 0 && (
+              <StreakBadge
+                streak={result.streakUpdate.newStreak}
+                isNewMilestone={result.streakUpdate.isNewMilestone}
+                streakMessage={result.streakUpdate.streakMessage}
+                size="medium"
+              />
             )}
           </>
         ) : isMatch ? (
@@ -1884,19 +2050,12 @@ function PredictionCelebration({
 
             {/* Streak badge */}
             {result.streakUpdate.newStreak > 0 && (
-              <div className="inline-flex flex-col items-center gap-2">
-                <div className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-[#ffd700]/5 border border-[#ffd700]/20">
-                  <div className="relative">
-                    <div className="w-3 h-3 rounded-full bg-[#ffd700]" />
-                    <div className="absolute inset-0 w-3 h-3 rounded-full bg-[#ffd700] animate-ping" />
-                  </div>
-                  <span className="text-2xl font-bold text-[#ffd700] tabular-nums">{result.streakUpdate.newStreak}</span>
-                  <span className="text-xs text-[#ffd700]/60 uppercase tracking-wider">streak</span>
-                </div>
-                {result.streakUpdate.isNewMilestone && result.streakUpdate.streakMessage && (
-                  <span className="text-[11px] text-[#ffd700]/50">{result.streakUpdate.streakMessage}</span>
-                )}
-              </div>
+              <StreakBadge
+                streak={result.streakUpdate.newStreak}
+                isNewMilestone={result.streakUpdate.isNewMilestone}
+                streakMessage={result.streakUpdate.streakMessage}
+                size="medium"
+              />
             )}
           </>
         ) : isSurprise ? (
@@ -1952,6 +2111,32 @@ function PredictionCelebration({
             </p>
           </>
         ) : null}
+
+        {/* Decipher milestone notification */}
+        {result.decipherUpdate?.decipherMessage && (
+          <div className="mt-6 pt-4 border-t border-white/[0.05]">
+            <div className="flex items-center justify-center gap-2">
+              <div className="w-5 h-5 rounded-md bg-gradient-to-br from-violet-500/20 to-cyan-500/20 flex items-center justify-center">
+                <svg className="w-3 h-3 text-cyan-400/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path d="M12 2v20M4 6c4 0 4 4 8 4s4-4 8-4M4 18c4 0 4-4 8-4s4 4 8 4" strokeLinecap="round" />
+                </svg>
+              </div>
+              <span className="text-xs text-white/40">{result.decipherUpdate.decipherMessage}</span>
+            </div>
+            <div className="mt-2 flex items-center justify-center gap-2">
+              <div className="h-1.5 w-24 rounded-full bg-white/5 overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{
+                    width: `${result.decipherUpdate.newProgress}%`,
+                    background: 'linear-gradient(90deg, #8b5cf6, #22d3ee)',
+                  }}
+                />
+              </div>
+              <span className="text-[10px] text-white/30 tabular-nums">{result.decipherUpdate.newProgress}%</span>
+            </div>
+          </div>
+        )}
 
         {/* Tap to dismiss hint */}
         <p className="absolute bottom-4 left-0 right-0 text-[10px] text-white/15 uppercase tracking-widest">

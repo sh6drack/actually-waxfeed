@@ -190,7 +190,7 @@ export async function PUT(request: NextRequest) {
     const decipherMessage = getDecipherMessage(updateResult.newDecipherProgress)
 
     // Generate celebration messages with more variety
-    let celebration: { type: 'predicted' | 'surprise' | 'perfect'; message: string } | null = null
+    let celebration: { type: 'predicted' | 'surprise' | 'perfect' | 'close'; message: string } | null = null
 
     if (matchResult.isPerfect) {
       const perfectMessages = [
@@ -207,12 +207,13 @@ export async function PUT(request: NextRequest) {
     } else if (matchResult.matchQuality === 'close') {
       const closeMessages = [
         'So close!',
-        'Nearly perfect',
+        'Nearly perfect!',
         'Right on target',
-        'We see you',
+        'Almost nailed it',
+        'Just a hair off',
       ]
       celebration = {
-        type: 'predicted',
+        type: 'close',
         message: closeMessages[Math.floor(Math.random() * closeMessages.length)],
       }
     } else if (matchResult.isMatch) {
