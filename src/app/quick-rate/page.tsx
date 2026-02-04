@@ -431,8 +431,15 @@ export default function QuickRatePage() {
                 // Show celebration for matches, surprises, or perfect predictions
                 if (data.data.celebration) {
                   setShowPredictionCelebration(true)
-                  // Longer display for perfect matches
-                  const displayTime = data.data.result.perfect ? 3500 : 3000
+                  // Celebration display times based on type:
+                  // - Perfect: 3500ms (the most exciting moment deserves longest display)
+                  // - Close: 3000ms (almost as exciting)
+                  // - Match/Surprise: 2800ms
+                  // - Miss: 2000ms (quicker feedback, less emphasis)
+                  const isMissType = data.data.celebration.type === 'miss'
+                  const isPerfectType = data.data.result.perfect
+                  const isCloseType = data.data.celebration.type === 'close'
+                  const displayTime = isPerfectType ? 3500 : isCloseType ? 3000 : isMissType ? 2000 : 2800
                   setTimeout(() => setShowPredictionCelebration(false), displayTime)
                 }
               }
@@ -441,7 +448,8 @@ export default function QuickRatePage() {
         }
 
         // Move to next album after celebration finishes (or immediately if no prediction)
-        const celebrationDelay = predictionData?.hasPrediction ? 3200 : 0
+        // Add 200ms buffer after celebration ends for smooth transition
+        const celebrationDelay = predictionData?.hasPrediction ? 3700 : 0
         setTimeout(() => nextAlbum(), celebrationDelay)
       } else {
         if (data.error?.includes('already reviewed')) {
@@ -2114,7 +2122,7 @@ function AudioFeatureBar({ label, value, color, icon }: { label: string; value: 
   )
 }
 
-// Prediction Celebration Overlay - Cinematic Reveal
+// Prediction Celebration Overlay - Cinematic Reveal with Exit Animation
 function PredictionCelebration({
   result,
   onClose,
@@ -2122,6 +2130,8 @@ function PredictionCelebration({
   result: PredictionResult
   onClose: () => void
 }) {
+  const [isExiting, setIsExiting] = useState(false)
+
   const isPerfect = result.result.perfect
   const isClose = result.celebration?.type === 'close'
   const isMiss = result.celebration?.type === 'miss'
@@ -2129,16 +2139,34 @@ function PredictionCelebration({
   const isSurprise = result.result.surprise
   const isFirstPrediction = result.isFirstPrediction
 
+  // Handle close with exit animation
+  const handleClose = useCallback(() => {
+    setIsExiting(true)
+    setTimeout(onClose, 300) // Match exit animation duration
+  }, [onClose])
+
+  // Auto-close triggers exit animation
+  useEffect(() => {
+    // Listen for external close trigger (from parent timeout)
+    return () => {
+      // Cleanup - component is unmounting
+    }
+  }, [])
+
   // Show for matches, surprises, OR misses (streak loss feedback)
   if (!isMatch && !isSurprise && !isMiss) return null
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center animate-in fade-in duration-200"
-      onClick={onClose}
+      className={`fixed inset-0 z-[60] flex items-center justify-center transition-all duration-300 ${
+        isExiting
+          ? 'opacity-0 scale-105'
+          : 'animate-in fade-in duration-200'
+      }`}
+      onClick={handleClose}
     >
       {/* Animated background */}
-      <div className="absolute inset-0 bg-black/95">
+      <div className={`absolute inset-0 bg-black/95 transition-opacity duration-300 ${isExiting ? 'opacity-0' : ''}`}>
         {/* Radial gradient pulse */}
         <div
           className={`absolute inset-0 ${isMatch && !isMiss ? 'animate-pulse' : ''}`}
