@@ -1177,3 +1177,180 @@ html.compact-mode .compact-text {
     min-width: 48px;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   ENHANCED MOBILE TOUCH FEEDBACK
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Active state feedback for touch devices */
+@media (pointer: coarse) {
+  /* Touch ripple effect for buttons */
+  .touch-feedback {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .touch-feedback:active {
+    transform: scale(0.97);
+  }
+
+  /* Card touch feedback */
+  .card-touch:active {
+    background-color: var(--surface-hover) !important;
+    transform: scale(0.99);
+  }
+
+  /* Link touch states */
+  a:active {
+    opacity: 0.7;
+  }
+
+  /* Button active states - more visible feedback */
+  button:active,
+  [role="button"]:active {
+    transform: scale(0.95);
+    opacity: 0.9;
+  }
+
+  /* Album card touch state */
+  .album-touch:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE PERFORMANCE OPTIMIZATIONS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Reduce blur effects on mobile for performance */
+@media (max-width: 768px) {
+  .mobile-no-blur {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Reduce expensive animations */
+  .mobile-reduce-motion {
+    animation: none !important;
+    transition-duration: 0.1s !important;
+  }
+
+  /* Simpler shadows on mobile */
+  .mobile-simple-shadow {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE TYPOGRAPHY SCALE
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Base mobile font size adjustments */
+@media (max-width: 480px) {
+  /* Ensure minimum readable sizes */
+  .mobile-text-readable {
+    font-size: max(12px, 0.75rem) !important;
+    line-height: 1.4 !important;
+  }
+
+  /* Larger tap labels */
+  .mobile-label {
+    font-size: 11px !important;
+    letter-spacing: 0.05em;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE SPACING UTILITIES
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  .mobile-px {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  .mobile-py {
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+  }
+
+  .mobile-gap-sm {
+    gap: 0.5rem !important;
+  }
+
+  .mobile-gap-md {
+    gap: 0.75rem !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE SCROLL SNAP CONTAINERS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Horizontal card scroll with snap */
+.mobile-card-scroll {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 1rem;
+}
+
+.mobile-card-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.mobile-card-scroll > * {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE BOTTOM NAV SAFE AREA
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Content padding for fixed bottom elements */
+.mobile-bottom-safe {
+  padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Fixed bottom bar styling */
+.mobile-bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: var(--background);
+  border-top: 1px solid var(--border);
+  z-index: 40;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE ALBUM GRID RESPONSIVE
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Responsive album grid that scales properly */
+@media (max-width: 480px) {
+  .album-grid-responsive {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.75rem !important;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .album-grid-responsive {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.75rem !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .album-grid-responsive {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+}

@@ -145,19 +145,19 @@ export default async function Home() {
       {/* PERSONALIZED DASHBOARD BAR - Always visible when logged in */}
       {session?.user && (
         <section className="border-b border-[var(--border)] bg-[var(--surface)]">
-          <div className="w-full px-6 lg:px-12 xl:px-20 py-4">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="w-full px-4 md:px-6 lg:px-12 xl:px-20 py-3 md:py-4">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 md:gap-4">
               {/* Welcome + User Info */}
-              <div className="flex items-center gap-4">
-                <Link href={`/u/${userStatus.username}`} className="flex items-center gap-3 group">
+              <div className="flex items-center gap-3 md:gap-4">
+                <Link href={`/u/${userStatus.username}`} className="flex items-center gap-2 md:gap-3 group touch-target">
                   {userStatus.image ? (
-                    <img src={userStatus.image} alt="" className="w-10 h-10 rounded-full border-2 border-[var(--border)] group-hover:border-[--accent-hover] transition-colors" />
+                    <img src={userStatus.image} alt="" className="w-9 h-9 md:w-10 md:h-10 rounded-full border-2 border-[var(--border)] group-hover:border-[--accent-hover] transition-colors" />
                   ) : (
                     <DefaultAvatar size="md" />
                   )}
                   <div>
-                    <p className="font-bold group-hover:text-[--accent-primary] transition-colors">@{userStatus.username}</p>
-                    <p className="text-xs text-[var(--muted)]">
+                    <p className="text-sm md:text-base font-bold group-hover:text-[--accent-primary] transition-colors">@{userStatus.username}</p>
+                    <p className="text-[11px] md:text-xs text-[var(--muted)]">
                       {userStatus.archetype ? userStatus.archetype : 'Building TasteID...'}
                     </p>
                   </div>
@@ -246,8 +246,8 @@ export default async function Home() {
 
       {/* HERO - Clear Value Proposition */}
       <section className="border-b border-[var(--border)]">
-        <div className="w-full px-6 lg:px-12 xl:px-20 py-8 lg:py-12">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
+        <div className="w-full px-4 md:px-6 lg:px-12 xl:px-20 py-6 md:py-8 lg:py-12">
+          <div className="grid lg:grid-cols-2 gap-6 md:gap-8 lg:gap-12">
             {session ? (
               /* Personalized hero for logged in users */
               <>
@@ -495,14 +495,15 @@ export default async function Home() {
                 {/* Left Column - Main Content */}
                 <div>
                   <p className="text-xs tracking-[0.3em] uppercase text-[--accent-primary] mb-3 font-medium">
-                    The World's First Music Taste Platform
+                    Learn Your Music Taste
                   </p>
                   <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight mb-4">
-                    Prove You Found It First.
+                    "I listen to everything."<br />
+                    <span className="text-[var(--muted)]">Do you though?</span>
                   </h1>
                   <p className="text-base md:text-lg text-[var(--muted)] mb-6 leading-relaxed">
-                    Rate albums. Get <span className="text-[--accent-primary] font-semibold">timestamped proof</span> of your discovery.
-                    Connect with people who <span className="text-[var(--foreground)]">actually get your music</span>.
+                    Everyone says it. Nobody means it. WAXFEED <span className="text-[--accent-primary] font-semibold">reflects your taste back to you</span>—what you actually love,
+                    why you love it, and <span className="text-[var(--foreground)]">what that says about you</span>.
                   </p>
                   
                   {/* TasteID Progress Preview - Engagement hook for logged out users */}
@@ -536,7 +537,7 @@ export default async function Home() {
                     
                     {/* Status Message */}
                     <p className="text-xs text-[var(--muted)]">
-                      Sign up to start building your unique musical identity. Rate 25 albums to unlock your <span className="text-[--accent-primary] font-medium">TasteID</span>.
+                      Rate 25 albums and we'll show you who you really are musically. Your <span className="text-[--accent-primary] font-medium">TasteID</span> is waiting.
                     </p>
                   </div>
                   
@@ -576,9 +577,21 @@ export default async function Home() {
                 
                 {/* Right Column - Feature Highlights */}
                 <div className="border border-[var(--border)] p-4">
-                  <h2 className="text-xs tracking-[0.2em] uppercase text-[var(--muted)] mb-4">What You'll Unlock</h2>
-                  
+                  <h2 className="text-xs tracking-[0.2em] uppercase text-[var(--muted)] mb-4">What You'll Learn</h2>
+
                   <div className="space-y-4">
+                    <div className="flex items-start gap-3 p-3 border-b border-[var(--border)]">
+                      <div className="w-8 h-8 bg-[#ff6b6b] rounded-sm flex items-center justify-center flex-shrink-0">
+                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M10 2L3 7l7 5 7-5-7-5zM3 17l7 5 7-5M3 12l7 5 7-5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-[#ff6b6b]">TasteID</p>
+                        <p className="text-xs text-[var(--muted)]">Your musical DNA decoded—genres, vibes, patterns you didn't know you had</p>
+                      </div>
+                    </div>
+
                     <div className="flex items-start gap-3 p-3 border-b border-[var(--border)]">
                       <div className="w-8 h-8 bg-[#00bfff] rounded-sm flex items-center justify-center flex-shrink-0">
                         <svg className="w-4 h-4 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -587,10 +600,10 @@ export default async function Home() {
                       </div>
                       <div>
                         <p className="text-sm font-bold text-[#00bfff]">Discover</p>
-                        <p className="text-xs text-[var(--muted)]">Personalized recommendations that actually match your taste</p>
+                        <p className="text-xs text-[var(--muted)]">Recs that actually make sense once you know your own taste</p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-start gap-3 p-3 border-b border-[var(--border)]">
                       <div className="w-8 h-8 bg-[#00ff88] rounded-sm flex items-center justify-center flex-shrink-0">
                         <svg className="w-4 h-4 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -599,31 +612,19 @@ export default async function Home() {
                       </div>
                       <div>
                         <p className="text-sm font-bold text-[#00ff88]">Connect</p>
-                        <p className="text-xs text-[var(--muted)]">Find people who truly understand your music taste</p>
+                        <p className="text-xs text-[var(--muted)]">Find your people—those who actually share your wavelength</p>
                       </div>
                     </div>
-                    
-                    <div className="flex items-start gap-3 p-3 border-b border-[var(--border)]">
+
+                    <div className="flex items-start gap-3 p-3">
                       <div className="w-8 h-8 bg-[#FFD700] rounded-sm flex items-center justify-center flex-shrink-0">
                         <svg className="w-4 h-4 text-black" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                         </svg>
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-[#FFD700]">Rate</p>
-                        <p className="text-xs text-[var(--muted)]">Timestamped proof you discovered artists first</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-start gap-3 p-3">
-                      <div className="w-8 h-8 bg-[#ff6b6b] rounded-sm flex items-center justify-center flex-shrink-0">
-                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M10 2L3 7l7 5 7-5-7-5zM3 17l7 5 7-5M3 12l7 5 7-5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-[#ff6b6b]">TasteID</p>
-                        <p className="text-xs text-[var(--muted)]">Your unique musical DNA and archetype revealed</p>
+                        <p className="text-sm font-bold text-[#FFD700]">Prove It</p>
+                        <p className="text-xs text-[var(--muted)]">Timestamped receipts when you find artists before they blow</p>
                       </div>
                     </div>
                   </div>
@@ -651,19 +652,19 @@ export default async function Home() {
 
       {/* STATS BAR - Compact Social Proof */}
       <section className="border-b border-[var(--border)] bg-[var(--surface)]">
-        <div className="w-full px-6 lg:px-12 xl:px-20 py-4">
-          <div className="flex flex-wrap justify-center gap-8 lg:gap-16">
+        <div className="w-full px-4 md:px-6 lg:px-12 xl:px-20 py-3 md:py-4">
+          <div className="flex justify-center gap-6 md:gap-8 lg:gap-16">
             <div className="text-center">
-              <span className="text-2xl font-bold tabular-nums">{stats.albumCount.toLocaleString()}</span>
-              <span className="text-xs tracking-widest uppercase text-[var(--muted-dim)] ml-2">Albums</span>
+              <span className="text-lg md:text-2xl font-bold tabular-nums">{stats.albumCount.toLocaleString()}</span>
+              <span className="text-[10px] md:text-xs tracking-widest uppercase text-[var(--muted-dim)] ml-1 md:ml-2">Albums</span>
             </div>
             <div className="text-center">
-              <span className="text-2xl font-bold tabular-nums">{stats.reviewCount.toLocaleString()}</span>
-              <span className="text-xs tracking-widest uppercase text-[var(--muted-dim)] ml-2">Ratings</span>
+              <span className="text-lg md:text-2xl font-bold tabular-nums">{stats.reviewCount.toLocaleString()}</span>
+              <span className="text-[10px] md:text-xs tracking-widest uppercase text-[var(--muted-dim)] ml-1 md:ml-2">Ratings</span>
             </div>
             <div className="text-center">
-              <span className="text-2xl font-bold tabular-nums">{stats.userCount.toLocaleString()}</span>
-              <span className="text-xs tracking-widest uppercase text-[var(--muted-dim)] ml-2">Members</span>
+              <span className="text-lg md:text-2xl font-bold tabular-nums">{stats.userCount.toLocaleString()}</span>
+              <span className="text-[10px] md:text-xs tracking-widest uppercase text-[var(--muted-dim)] ml-1 md:ml-2">Members</span>
             </div>
           </div>
         </div>
@@ -682,7 +683,58 @@ export default async function Home() {
                 </span>
               </div>
 
-              <div className="album-grid grid grid-cols-4 gap-2 flex-1 content-start">
+              {/* Mobile: Horizontal scroll with larger cards */}
+              <div className="md:hidden -mx-6 px-6">
+                <div className="flex gap-3 overflow-x-auto pb-4 scroll-x-mobile">
+                  {billboardAlbums.slice(0, 24).map((album, index) => (
+                    <Link
+                      key={album.id}
+                      href={`/album/${album.spotifyId}`}
+                      className="group flex-shrink-0 w-[140px] active:scale-95 transition-transform"
+                    >
+                      <div className="album-cover aspect-square w-full bg-[var(--surface)] overflow-hidden relative">
+                        {album.coverArtUrl && (
+                          <img
+                            src={album.coverArtUrl}
+                            alt={album.title}
+                            loading={index < 8 ? "eager" : "lazy"}
+                            decoding="async"
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                        <div className={`absolute top-0 left-0 px-2 py-1 text-[11px] font-bold ${
+                          index < 10
+                            ? 'bg-[#ffd700] text-black'
+                            : index < 25
+                              ? 'bg-white/90 text-black'
+                              : 'bg-black/70 text-white'
+                        }`}>
+                          {index + 1}
+                        </div>
+                      </div>
+                      <p className="text-xs font-medium truncate mt-2 group-hover:text-[var(--muted)] transition-colors">
+                        {album.title}
+                      </p>
+                      <p className="text-[11px] text-[var(--muted-dim)] truncate">
+                        {album.artistName}
+                      </p>
+                    </Link>
+                  ))}
+                  {/* See All card */}
+                  <Link
+                    href="/discover"
+                    className="flex-shrink-0 w-[140px] aspect-square bg-[var(--surface)] border border-[var(--border)] flex flex-col items-center justify-center gap-2 active:scale-95 transition-transform"
+                  >
+                    <svg className="w-8 h-8 text-[var(--muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                    <span className="text-xs text-[var(--muted)] uppercase tracking-wider">See All</span>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Desktop: Grid layout */}
+              <div className="album-grid hidden md:grid grid-cols-3 lg:grid-cols-4 gap-2 flex-1 content-start">
                 {billboardAlbums.slice(0, 48).map((album, index) => (
                   <Link
                     key={album.id}
@@ -721,10 +773,10 @@ export default async function Home() {
             </div>
 
             {/* RECENT REVIEWS - Right Side (50%) */}
-            <div className="py-10 lg:py-14 px-6 flex flex-col">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold">Recent Reviews</h2>
-                <Link href="/reviews" className="text-[10px] tracking-[0.15em] uppercase text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
+            <div className="py-8 md:py-10 lg:py-14 px-4 md:px-6 flex flex-col">
+              <div className="flex items-center justify-between mb-4 md:mb-6">
+                <h2 className="text-base md:text-lg font-bold">Recent Reviews</h2>
+                <Link href="/reviews" className="text-[11px] md:text-[10px] tracking-[0.15em] uppercase text-[var(--muted)] hover:text-[var(--foreground)] transition-colors touch-target flex items-center">
                   View All →
                 </Link>
               </div>
@@ -734,34 +786,34 @@ export default async function Home() {
                   <Link
                     key={review.id}
                     href={`/album/${review.album.spotifyId}`}
-                    className="group flex gap-3 py-3 border-b border-[var(--border)] hover:bg-[var(--surface)] -mx-3 px-3 transition-colors"
+                    className="group flex gap-3 py-3 md:py-3 border-b border-[var(--border)] hover:bg-[var(--surface)] active:bg-[var(--surface)] -mx-3 md:-mx-3 px-3 transition-colors"
                   >
-                    <div className="w-12 h-12 flex-shrink-0 bg-[var(--surface)]">
+                    <div className="w-14 h-14 md:w-12 md:h-12 flex-shrink-0 bg-[var(--surface)]">
                       {review.album.coverArtUrl && (
                         <img src={review.album.coverArtUrl} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium truncate group-hover:text-[var(--muted)] transition-colors">
+                        <span className="text-sm md:text-sm font-medium truncate group-hover:text-[var(--muted)] transition-colors">
                           {review.album.title}
                         </span>
-                        <span className="text-[--accent-primary] font-bold text-sm tabular-nums">{review.rating.toFixed(1)}</span>
+                        <span className="text-[--accent-primary] font-bold text-sm tabular-nums flex-shrink-0">{review.rating.toFixed(1)}</span>
                       </div>
-                      <p className="text-xs text-[var(--muted)] truncate">{review.album.artistName}</p>
+                      <p className="text-xs md:text-xs text-[var(--muted)] truncate">{review.album.artistName}</p>
                       {review.text && (
-                        <p className="text-[11px] text-[var(--muted)] mt-2 line-clamp-2 leading-relaxed">
+                        <p className="text-xs md:text-[11px] text-[var(--muted)] mt-1.5 md:mt-2 line-clamp-2 leading-relaxed">
                           "{review.text}"
                         </p>
                       )}
                       <div className="flex items-center gap-2 mt-2">
                         {review.user.image ? (
-                          <img src={review.user.image} alt="" loading="lazy" decoding="async" className="w-4 h-4 rounded-full" />
+                          <img src={review.user.image} alt="" loading="lazy" decoding="async" className="w-5 h-5 md:w-4 md:h-4 rounded-full" />
                         ) : (
                           <DefaultAvatar size="xs" />
                         )}
-                        <span className="text-[10px] text-[var(--muted-dim)]">@{review.user.username}</span>
-                        <span className="text-[10px] text-[var(--muted-faint)]" suppressHydrationWarning>
+                        <span className="text-[11px] md:text-[10px] text-[var(--muted-dim)]">@{review.user.username}</span>
+                        <span className="text-[11px] md:text-[10px] text-[var(--muted-faint)]" suppressHydrationWarning>
                           {formatDistanceToNow(new Date(review.createdAt), { addSuffix: true })}
                         </span>
                       </div>
@@ -777,69 +829,63 @@ export default async function Home() {
       {/* THE 3 PILLARS - Collapsible Dropdown */}
       <section className="border-b border-[var(--border)]">
         <details className="group">
-          <summary className="w-full px-6 lg:px-12 xl:px-20 py-6 cursor-pointer list-none flex items-center justify-between hover:bg-[var(--surface)] transition-colors">
-            <div className="flex items-center gap-4">
-              <span className="text-xs tracking-[0.3em] uppercase text-[var(--muted-dim)]">
-                What Makes WAXFEED Different?
+          <summary className="w-full px-4 md:px-6 lg:px-12 xl:px-20 py-4 md:py-6 cursor-pointer list-none flex items-center justify-between hover:bg-[var(--surface)] active:bg-[var(--surface)] transition-colors touch-target">
+            <div className="flex items-center gap-2 md:gap-4 flex-wrap">
+              <span className="text-[11px] md:text-xs tracking-[0.2em] md:tracking-[0.3em] uppercase text-[var(--muted-dim)]">
+                How It Works
               </span>
-              <span className="text-xs px-2 py-1 bg-[--accent-primary] text-black font-bold">3 FEATURES</span>
+              <span className="text-[10px] md:text-xs px-2 py-1 bg-[--accent-primary] text-black font-bold">3 STEPS</span>
             </div>
-            <svg className="w-5 h-5 text-[var(--muted)] transform transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-5 h-5 text-[var(--muted)] transform transition-transform group-open:rotate-180 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
             </svg>
           </summary>
-          
-          <div className="w-full px-6 lg:px-12 xl:px-20 pb-12 pt-4 bg-[var(--surface)]">
-            <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
-              {/* PILLAR 1: GAMIFY */}
+
+          <div className="w-full px-4 md:px-6 lg:px-12 xl:px-20 pb-8 md:pb-12 pt-4 bg-[var(--surface)]">
+            <div className="grid md:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
+              {/* STEP 1: RATE */}
               <Link href="/quick-rate" className="group/card block p-6 border border-[var(--border)] hover:border-[--accent-hover] transition-colors">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 border border-[--accent-primary] flex items-center justify-center text-[--accent-primary]">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                    </svg>
+                    <span className="text-lg font-black">1</span>
                   </div>
-                  <h3 className="font-bold text-[--accent-primary]">GAMIFY</h3>
+                  <h3 className="font-bold text-[--accent-primary]">RATE</h3>
                 </div>
-                <p className="font-bold mb-2">Prove You Were First</p>
+                <p className="font-bold mb-2">Be Honest About What You Love</p>
                 <p className="text-sm text-[var(--muted)] mb-3">
-                  Review albums early. Earn Gold, Silver, Bronze badges when they trend.
+                  30-second album ratings. No pressure. Just your gut reaction to the music.
                 </p>
-                <span className="text-xs text-[--accent-primary]">First Spin Badges → WAX Rewards</span>
+                <span className="text-xs text-[--accent-primary]">25 ratings → TasteID unlocks</span>
               </Link>
-              
-              {/* PILLAR 2: CONNECT */}
-              <Link href="/discover/connections" className="group/card block p-6 border border-[var(--border)] hover:border-[#00ff88] transition-colors">
+
+              {/* STEP 2: LEARN */}
+              <div className="group/card block p-6 border border-[var(--border)] hover:border-[#ff6b6b] transition-colors">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 border border-[#00ff88] flex items-center justify-center text-[#00ff88]">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
+                  <div className="w-10 h-10 border border-[#ff6b6b] flex items-center justify-center text-[#ff6b6b]">
+                    <span className="text-lg font-black">2</span>
                   </div>
-                  <h3 className="font-bold text-[#00ff88]">CONNECT</h3>
+                  <h3 className="font-bold text-[#ff6b6b]">LEARN</h3>
                 </div>
-                <p className="font-bold mb-2">First Music Social Network</p>
+                <p className="font-bold mb-2">See Your Taste Reflected Back</p>
                 <p className="text-sm text-[var(--muted)] mb-3">
-                  Find people who truly get your taste. Deep musical compatibility matching.
+                  TasteID analyzes your patterns. Genres, vibes, eras—things you didn't realize about yourself.
                 </p>
-                <span className="text-xs text-[#00ff88]">Taste Matching → Music Circles</span>
-              </Link>
-              
-              {/* PILLAR 3: DISCOVER */}
+                <span className="text-xs text-[#ff6b6b]">Your archetype revealed</span>
+              </div>
+
+              {/* STEP 3: GO DEEPER */}
               <Link href="/discover" className="group/card block p-6 border border-[var(--border)] hover:border-[#00bfff] transition-colors">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 border border-[#00bfff] flex items-center justify-center text-[#00bfff]">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+                    <span className="text-lg font-black">3</span>
                   </div>
-                  <h3 className="font-bold text-[#00bfff]">DISCOVER</h3>
+                  <h3 className="font-bold text-[#00bfff]">GO DEEPER</h3>
                 </div>
-                <p className="font-bold mb-2">Best Music Discovery Ever</p>
+                <p className="font-bold mb-2">Explore Your Musical Identity</p>
                 <p className="text-sm text-[var(--muted)] mb-3">
-                  TasteID powered by Polarity. Recommendations that actually fit YOU.
+                  Find new music that fits. Connect with people who get it. Never say "I listen to everything" again.
                 </p>
-                <span className="text-xs text-[#00bfff]">Polarity Engine → TasteID</span>
+                <span className="text-xs text-[#00bfff]">Discovery + Connection</span>
               </Link>
             </div>
           </div>
@@ -848,24 +894,24 @@ export default async function Home() {
 
       {/* COLLEGE RADIO PARTNERSHIP */}
       <section className="border-b border-[var(--border)]">
-        <div className="w-full px-6 lg:px-12 xl:px-20 py-16 lg:py-20">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="w-full px-4 md:px-6 lg:px-12 xl:px-20 py-10 md:py-16 lg:py-20">
+          <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
             <div>
-              <p className="text-[10px] tracking-[0.3em] uppercase text-[--accent-primary] mb-4">
+              <p className="text-[10px] tracking-[0.3em] uppercase text-[--accent-primary] mb-3 md:mb-4">
                 College Radio Partnership
               </p>
-              <h2 className="text-3xl lg:text-4xl font-bold mb-4 leading-tight">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4 leading-tight">
                 Your station breaks artists.<br />
                 Now you can prove it.
               </h2>
-              <p className="text-[var(--muted)] mb-6 leading-relaxed">
-                First 50 stations get Founding Status—free premium features forever. 
+              <p className="text-sm md:text-base text-[var(--muted)] mb-5 md:mb-6 leading-relaxed">
+                First 50 stations get Founding Status—free premium features forever.
                 Station leaderboards. Verified DJ badges. Conference rankings.
               </p>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 md:gap-4">
                 <Link
                   href="/stations"
-                  className="px-6 py-3 bg-[--accent-primary] text-black text-sm font-bold uppercase tracking-wider hover:bg-[--accent-hover] transition-colors"
+                  className="px-6 py-3 bg-[--accent-primary] text-black text-sm font-bold uppercase tracking-wider hover:bg-[--accent-hover] active:scale-95 transition-all touch-target"
                 >
                   Apply Now
                 </Link>
@@ -874,7 +920,7 @@ export default async function Home() {
                 </span>
               </div>
             </div>
-            <div className="border border-[var(--border)] p-6">
+            <div className="border border-[var(--border)] p-4 md:p-6">
               <p className="text-[10px] tracking-[0.3em] uppercase text-[var(--muted)] mb-4">
                 Station Preview
               </p>
@@ -908,27 +954,27 @@ export default async function Home() {
 
       {/* FINAL CTA */}
       <section className="bg-[var(--surface)]">
-        <div className="w-full px-6 lg:px-12 xl:px-20 py-12 lg:py-16 text-center">
-          <h2 className="text-3xl lg:text-4xl font-bold mb-6">
-            Ready to prove your taste?
+        <div className="w-full px-4 md:px-6 lg:px-12 xl:px-20 py-10 md:py-12 lg:py-16 text-center">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-6">
+            Ready to learn what you actually like?
           </h2>
-          <p className="text-lg text-[var(--muted)] mb-10 max-w-xl mx-auto">
-            Join thousands of music lovers who are discovering, connecting, and earning through their taste.
+          <p className="text-base md:text-lg text-[var(--muted)] mb-8 md:mb-10 max-w-xl mx-auto px-4">
+            Stop saying "I listen to everything." Start understanding your taste.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center px-4">
             {!session ? (
               <Link
                 href="/signup"
                 className="px-10 py-4 bg-[--accent-primary] text-black text-sm font-bold uppercase tracking-wider hover:bg-[--accent-hover] transition-colors"
               >
-                Create Free Account
+                Discover Your TasteID
               </Link>
             ) : (
               <Link
                 href="/quick-rate"
                 className="px-10 py-4 bg-[--accent-primary] text-black text-sm font-bold uppercase tracking-wider hover:bg-[--accent-hover] transition-colors"
               >
-                Start Building TasteID
+                Keep Building TasteID
               </Link>
             )}
           </div>
@@ -941,7 +987,7 @@ export default async function Home() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div>
               <p className="text-sm text-[var(--muted-dim)]">WAXFEED · Polarity Lab LLC · 2025</p>
-              <p className="text-xs text-[var(--muted-faint)] mt-1">The platform that proves your music taste.</p>
+              <p className="text-xs text-[var(--muted-faint)] mt-1">Learn your music taste.</p>
             </div>
             <nav className="flex flex-wrap gap-6">
               <Link href="/discover" className="text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Discover</Link>

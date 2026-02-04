@@ -278,6 +278,16 @@ npm run db:seed      # Seed database
 
 ## Changelog
 
+### February 3, 2026
+- **Marketing Messaging Overhaul**: New "Learn Your Taste" positioning
+  - Hero: "I listen to everything. Do you though?" — reflects taste back to users
+  - Shifted from "prove you found it first" to "understand your musical identity"
+  - "What You'll Unlock" → "What You'll Learn" with TasteID as lead feature
+  - "What Makes WAXFEED Different?" → "How It Works" (3 steps: Rate → Learn → Go Deeper)
+  - Final CTA: "Ready to learn what you actually like?"
+  - Footer tagline: "Learn your music taste."
+  - Core insight: Everyone says "I listen to everything" but doesn't know their taste
+
 ### January 20, 2026
 - **Homepage Redesign**: Split layout with Billboard 200 (left) + Recent Reviews (right)
   - Left: Magazine-style grid with bigger album covers from Billboard 200

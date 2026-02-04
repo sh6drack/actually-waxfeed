@@ -362,7 +362,7 @@ export default function OnboardingPage() {
               <div>
                 <label className="block text-sm text-[--muted] mb-2">Username</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[--muted]/70">@</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[--muted]/50 pointer-events-none select-none">@</span>
                   <input
                     type="text"
                     value={username}
@@ -373,7 +373,7 @@ export default function OnboardingPage() {
                       }
                     }}
                     placeholder="username"
-                    className="w-full pl-8"
+                    className="w-full pl-10"
                     minLength={3}
                     maxLength={30}
                     pattern="^[a-zA-Z0-9_]+$"
