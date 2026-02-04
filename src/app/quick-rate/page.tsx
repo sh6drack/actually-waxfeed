@@ -58,6 +58,8 @@ interface PredictionResult {
   // For showing comparison in celebration
   predictedRating?: number
   actualRating?: number
+  // First prediction indicator
+  isFirstPrediction?: boolean
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -408,11 +410,14 @@ export default function QuickRatePage() {
             .then(res => res.json())
             .then(data => {
               if (data.success && data.data) {
+                // Check if this is the user's first prediction
+                const isFirstPrediction = audioDNA?.totalPredictions === 0
                 // Add predicted and actual ratings for display in celebration
                 setPredictionResult({
                   ...data.data,
                   predictedRating: predictionData.prediction?.rating,
                   actualRating: rating,
+                  isFirstPrediction,
                 })
                 // Update Audio DNA state
                 if (data.data.decipherUpdate) {
@@ -1841,6 +1846,7 @@ function PredictionCelebration({
   const isMiss = result.celebration?.type === 'miss'
   const isMatch = result.result.match
   const isSurprise = result.result.surprise
+  const isFirstPrediction = result.isFirstPrediction
 
   // Show for matches, surprises, OR misses (streak loss feedback)
   if (!isMatch && !isSurprise && !isMiss) return null
@@ -1877,6 +1883,22 @@ function PredictionCelebration({
       </div>
 
       <div className="relative text-center p-12 max-w-md animate-in zoom-in-95 slide-in-from-bottom-4 duration-500">
+        {/* First prediction badge */}
+        {isFirstPrediction && (
+          <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-to-r from-violet-500/20 to-cyan-500/20 border border-violet-400/30 animate-in slide-in-from-top duration-500">
+            <span
+              className="text-[9px] font-medium uppercase tracking-widest"
+              style={{
+                background: 'linear-gradient(135deg, #a855f7, #22d3ee)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              First Read
+            </span>
+          </div>
+        )}
+
         {isPerfect ? (
           <>
             {/* Perfect celebration - gold theme */}
