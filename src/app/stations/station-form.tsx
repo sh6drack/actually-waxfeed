@@ -48,7 +48,7 @@ export function StationApplicationForm() {
         </div>
         <h2 className="text-2xl font-bold mb-4 tracking-tight">Application received</h2>
         <p className="text-[--muted] leading-relaxed">
-          We'll review your application and get back to you within 48 hours.
+          We&apos;ll review your application and get back to you within 48 hours.
         </p>
       </div>
     )

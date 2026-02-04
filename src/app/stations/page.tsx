@@ -49,7 +49,7 @@ export default async function StationsPage() {
             Now you can prove it.
           </h1>
           <p className="text-lg lg:text-xl text-[--muted] max-w-2xl mb-8 leading-relaxed">
-            Every DJ at every station has said "I played them before anyone."
+            Every DJ at every station has said &quot;I played them before anyone.&quot;
             WaxFeed gives you timestamped, verified proof—and ranks your station
             against every other station in the country.
           </p>
@@ -90,11 +90,11 @@ export default async function StationsPage() {
               </h2>
               <p className="text-[--muted] mb-6 leading-relaxed">
                 Your DJs discover artists months before Spotify playlists catch up.
-                You put albums in rotation that later go gold. But there's no record.
+                You put albums in rotation that later go gold. But there&apos;s no record.
                 No proof. No credit.
               </p>
               <p className="text-[--muted] leading-relaxed">
-                Meanwhile, algorithms get credit for "discovery" that college radio
+                Meanwhile, algorithms get credit for &quot;discovery&quot; that college radio
                 actually made happen.
               </p>
             </div>
@@ -148,7 +148,7 @@ export default async function StationsPage() {
               <p className="text-lg font-bold mb-2">DJs review albums</p>
               <p className="text-sm text-[--muted] leading-relaxed">
                 When your DJs review an album on WaxFeed, their position is recorded.
-                "You were reviewer #7 of this album."
+                &quot;You were reviewer #7 of this album.&quot;
               </p>
             </div>
             <div className="p-6 border border-[--border] hover:border-[--muted]/50 transition-colors group">
@@ -168,7 +168,7 @@ export default async function StationsPage() {
               <p className="text-lg font-bold mb-2">Station earns badges</p>
               <p className="text-sm text-[--muted] leading-relaxed">
                 Gold Spin (first 10 reviewers), Silver Spin (first 50), Bronze Spin (first 100).
-                These roll up to your station's Tastemaker Score.
+                These roll up to your station&apos;s Tastemaker Score.
               </p>
             </div>
           </div>
@@ -190,13 +190,13 @@ export default async function StationsPage() {
                 Which station has the best taste?
               </h2>
               <p className="text-[--muted] mb-6 leading-relaxed">
-                For the first time, there's an objective answer. Station Tastemaker Scores
-                aggregate all DJs' badges. Conference rankings let you compete against
+                For the first time, there&apos;s an objective answer. Station Tastemaker Scores
+                aggregate all DJs&apos; badges. Conference rankings let you compete against
                 natural rivals.
               </p>
               <p className="text-sm text-[--muted] leading-relaxed">
-                Imagine being able to say: "WRVU is the #1 taste station in the SEC,
-                with 47 Gold Spins this semester."
+                Imagine being able to say: &quot;WRVU is the #1 taste station in the SEC,
+                with 47 Gold Spins this semester.&quot;
               </p>
             </div>
             <div className="border border-[--border] p-6">
@@ -305,12 +305,12 @@ export default async function StationsPage() {
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center border border-[--border] text-[10px] font-bold">2</span>
-                  Link to WaxFeed in your "on rotation" or website
+                  Link to WaxFeed in your &quot;on rotation&quot; or website
                 </li>
               </ul>
               <div className="mt-6 pt-4 border-t border-[--border]">
                 <p className="text-xs text-[--muted] leading-relaxed">
-                  That's it. No credit card. No trial that expires.
+                  That&apos;s it. No credit card. No trial that expires.
                   Founding status is permanent.
                 </p>
               </div>
@@ -365,8 +365,8 @@ export default async function StationsPage() {
             WaxFeed is where taste is proven.
           </h2>
           <p className="text-[--muted] max-w-2xl mx-auto mb-10 leading-relaxed">
-            When your DJ says "I was playing them before anyone," they'll have the badge to prove it.
-            When labels ask who's breaking artists, your station's Tastemaker Score will answer.
+            When your DJ says &quot;I was playing them before anyone,&quot; they&apos;ll have the badge to prove it.
+            When labels ask who&apos;s breaking artists, your station&apos;s Tastemaker Score will answer.
           </p>
           <div className="grid sm:grid-cols-3 gap-8 max-w-2xl mx-auto">
             <div className="p-6 border border-[--border]">

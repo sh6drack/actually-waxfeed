@@ -996,7 +996,7 @@ function TierProgressBar({ ratingCount }: { ratingCount: number }) {
         {tiers.map((tier) => {
           const isCompleted = ratingCount >= tier.minRatings
           const isCurrent = tier.id === currentTier.id
-          let fillPercent = isCompleted && !isCurrent ? 100 : isCurrent ? progress : 0
+          const fillPercent = isCompleted && !isCurrent ? 100 : isCurrent ? progress : 0
 
           return (
             <div key={tier.id} className="flex-1 h-1 rounded-full bg-white/5 overflow-hidden" title={tier.name}>

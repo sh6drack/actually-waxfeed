@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     const { type, productId } = body
 
     // Get or create Stripe customer
-    let dbUser = await prisma.user.findUnique({
+    const dbUser = await prisma.user.findUnique({
       where: { id: user.id },
       select: { stripeCustomerId: true, email: true, subscriptionTier: true }
     })

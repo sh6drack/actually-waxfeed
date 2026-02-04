@@ -38,7 +38,7 @@ const FAQ_ITEMS: FAQItem[] = [
     answer: (
       <div className="space-y-2">
         <p className="font-bold text-[var(--accent-primary)]">No. Only written reviews count toward First Spin badges.</p>
-        <p>A review must have at least 20 characters of text to qualify for badge eligibility. Quick rates (just a number rating) help train your TasteID but don't count toward the first 100 reviewers.</p>
+        <p>A review must have at least 20 characters of text to qualify for badge eligibility. Quick rates (just a number rating) help train your TasteID but don&apos;t count toward the first 100 reviewers.</p>
         <p className="text-[--muted]">This ensures badges go to people who actually engaged with the music and shared their thoughts.</p>
       </div>
     )
@@ -197,7 +197,7 @@ export default function FAQPage() {
               <p className="font-bold text-[var(--accent-primary)] mb-1">Important: Badge Eligibility</p>
               <p className="text-sm text-[--muted]">
                 Only reviews with written text (20+ characters) count toward First Spin badges.
-                Quick rates help train your TasteID but don't qualify for Gold, Silver, or Bronze badges.
+                Quick rates help train your TasteID but don&apos;t qualify for Gold, Silver, or Bronze badges.
               </p>
             </div>
           </div>

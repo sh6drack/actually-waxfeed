@@ -4,6 +4,7 @@ import { SessionProvider } from "@/components/session-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { CustomizationProvider } from "@/components/customization-provider";
 import { Header } from "@/components/header";
+import { BottomNav } from "@/components/bottom-nav";
 import { CustomCursor } from "@/components/custom-cursor";
 import { PolaritySystem } from "@/components/polarity-system";
 import { FirstTimeWelcome } from "@/components/first-time-welcome";
@@ -64,10 +65,11 @@ export default function RootLayout({
               <OnboardingGuard />
               <FirstTimeWelcome />
               <ErrorBoundary>
-                <main className="pt-16 pb-12">
+                <main className="pt-16 pb-24 lg:pb-12">
                   {children}
                 </main>
               </ErrorBoundary>
+              <BottomNav />
               <PolaritySystem />
               <Analytics />
             </CustomizationProvider>

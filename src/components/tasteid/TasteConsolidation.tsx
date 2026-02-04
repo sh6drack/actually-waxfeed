@@ -75,7 +75,7 @@ export function TasteConsolidation({ consolidatedTastes, className = "" }: Taste
           Taste Consolidation
         </p>
         <p className="text-xs text-muted-foreground/70">
-          Tracking which tastes are "sticking" vs "fading" over time
+          Tracking which tastes are &quot;sticking&quot; vs &quot;fading&quot; over time
         </p>
       </div>
 
@@ -83,7 +83,7 @@ export function TasteConsolidation({ consolidatedTastes, className = "" }: Taste
         <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-2">How it works</p>
         <p className="text-xs text-muted-foreground/70">
           Reviews are split into recent (last 6 months) and older. Genres and artists
-          that appear consistently with good ratings are "consolidated."
+          that appear consistently with good ratings are &quot;consolidated.&quot;
         </p>
         <div className="flex gap-4 mt-3">
           {(["strengthening", "fading", "stable"] as const).map(trend => (

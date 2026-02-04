@@ -34,7 +34,7 @@ export function Tooltip({
     const tooltipWidth = 280
     
     let left = rect.left + rect.width / 2 - tooltipWidth / 2
-    let top = position === "bottom" 
+    const top = position === "bottom" 
       ? rect.bottom + 8 
       : rect.top - 8
     

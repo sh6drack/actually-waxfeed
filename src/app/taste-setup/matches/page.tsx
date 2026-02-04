@@ -138,7 +138,7 @@ export default async function TasteSetupMatchesPage() {
         <div className="text-center pt-8 border-t border-neutral-800">
           <div className="text-4xl mb-2">🎉</div>
           <p className="text-neutral-400">
-            You're all set! Your TasteID is live.
+            You&apos;re all set! Your TasteID is live.
           </p>
         </div>
       </div>

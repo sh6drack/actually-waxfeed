@@ -54,7 +54,7 @@ export default async function TasteSetupPage() {
         {/* Description */}
         <p className="text-lg text-neutral-400 max-w-md mx-auto">
           Rate a few albums to unlock your unique TasteID - a fingerprint of your musical preferences.
-          Then we'll connect you with people who share your taste.
+          Then we&apos;ll connect you with people who share your taste.
         </p>
 
         {/* What you'll get */}
@@ -86,7 +86,7 @@ export default async function TasteSetupPage() {
             href="/taste-setup/rate"
             className="inline-block w-full md:w-auto px-8 py-4 bg-white text-black font-bold uppercase tracking-wider text-lg hover:bg-neutral-200 transition-colors"
           >
-            LET'S GO
+            LET&apos;S GO
           </Link>
           <div>
             <Link

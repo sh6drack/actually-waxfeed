@@ -138,7 +138,7 @@ export default async function ComparePage({ params }: Props) {
               CANNOT COMPARE
             </h1>
             <p className="text-neutral-400">
-              @{username} hasn't generated their TasteID yet.
+              @{username} hasn&apos;t generated their TasteID yet.
               Check back later!
             </p>
           </div>

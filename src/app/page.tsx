@@ -498,7 +498,7 @@ export default async function Home() {
                     Learn Your Music Taste
                   </p>
                   <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight mb-4">
-                    "I listen to everything."<br />
+                    &quot;I listen to everything.&quot;<br />
                     <span className="text-[var(--muted)]">Do you though?</span>
                   </h1>
                   <p className="text-base md:text-lg text-[var(--muted)] mb-6 leading-relaxed">
@@ -959,7 +959,7 @@ export default async function Home() {
             Ready to learn what you actually like?
           </h2>
           <p className="text-base md:text-lg text-[var(--muted)] mb-8 md:mb-10 max-w-xl mx-auto px-4">
-            Stop saying "I listen to everything." Start understanding your taste.
+            Stop saying &quot;I listen to everything.&quot; Start understanding your taste.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center px-4">
             {!session ? (

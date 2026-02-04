@@ -123,10 +123,10 @@ export function AlbumReviewForm({ albumId, currentReviewCount, existingReview }:
             </span>
             <div className="flex-1">
               <p className={`font-bold ${badge.color}`}>
-                You'll be reviewer #{potentialPosition}
+                You&apos;ll be reviewer #{potentialPosition}
               </p>
               <p className="text-sm text-[--muted] mt-1">
-                {badge.tier} Spin eligible! If this album trends, you'll earn a {badge.tier} badge + {badge.reward} Wax.
+                {badge.tier} Spin eligible! If this album trends, you&apos;ll earn a {badge.tier} badge + {badge.reward} Wax.
               </p>
               <p className="text-xs text-[--muted] mt-2 flex items-center gap-1">
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">

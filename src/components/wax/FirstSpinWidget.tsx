@@ -65,7 +65,7 @@ export function FirstSpinWidget() {
             Write thoughtful reviews to earn badges. When an album trends, early reviewers get credited.
           </p>
           <p className="text-[10px] text-[--muted]/70 mb-4 border-l-2 border-[var(--accent-primary)]/30 pl-2">
-            Only reviews with text count toward First Spin badges. Quick rates don't qualify.
+            Only reviews with text count toward First Spin badges. Quick rates don&apos;t qualify.
           </p>
           <div className="p-3 border border-[var(--accent-primary)]/30 mb-4">
             <p className="text-sm">

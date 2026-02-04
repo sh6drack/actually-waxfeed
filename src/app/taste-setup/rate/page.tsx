@@ -198,7 +198,7 @@ export default function TasteSetupRatePage() {
               onClick={handleSkip}
               className="w-full py-3 text-neutral-500 hover:text-white transition-colors"
             >
-              Haven't heard it? Skip →
+              Haven&apos;t heard it? Skip →
             </button>
           </div>
         )}
@@ -209,7 +209,7 @@ export default function TasteSetupRatePage() {
             <div className="text-4xl">🎉</div>
             <h2 className="text-2xl font-bold uppercase">NICE TASTE!</h2>
             <p className="text-neutral-400">
-              You've rated {ratedCount} albums. Ready to see your TasteID?
+              You&apos;ve rated {ratedCount} albums. Ready to see your TasteID?
             </p>
 
             {/* Rated albums grid */}
