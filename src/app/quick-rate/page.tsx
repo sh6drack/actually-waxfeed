@@ -1209,7 +1209,12 @@ export default function QuickRatePage() {
 
                 {/* Rating Slider */}
                 <div className="mb-8 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
-                  <RatingSlider value={rating} onChange={setRating} disabled={submitting} />
+                  <RatingSlider
+                    value={rating}
+                    onChange={setRating}
+                    disabled={submitting}
+                    predictedRating={predictionData?.hasPrediction ? predictionData.prediction?.rating : undefined}
+                  />
                 </div>
 
                 {/* Actions */}
