@@ -8,10 +8,49 @@ export const metadata: Metadata = {
 
 const CHANGELOG_ENTRIES = [
   {
+    version: "2.5",
+    codename: "Decipher",
+    date: "2026-02-04",
+    highlight: true,
+    summary: "AI-powered taste prediction. WAXFEED now learns your taste and predicts what you'll rate.",
+    changes: [
+      {
+        type: "feature" as const,
+        title: "Audio DNA",
+        description: "Your taste fingerprint powered by Spotify audio features—energy, mood, danceability, and more.",
+      },
+      {
+        type: "feature" as const,
+        title: "Rating Predictions",
+        description: "Before you rate, we predict your score. See how well we know your taste.",
+      },
+      {
+        type: "feature" as const,
+        title: "Decipher Progress",
+        description: "\"Your taste is X% deciphered.\" Watch as the system learns what makes you tick.",
+      },
+      {
+        type: "feature" as const,
+        title: "Prediction Streaks",
+        description: "Build streaks when predictions match your ratings. How predictable are you?",
+      },
+      {
+        type: "feature" as const,
+        title: "Surprise Detection",
+        description: "Albums that defy prediction get marked as surprises—helping us learn your edge cases.",
+      },
+      {
+        type: "enhancement" as const,
+        title: "Cinematic Celebrations",
+        description: "Perfect predictions, close calls, and surprises each get their own premium animation.",
+      },
+    ],
+  },
+  {
     version: "2.4",
     codename: "Polish",
     date: "2026-02-04",
-    highlight: true,
+    highlight: false,
     summary: "Refined experience with better feedback and navigation.",
     changes: [
       {
@@ -363,7 +402,7 @@ export default function ChangelogPage() {
                 waxfeed
               </span>
               <span className="font-mono text-[10px] text-[var(--accent-primary)]">
-                2.4
+                2.5
               </span>
             </div>
             <span className="text-xs text-[--muted]">
