@@ -609,11 +609,15 @@ export default function QuickRatePage() {
             {canGoBack && (
               <button
                 onClick={goBack}
-                className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:border-white/30 transition-all hover:scale-105"
+                title="Press B or Backspace to go back"
+                className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:border-white/30 transition-all hover:scale-105 relative group"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
+                <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[8px] text-white/20 opacity-0 group-hover:opacity-100 transition-opacity hidden md:block whitespace-nowrap">
+                  B / ⌫
+                </span>
               </button>
             )}
             <div>
@@ -1296,14 +1300,19 @@ export default function QuickRatePage() {
                   <button
                     onClick={skip}
                     disabled={submitting}
-                    className="w-24 py-4 rounded-full border border-white/10 text-white/40 font-medium text-xs uppercase tracking-wider hover:border-white/30 hover:text-white/70 transition-all disabled:opacity-50"
+                    title="Press S to skip"
+                    className="w-24 py-4 rounded-full border border-white/10 text-white/40 font-medium text-xs uppercase tracking-wider hover:border-white/30 hover:text-white/70 transition-all disabled:opacity-50 relative group"
                   >
                     Skip
+                    <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[8px] text-white/20 opacity-0 group-hover:opacity-100 transition-opacity hidden md:block">
+                      S
+                    </span>
                   </button>
                   <button
                     onClick={submitRating}
                     disabled={submitting}
-                    className="flex-1 py-4 rounded-full bg-[#ffd700] text-black font-semibold text-sm uppercase tracking-wider hover:bg-[#ffe44d] transition-all disabled:opacity-50 hover:scale-[1.01]"
+                    title="Press Enter to rate"
+                    className="flex-1 py-4 rounded-full bg-[#ffd700] text-black font-semibold text-sm uppercase tracking-wider hover:bg-[#ffe44d] transition-all disabled:opacity-50 hover:scale-[1.01] relative group"
                   >
                     {submitting ? (
                       <span className="flex items-center justify-center gap-2">
@@ -1311,6 +1320,11 @@ export default function QuickRatePage() {
                         Saving
                       </span>
                     ) : 'Rate Album'}
+                    {!submitting && (
+                      <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[8px] text-white/20 opacity-0 group-hover:opacity-100 transition-opacity hidden md:block">
+                        ↵ Enter
+                      </span>
+                    )}
                   </button>
                 </div>
 
