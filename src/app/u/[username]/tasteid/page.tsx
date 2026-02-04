@@ -289,7 +289,7 @@ export default async function TasteIDPage({ params }: Props) {
 
                   {/* What is TasteID */}
                   <div className="mt-10 pt-8 border-t border-white/10">
-                    <h3 className="text-xs uppercase tracking-wider text-white/40 font-medium mb-5 text-center">What You'll Unlock</h3>
+                    <h3 className="text-xs uppercase tracking-wider text-white/40 font-medium mb-5 text-center">What You&apos;ll Unlock</h3>
                     <div className="grid grid-cols-3 gap-3">
                       <div className="p-4 rounded-xl bg-white/5 text-center hover:bg-white/10 transition-colors">
                         <div className="w-10 h-10 mx-auto mb-3 rounded-lg bg-gradient-to-br from-[#ff6b6b] to-[#ff8585] flex items-center justify-center">

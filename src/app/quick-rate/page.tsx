@@ -525,161 +525,211 @@ export default function QuickRatePage() {
         </div>
       ) : currentAlbum ? (
         <>
-          {/* MOBILE LAYOUT */}
-          <div className="md:hidden min-h-screen flex flex-col pt-20 pb-4">
-            {/* Album Hero */}
-            <div className="px-6 mb-4">
-              <div className="relative aspect-square max-w-[280px] mx-auto">
-                {coverUrl ? (
-                  <img
-                    src={coverUrl}
-                    alt={currentAlbum.title}
-                    className="w-full h-full object-cover rounded-lg shadow-2xl"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-neutral-900 rounded-lg flex items-center justify-center">
-                    <svg className="w-16 h-16 text-neutral-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={0.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-                    </svg>
+          {/* MOBILE LAYOUT - Cinematic */}
+          <div className="md:hidden min-h-[100dvh] flex flex-col relative">
+            {/* Ambient Background - Mobile optimized */}
+            {coverUrl && (
+              <div className="absolute inset-0 overflow-hidden">
+                <div
+                  className="absolute top-0 left-1/2 -translate-x-1/2 w-[200%] aspect-square opacity-40 blur-3xl"
+                  style={{
+                    backgroundImage: `url(${coverUrl})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/80 to-black" />
+              </div>
+            )}
+
+            {/* Content */}
+            <div className="relative z-10 flex flex-col flex-1 pt-20 pb-20">
+              {/* Album Hero - Large and Cinematic */}
+              <div className="px-8 mb-6">
+                <div className="relative aspect-square max-w-[320px] mx-auto">
+                  {coverUrl ? (
+                    <>
+                      {/* Glow underneath */}
+                      <div
+                        className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-[70%] h-12 blur-2xl opacity-60 rounded-full"
+                        style={{ backgroundColor: '#ffd700' }}
+                      />
+                      <img
+                        src={coverUrl}
+                        alt={currentAlbum.title}
+                        className="w-full h-full object-cover rounded-2xl shadow-2xl relative z-10"
+                      />
+                    </>
+                  ) : (
+                    <div className="w-full h-full bg-neutral-900 rounded-2xl flex items-center justify-center">
+                      <svg className="w-20 h-20 text-neutral-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={0.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Album Info */}
+              <div className="px-6 text-center mb-5">
+                <div className="flex items-center justify-center gap-3 mb-2">
+                  <h2 className="text-2xl font-bold tracking-tight line-clamp-1">{currentAlbum.title}</h2>
+                  <BookmarkButton albumId={currentAlbum.id} size="sm" />
+                </div>
+                <p className="text-white/60 text-base font-light">{currentAlbum.artistName}</p>
+                {currentAlbum.genres?.length > 0 && (
+                  <div className="flex items-center justify-center gap-2 mt-3">
+                    {currentAlbum.genres.slice(0, 2).map((genre) => (
+                      <span key={genre} className="text-[10px] px-3 py-1 rounded-full bg-white/10 text-white/50 uppercase tracking-wider border border-white/5">
+                        {genre}
+                      </span>
+                    ))}
                   </div>
                 )}
               </div>
-            </div>
 
-            {/* Album Info */}
-            <div className="px-6 text-center mb-4">
-              <div className="flex items-center justify-center gap-3 mb-1">
-                <h2 className="text-xl font-semibold tracking-tight line-clamp-1">{currentAlbum.title}</h2>
-                <BookmarkButton albumId={currentAlbum.id} size="sm" />
-              </div>
-              <p className="text-white/50 text-sm">{currentAlbum.artistName}</p>
-              {currentAlbum.genres?.length > 0 && (
-                <div className="flex items-center justify-center gap-2 mt-2">
-                  {currentAlbum.genres.slice(0, 2).map((genre) => (
-                    <span key={genre} className="text-[9px] px-2 py-0.5 rounded-full bg-white/5 text-white/40 uppercase tracking-wider">
-                      {genre}
-                    </span>
-                  ))}
+              {/* Tracklist - Sleek Horizontal */}
+              {albumTracks.length > 0 && (
+                <div className="mb-5">
+                  <div className="flex items-center justify-between px-6 mb-3">
+                    <span className="text-[10px] tracking-[0.2em] uppercase text-white/40">Preview Tracks</span>
+                    {albumTracks.some(t => t.waveform) && (
+                      <span className="text-[9px] text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                        Spotify Data
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex gap-2.5 overflow-x-auto px-6 pb-2 scrollbar-hide snap-x snap-mandatory">
+                    {albumTracks.map((track) => {
+                      const isPlaying = playingTrackId === track.id
+                      const hasRealWaveform = track.waveform && track.waveform.length === 40
+                      return (
+                        <button
+                          key={track.id}
+                          onClick={() => playTrack(track)}
+                          disabled={!track.previewUrl}
+                          className={`flex-shrink-0 snap-start w-[100px] p-3 rounded-xl transition-all active:scale-95 ${
+                            isPlaying
+                              ? 'bg-[#ffd700]/20 border-2 border-[#ffd700]/60'
+                              : 'bg-white/5 border border-white/10 active:bg-white/10'
+                          } ${!track.previewUrl ? 'opacity-30' : ''}`}
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                              isPlaying ? 'bg-[#ffd700]' : 'bg-white/10'
+                            }`}>
+                              {isPlaying ? (
+                                <PauseIcon className="w-3 h-3 text-black" />
+                              ) : (
+                                <PlayIcon className="w-3 h-3 text-white/60" />
+                              )}
+                            </div>
+                            <span className={`text-xs font-mono ${isPlaying ? 'text-[#ffd700]' : 'text-white/40'}`}>
+                              {track.trackNumber.toString().padStart(2, '0')}
+                            </span>
+                          </div>
+                          <span className={`block text-[11px] truncate font-medium ${isPlaying ? 'text-[#ffd700]' : 'text-white/80'}`}>
+                            {track.name}
+                          </span>
+                          {/* Mini waveform indicator */}
+                          <div className="flex items-center gap-[1px] h-2 mt-2">
+                            {(track.waveform?.slice(0, 20) || Array(20).fill(0.4)).map((h: number, i: number) => (
+                              <div
+                                key={i}
+                                className={`w-[2px] rounded-full ${
+                                  isPlaying ? 'bg-[#ffd700]' : hasRealWaveform ? 'bg-cyan-400/50' : 'bg-white/20'
+                                }`}
+                                style={{ height: `${h * 100}%` }}
+                              />
+                            ))}
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
               )}
-            </div>
 
-            {/* Tracklist - Horizontal */}
-            {albumTracks.length > 0 && (
-              <div className="px-4 mb-4">
-                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                  {albumTracks.map((track) => {
-                    const isPlaying = playingTrackId === track.id
+              {/* Vibes - Premium Pills */}
+              <div className="px-5 mb-5 flex-1">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] tracking-[0.2em] uppercase text-white/40">Select Vibes</span>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                    selectedDescriptors.length > 0 ? 'bg-[#ffd700]/20 text-[#ffd700]' : 'bg-white/5 text-white/30'
+                  }`}>
+                    {selectedDescriptors.length}/5
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {shuffledDescriptors.slice(0, 15).map((descriptor) => {
+                    const isSelected = selectedDescriptors.includes(descriptor.id)
+                    const atMax = selectedDescriptors.length >= MAX_DESCRIPTORS && !isSelected
                     return (
                       <button
-                        key={track.id}
-                        onClick={() => playTrack(track)}
-                        disabled={!track.previewUrl}
-                        className={`flex-shrink-0 px-3 py-2 rounded-lg transition-all ${
-                          isPlaying
-                            ? 'bg-[#ffd700]/20 border border-[#ffd700]/50'
-                            : 'bg-white/5 border border-transparent hover:bg-white/10'
-                        } ${!track.previewUrl ? 'opacity-30' : ''}`}
+                        key={descriptor.id}
+                        onClick={() => toggleDescriptor(descriptor.id)}
+                        disabled={submitting || atMax}
+                        className={`text-[10px] px-3.5 py-2 rounded-full uppercase tracking-wider font-medium transition-all active:scale-95 ${
+                          isSelected
+                            ? 'bg-[#ffd700] text-black shadow-lg shadow-[#ffd700]/20'
+                            : atMax
+                              ? 'bg-white/5 text-white/15 border border-white/5'
+                              : 'bg-white/5 text-white/60 border border-white/10 active:bg-white/10'
+                        }`}
                       >
-                        <div className="flex items-center gap-1.5">
-                          {isPlaying ? (
-                            <PauseIcon className="w-3 h-3 text-[#ffd700]" />
-                          ) : (
-                            <PlayIcon className="w-3 h-3 text-white/40" />
-                          )}
-                          <span className={`text-[10px] font-mono ${isPlaying ? 'text-[#ffd700]' : 'text-white/40'}`}>
-                            {track.trackNumber.toString().padStart(2, '0')}
-                          </span>
-                        </div>
-                        <span className={`block text-[10px] max-w-[70px] truncate mt-0.5 ${isPlaying ? 'text-[#ffd700]' : 'text-white/70'}`}>
-                          {track.name}
-                        </span>
+                        {descriptor.label}
                       </button>
                     )
                   })}
                 </div>
               </div>
-            )}
 
-            {/* Vibes */}
-            <div className="px-4 mb-4 flex-1">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] tracking-[0.2em] uppercase text-white/30">Vibes</span>
-                <span className={`text-[10px] font-mono ${selectedDescriptors.length > 0 ? 'text-[#ffd700]' : 'text-white/20'}`}>
-                  {selectedDescriptors.length}/5
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {shuffledDescriptors.slice(0, 12).map((descriptor) => {
-                  const isSelected = selectedDescriptors.includes(descriptor.id)
-                  const atMax = selectedDescriptors.length >= MAX_DESCRIPTORS && !isSelected
-                  return (
-                    <button
-                      key={descriptor.id}
-                      onClick={() => toggleDescriptor(descriptor.id)}
-                      disabled={submitting || atMax}
-                      className={`text-[9px] px-2.5 py-1.5 rounded-full uppercase tracking-wide transition-all ${
-                        isSelected
-                          ? 'bg-[#ffd700] text-black font-semibold'
-                          : atMax
-                            ? 'bg-white/5 text-white/20'
-                            : 'bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/70'
-                      }`}
-                    >
-                      {descriptor.label}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* Review Text */}
-            <div className="px-4 mb-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] tracking-[0.2em] uppercase text-white/30">Review</span>
-                <span className="text-[10px] text-white/20">optional</span>
-              </div>
-              <textarea
-                value={reviewText}
-                onChange={(e) => setReviewText(e.target.value)}
-                placeholder="Share your thoughts..."
-                disabled={submitting}
-                className="w-full h-20 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/30 resize-none focus:outline-none focus:border-[#ffd700]/50 transition-colors"
-              />
-            </div>
-
-            {/* Rating */}
-            <div className="px-6 py-4 border-t border-white/5">
-              <RatingSlider value={rating} onChange={setRating} disabled={submitting} />
-            </div>
-
-            {/* Actions */}
-            <div className="px-6 pb-2">
-              {error && <p className="text-red-400 text-xs text-center mb-2">{error}</p>}
-              <div className="flex gap-3">
-                <button
-                  onClick={skip}
+              {/* Review Text - Collapsible/Optional */}
+              <div className="px-5 mb-4">
+                <textarea
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                  placeholder="Add a review (optional)..."
                   disabled={submitting}
-                  className="w-20 py-3.5 rounded-full border border-white/10 text-white/40 font-medium text-xs uppercase tracking-wider hover:border-white/30 hover:text-white/70 transition-all disabled:opacity-50"
-                >
-                  Skip
-                </button>
-                <button
-                  onClick={submitRating}
-                  disabled={submitting}
-                  className="flex-1 py-3.5 rounded-full bg-[#ffd700] text-black font-semibold text-sm uppercase tracking-wider hover:bg-[#ffe44d] transition-all disabled:opacity-50 hover:scale-[1.02]"
-                >
-                  {submitting ? '...' : 'Rate'}
-                </button>
+                  rows={2}
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-white/30 resize-none focus:outline-none focus:border-[#ffd700]/50 focus:bg-white/[0.07] transition-all"
+                />
               </div>
-            </div>
 
-            {/* Progress Bar */}
-            {isStatsLoaded && (
-              <div className="px-6 pt-4">
-                <TierProgressBar ratingCount={actualRatedCount} />
+              {/* Rating Slider - Prominent */}
+              <div className="px-5 py-4 bg-white/[0.02] border-t border-b border-white/5">
+                <RatingSlider value={rating} onChange={setRating} disabled={submitting} />
               </div>
-            )}
+
+              {/* Actions - Fixed Bottom Feel */}
+              <div className="px-5 pt-4 pb-2">
+                {error && <p className="text-red-400 text-xs text-center mb-3">{error}</p>}
+                <div className="flex gap-3">
+                  <button
+                    onClick={skip}
+                    disabled={submitting}
+                    className="w-24 py-4 rounded-2xl border border-white/15 text-white/50 font-semibold text-xs uppercase tracking-wider active:scale-95 active:bg-white/5 transition-all disabled:opacity-50"
+                  >
+                    Skip
+                  </button>
+                  <button
+                    onClick={submitRating}
+                    disabled={submitting}
+                    className="flex-1 py-4 rounded-2xl bg-[#ffd700] text-black font-bold text-sm uppercase tracking-wider active:scale-[0.98] active:bg-[#ffe44d] transition-all disabled:opacity-50 shadow-lg shadow-[#ffd700]/20"
+                  >
+                    {submitting ? '...' : 'Rate Album'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Tier Progress */}
+              {isStatsLoaded && (
+                <div className="px-5 pt-3">
+                  <TierProgressBar ratingCount={actualRatedCount} />
+                </div>
+              )}
+            </div>
           </div>
 
           {/* DESKTOP LAYOUT - Cinematic Split */}

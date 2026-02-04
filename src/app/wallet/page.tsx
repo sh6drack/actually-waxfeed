@@ -395,7 +395,7 @@ function WalletContent() {
               </div>
               <p className="text-lg font-bold mb-2">No badges yet</p>
               <p className="text-sm text-[var(--muted)] mb-6 max-w-sm mx-auto">
-                Review albums early. When they trend, you'll earn badges based on your position.
+                Review albums early. When they trend, you&apos;ll earn badges based on your position.
               </p>
               <Link
                 href="/discover"

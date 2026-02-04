@@ -290,11 +290,11 @@ export default async function FriendsPage() {
               <div className="text-4xl mb-4">🎵</div>
               <h3 className="text-xl font-bold mb-2">Build your taste network</h3>
               <p className="text-[--muted] mb-6 max-w-md mx-auto">
-                Connect with people who share your taste. See what they're reviewing, compare your TasteIDs, and discover albums through trusted sources.
+                Connect with people who share your taste. See what they&apos;re reviewing, compare your TasteIDs, and discover albums through trusted sources.
               </p>
               {suggestedUsers.length === 0 ? (
                 <p className="text-sm text-[--muted]">
-                  As more people join, you'll see suggestions based on similar taste here.
+                  As more people join, you&apos;ll see suggestions based on similar taste here.
                 </p>
               ) : (
                 <Link

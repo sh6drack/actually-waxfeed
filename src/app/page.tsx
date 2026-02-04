@@ -537,7 +537,7 @@ export default async function Home() {
                     
                     {/* Status Message */}
                     <p className="text-xs text-[var(--muted)]">
-                      Rate 25 albums and we'll show you who you really are musically. Your <span className="text-[--accent-primary] font-medium">TasteID</span> is waiting.
+                      Rate 25 albums and we&apos;ll show you who you really are musically. Your <span className="text-[--accent-primary] font-medium">TasteID</span> is waiting.
                     </p>
                   </div>
                   
@@ -577,7 +577,7 @@ export default async function Home() {
                 
                 {/* Right Column - Feature Highlights */}
                 <div className="border border-[var(--border)] p-4">
-                  <h2 className="text-xs tracking-[0.2em] uppercase text-[var(--muted)] mb-4">What You'll Learn</h2>
+                  <h2 className="text-xs tracking-[0.2em] uppercase text-[var(--muted)] mb-4">What You&apos;ll Learn</h2>
 
                   <div className="space-y-4">
                     <div className="flex items-start gap-3 p-3 border-b border-[var(--border)]">
@@ -588,7 +588,7 @@ export default async function Home() {
                       </div>
                       <div>
                         <p className="text-sm font-bold text-[#ff6b6b]">TasteID</p>
-                        <p className="text-xs text-[var(--muted)]">Your musical DNA decoded—genres, vibes, patterns you didn't know you had</p>
+                        <p className="text-xs text-[var(--muted)]">Your musical DNA decoded—genres, vibes, patterns you didn&apos;t know you had</p>
                       </div>
                     </div>
 
@@ -683,16 +683,16 @@ export default async function Home() {
                 </span>
               </div>
 
-              {/* Mobile: Horizontal scroll with larger cards */}
-              <div className="md:hidden -mx-6 px-6">
-                <div className="flex gap-3 overflow-x-auto pb-4 scroll-x-mobile">
+              {/* Mobile: Premium horizontal scroll with snap */}
+              <div className="md:hidden -mx-6">
+                <div className="flex gap-4 overflow-x-auto px-6 pb-4 snap-x snap-mandatory scrollbar-hide">
                   {billboardAlbums.slice(0, 24).map((album, index) => (
                     <Link
                       key={album.id}
                       href={`/album/${album.spotifyId}`}
-                      className="group flex-shrink-0 w-[140px] active:scale-95 transition-transform"
+                      className="group flex-shrink-0 w-[150px] snap-start active:scale-[0.97] transition-transform"
                     >
-                      <div className="album-cover aspect-square w-full bg-[var(--surface)] overflow-hidden relative">
+                      <div className="aspect-square w-full bg-[var(--surface)] overflow-hidden relative rounded-lg shadow-lg">
                         {album.coverArtUrl && (
                           <img
                             src={album.coverArtUrl}
@@ -702,33 +702,41 @@ export default async function Home() {
                             className="w-full h-full object-cover"
                           />
                         )}
-                        <div className={`absolute top-0 left-0 px-2 py-1 text-[11px] font-bold ${
+                        {/* Rank badge - floating pill style */}
+                        <div className={`absolute top-2 left-2 px-2.5 py-1 rounded-full text-[11px] font-bold shadow-md ${
                           index < 10
                             ? 'bg-[#ffd700] text-black'
                             : index < 25
-                              ? 'bg-white/90 text-black'
-                              : 'bg-black/70 text-white'
+                              ? 'bg-white/95 text-black'
+                              : 'bg-black/80 text-white backdrop-blur-sm'
                         }`}>
-                          {index + 1}
+                          #{index + 1}
+                        </div>
+                        {/* Bottom gradient for text readability */}
+                        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/70 to-transparent" />
+                        {/* Album info overlay */}
+                        <div className="absolute inset-x-0 bottom-0 p-3">
+                          <p className="text-[13px] font-semibold text-white truncate drop-shadow-md">
+                            {album.title}
+                          </p>
+                          <p className="text-[11px] text-white/70 truncate">
+                            {album.artistName}
+                          </p>
                         </div>
                       </div>
-                      <p className="text-xs font-medium truncate mt-2 group-hover:text-[var(--muted)] transition-colors">
-                        {album.title}
-                      </p>
-                      <p className="text-[11px] text-[var(--muted-dim)] truncate">
-                        {album.artistName}
-                      </p>
                     </Link>
                   ))}
                   {/* See All card */}
                   <Link
                     href="/discover"
-                    className="flex-shrink-0 w-[140px] aspect-square bg-[var(--surface)] border border-[var(--border)] flex flex-col items-center justify-center gap-2 active:scale-95 transition-transform"
+                    className="flex-shrink-0 w-[150px] aspect-square bg-gradient-to-br from-[var(--surface)] to-[var(--border)] rounded-lg border border-[var(--border)] flex flex-col items-center justify-center gap-3 active:scale-[0.97] transition-transform snap-start"
                   >
-                    <svg className="w-8 h-8 text-[var(--muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                    <span className="text-xs text-[var(--muted)] uppercase tracking-wider">See All</span>
+                    <div className="w-12 h-12 rounded-full bg-[--accent-primary]/10 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-[--accent-primary]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </div>
+                    <span className="text-xs text-[var(--muted)] uppercase tracking-wider font-medium">See All</span>
                   </Link>
                 </div>
               </div>
@@ -803,7 +811,7 @@ export default async function Home() {
                       <p className="text-xs md:text-xs text-[var(--muted)] truncate">{review.album.artistName}</p>
                       {review.text && (
                         <p className="text-xs md:text-[11px] text-[var(--muted)] mt-1.5 md:mt-2 line-clamp-2 leading-relaxed">
-                          "{review.text}"
+                          &quot;{review.text}&quot;
                         </p>
                       )}
                       <div className="flex items-center gap-2 mt-2">
@@ -868,7 +876,7 @@ export default async function Home() {
                 </div>
                 <p className="font-bold mb-2">See Your Taste Reflected Back</p>
                 <p className="text-sm text-[var(--muted)] mb-3">
-                  TasteID analyzes your patterns. Genres, vibes, eras—things you didn't realize about yourself.
+                  TasteID analyzes your patterns. Genres, vibes, eras—things you didn&apos;t realize about yourself.
                 </p>
                 <span className="text-xs text-[#ff6b6b]">Your archetype revealed</span>
               </div>
@@ -883,7 +891,7 @@ export default async function Home() {
                 </div>
                 <p className="font-bold mb-2">Explore Your Musical Identity</p>
                 <p className="text-sm text-[var(--muted)] mb-3">
-                  Find new music that fits. Connect with people who get it. Never say "I listen to everything" again.
+                  Find new music that fits. Connect with people who get it. Never say &quot;I listen to everything&quot; again.
                 </p>
                 <span className="text-xs text-[#00bfff]">Discovery + Connection</span>
               </Link>

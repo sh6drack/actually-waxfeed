@@ -67,11 +67,12 @@ export function PolaritySystem() {
         <div className="w-8 h-8 border-r-2 border-t-2 border-[--foreground]/10" />
         <div className="absolute -bottom-1 -left-1 w-1.5 h-1.5 bg-cyan-400/40 animate-pulse" style={{ animationDelay: "0.5s" }} />
       </div>
-      <div className="fixed bottom-4 left-4 pointer-events-none z-40">
+      {/* Hidden on mobile where bottom nav is visible */}
+      <div className="hidden lg:block fixed bottom-4 left-4 pointer-events-none z-40">
         <div className="w-8 h-8 border-l-2 border-b-2 border-[--foreground]/10" />
         <div className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-cyan-400/40 animate-pulse" style={{ animationDelay: "1s" }} />
       </div>
-      <div className="fixed bottom-4 right-4 pointer-events-none z-40">
+      <div className="hidden lg:block fixed bottom-4 right-4 pointer-events-none z-40">
         <div className="w-8 h-8 border-r-2 border-b-2 border-[--foreground]/10" />
         <div className="absolute -top-1 -left-1 w-1.5 h-1.5 bg-[var(--accent-primary)]/40 animate-pulse" style={{ animationDelay: "1.5s" }} />
       </div>
@@ -86,8 +87,8 @@ export function PolaritySystem() {
         </div>
       )}
 
-      {/* System Status Bar - Bottom */}
-      <footer className="fixed bottom-0 left-0 right-0 z-40 pointer-events-none">
+      {/* System Status Bar - Bottom (hidden on mobile where bottom nav is visible) */}
+      <footer className="hidden lg:block fixed bottom-0 left-0 right-0 z-40 pointer-events-none">
         <div className="flex items-center justify-between px-6 py-3">
           {/* Left: Coordinates */}
           <div className="hidden md:flex items-center gap-4 font-mono text-[9px] tracking-wider text-[--foreground]/20">

@@ -67,21 +67,21 @@ export function FirstTimeWelcome() {
 
             {/* Headline */}
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight mb-3 sm:mb-5 text-white pr-6">
-              The world's first platform<br />
+              The world&apos;s first platform<br />
               <span className="text-[var(--accent-primary)]">that proves your taste.</span>
             </h2>
 
             {/* Subhead */}
             <p className="text-[#ccc] text-sm sm:text-base leading-relaxed mb-5 sm:mb-8 max-w-md">
               Every album you rate is timestamped. When it blows up months later,
-              you have the proof. No more "I told you so" — just verified discovery.
+              you have the proof. No more &quot;I told you so&quot; — just verified discovery.
             </p>
 
             {/* The differentiator - hidden on very small screens */}
             <div className="hidden sm:block border-l-4 border-[var(--accent-primary)] pl-5 mb-8 bg-[--surface-raised] py-4 pr-4">
               <p className="text-sm text-[#ddd] leading-relaxed">
-                "Letterboxd proved people care about logging films.
-                WaxFeed proves people care about <span className="text-white font-bold">being first</span>."
+                &quot;Letterboxd proved people care about logging films.
+                WaxFeed proves people care about <span className="text-white font-bold">being first</span>.&quot;
               </p>
             </div>
 

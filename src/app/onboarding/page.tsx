@@ -492,7 +492,7 @@ export default function OnboardingPage() {
             <h1 className="text-4xl font-bold tracking-tighter mb-4">Where You At?</h1>
             <p className="text-[--muted] mb-8">
               This helps us personalize your music recommendations.
-              We'll prioritize music from your region and similar markets.
+              We&apos;ll prioritize music from your region and similar markets.
             </p>
 
             <div className="space-y-4 mb-8">
@@ -650,7 +650,7 @@ export default function OnboardingPage() {
             <h1 className="text-4xl font-bold tracking-tighter mb-2">Train Your Taste</h1>
             <p className="text-[--muted] mb-6">
               Rate {REQUIRED_RATINGS} albums so we can understand your music taste.
-              Skip anything you haven't heard.
+              Skip anything you haven&apos;t heard.
             </p>
 
             {/* Progress bar */}
@@ -679,12 +679,12 @@ export default function OnboardingPage() {
                 <div className="w-20 h-20 mx-auto mb-6 flex items-center justify-center border-2 border-[var(--accent-primary)]">
                   <span className="text-4xl">✓</span>
                 </div>
-                <h2 className="text-2xl font-bold mb-2">You're All Set!</h2>
+                <h2 className="text-2xl font-bold mb-2">You&apos;re All Set!</h2>
                 <p className="text-[--muted] mb-2">You rated</p>
                 <p className="text-5xl font-bold text-[var(--accent-primary)] mb-2 tabular-nums">{ratedCount}</p>
                 <p className="text-[--muted] mb-8">albums</p>
                 <p className="text-sm text-[--muted]/70 mb-8">
-                  We're building your TasteID now. The more you rate, the better your recommendations.
+                  We&apos;re building your TasteID now. The more you rate, the better your recommendations.
                 </p>
                 <button
                   onClick={handleComplete}
@@ -771,7 +771,7 @@ export default function OnboardingPage() {
                       disabled={submitting}
                       className="flex-1 py-4 border border-[--border] text-[--muted] font-bold uppercase tracking-wider hover:border-white hover:text-white transition-colors disabled:opacity-50"
                     >
-                      Haven't Heard
+                      Haven&apos;t Heard
                     </button>
                     <button
                       onClick={submitRating}

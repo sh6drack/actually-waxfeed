@@ -97,7 +97,7 @@ function PricingContent() {
           <div className="inline-flex items-center gap-3 px-4 py-2 border border-[var(--accent-primary)]/30 text-sm">
             <span className="text-[var(--accent-primary)] font-bold">47 Gold Spins</span>
             <span className="text-[--muted]">=</span>
-            <span>"I called 47 albums before they trended"</span>
+            <span>&quot;I called 47 albums before they trended&quot;</span>
           </div>
         </div>
       </section>
@@ -405,19 +405,19 @@ function PricingContent() {
             <div className="p-4 border border-[--border]">
               <p className="text-sm font-medium mb-1">For DJs</p>
               <p className="text-xs text-[--muted]">
-                "My Tastemaker Score is 340. I have 12 Gold Spins."
+                &quot;My Tastemaker Score is 340. I have 12 Gold Spins.&quot;
               </p>
             </div>
             <div className="p-4 border border-[--border]">
               <p className="text-sm font-medium mb-1">For Writers</p>
               <p className="text-xs text-[--muted]">
-                "I reviewed this 6 months before Pitchfork."
+                &quot;I reviewed this 6 months before Pitchfork.&quot;
               </p>
             </div>
             <div className="p-4 border border-[--border]">
               <p className="text-sm font-medium mb-1">For A&R</p>
               <p className="text-xs text-[--muted]">
-                "I spotted 8 artists before they signed."
+                &quot;I spotted 8 artists before they signed.&quot;
               </p>
             </div>
           </div>
