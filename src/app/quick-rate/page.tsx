@@ -775,6 +775,11 @@ export default function QuickRatePage() {
                           <span className="text-[9px] tracking-[0.2em] uppercase text-white/30">Prediction</span>
                         </div>
                         <div className="flex items-center gap-2">
+                          {predictionData.prediction.confidence < 35 && (
+                            <span className="text-[7px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400/60 uppercase tracking-wide border border-purple-500/20">
+                              Learning
+                            </span>
+                          )}
                           <span className="text-[10px] text-white/25 tabular-nums">{predictionData.prediction.confidence}%</span>
                           {audioDNA && audioDNA.currentStreak > 0 && (
                             <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#ffd700]/10 border border-[#ffd700]/20">
@@ -1595,7 +1600,14 @@ function PredictionDisplay({
             </div>
 
             <div>
-              <span className="text-[9px] tracking-[0.25em] uppercase text-white/30 font-medium">Predicted Rating</span>
+              <div className="flex items-center gap-2">
+                <span className="text-[9px] tracking-[0.25em] uppercase text-white/30 font-medium">Predicted Rating</span>
+                {prediction.confidence < 35 && (
+                  <span className="text-[8px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400/60 uppercase tracking-wide border border-purple-500/20">
+                    Learning
+                  </span>
+                )}
+              </div>
               <div className="flex items-baseline gap-2 mt-0.5">
                 <span
                   className="text-3xl font-bold tabular-nums"
@@ -2060,18 +2072,21 @@ function PredictionCelebration({
           </>
         ) : isSurprise ? (
           <>
-            {/* Surprise celebration */}
+            {/* Surprise celebration - more dynamic with learning indicator */}
             <div className="relative mb-6">
-              {/* Sparkle effect */}
+              {/* Outer pulsing rings */}
+              <div className="absolute inset-0 w-28 h-28 mx-auto -mt-2 rounded-full border border-purple-400/15 animate-ping" style={{ animationDuration: '2s' }} />
+              <div className="absolute inset-0 w-26 h-26 mx-auto -mt-1 rounded-full border border-pink-400/10 animate-ping" style={{ animationDuration: '1.5s' }} />
+              {/* Inner sparkle glow */}
               <div
                 className="w-24 h-24 mx-auto rounded-full flex items-center justify-center"
                 style={{
-                  background: 'radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, transparent 70%)',
-                  boxShadow: '0 0 60px rgba(168, 85, 247, 0.3), inset 0 0 30px rgba(168, 85, 247, 0.1)',
+                  background: 'radial-gradient(circle, rgba(168, 85, 247, 0.25) 0%, rgba(236, 72, 153, 0.1) 50%, transparent 70%)',
+                  boxShadow: '0 0 70px rgba(168, 85, 247, 0.35), 0 0 40px rgba(236, 72, 153, 0.15), inset 0 0 30px rgba(168, 85, 247, 0.1)',
                 }}
               >
-                <svg className="w-10 h-10 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-                  <path d="M12 2L14 8L20 8L15 12L17 18L12 14L7 18L9 12L4 8L10 8L12 2Z" strokeLinejoin="round" />
+                <svg className="w-11 h-11 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                  <path d="M12 2L14 8L20 8L15 12L17 18L12 14L7 18L9 12L4 8L10 8L12 2Z" strokeLinejoin="round" className="animate-pulse" />
                 </svg>
               </div>
             </div>
@@ -2093,9 +2108,9 @@ function PredictionCelebration({
               <div className="flex items-center justify-center gap-3 mb-4">
                 <div className="flex flex-col items-center">
                   <span className="text-[9px] text-white/30 uppercase tracking-wider">Expected</span>
-                  <span className="text-lg font-bold text-purple-400/60 tabular-nums line-through">{result.predictedRating.toFixed(1)}</span>
+                  <span className="text-lg font-bold text-purple-400/50 tabular-nums line-through">{result.predictedRating.toFixed(1)}</span>
                 </div>
-                <div className="text-purple-400/40">→</div>
+                <div className="text-pink-400/50">→</div>
                 <div className="flex flex-col items-center">
                   <span className="text-[9px] text-white/30 uppercase tracking-wider">You gave</span>
                   <span className="text-lg font-bold text-purple-400 tabular-nums">{result.actualRating.toFixed(1)}</span>
@@ -2103,12 +2118,22 @@ function PredictionCelebration({
               </div>
             )}
 
-            <p className="text-white/40 text-sm mb-4">{result.celebration?.message || 'You defied our prediction!'}</p>
-            <p className="text-[11px] text-purple-400/40 flex items-center justify-center gap-2">
-              <span className="w-4 h-[1px] bg-purple-400/30" />
-              Recalibrating your taste profile
-              <span className="w-4 h-[1px] bg-purple-400/30" />
-            </p>
+            <p className="text-white/45 text-sm mb-5">{result.celebration?.message || 'You defied our prediction!'}</p>
+
+            {/* Animated recalibrating indicator */}
+            <div className="inline-flex flex-col items-center gap-2">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-500/10 border border-purple-400/20">
+                <div className="relative w-4 h-4">
+                  <div className="absolute inset-0 w-4 h-4 border-2 border-purple-400/30 rounded-full" />
+                  <div
+                    className="absolute inset-0 w-4 h-4 border-2 border-t-purple-400 border-r-transparent border-b-transparent border-l-transparent rounded-full"
+                    style={{ animation: 'spin 1s linear infinite' }}
+                  />
+                </div>
+                <span className="text-[10px] text-purple-400/70 uppercase tracking-wider">Recalibrating</span>
+              </div>
+              <p className="text-[10px] text-white/25">Learning from this edge case</p>
+            </div>
           </>
         ) : null}
 
