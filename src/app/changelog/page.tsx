@@ -8,10 +8,59 @@ export const metadata: Metadata = {
 
 const CHANGELOG_ENTRIES = [
   {
+    version: "2.5.1",
+    codename: "Decipher Polish",
+    date: "2026-02-04",
+    highlight: true,
+    summary: "Premium polish pass on the Audio DNA prediction system. Smoother, smarter, more satisfying.",
+    changes: [
+      {
+        type: "enhancement" as const,
+        title: "Premium Rating Slider",
+        description: "Rebuilt from scratch with tier labels (Skip → Classic), color-coded gradient, and prediction marker showing where we thought you'd land.",
+      },
+      {
+        type: "feature" as const,
+        title: "Audio DNA Onboarding",
+        description: "New users see a DNA-themed \"Awaiting First Read\" state with breathing plasma tube animation.",
+      },
+      {
+        type: "enhancement" as const,
+        title: "Keyboard Shortcut Hints",
+        description: "Action buttons now show keyboard shortcuts (Enter, S, B) for power users.",
+      },
+      {
+        type: "enhancement" as const,
+        title: "Celebration Timing",
+        description: "Perfect celebrations now display for full 3.5s before transition. Exit animations added for smoother flow.",
+      },
+      {
+        type: "enhancement" as const,
+        title: "Suggested Vibes",
+        description: "Vibes that match the album's audio features get highlighted with a subtle glow effect.",
+      },
+      {
+        type: "enhancement" as const,
+        title: "Accessibility",
+        description: "Added ARIA labels, live regions, and proper dialog roles throughout prediction UI.",
+      },
+      {
+        type: "enhancement" as const,
+        title: "Tier Progress Bar",
+        description: "Premium styling with tier markers, milestone glow effects, and smooth fill animations.",
+      },
+      {
+        type: "fix" as const,
+        title: "Miss Celebrations",
+        description: "Added proper feedback for near-miss predictions with streak loss messaging.",
+      },
+    ],
+  },
+  {
     version: "2.5",
     codename: "Decipher",
     date: "2026-02-04",
-    highlight: true,
+    highlight: false,
     summary: "AI-powered taste prediction. WAXFEED now learns your taste and predicts what you'll rate.",
     changes: [
       {
@@ -402,7 +451,7 @@ export default function ChangelogPage() {
                 waxfeed
               </span>
               <span className="font-mono text-[10px] text-[var(--accent-primary)]">
-                2.5
+                2.5.1
               </span>
             </div>
             <span className="text-xs text-[--muted]">
