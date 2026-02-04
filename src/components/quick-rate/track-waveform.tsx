@@ -1,5 +1,3 @@
-"use client"
-
 interface TrackWaveformProps {
   trackId: string
   isPlaying: boolean

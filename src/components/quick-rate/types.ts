@@ -1,4 +1,3 @@
-// Prediction system types
 export interface PredictionData {
   hasPrediction: boolean
   prediction?: {
