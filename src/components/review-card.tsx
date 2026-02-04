@@ -17,6 +17,8 @@ import {
   VerifiedIcon,
   ReactionsIcon,
   ShareIcon,
+  VinylIcon,
+  VinylFilledIcon,
 } from "@/components/icons"
 
 interface ReviewCardProps {
@@ -227,12 +229,12 @@ export const ReviewCard = memo(function ReviewCard({
   )
 
   return (
-    <article className="border p-3 sm:p-4 transition-colors" style={{ borderColor: 'var(--border)' }}>
-      <div className="flex gap-3 sm:gap-4">
+    <article className="border p-4 sm:p-4 transition-colors rounded-lg sm:rounded-none" style={{ borderColor: 'var(--border)' }}>
+      <div className="flex gap-4">
         {/* Album Cover */}
         {showAlbum && (
-          <Link href={`/album/${album.spotifyId}`} className="flex-shrink-0">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-[--surface]">
+          <Link href={`/album/${album.spotifyId}`} className="flex-shrink-0 active:scale-95 transition-transform">
+            <div className="w-[72px] h-[72px] sm:w-20 sm:h-20 bg-[--surface] rounded-md sm:rounded-none overflow-hidden shadow-md sm:shadow-none">
               {album.coverArtUrl ? (
                 <img
                   src={album.coverArtUrl}
@@ -312,74 +314,108 @@ export const ReviewCard = memo(function ReviewCard({
           )}
 
           {/* Actions */}
-          <div className="flex items-center gap-2 sm:gap-4 text-xs" style={{ color: 'var(--muted)' }}>
-            {/* Wax Award - Primary Action */}
+          <div className="flex items-center gap-3 sm:gap-4 text-sm sm:text-xs mt-3 sm:mt-0" style={{ color: 'var(--muted)' }}>
+            {/* Wax Award Button */}
             <div className="relative">
               <button
                 onClick={() => session ? setShowWaxMenu(!showWaxMenu) : null}
                 disabled={hasAwardedWax}
-                className={`flex items-center gap-1.5 transition-colors ${
+                className={`flex items-center gap-1.5 transition-all group ${
                   hasAwardedWax
                     ? "text-[--accent-primary]"
                     : totalWax > 0
                       ? "hover:text-[--accent-primary]"
-                      : "hover:text-[--foreground]"
+                      : "hover:text-[--accent-primary]"
                 }`}
-                title={hasAwardedWax ? "You awarded Wax" : "Award Wax"}
+                title={hasAwardedWax ? "You tipped this review" : "Tip Wax"}
               >
-                <span className="text-[10px] font-bold tracking-wider">WAX</span>
-                <span className="font-bold tabular-nums">{totalWax}</span>
-                {hasAwardedWax && (
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
+                {hasAwardedWax ? (
+                  <VinylFilledIcon size={16} className="text-[--accent-primary]" />
+                ) : (
+                  <VinylIcon size={16} className="group-hover:text-[--accent-primary] transition-colors" />
+                )}
+                {totalWax > 0 && (
+                  <span className="font-bold tabular-nums text-[--accent-primary]">{totalWax}</span>
                 )}
               </button>
 
               {showWaxMenu && !hasAwardedWax && session && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => { setShowWaxMenu(false); setWaxError(null); }} />
-                  <div className="absolute bottom-full left-0 sm:left-0 right-auto mb-1 z-50 border border-[--border] p-2 min-w-[160px] max-w-[calc(100vw-2rem)]" style={{ backgroundColor: 'var(--background)' }}>
-                    <p className="text-[9px] tracking-[0.15em] uppercase mb-2 px-1" style={{ color: 'var(--muted)' }}>Award Wax</p>
+                  <div className="absolute bottom-full left-0 mb-2 z-50 border border-[--border] rounded-lg overflow-hidden min-w-[200px] shadow-xl" style={{ backgroundColor: 'var(--surface)' }}>
+                    {/* Header */}
+                    <div className="px-3 py-2 border-b border-[--border]" style={{ backgroundColor: 'var(--background)' }}>
+                      <p className="text-xs font-semibold">Tip this review</p>
+                      <p className="text-[10px] mt-0.5" style={{ color: 'var(--muted)' }}>Show appreciation with Wax</p>
+                    </div>
 
                     {waxError && (
-                      <div className="px-2 py-2 mb-2 text-[11px] text-red-400 bg-red-500/10 border border-red-500/20">
+                      <div className="px-3 py-2 text-[11px] text-red-400 bg-red-500/10 border-b border-red-500/20">
                         {waxError}
                       </div>
                     )}
 
-                    <button
-                      onClick={() => handleAwardWax("standard")}
-                      disabled={!!awardingWax}
-                      className="w-full flex items-center justify-between px-2 py-1.5 hover:bg-[--border]/30 transition text-left disabled:opacity-50"
-                    >
-                      <span>Standard</span>
-                      <span className="text-[10px]" style={{ color: 'var(--muted)' }}>{awardingWax === "standard" ? "..." : "5"}</span>
-                    </button>
-                    <button
-                      onClick={() => handleAwardWax("premium")}
-                      disabled={!!awardingWax}
-                      className="w-full flex items-center justify-between px-2 py-1.5 hover:bg-[--border]/30 transition text-left text-purple-400 disabled:opacity-50"
-                    >
-                      <span>Premium</span>
-                      <span className="text-[10px]">{awardingWax === "premium" ? "..." : "20"}</span>
-                    </button>
-                    <button
-                      onClick={() => handleAwardWax("gold")}
-                      disabled={!!awardingWax}
-                      className="w-full flex items-center justify-between px-2 py-1.5 hover:bg-[--border]/30 transition text-left text-[--accent-primary] disabled:opacity-50"
-                    >
-                      <span>GOLD</span>
-                      <span className="text-[10px]">{awardingWax === "gold" ? "..." : "100"}</span>
-                    </button>
+                    <div className="p-1.5">
+                      {/* Standard - Always available */}
+                      <button
+                        onClick={() => handleAwardWax("standard")}
+                        disabled={!!awardingWax}
+                        className="w-full flex items-center gap-3 px-2.5 py-2 rounded-md hover:bg-white/5 transition text-left disabled:opacity-50 group"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                          <VinylIcon size={16} />
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-sm font-medium">Standard</div>
+                          <div className="text-[10px]" style={{ color: 'var(--muted)' }}>
+                            {awardingWax === "standard" ? "Sending..." : "Costs 5 Wax"}
+                          </div>
+                        </div>
+                      </button>
 
-                    <div className="border-t border-[--border] mt-2 pt-2">
+                      {/* Premium - Subscription required */}
+                      <button
+                        onClick={() => handleAwardWax("premium")}
+                        disabled={!!awardingWax}
+                        className="w-full flex items-center gap-3 px-2.5 py-2 rounded-md hover:bg-white/5 transition text-left disabled:opacity-50 group"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
+                          <VinylIcon size={16} className="text-purple-400" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-purple-400">Premium</div>
+                          <div className="text-[10px]" style={{ color: 'var(--muted)' }}>
+                            {awardingWax === "premium" ? "Sending..." : "Costs 20 Wax"}
+                          </div>
+                        </div>
+                      </button>
+
+                      {/* Gold - Subscription required */}
+                      <button
+                        onClick={() => handleAwardWax("gold")}
+                        disabled={!!awardingWax}
+                        className="w-full flex items-center gap-3 px-2.5 py-2 rounded-md hover:bg-white/5 transition text-left disabled:opacity-50 group"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-[--accent-primary]/20 flex items-center justify-center">
+                          <VinylFilledIcon size={16} className="text-[--accent-primary]" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-[--accent-primary]">Gold</div>
+                          <div className="text-[10px]" style={{ color: 'var(--muted)' }}>
+                            {awardingWax === "gold" ? "Sending..." : "Costs 100 Wax"}
+                          </div>
+                        </div>
+                      </button>
+                    </div>
+
+                    <div className="px-3 py-2 border-t border-[--border]" style={{ backgroundColor: 'var(--background)' }}>
                       <a
                         href="/wallet"
-                        className="block text-center text-[10px] tracking-wider uppercase hover:text-[--foreground] transition-colors"
+                        className="flex items-center justify-between text-[11px] hover:text-[--foreground] transition-colors"
                         style={{ color: 'var(--muted)' }}
                       >
-                        Get More Wax →
+                        <span>Your balance</span>
+                        <span className="font-medium text-[--foreground]">View Wallet →</span>
                       </a>
                     </div>
                   </div>

@@ -151,7 +151,9 @@
 - [x] Social currency ("Wax")
 - [x] Give wax to reviews you appreciate
 - [x] Wax score on user profiles
-- [x] Premium wax for paid users (future)
+- [x] Three tiers: Standard (5 Wax), Premium (20 Wax), Gold (100 Wax)
+- [x] No subscription gating - anyone with enough balance can tip any tier
+- [x] Redesigned tip UI with vinyl icons and clearer menu
 
 ### 9. Frontend Pages
 - [x] Home page with stats, recent reviews, trending (`/`)
@@ -277,6 +279,14 @@ npm run db:seed      # Seed database
 ---
 
 ## Changelog
+
+### February 4, 2026
+- **Wax Tipping Overhaul**: Removed subscription gating, redesigned UI
+  - Anyone with enough Wax balance can tip any tier (Standard/Premium/Gold)
+  - No longer requires WAX+ or WAX Pro subscription to tip Premium/Gold
+  - New vinyl icon replaces confusing "WAX 0" text button
+  - Redesigned tip menu with clear tier descriptions and costs
+  - Fixed: Users with thousands of Wax couldn't tip Gold due to subscription lock
 
 ### February 3, 2026
 - **Marketing Messaging Overhaul**: New "Learn Your Taste" positioning

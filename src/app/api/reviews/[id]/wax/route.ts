@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { successResponse, errorResponse, requireAuth, createNotification } from '@/lib/api-utils'
-import { spendWax, grantWaxReceived, getWaxAwardCost, canAwardWaxType } from '@/lib/wax-engine'
+import { spendWax, grantWaxReceived } from '@/lib/wax-engine'
 
 type WaxType = 'standard' | 'premium' | 'gold'
 
@@ -26,27 +26,18 @@ export async function POST(
       return errorResponse('User not found', 404)
     }
 
-    // Check if user can award this wax type
-    if (!canAwardWaxType(dbUser.subscriptionTier, waxType)) {
-      if (waxType === 'premium') {
-        return errorResponse('Premium Wax requires Wax+ or Wax Pro subscription', 403)
-      }
-      if (waxType === 'gold') {
-        return errorResponse('GOLD Wax requires Wax Pro subscription', 403)
-      }
-      return errorResponse('Cannot award this wax type', 403)
-    }
+    // Fixed costs for all users - no subscription gating
+    const WAX_COSTS = { standard: 5, premium: 20, gold: 100 }
+    const waxCost = WAX_COSTS[waxType]
 
-    // Get the cost to award this wax type
-    const waxCost = getWaxAwardCost(dbUser.subscriptionTier, waxType)
-    if (waxCost === null) {
+    if (!waxCost) {
       return errorResponse('Invalid wax type', 400)
     }
 
     // Check if user has enough wax
     if (dbUser.waxBalance < waxCost) {
       return errorResponse(
-        `Insufficient Wax. Need ${waxCost} Wax, you have ${dbUser.waxBalance}`,
+        `Need ${waxCost} Wax (you have ${dbUser.waxBalance})`,
         400
       )
     }
