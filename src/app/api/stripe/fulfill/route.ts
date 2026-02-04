@@ -1,13 +1,14 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { stripe } from '@/lib/stripe'
+import { getStripe } from '@/lib/stripe'
 import { successResponse, errorResponse, requireAuth } from '@/lib/api-utils'
 
 // POST /api/stripe/fulfill - Check and fulfill pending purchases
-// This handles cases where webhooks don't fire (local dev, network issues, etc.)
+// Handles both Checkout Sessions and Payment Intents (Stripe Elements)
 export async function POST(request: NextRequest) {
   try {
     const user = await requireAuth()
+    const stripe = getStripe()
 
     // Find all pending purchases for this user
     const pendingPurchases = await prisma.purchase.findMany({
@@ -17,7 +18,7 @@ export async function POST(request: NextRequest) {
         stripeSessionId: { not: null },
       },
       orderBy: { createdAt: 'desc' },
-      take: 10, // Limit to recent purchases
+      take: 10,
     })
 
     if (pendingPurchases.length === 0) {
@@ -25,40 +26,72 @@ export async function POST(request: NextRequest) {
     }
 
     let fulfilledCount = 0
-    const results: { sessionId: string; status: string; waxAmount?: number }[] = []
+    const results: { id: string; status: string; waxAmount?: number }[] = []
 
     for (const purchase of pendingPurchases) {
       if (!purchase.stripeSessionId) continue
 
       try {
-        // Retrieve session from Stripe
-        const session = await stripe.checkout.sessions.retrieve(purchase.stripeSessionId)
+        // Determine if this is a Checkout Session or Payment Intent
+        const isPaymentIntent = purchase.stripeSessionId.startsWith('pi_')
+        const isCheckoutSession = purchase.stripeSessionId.startsWith('cs_')
+        const isSubscription = purchase.stripeSessionId.startsWith('sub_')
 
-        // Check if payment is complete
-        if (session.payment_status === 'paid' || session.status === 'complete') {
+        let isPaid = false
+        let paymentId = purchase.stripeSessionId
+
+        if (isPaymentIntent) {
+          // Retrieve Payment Intent (from Stripe Elements)
+          const paymentIntent = await stripe.paymentIntents.retrieve(purchase.stripeSessionId)
+          isPaid = paymentIntent.status === 'succeeded'
+          paymentId = paymentIntent.id
+        } else if (isCheckoutSession) {
+          // Retrieve Checkout Session
+          const session = await stripe.checkout.sessions.retrieve(purchase.stripeSessionId)
+          isPaid = session.payment_status === 'paid' || session.status === 'complete'
+          paymentId = (session.payment_intent as string) || session.id
+
+          if (session.status === 'expired') {
+            await prisma.purchase.update({
+              where: { id: purchase.id },
+              data: { status: 'FAILED' },
+            })
+            results.push({ id: purchase.stripeSessionId, status: 'expired' })
+            continue
+          }
+        } else if (isSubscription) {
+          // Retrieve Subscription
+          const subscription = await stripe.subscriptions.retrieve(purchase.stripeSessionId)
+          isPaid = subscription.status === 'active' || subscription.status === 'trialing'
+          paymentId = subscription.id
+        } else {
+          results.push({ id: purchase.stripeSessionId, status: 'unknown_type' })
+          continue
+        }
+
+        if (isPaid) {
           // Check if already fulfilled (idempotency)
           const existingTx = await prisma.waxTransaction.findFirst({
             where: {
               userId: user.id,
               type: 'PURCHASE',
               metadata: {
-                path: ['sessionId'],
-                equals: session.id,
+                path: ['paymentId'],
+                equals: paymentId,
               },
             },
           })
 
           if (existingTx) {
-            // Already fulfilled, just mark as completed
             await prisma.purchase.update({
               where: { id: purchase.id },
               data: { status: 'COMPLETED' },
             })
-            results.push({ sessionId: session.id, status: 'already_fulfilled' })
+            results.push({ id: purchase.stripeSessionId, status: 'already_fulfilled' })
             continue
           }
 
-          // Fulfill the purchase
+          // Fulfill WAX_PAX purchases
           if (purchase.type === 'WAX_PAX' && purchase.waxAmount && purchase.waxAmount > 0) {
             await prisma.$transaction([
               prisma.user.update({
@@ -76,7 +109,7 @@ export async function POST(request: NextRequest) {
                   description: `Purchased ${purchase.productId || 'Wax'} pax`,
                   metadata: {
                     paxId: purchase.productId,
-                    sessionId: session.id,
+                    paymentId,
                     fulfilledVia: 'manual_check',
                   },
                 },
@@ -85,31 +118,31 @@ export async function POST(request: NextRequest) {
                 where: { id: purchase.id },
                 data: {
                   status: 'COMPLETED',
-                  stripePaymentId: session.payment_intent as string,
+                  stripePaymentId: paymentId,
                 },
               }),
             ])
 
             fulfilledCount++
             results.push({
-              sessionId: session.id,
+              id: purchase.stripeSessionId,
               status: 'fulfilled',
               waxAmount: purchase.waxAmount,
             })
+          } else {
+            // Non-wax purchase (subscription), just mark complete
+            await prisma.purchase.update({
+              where: { id: purchase.id },
+              data: { status: 'COMPLETED', stripePaymentId: paymentId },
+            })
+            results.push({ id: purchase.stripeSessionId, status: 'completed' })
           }
-        } else if (session.status === 'expired') {
-          // Mark as failed
-          await prisma.purchase.update({
-            where: { id: purchase.id },
-            data: { status: 'FAILED' },
-          })
-          results.push({ sessionId: session.id, status: 'expired' })
         } else {
-          results.push({ sessionId: session.id, status: session.status || 'unknown' })
+          results.push({ id: purchase.stripeSessionId, status: 'pending_payment' })
         }
       } catch (stripeError) {
-        console.error(`Failed to check session ${purchase.stripeSessionId}:`, stripeError)
-        results.push({ sessionId: purchase.stripeSessionId, status: 'error' })
+        console.error(`Failed to check ${purchase.stripeSessionId}:`, stripeError)
+        results.push({ id: purchase.stripeSessionId, status: 'error' })
       }
     }
 

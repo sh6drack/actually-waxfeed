@@ -7,6 +7,23 @@ import Stripe from 'stripe'
 // Disable body parsing for webhooks
 export const runtime = 'nodejs'
 
+// GET /api/stripe/webhook - Health check for webhook endpoint
+export async function GET() {
+  const hasSecret = !!process.env.STRIPE_WEBHOOK_SECRET
+  const hasStripeKey = !!process.env.STRIPE_SECRET_KEY
+
+  return NextResponse.json({
+    status: 'ok',
+    endpoint: '/api/stripe/webhook',
+    configured: hasSecret && hasStripeKey,
+    timestamp: new Date().toISOString(),
+    checks: {
+      STRIPE_SECRET_KEY: hasStripeKey ? 'set' : 'missing',
+      STRIPE_WEBHOOK_SECRET: hasSecret ? 'set' : 'missing',
+    }
+  })
+}
+
 // In-memory cache for processed events (with TTL)
 // Events are also tracked in WaxTransaction metadata for persistence
 const processedEvents = new Map<string, number>()
