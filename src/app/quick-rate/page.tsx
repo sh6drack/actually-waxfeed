@@ -52,7 +52,7 @@ interface PredictionResult {
     decipherMessage: string | null
   }
   celebration: {
-    type: 'predicted' | 'surprise' | 'perfect' | 'close'
+    type: 'predicted' | 'surprise' | 'perfect' | 'close' | 'miss'
     message: string
   } | null
   // For showing comparison in celebration
@@ -1838,11 +1838,12 @@ function PredictionCelebration({
 }) {
   const isPerfect = result.result.perfect
   const isClose = result.celebration?.type === 'close'
+  const isMiss = result.celebration?.type === 'miss'
   const isMatch = result.result.match
   const isSurprise = result.result.surprise
 
-  // Don't show if neither match nor surprise
-  if (!isMatch && !isSurprise) return null
+  // Show for matches, surprises, OR misses (streak loss feedback)
+  if (!isMatch && !isSurprise && !isMiss) return null
 
   return (
     <div
@@ -1853,12 +1854,14 @@ function PredictionCelebration({
       <div className="absolute inset-0 bg-black/95">
         {/* Radial gradient pulse */}
         <div
-          className={`absolute inset-0 ${isMatch ? 'animate-pulse' : ''}`}
+          className={`absolute inset-0 ${isMatch && !isMiss ? 'animate-pulse' : ''}`}
           style={{
             background: isPerfect
               ? 'radial-gradient(circle at center, rgba(255, 215, 0, 0.15) 0%, transparent 50%)'
               : isClose
               ? 'radial-gradient(circle at center, rgba(34, 211, 238, 0.12) 0%, rgba(255, 215, 0, 0.05) 30%, transparent 50%)'
+              : isMiss
+              ? 'radial-gradient(circle at center, rgba(255, 255, 255, 0.03) 0%, transparent 40%)'
               : isMatch
               ? 'radial-gradient(circle at center, rgba(34, 211, 238, 0.1) 0%, transparent 50%)'
               : 'radial-gradient(circle at center, rgba(168, 85, 247, 0.1) 0%, transparent 50%)',
@@ -2133,6 +2136,52 @@ function PredictionCelebration({
                 <span className="text-[10px] text-purple-400/70 uppercase tracking-wider">Recalibrating</span>
               </div>
               <p className="text-[10px] text-white/25">Learning from this edge case</p>
+            </div>
+          </>
+        ) : isMiss ? (
+          <>
+            {/* Miss celebration - subdued, acknowledges the miss */}
+            <div className="relative mb-5">
+              {/* Subtle fade ring */}
+              <div
+                className="w-20 h-20 mx-auto rounded-full flex items-center justify-center border border-white/10"
+                style={{
+                  background: 'radial-gradient(circle, rgba(255, 255, 255, 0.03) 0%, transparent 70%)',
+                }}
+              >
+                <svg className="w-8 h-8 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                  <circle cx="12" cy="12" r="10" className="opacity-40" />
+                  <path d="M12 8v4M12 16h.01" strokeLinecap="round" />
+                </svg>
+              </div>
+            </div>
+
+            <p className="text-[10px] tracking-[0.4em] uppercase text-white/25 mb-2">Recalibrating</p>
+            <h3 className="text-2xl font-semibold mb-3 text-white/50">
+              Off Target
+            </h3>
+
+            {/* Rating comparison */}
+            {result.predictedRating !== undefined && result.actualRating !== undefined && (
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <div className="flex flex-col items-center">
+                  <span className="text-[9px] text-white/20 uppercase tracking-wider">Predicted</span>
+                  <span className="text-base font-medium text-white/30 tabular-nums">{result.predictedRating.toFixed(1)}</span>
+                </div>
+                <div className="text-white/15">≠</div>
+                <div className="flex flex-col items-center">
+                  <span className="text-[9px] text-white/20 uppercase tracking-wider">Actual</span>
+                  <span className="text-base font-medium text-white/50 tabular-nums">{result.actualRating.toFixed(1)}</span>
+                </div>
+              </div>
+            )}
+
+            <p className="text-white/30 text-sm mb-4">{result.celebration?.message || 'Adjusting parameters'}</p>
+
+            {/* Progress indicator */}
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.05]">
+              <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
+              <span className="text-[9px] text-white/25 uppercase tracking-wider">Learning</span>
             </div>
           </>
         ) : null}

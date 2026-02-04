@@ -333,6 +333,8 @@ function generateReasoning(
       'This hits hard – exactly what you crave',
       'High octane energy, right in your wheelhouse',
       'The intensity here matches your taste perfectly',
+      'Maximum energy – you live for this',
+      'Power levels aligned with your preferences',
     ]
     reasons.push(options[Math.floor(Math.random() * options.length)])
   } else if (energy < 0.3 && ec < -0.2) {
@@ -340,14 +342,19 @@ function generateReasoning(
       'Subdued energy you tend to vibe with',
       'The restrained sound suits your sensibilities',
       'Understated power – your kind of thing',
+      'Calm intensity that resonates with you',
+      'The quiet energy matches your wavelength',
     ]
     reasons.push(options[Math.floor(Math.random() * options.length)])
   } else if (energy > 0.7 && ec < -0.2) {
     const options = [
       'More intense than your usual picks',
       'Higher energy than you typically prefer',
+      'Pushing your energy comfort zone',
     ]
     reasons.push(options[Math.floor(Math.random() * options.length)])
+  } else if (energy < 0.3 && ec > 0.3) {
+    reasons.push('Lower energy than your usual – could be a wildcard')
   }
 
   // Valence/mood reasoning
@@ -356,6 +363,8 @@ function generateReasoning(
       'The uplifting mood aligns with what you love',
       'Positive vibes that match your taste',
       'This brightness tends to click with you',
+      'Joyful energy that hits your sweet spot',
+      'The optimistic tone suits your profile',
     ]
     reasons.push(options[Math.floor(Math.random() * options.length)])
   } else if (valence < 0.3 && vc < -0.2) {
@@ -363,12 +372,21 @@ function generateReasoning(
       'The melancholy here resonates with you',
       'Darker mood that suits your palette',
       'The emotional weight matches your preferences',
+      'This heaviness is your comfort zone',
+      'The brooding atmosphere speaks to you',
     ]
     reasons.push(options[Math.floor(Math.random() * options.length)])
   } else if (valence > 0.7 && vc < -0.3) {
     reasons.push('Brighter than your usual fare')
   } else if (valence < 0.3 && vc > 0.3) {
     reasons.push('Darker mood than you typically gravitate toward')
+  } else if (valence > 0.4 && valence < 0.6) {
+    // Neutral valence observations
+    const neutralOptions = [
+      'Emotionally balanced – could go either way',
+      'Neither dark nor bright, interesting middle ground',
+    ]
+    if (Math.random() > 0.7) reasons.push(neutralOptions[Math.floor(Math.random() * neutralOptions.length)])
   }
 
   // Danceability reasoning
@@ -428,8 +446,21 @@ function generateReasoning(
       'Based on patterns in your rating history',
       'Drawing from your overall listening profile',
       'Analyzing your established preferences',
+      'Cross-referencing similar albums you\'ve rated',
+      'Consulting your taste fingerprint',
+      'Running the numbers on your profile',
     ]
     reasons.push(fallbacks[Math.floor(Math.random() * fallbacks.length)])
+  }
+
+  // Occasionally add a second contextual reason
+  if (reasons.length === 1 && Math.random() > 0.6) {
+    const secondaryReasons = [
+      'Your history suggests a pattern here',
+      'This fits a trend in your ratings',
+      'Similar sonic territory to past favorites',
+    ]
+    reasons.push(secondaryReasons[Math.floor(Math.random() * secondaryReasons.length)])
   }
 
   return reasons.slice(0, 3)
@@ -520,9 +551,20 @@ export async function predictRating(
 
   // Add low-confidence disclaimer if needed
   if (confidenceLevel < 0.3 && userDNA.totalPredictions < 10) {
-    reasoning = ['Still learning your taste...', ...reasoning.slice(0, 2)]
+    const learningPhrases = [
+      'Still learning your taste...',
+      'Early in the deciphering process',
+      'Building your profile...',
+    ]
+    reasoning = [learningPhrases[Math.floor(Math.random() * learningPhrases.length)], ...reasoning.slice(0, 2)]
   } else if (confidenceLevel < 0.4) {
-    reasoning = ['Taking an educated guess', ...reasoning.slice(0, 2)]
+    const guessPhases = [
+      'Taking an educated guess',
+      'Working with limited data here',
+      'Not fully confident, but...',
+      'Prediction in beta mode',
+    ]
+    reasoning = [guessPhases[Math.floor(Math.random() * guessPhases.length)], ...reasoning.slice(0, 2)]
   }
 
   return {

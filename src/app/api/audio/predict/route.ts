@@ -189,8 +189,11 @@ export async function PUT(request: NextRequest) {
     const streakMessage = getStreakMessage(updateResult.newStreak)
     const decipherMessage = getDecipherMessage(updateResult.newDecipherProgress)
 
+    // Track if streak was lost
+    const streakLost = updateResult.newStreak === 0 && !matchResult.isMatch && !matchResult.isSurprise
+
     // Generate celebration messages with more variety
-    let celebration: { type: 'predicted' | 'surprise' | 'perfect' | 'close'; message: string } | null = null
+    let celebration: { type: 'predicted' | 'surprise' | 'perfect' | 'close' | 'miss'; message: string } | null = null
 
     if (matchResult.isPerfect) {
       const perfectMessages = [
@@ -244,6 +247,24 @@ export async function PUT(request: NextRequest) {
       celebration = {
         type: 'surprise',
         message: surpriseMessages[Math.floor(Math.random() * surpriseMessages.length)],
+      }
+    } else if (matchResult.matchQuality === 'miss') {
+      // Near miss - didn't quite match but wasn't a surprise either
+      const missMessages = streakLost
+        ? [
+            'Streak broken – recalibrating',
+            'Reset. Still learning.',
+            'Back to zero. Taste evolves.',
+          ]
+        : [
+            'Just outside the range',
+            'Close, but not quite',
+            'Noted for next time',
+            'Adjusting parameters',
+          ]
+      celebration = {
+        type: 'miss',
+        message: missMessages[Math.floor(Math.random() * missMessages.length)],
       }
     }
 
