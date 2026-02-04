@@ -101,6 +101,15 @@ body {
   border-radius: 6px !important;
 }
 
+/* Quick Rate page - premium rounded UI elements */
+[class*="rounded-2xl"],
+[class*="rounded-xl"],
+[class*="rounded-lg"],
+[class*="rounded-full"],
+[class*="rounded-md"] {
+  border-radius: revert !important;
+}
+
 .tooltip-trigger-icon {
   border-radius: 50% !important;
 }
@@ -478,6 +487,16 @@ img[src=""] {
 .animate-spin-fast {
   animation: spin-fast 1.8s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
   transform-origin: center center;
+}
+
+/* Shimmer animation for progress bars - Audio DNA */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-shimmer {
+  animation: shimmer 3s ease-in-out infinite;
 }
 
 /* Fade in animation - refined */

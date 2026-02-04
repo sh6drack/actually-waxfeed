@@ -176,11 +176,48 @@
 - [x] `RatingSlider` - 0-10 rating input
 - [x] `SessionProvider` - Auth context wrapper
 
+### 11. Audio DNA / Prediction System (v2.5)
+- [x] Real-time taste learning from Spotify audio features
+- [x] Rating predictions before user rates (with confidence %)
+- [x] Streak tracking for consecutive correct predictions
+- [x] "Decipher Progress" gamification (0-100% taste mapped)
+- [x] Surprise detection for albums that defy predictions
+- [x] Vibe-to-audio feature mapping (POLARITY_DESCRIPTORS)
+- [x] Pearson correlation analysis of feature-rating relationships
+
+**Prediction Algorithm:**
+```
+predictedRating = (
+  featureSimilarityScore * 0.3 +    // Match to user's preferred ranges
+  correlationPrediction * 0.4 +      // Feature correlations with past ratings
+  similarAlbumAverage * 0.3          // Ratings of similar-sounding albums
+)
+// Match = within 1.5 points of actual
+// Surprise = difference > 2.5 points
+```
+
+**Gamification:**
+- Streaks: 3 ("Getting warm"), 5 ("We see you!"), 10 ("Taste twin!"), 25 ("Predictable")
+- Decipher %: `accuracy * 40 + (ratings/100) * 20 + vibeConsistency * 20 + correlationStrength * 20`
+
+**Files:**
+- `src/lib/audio-dna.ts` - User preference learning engine
+- `src/lib/prediction-engine.ts` - Rating prediction algorithm
+- `src/app/api/audio-dna/compute/route.ts` - Compute/recompute Audio DNA
+- `src/app/api/audio/predict/route.ts` - Get/record predictions
+
+**UI Components (in `quick-rate/page.tsx`):**
+- `DecipherProgressBar` - DNA signal visualization with animated bars
+- `PredictionDisplay` - Confidence ring, predicted rating, audio spectrum
+- `AudioFeatureBar` - VU meter-style segment visualization
+- `PredictionCelebration` - Cinematic match/surprise overlays
+- `MobileDecipherProgress` - Compact inline version for mobile
+
 ---
 
 ## Database Schema
 
-### Models (17 total)
+### Models (30 total)
 1. **User** - Profiles, auth, social
 2. **Account** - OAuth accounts (NextAuth)
 3. **Session** - User sessions (NextAuth)
@@ -207,6 +244,10 @@
 24. **Report** - Content reports
 25. **UserYearlyStats** - Year-in-review data
 26. **SpotifyCache** - API response caching
+27. **TrackAudioFeatures** - Spotify audio features per track (energy, valence, danceability, etc.)
+28. **AlbumAudioProfile** - Aggregated audio features for albums with variance metrics
+29. **UserAudioDNA** - User taste preferences learned from ratings + audio features
+30. **PredictionHistory** - Prediction records with actual results for learning
 
 ---
 
@@ -242,10 +283,35 @@
 - `bulkImportAlbums()` - Import multiple albums
 - `searchAndImportAlbums()` - Search + import
 
+### Audio Features (v2.5)
+- `getAudioFeatures()` - Get audio features for a single track
+- `getBatchAudioFeatures()` - Batch fetch up to 100 tracks
+- `getTrackAudioFeatures()` - Search + get features by track name
+- `computeAlbumAudioProfile()` - Aggregate features for an album
+- `storeTrackAudioFeatures()` - Persist to TrackAudioFeatures table
+- `storeAlbumAudioProfile()` - Persist to AlbumAudioProfile table
+
+### Audio Feature Types
+```typescript
+interface SpotifyAudioFeatures {
+  danceability: number   // 0-1: Suitable for dancing
+  energy: number         // 0-1: Intensity (fast, loud, noisy)
+  valence: number        // 0-1: Positiveness/happiness
+  acousticness: number   // 0-1: Acoustic vs electronic
+  instrumentalness: number // 0-1: No vocals (>0.5 = instrumental)
+  speechiness: number    // 0-1: Spoken words
+  liveness: number       // 0-1: Live recording audience
+  tempo: number          // BPM
+  loudness: number       // dB (-60 to 0)
+}
+```
+
 ### Caching Strategy
 - Uses `SpotifyCache` model
-- Configurable TTL per data type
-- Reduces API calls significantly
+- Audio features: 30 days (they don't change)
+- Album data: 24 hours
+- Search results: 1 hour
+- Artist data: 7 days
 
 ---
 
@@ -280,43 +346,94 @@ npm run db:seed      # Seed database
 
 ## Changelog
 
-### February 4, 2026
-- **Wax Tipping Overhaul**: Removed subscription gating, redesigned UI
+### v2.5 "Decipher" — February 4, 2026
+- **Audio DNA System**: AI learns your taste in real-time using Spotify audio features
+- **Rating Predictions**: System predicts your rating before you rate, with dynamic confidence levels
+- **Perfect Predictions**: New "PERFECT" celebration for exact matches with gold bullseye animation
+- **Decipher Progress**: "Your taste is X% deciphered" with granular milestones (10%, 20%... 99%)
+- **Streak Tracking**: 12 milestone tiers (3, 5, 7, 10, 15, 20, 25, 30, 40, 50, 75, 100+)
+- **Surprise Detection**: Albums that defy predictions get tracked with recalibration feedback
+- **Dynamic Confidence**: Historical accuracy now factors into prediction confidence levels
+- **Match Quality Tiers**: perfect > close > match > miss > surprise for nuanced celebrations
+- **Audio Feature Visualization**: VU meter-style bars for energy, mood, dance, acoustic
+- **Premium UI Components**: Cinematic celebration overlays, DNA signal visualizations
+- **Varied Messages**: 30+ unique reasoning and celebration messages to reduce repetition
+- **Database Models**: 4 new models (TrackAudioFeatures, AlbumAudioProfile, UserAudioDNA, PredictionHistory)
+- **Spotify Integration**: Audio Features API integration with batch fetching and caching
+
+### v2.4 "Polish" — February 4, 2026
+- **Wax Award Feedback**: Clear error messages when awarding Wax fails, with quick link to get more
+- **Footer Navigation**: FAQ and Changelog now accessible from homepage footer
+- **Code Quality**: Fixed 70+ lint errors across the platform
+- **Button Visibility**: Ghost buttons now have explicit text colors across themes
+- **Wax Tipping Overhaul** (internal):
   - Anyone with enough Wax balance can tip any tier (Standard/Premium/Gold)
-  - No longer requires WAX+ or WAX Pro subscription to tip Premium/Gold
+  - No longer requires WAX+ or WAX Pro subscription
   - New vinyl icon replaces confusing "WAX 0" text button
-  - Redesigned tip menu with clear tier descriptions and costs
-  - Fixed: Users with thousands of Wax couldn't tip Gold due to subscription lock
+  - Redesigned tip menu with clear tier descriptions
 
-### February 3, 2026
-- **Marketing Messaging Overhaul**: New "Learn Your Taste" positioning
-  - Hero: "I listen to everything. Do you though?" — reflects taste back to users
-  - Shifted from "prove you found it first" to "understand your musical identity"
-  - "What You'll Unlock" → "What You'll Learn" with TasteID as lead feature
-  - "What Makes WAXFEED Different?" → "How It Works" (3 steps: Rate → Learn → Go Deeper)
-  - Final CTA: "Ready to learn what you actually like?"
-  - Footer tagline: "Learn your music taste."
-  - Core insight: Everyone says "I listen to everything" but doesn't know their taste
+### v2.3 "Gateway" — February 3, 2026
+- **GitHub Login**: Sign in with GitHub account for faster access
+- **Account Linking**: Multiple sign-in methods automatically link to one account
+- **Login Security**: Rate limiting protects against brute force attempts
+- **Marketing Messaging Overhaul** (internal):
+  - New "Learn Your Taste" positioning
+  - Hero: "I listen to everything. Do you though?"
+  - "How It Works" section (Rate → Learn → Go Deeper)
 
-### January 20, 2026
+### v2.2 "Clarity" — February 3, 2026
+- **WCAG AA Compliance**: Improved color contrast across the platform
+- **Profile Social Links**: Redesigned with platform icons and brand hover colors
+- **Image Performance**: Lazy loading for album grids
+- **Heading Hierarchy**: Fixed structure for screen reader navigation
+
+### v2.1 "Cognitive" — February 1, 2026
+- **Enhanced Taste Engine**: Deeper analysis of listening patterns
+- **Pattern Recognition**: Behavioral patterns in rating and discovery
+- **Taste Evolution**: Track how preferences shift over time with drift indicators
+- **Session Insights**: Better understanding of listening sessions
+- **Mobile Optimization**: Improved responsive layouts for TasteID
+- **New Metrics**: TasteID stats for stability, exploration, connection density
+
+### v2.0 "Revival" — February 2, 2026
+- **Payments**: Secure checkout for Wax purchases and subscriptions (Stripe integration)
+- **Platform Stability**: Resolved deployment issues
+- **Performance**: Faster builds and optimized infrastructure
 - **Homepage Redesign**: Split layout with Billboard 200 (left) + Recent Reviews (right)
-  - Left: Magazine-style grid with bigger album covers from Billboard 200
-  - Right: Recent reviews feed
-  - 50/50 split down the middle
-  - Trending pulls from `billboardRank` field in Album model
-- **Auth Account Linking**: Google OAuth now links to existing email accounts
-  - If user signs up with email, then later signs in with Google (same email), accounts are merged
-  - Google profile picture syncs to existing account if none set
+- **Auth Account Linking**: Google OAuth links to existing email accounts
 
-### November 26, 2025
+### v1.9 "Dyad" — February 2026
+- **Relationship Mapping**: Taste connections across genres and artists
+- **Connection Indicators**: Visual cues for musical identity strength
+- **Visual Refresh**: New animations and UI elements
+- **Smarter Recommendations**: Improved personalization context
+
+### v1.5 "Theme" — January 16, 2026
+- **Dark/Light Mode Toggle**: User-selectable theme with color inversion
+- **ThemeProvider Component**: localStorage persistence for theme preference
+- **CSS Variables**: Full theming support (`--header-bg`, `--header-text`, `--background`, `--foreground`)
+- **Logo Animation**: WaxfeedLogo disc now spins independently (not entire logo)
+
+### v1.4 — January 16, 2026
+- **Dark Theme Fix**: Header now uses dark theme (`bg-[#0a0a0a]`) matching body
+- **UI Cleanup**: Removed excessive quotation marks from Discover page and list content
+
+### v1.2 — June 2025
+- **Listening Signature**: Unique fingerprint of music engagement style
+- **Cognitive Mapping**: Visualize connections with music
+- **Behavioral Insights**: Patterns in exploration and rating
+
+### v1.0 — Summer 2025
+- **TasteID**: Music taste fingerprint with archetype classification
+- **Polarity Score**: Uniqueness compared to mainstream
+- **First Spin**: First discovery badges
+
+### v0.1 — November 2025
 - Initial project setup
-- Complete backend API implementation
-- Minimal frontend for all core features
+- Backend API implementation
 - Spotify bulk import system
 - Google OAuth authentication
 - Database schema with 26 models
-- First 20 albums imported (Drake discography)
-- User "shadrack" created via onboarding
 
 ---
 
@@ -334,6 +451,10 @@ npm run db:seed      # Seed database
 - [ ] Review embeds
 - [ ] API rate limiting
 - [ ] Admin moderation panel
+- [ ] Audio DNA comparison between users
+- [ ] "Surprise Gallery" - albums that defied predictions
+- [ ] Prediction leaderboard - who has the most predictable taste?
+- [ ] Taste evolution timeline visualization
 
 ---
 

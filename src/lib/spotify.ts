@@ -595,3 +595,326 @@ export async function getTrackWaveform(
     return null
   }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AUDIO FEATURES - For TasteID/Audio DNA prediction system
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SpotifyAudioFeatures {
+  id: string                 // Spotify track ID
+  danceability: number       // 0-1: How suitable for dancing
+  energy: number             // 0-1: Perceptual intensity (fast, loud, noisy)
+  key: number                // 0-11: Pitch class (C, C#, D, etc.)
+  loudness: number           // dB: Overall loudness (-60 to 0)
+  mode: number               // 0 = minor, 1 = major
+  speechiness: number        // 0-1: Presence of spoken words
+  acousticness: number       // 0-1: Confidence it's acoustic
+  instrumentalness: number   // 0-1: Predicts no vocals (>0.5 = instrumental)
+  liveness: number           // 0-1: Presence of audience (live recording)
+  valence: number            // 0-1: Musical positiveness/happiness
+  tempo: number              // BPM
+  duration_ms: number        // Track duration
+  time_signature: number     // Beats per measure
+}
+
+// Cache duration for audio features (30 days - they don't change)
+const AUDIO_FEATURES_CACHE_DURATION = 30 * 24 * 60 * 60 * 1000
+
+/**
+ * Get audio features for a single track
+ */
+export async function getAudioFeatures(
+  spotifyTrackId: string
+): Promise<SpotifyAudioFeatures | null> {
+  const cacheKey = `audio:features:${spotifyTrackId}`
+  const cached = await getFromCache<SpotifyAudioFeatures>(cacheKey)
+
+  if (cached) {
+    return cached
+  }
+
+  const token = await getAccessToken()
+
+  const response = await fetch(
+    `${SPOTIFY_API_BASE}/audio-features/${spotifyTrackId}`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  )
+
+  if (!response.ok) {
+    console.error(`Audio features failed for ${spotifyTrackId}:`, response.statusText)
+    return null
+  }
+
+  const data: SpotifyAudioFeatures = await response.json()
+  await setCache(cacheKey, data, AUDIO_FEATURES_CACHE_DURATION)
+
+  return data
+}
+
+/**
+ * Get audio features for multiple tracks (batch - up to 100)
+ */
+export async function getBatchAudioFeatures(
+  spotifyTrackIds: string[]
+): Promise<Map<string, SpotifyAudioFeatures>> {
+  const results = new Map<string, SpotifyAudioFeatures>()
+  const uncachedIds: string[] = []
+
+  // Check cache first
+  for (const id of spotifyTrackIds) {
+    const cacheKey = `audio:features:${id}`
+    const cached = await getFromCache<SpotifyAudioFeatures>(cacheKey)
+    if (cached) {
+      results.set(id, cached)
+    } else {
+      uncachedIds.push(id)
+    }
+  }
+
+  if (uncachedIds.length === 0) {
+    return results
+  }
+
+  // Batch fetch uncached (Spotify allows up to 100 per request)
+  const token = await getAccessToken()
+  const chunks: string[][] = []
+  for (let i = 0; i < uncachedIds.length; i += 100) {
+    chunks.push(uncachedIds.slice(i, i + 100))
+  }
+
+  for (const chunk of chunks) {
+    try {
+      const response = await fetch(
+        `${SPOTIFY_API_BASE}/audio-features?ids=${chunk.join(',')}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+
+      if (!response.ok) {
+        console.error('Batch audio features failed:', response.statusText)
+        continue
+      }
+
+      const data: { audio_features: (SpotifyAudioFeatures | null)[] } = await response.json()
+
+      for (const features of data.audio_features) {
+        if (features) {
+          results.set(features.id, features)
+          await setCache(`audio:features:${features.id}`, features, AUDIO_FEATURES_CACHE_DURATION)
+        }
+      }
+
+      // Rate limiting
+      if (chunks.length > 1) {
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
+    } catch (error) {
+      console.error('Batch audio features error:', error)
+    }
+  }
+
+  return results
+}
+
+/**
+ * Get audio features for a track by searching Spotify first
+ */
+export async function getTrackAudioFeatures(
+  trackName: string,
+  artistName: string
+): Promise<SpotifyAudioFeatures | null> {
+  try {
+    const trackId = await searchTrack(trackName, artistName)
+    if (!trackId) return null
+
+    return await getAudioFeatures(trackId)
+  } catch (error) {
+    console.error('Failed to get track audio features:', error)
+    return null
+  }
+}
+
+/**
+ * Compute aggregate audio profile for an album
+ * Returns averaged features across all tracks with variance metrics
+ */
+export interface AlbumAudioProfileData {
+  avgDanceability: number
+  avgEnergy: number
+  avgValence: number
+  avgAcousticness: number
+  avgInstrumentalness: number
+  avgSpeechiness: number
+  avgLiveness: number
+  avgTempo: number
+  avgLoudness: number
+  energyVariance: number
+  valenceVariance: number
+  tempoVariance: number
+  featureSignature: number[] // 8-dimensional vector for quick similarity
+  trackCount: number
+}
+
+export async function computeAlbumAudioProfile(
+  spotifyAlbumId: string
+): Promise<AlbumAudioProfileData | null> {
+  try {
+    // Get the album with tracks
+    const album = await getAlbum(spotifyAlbumId, true)
+    if (!album.tracks?.items || album.tracks.items.length === 0) {
+      return null
+    }
+
+    // Get audio features for all tracks
+    const trackIds = album.tracks.items.map(t => t.id)
+    const featuresMap = await getBatchAudioFeatures(trackIds)
+
+    if (featuresMap.size === 0) {
+      return null
+    }
+
+    const features = Array.from(featuresMap.values())
+    const n = features.length
+
+    // Compute averages
+    const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0)
+    const avg = (arr: number[]) => sum(arr) / arr.length
+    const variance = (arr: number[]) => {
+      const mean = avg(arr)
+      return sum(arr.map(x => (x - mean) ** 2)) / arr.length
+    }
+
+    const danceabilities = features.map(f => f.danceability)
+    const energies = features.map(f => f.energy)
+    const valences = features.map(f => f.valence)
+    const acousticnesses = features.map(f => f.acousticness)
+    const instrumentalnesses = features.map(f => f.instrumentalness)
+    const speechinesses = features.map(f => f.speechiness)
+    const livenesses = features.map(f => f.liveness)
+    const tempos = features.map(f => f.tempo)
+    const loudnesses = features.map(f => f.loudness)
+
+    // 8-dimensional feature signature for quick similarity matching
+    // Normalized values between 0-1
+    const featureSignature = [
+      avg(energies),
+      avg(valences),
+      avg(danceabilities),
+      avg(acousticnesses),
+      avg(instrumentalnesses),
+      avg(speechinesses),
+      Math.min(1, avg(tempos) / 200), // Normalize tempo to 0-1
+      Math.min(1, (avg(loudnesses) + 60) / 60), // Normalize loudness to 0-1
+    ]
+
+    return {
+      avgDanceability: avg(danceabilities),
+      avgEnergy: avg(energies),
+      avgValence: avg(valences),
+      avgAcousticness: avg(acousticnesses),
+      avgInstrumentalness: avg(instrumentalnesses),
+      avgSpeechiness: avg(speechinesses),
+      avgLiveness: avg(livenesses),
+      avgTempo: avg(tempos),
+      avgLoudness: avg(loudnesses),
+      energyVariance: variance(energies),
+      valenceVariance: variance(valences),
+      tempoVariance: variance(tempos),
+      featureSignature,
+      trackCount: n,
+    }
+  } catch (error) {
+    console.error('Failed to compute album audio profile:', error)
+    return null
+  }
+}
+
+/**
+ * Store audio features for a track in the database
+ */
+export async function storeTrackAudioFeatures(
+  spotifyTrackId: string,
+  trackName: string,
+  artistName: string,
+  features: SpotifyAudioFeatures
+): Promise<void> {
+  await prisma.trackAudioFeatures.upsert({
+    where: { spotifyTrackId },
+    update: {
+      danceability: features.danceability,
+      energy: features.energy,
+      valence: features.valence,
+      acousticness: features.acousticness,
+      instrumentalness: features.instrumentalness,
+      speechiness: features.speechiness,
+      liveness: features.liveness,
+      tempo: features.tempo,
+      loudness: features.loudness,
+      mode: features.mode,
+      key: features.key,
+    },
+    create: {
+      spotifyTrackId,
+      trackName,
+      artistName,
+      danceability: features.danceability,
+      energy: features.energy,
+      valence: features.valence,
+      acousticness: features.acousticness,
+      instrumentalness: features.instrumentalness,
+      speechiness: features.speechiness,
+      liveness: features.liveness,
+      tempo: features.tempo,
+      loudness: features.loudness,
+      mode: features.mode,
+      key: features.key,
+    },
+  })
+}
+
+/**
+ * Store album audio profile in the database
+ */
+export async function storeAlbumAudioProfile(
+  albumId: string,
+  spotifyAlbumId: string | null,
+  profile: AlbumAudioProfileData
+): Promise<void> {
+  await prisma.albumAudioProfile.upsert({
+    where: { albumId },
+    update: {
+      spotifyAlbumId,
+      avgDanceability: profile.avgDanceability,
+      avgEnergy: profile.avgEnergy,
+      avgValence: profile.avgValence,
+      avgAcousticness: profile.avgAcousticness,
+      avgInstrumentalness: profile.avgInstrumentalness,
+      avgSpeechiness: profile.avgSpeechiness,
+      avgLiveness: profile.avgLiveness,
+      avgTempo: profile.avgTempo,
+      avgLoudness: profile.avgLoudness,
+      energyVariance: profile.energyVariance,
+      valenceVariance: profile.valenceVariance,
+      tempoVariance: profile.tempoVariance,
+      featureSignature: profile.featureSignature,
+      trackCount: profile.trackCount,
+    },
+    create: {
+      albumId,
+      spotifyAlbumId,
+      avgDanceability: profile.avgDanceability,
+      avgEnergy: profile.avgEnergy,
+      avgValence: profile.avgValence,
+      avgAcousticness: profile.avgAcousticness,
+      avgInstrumentalness: profile.avgInstrumentalness,
+      avgSpeechiness: profile.avgSpeechiness,
+      avgLiveness: profile.avgLiveness,
+      avgTempo: profile.avgTempo,
+      avgLoudness: profile.avgLoudness,
+      energyVariance: profile.energyVariance,
+      valenceVariance: profile.valenceVariance,
+      tempoVariance: profile.tempoVariance,
+      featureSignature: profile.featureSignature,
+      trackCount: profile.trackCount,
+    },
+  })
+}

@@ -973,14 +973,14 @@ export default async function Home() {
             {!session ? (
               <Link
                 href="/signup"
-                className="px-10 py-4 bg-[--accent-primary] text-black text-sm font-bold uppercase tracking-wider hover:bg-[--accent-hover] transition-colors"
+                className="px-10 py-4 bg-[#ffd700] text-black text-sm font-bold uppercase tracking-wider hover:bg-[#ffe44d] transition-colors"
               >
                 Discover Your TasteID
               </Link>
             ) : (
               <Link
                 href="/quick-rate"
-                className="px-10 py-4 bg-[--accent-primary] text-black text-sm font-bold uppercase tracking-wider hover:bg-[--accent-hover] transition-colors"
+                className="px-10 py-4 bg-[#ffd700] text-black text-sm font-bold uppercase tracking-wider hover:bg-[#ffe44d] transition-colors"
               >
                 Keep Building TasteID
               </Link>

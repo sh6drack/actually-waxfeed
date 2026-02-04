@@ -175,6 +175,9 @@ model User {
   // TasteID relation
   tasteId TasteID?
 
+  // Audio DNA relation (prediction system)
+  audioDNA UserAudioDNA?
+
   // Monetization relations
   waxTransactions WaxTransaction[]
   purchases       Purchase[]
@@ -299,6 +302,7 @@ model Album {
   messageContext  Message[]        @relation("messageAlbumContext")
   firstSpinBadges FirstSpinBadge[]
   bookmarks       AlbumBookmark[]
+  audioProfile    AlbumAudioProfile?
 
   @@index([spotifyId])
   @@index([artistName])
@@ -1336,4 +1340,151 @@ model CircleMessage {
 
   @@index([circleId, createdAt])
   @@index([userId])
+}
+
+// ============================================
+// AUDIO DNA - Spotify Audio Features & Prediction System
+// ============================================
+
+model TrackAudioFeatures {
+  id               String   @id @default(cuid())
+  spotifyTrackId   String   @unique
+  trackName        String
+  artistName       String
+
+  // Core audio features from Spotify
+  danceability     Float    // 0-1: How suitable for dancing
+  energy           Float    // 0-1: Perceptual intensity (maps to arousal)
+  valence          Float    // 0-1: Musical positiveness/happiness
+  acousticness     Float    // 0-1: Acoustic vs electronic
+  instrumentalness Float    // 0-1: Absence of vocals
+  speechiness      Float    // 0-1: Presence of spoken words
+  liveness         Float    // 0-1: Presence of audience (live recording)
+  tempo            Float    // BPM
+  loudness         Float    // dB (-60 to 0)
+  mode             Int      // 0=minor, 1=major
+  key              Int      // 0-11 pitch class (C, C#, D, etc.)
+
+  createdAt        DateTime @default(now())
+
+  @@index([spotifyTrackId])
+  @@index([energy])
+  @@index([valence])
+}
+
+model AlbumAudioProfile {
+  id                  String   @id @default(cuid())
+  albumId             String   @unique
+  spotifyAlbumId      String?
+
+  // Averaged features across all tracks
+  avgDanceability     Float
+  avgEnergy           Float
+  avgValence          Float
+  avgAcousticness     Float
+  avgInstrumentalness Float
+  avgSpeechiness      Float
+  avgLiveness         Float
+  avgTempo            Float
+  avgLoudness         Float
+
+  // Variance metrics (how consistent is the album's sound?)
+  energyVariance      Float
+  valenceVariance     Float
+  tempoVariance       Float
+
+  // 8-dimensional feature signature for quick similarity matching
+  featureSignature    Json?
+
+  // Track count used to compute this profile
+  trackCount          Int      @default(0)
+
+  album               Album    @relation(fields: [albumId], references: [id], onDelete: Cascade)
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([albumId])
+  @@index([avgEnergy])
+  @@index([avgValence])
+}
+
+model UserAudioDNA {
+  id                      String   @id @default(cuid())
+  userId                  String   @unique
+
+  // Preferred ranges (learned from high-rated albums)
+  // Each is { min, max, sweetSpot, weight }
+  preferredEnergy         Json
+  preferredValence        Json
+  preferredDanceability   Json
+  preferredAcousticness   Json
+  preferredTempo          Json
+
+  // Audio feature correlations with ratings
+  // { energy: 0.7, valence: -0.2, danceability: 0.5, ... }
+  featureCorrelations     Json
+
+  // Vibe-to-audio learned mappings
+  // { "explosive": { energy: 0.9, valence: 0.6 }, ... }
+  vibeAudioMapping        Json?
+
+  // Prediction performance metrics
+  predictionAccuracy      Float    @default(0)  // 0-1 accuracy rate
+  totalPredictions        Int      @default(0)
+  correctPredictions      Int      @default(0)
+
+  // Streak tracking
+  currentPredictionStreak Int      @default(0)
+  longestPredictionStreak Int      @default(0)
+
+  // Gamification: "Your taste is X% deciphered"
+  decipherProgress        Float    @default(0)  // 0-100
+
+  // Surprise tracking (albums that defied predictions)
+  surpriseCount           Int      @default(0)
+
+  user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  @@index([userId])
+  @@index([decipherProgress])
+  @@index([currentPredictionStreak])
+}
+
+model PredictionHistory {
+  id                  String    @id @default(cuid())
+  userId              String
+  albumId             String
+
+  // The prediction made before rating
+  predictedRating     Float
+  predictedVibes      String[]
+  confidenceLevel     Float     // 0-1 how confident the system was
+
+  // The actual result (filled after rating)
+  actualRating        Float?
+  actualVibes         String[]
+
+  // Match analysis
+  ratingMatch         Boolean?  // Within 1.5 points?
+  vibeMatchCount      Int?      // How many vibes matched
+  wasSurprise         Boolean?  // Outside predicted range (>2 points diff)
+
+  // Snapshot of album audio signature used for this prediction
+  albumAudioSignature Json?
+
+  // Reasoning provided to user
+  predictionReasoning String[]
+
+  createdAt           DateTime  @default(now())
+  ratedAt             DateTime?
+
+  @@index([userId])
+  @@index([albumId])
+  @@index([createdAt])
+  @@index([wasSurprise])
+  @@index([userId, createdAt])
 }

@@ -9,6 +9,57 @@ import { getCurrentTier, getProgressToNextTier, TASTEID_TIERS } from "@/lib/tast
 
 const BATCH_SIZE = 20
 
+// Prediction system types
+interface PredictionData {
+  hasPrediction: boolean
+  prediction?: {
+    rating: number
+    ratingRange: { min: number; max: number }
+    confidence: number
+    suggestedVibes: string[]
+    reasoning: string[]
+  }
+  albumAudio?: {
+    energy: number
+    valence: number
+    danceability: number
+    acousticness: number
+    tempo: number
+  }
+  userStats?: {
+    currentStreak: number
+    decipherProgress: number
+    totalPredictions: number
+  }
+}
+
+interface PredictionResult {
+  result: {
+    match: boolean
+    surprise: boolean
+    perfect: boolean
+    vibeMatches: number
+    difference: number
+    matchQuality: 'perfect' | 'close' | 'match' | 'miss' | 'surprise'
+  }
+  streakUpdate: {
+    newStreak: number
+    streakMessage: string | null
+    isNewMilestone: boolean
+  }
+  decipherUpdate: {
+    newProgress: number
+    decipherMessage: string | null
+  }
+  celebration: {
+    type: 'predicted' | 'surprise' | 'perfect'
+    message: string
+  } | null
+  // For showing comparison in celebration
+  predictedRating?: number
+  actualRating?: number
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // CCX POLARITY MODEL v3.0 - Comprehensive Music Perception Descriptors
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -120,6 +171,16 @@ export default function QuickRatePage() {
   const [milestoneReached, setMilestoneReached] = useState<typeof TASTEID_TIERS[0] | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
+  // Prediction system state
+  const [predictionData, setPredictionData] = useState<PredictionData | null>(null)
+  const [predictionResult, setPredictionResult] = useState<PredictionResult | null>(null)
+  const [showPredictionCelebration, setShowPredictionCelebration] = useState(false)
+  const [audioDNA, setAudioDNA] = useState<{
+    decipherProgress: number
+    currentStreak: number
+    totalPredictions: number
+  } | null>(null)
+
   const actualRatedCount = ratedCount ?? 0
   const isStatsLoaded = ratedCount !== null
 
@@ -196,17 +257,62 @@ export default function QuickRatePage() {
     if (currentAlbumId) {
       setAlbumTracks([])
       setLoadingTracks(true)
-      fetch(`/api/albums/${currentAlbumId}/tracks`, { credentials: 'include' })
+      setPredictionData(null)
+      setPredictionResult(null)
+      setShowPredictionCelebration(false)
+
+      // Fetch tracks with audio features
+      fetch(`/api/albums/${currentAlbumId}/tracks?includeAudioFeatures=true`, { credentials: 'include' })
         .then(res => res.json())
         .then(data => {
-          if (data.success && data.data) {
-            setAlbumTracks(data.data)
+          if (data.success && data.data?.tracks) {
+            setAlbumTracks(data.data.tracks)
           }
         })
         .catch(() => {})
         .finally(() => setLoadingTracks(false))
+
+      // Fetch prediction for this album
+      fetch('/api/audio/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ albumId: currentAlbumId }),
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.data) {
+            setPredictionData(data.data)
+            if (data.data.userStats) {
+              setAudioDNA({
+                decipherProgress: data.data.userStats.decipherProgress,
+                currentStreak: data.data.userStats.currentStreak,
+                totalPredictions: data.data.userStats.totalPredictions,
+              })
+            }
+          }
+        })
+        .catch(() => {})
     }
   }, [currentAlbumId])
+
+  // Fetch Audio DNA on mount
+  useEffect(() => {
+    if (status === 'authenticated') {
+      fetch('/api/audio-dna/compute', { credentials: 'include' })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.data?.audioDNA) {
+            setAudioDNA({
+              decipherProgress: data.data.audioDNA.decipherProgress,
+              currentStreak: data.data.audioDNA.currentStreak,
+              totalPredictions: data.data.audioDNA.totalPredictions,
+            })
+          }
+        })
+        .catch(() => {})
+    }
+  }, [status])
 
   const fetchUserStats = async () => {
     try {
@@ -284,7 +390,54 @@ export default function QuickRatePage() {
             .catch(() => {})
         }
 
-        nextAlbum()
+        // Record prediction result if we had one
+        if (predictionData?.hasPrediction && predictionData.prediction) {
+          fetch('/api/audio/predict', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              albumId: album.id,
+              predictedRating: predictionData.prediction.rating,
+              actualRating: rating,
+              predictedVibes: predictionData.prediction.suggestedVibes,
+              actualVibes: selectedDescriptors,
+              confidenceLevel: predictionData.prediction.confidence / 100,
+            }),
+          })
+            .then(res => res.json())
+            .then(data => {
+              if (data.success && data.data) {
+                // Add predicted and actual ratings for display in celebration
+                setPredictionResult({
+                  ...data.data,
+                  predictedRating: predictionData.prediction?.rating,
+                  actualRating: rating,
+                })
+                // Update Audio DNA state
+                if (data.data.decipherUpdate) {
+                  setAudioDNA(prev => prev ? {
+                    ...prev,
+                    decipherProgress: data.data.decipherUpdate.newProgress,
+                    currentStreak: data.data.streakUpdate.newStreak,
+                    totalPredictions: prev.totalPredictions + 1,
+                  } : null)
+                }
+                // Show celebration for matches, surprises, or perfect predictions
+                if (data.data.celebration) {
+                  setShowPredictionCelebration(true)
+                  // Longer display for perfect matches
+                  const displayTime = data.data.result.perfect ? 3500 : 3000
+                  setTimeout(() => setShowPredictionCelebration(false), displayTime)
+                }
+              }
+            })
+            .catch(() => {})
+        }
+
+        // Move to next album after celebration finishes (or immediately if no prediction)
+        const celebrationDelay = predictionData?.hasPrediction ? 3200 : 0
+        setTimeout(() => nextAlbum(), celebrationDelay)
       } else {
         if (data.error?.includes('already reviewed')) {
           nextAlbum()
@@ -472,6 +625,14 @@ export default function QuickRatePage() {
         </div>
       )}
 
+      {/* Prediction Celebration Overlay */}
+      {showPredictionCelebration && predictionResult && (
+        <PredictionCelebration
+          result={predictionResult}
+          onClose={() => setShowPredictionCelebration(false)}
+        />
+      )}
+
       {/* Tier Milestone Celebration */}
       {milestoneReached && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 animate-in fade-in duration-300">
@@ -587,6 +748,118 @@ export default function QuickRatePage() {
                   </div>
                 )}
               </div>
+
+              {/* Mobile Prediction Display - Premium Compact Card */}
+              {predictionData?.hasPrediction && predictionData.prediction && (
+                <div className="px-5 mb-4">
+                  <div className="relative p-4 rounded-2xl bg-[#0a0a0a] border border-white/[0.06] overflow-hidden">
+                    {/* Subtle gradient overlay */}
+                    <div
+                      className="absolute inset-0 opacity-40 pointer-events-none"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(34, 211, 238, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%)',
+                      }}
+                    />
+
+                    <div className="relative">
+                      {/* Top row - Label + Confidence */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-md bg-gradient-to-br from-cyan-500/20 to-purple-500/20 flex items-center justify-center">
+                            <svg className="w-3 h-3 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                              <circle cx="12" cy="12" r="10" className="opacity-30" />
+                              <circle cx="12" cy="12" r="6" className="opacity-50" />
+                              <circle cx="12" cy="12" r="2" fill="currentColor" />
+                            </svg>
+                          </div>
+                          <span className="text-[9px] tracking-[0.2em] uppercase text-white/30">Prediction</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-white/25 tabular-nums">{predictionData.prediction.confidence}%</span>
+                          {audioDNA && audioDNA.currentStreak > 0 && (
+                            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#ffd700]/10 border border-[#ffd700]/20">
+                              <div className="w-1 h-1 rounded-full bg-[#ffd700] animate-pulse" />
+                              <span className="text-[9px] text-[#ffd700] tabular-nums">{audioDNA.currentStreak}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Main prediction display */}
+                      <div className="flex items-center gap-4 mb-3">
+                        <div className="flex items-baseline gap-1.5">
+                          <span
+                            className="text-2xl font-bold tabular-nums"
+                            style={{
+                              background: 'linear-gradient(135deg, #22d3ee, #8b5cf6)',
+                              WebkitBackgroundClip: 'text',
+                              WebkitTextFillColor: 'transparent',
+                            }}
+                          >
+                            {predictionData.prediction.rating.toFixed(1)}
+                          </span>
+                          <span className="text-[10px] text-white/20 tabular-nums">
+                            ±{((predictionData.prediction.ratingRange.max - predictionData.prediction.ratingRange.min) / 2).toFixed(1)}
+                          </span>
+                        </div>
+
+                        {/* Compact audio spectrum */}
+                        {predictionData.albumAudio && (
+                          <div className="flex-1 flex items-end gap-1 h-6">
+                            {[
+                              { v: predictionData.albumAudio.energy, c: '#22d3ee' },
+                              { v: predictionData.albumAudio.valence, c: '#a855f7' },
+                              { v: predictionData.albumAudio.danceability, c: '#ffd700' },
+                              { v: predictionData.albumAudio.acousticness, c: '#10b981' },
+                            ].map((f, i) => (
+                              <div key={i} className="flex-1 flex flex-col gap-[1px] h-full justify-end">
+                                {Array.from({ length: 6 }, (_, j) => {
+                                  const segmentThreshold = ((j + 1) / 6) * 100
+                                  const isActive = f.v >= segmentThreshold
+                                  return (
+                                    <div
+                                      key={j}
+                                      className="flex-1 rounded-[1px] transition-colors"
+                                      style={{
+                                        backgroundColor: isActive ? f.c : 'rgba(255,255,255,0.03)',
+                                        opacity: isActive ? 0.4 + (j / 6) * 0.6 : 1,
+                                      }}
+                                    />
+                                  )
+                                })}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Suggested vibes - compact */}
+                      {predictionData.prediction.suggestedVibes.length > 0 && (
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {predictionData.prediction.suggestedVibes.slice(0, 3).map(vibe => (
+                            <span
+                              key={vibe}
+                              className="text-[8px] px-2 py-0.5 rounded-md bg-white/[0.03] text-white/35 uppercase tracking-wider border border-white/[0.04]"
+                            >
+                              {vibe.replace('_', '-')}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Mobile Audio DNA / Decipher Progress - Inline compact */}
+              {audioDNA && audioDNA.totalPredictions > 0 && !predictionData?.hasPrediction && (
+                <div className="px-5 mb-4">
+                  <MobileDecipherProgress
+                    decipherProgress={audioDNA.decipherProgress}
+                    currentStreak={audioDNA.currentStreak}
+                  />
+                </div>
+              )}
 
               {/* Tracklist - Sleek Horizontal */}
               {albumTracks.length > 0 && (
@@ -778,6 +1051,26 @@ export default function QuickRatePage() {
               <div className="absolute left-0 top-1/2 -translate-y-1/2 w-px h-[60%] bg-gradient-to-b from-transparent via-white/10 to-transparent" />
 
               <div className="max-w-md mx-auto w-full">
+                {/* Audio DNA / Decipher Progress */}
+                {audioDNA && audioDNA.totalPredictions > 0 && (
+                  <div className="mb-6">
+                    <DecipherProgressBar
+                      decipherProgress={audioDNA.decipherProgress}
+                      currentStreak={audioDNA.currentStreak}
+                      totalPredictions={audioDNA.totalPredictions}
+                    />
+                  </div>
+                )}
+
+                {/* Prediction Display */}
+                {predictionData?.hasPrediction && predictionData.prediction && (
+                  <PredictionDisplay
+                    prediction={predictionData.prediction}
+                    albumAudio={predictionData.albumAudio}
+                    streak={audioDNA?.currentStreak || 0}
+                  />
+                )}
+
                 {/* Genres */}
                 {currentAlbum.genres?.length > 0 && (
                   <div className="flex items-center gap-2 mb-8">
@@ -1057,6 +1350,613 @@ function TierProgressBar({ ratingCount }: { ratingCount: number }) {
             </div>
           )
         })}
+      </div>
+    </div>
+  )
+}
+
+// Audio DNA Progress Bar (Decipher Progress) - Premium "Analog Intelligence" Design
+function DecipherProgressBar({
+  decipherProgress,
+  currentStreak,
+  totalPredictions,
+}: {
+  decipherProgress: number
+  currentStreak: number
+  totalPredictions: number
+}) {
+  // Generate pseudo-random "signal" bars for the DNA visualization
+  const signalBars = Array.from({ length: 24 }, (_, i) => {
+    const baseHeight = Math.sin(i * 0.5) * 0.3 + 0.5
+    const progress = decipherProgress / 100
+    const activation = i < Math.floor(progress * 24) ? 1 : (i === Math.floor(progress * 24) ? progress * 24 % 1 : 0.15)
+    return baseHeight * activation
+  })
+
+  return (
+    <div className="relative group">
+      {/* Subtle glow effect */}
+      <div
+        className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"
+        style={{ background: `linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(34, 211, 238, 0.1))` }}
+      />
+
+      <div className="relative p-4 rounded-2xl bg-[#0d0d0d] border border-white/[0.06] overflow-hidden">
+        {/* Background texture */}
+        <div
+          className="absolute inset-0 opacity-[0.015]"
+          style={{
+            backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
+            backgroundSize: '16px 16px',
+          }}
+        />
+
+        <div className="relative">
+          {/* Header row */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              {/* DNA Helix Icon */}
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500/20 to-cyan-500/20 flex items-center justify-center border border-white/[0.06]">
+                <svg className="w-4 h-4 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                  <path d="M12 2v20M4 6c4 0 4 4 8 4s4-4 8-4M4 18c4 0 4-4 8-4s4 4 8 4" strokeLinecap="round" />
+                </svg>
+              </div>
+              <div>
+                <span className="text-[10px] tracking-[0.2em] uppercase text-white/30 font-medium">Audio DNA</span>
+                <div className="flex items-baseline gap-1.5 mt-0.5">
+                  <span className="text-lg font-semibold tabular-nums" style={{
+                    background: 'linear-gradient(135deg, #8b5cf6, #22d3ee)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent'
+                  }}>
+                    {decipherProgress}%
+                  </span>
+                  <span className="text-[10px] text-white/25">mapped</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Stats badges */}
+            <div className="flex items-center gap-2">
+              {currentStreak > 0 && (
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#ffd700]/10 border border-[#ffd700]/20">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#ffd700] animate-pulse" />
+                  <span className="text-[10px] font-medium text-[#ffd700] tabular-nums">{currentStreak}</span>
+                </div>
+              )}
+              {totalPredictions > 0 && (
+                <span className="text-[10px] text-white/20 tabular-nums">{totalPredictions} reads</span>
+              )}
+            </div>
+          </div>
+
+          {/* DNA Signal Visualization */}
+          <div className="flex items-center gap-[2px] h-8 mb-2">
+            {signalBars.map((height, i) => {
+              const isActive = i < Math.floor(decipherProgress / 100 * 24)
+              const isEdge = i === Math.floor(decipherProgress / 100 * 24)
+              return (
+                <div
+                  key={i}
+                  className="flex-1 rounded-sm transition-all duration-500"
+                  style={{
+                    height: `${Math.max(height * 100, 10)}%`,
+                    background: isActive
+                      ? `linear-gradient(to top, rgba(139, 92, 246, 0.8), rgba(34, 211, 238, 0.8))`
+                      : isEdge
+                        ? `linear-gradient(to top, rgba(139, 92, 246, 0.4), rgba(34, 211, 238, 0.4))`
+                        : 'rgba(255, 255, 255, 0.05)',
+                    boxShadow: isActive ? '0 0 8px rgba(34, 211, 238, 0.3)' : 'none',
+                  }}
+                />
+              )
+            })}
+          </div>
+
+          {/* Progress track */}
+          <div className="relative h-1 rounded-full bg-white/[0.04] overflow-hidden">
+            <div
+              className="absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out"
+              style={{
+                width: `${decipherProgress}%`,
+                background: 'linear-gradient(90deg, #8b5cf6, #22d3ee)',
+              }}
+            />
+            {/* Animated shimmer */}
+            <div
+              className="absolute inset-y-0 w-full"
+              style={{
+                background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)',
+                animation: 'shimmer 3s ease-in-out infinite',
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Mobile Decipher Progress - Ultra Compact Inline Version
+function MobileDecipherProgress({
+  decipherProgress,
+  currentStreak,
+}: {
+  decipherProgress: number
+  currentStreak: number
+}) {
+  return (
+    <div className="flex items-center gap-3 p-3 rounded-xl bg-[#0a0a0a] border border-white/[0.05]">
+      {/* Mini DNA icon */}
+      <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500/15 to-cyan-500/15 flex items-center justify-center flex-shrink-0">
+        <svg className="w-3.5 h-3.5 text-cyan-400/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+          <path d="M12 2v20M4 6c4 0 4 4 8 4s4-4 8-4M4 18c4 0 4-4 8-4s4 4 8 4" strokeLinecap="round" />
+        </svg>
+      </div>
+
+      {/* Progress section */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[9px] tracking-wider uppercase text-white/25">Audio DNA</span>
+          <div className="flex items-center gap-2">
+            <span
+              className="text-xs font-semibold tabular-nums"
+              style={{
+                background: 'linear-gradient(135deg, #8b5cf6, #22d3ee)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              {decipherProgress}%
+            </span>
+            {currentStreak > 0 && (
+              <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[#ffd700]/10">
+                <div className="w-1 h-1 rounded-full bg-[#ffd700] animate-pulse" />
+                <span className="text-[9px] text-[#ffd700]/80 tabular-nums">{currentStreak}</span>
+              </div>
+            )}
+          </div>
+        </div>
+        {/* Mini progress bar */}
+        <div className="h-1 rounded-full bg-white/[0.04] overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-500"
+            style={{
+              width: `${decipherProgress}%`,
+              background: 'linear-gradient(90deg, #8b5cf6, #22d3ee)',
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Prediction Display Component - "Oracle Reading" Design
+function PredictionDisplay({
+  prediction,
+  albumAudio,
+  streak,
+}: {
+  prediction: PredictionData['prediction']
+  albumAudio: PredictionData['albumAudio']
+  streak: number
+}) {
+  if (!prediction) return null
+
+  // Confidence ring calculation
+  const confidenceAngle = (prediction.confidence / 100) * 360
+
+  return (
+    <div className="relative mb-6 group">
+      {/* Ambient glow on hover */}
+      <div
+        className="absolute -inset-2 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-2xl pointer-events-none"
+        style={{ background: 'radial-gradient(circle at center, rgba(34, 211, 238, 0.15), transparent 70%)' }}
+      />
+
+      <div className="relative p-5 rounded-2xl bg-[#0a0a0a] border border-white/[0.06] overflow-hidden">
+        {/* Subtle scan lines effect */}
+        <div
+          className="absolute inset-0 opacity-[0.02] pointer-events-none"
+          style={{
+            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px)',
+          }}
+        />
+
+        {/* Header */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3">
+            {/* Confidence Ring */}
+            <div className="relative w-11 h-11">
+              <svg className="w-11 h-11 -rotate-90" viewBox="0 0 44 44">
+                {/* Background track */}
+                <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="3" />
+                {/* Progress arc */}
+                <circle
+                  cx="22" cy="22" r="18"
+                  fill="none"
+                  stroke="url(#confidenceGradient)"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeDasharray={`${(confidenceAngle / 360) * 113} 113`}
+                  className="transition-all duration-1000"
+                />
+                <defs>
+                  <linearGradient id="confidenceGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#8b5cf6" />
+                    <stop offset="100%" stopColor="#22d3ee" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-[10px] font-semibold text-white/70 tabular-nums">{prediction.confidence}%</span>
+              </div>
+            </div>
+
+            <div>
+              <span className="text-[9px] tracking-[0.25em] uppercase text-white/30 font-medium">Predicted Rating</span>
+              <div className="flex items-baseline gap-2 mt-0.5">
+                <span
+                  className="text-3xl font-bold tabular-nums"
+                  style={{
+                    background: 'linear-gradient(135deg, #22d3ee, #8b5cf6)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                >
+                  {prediction.rating.toFixed(1)}
+                </span>
+                <span className="text-xs text-white/20 tabular-nums">
+                  ±{((prediction.ratingRange.max - prediction.ratingRange.min) / 2).toFixed(1)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Streak indicator */}
+          {streak > 0 && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#ffd700]/5 border border-[#ffd700]/15">
+              <div className="relative">
+                <div className="w-2 h-2 rounded-full bg-[#ffd700]" />
+                <div className="absolute inset-0 w-2 h-2 rounded-full bg-[#ffd700] animate-ping opacity-75" />
+              </div>
+              <span className="text-[11px] font-medium text-[#ffd700]/80 tabular-nums">{streak}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Reasoning quote */}
+        {prediction.reasoning.length > 0 && (
+          <div className="relative mb-4 pl-3 py-2">
+            <div className="absolute left-0 top-0 bottom-0 w-[2px] rounded-full bg-gradient-to-b from-violet-500/50 to-cyan-500/50" />
+            <p className="text-[11px] text-white/35 leading-relaxed">
+              {prediction.reasoning[0]}
+            </p>
+          </div>
+        )}
+
+        {/* Audio Spectrum Visualization */}
+        {albumAudio && (
+          <div className="grid grid-cols-4 gap-3 mb-4">
+            <AudioFeatureBar label="Energy" value={albumAudio.energy} color="#22d3ee" icon="⚡" />
+            <AudioFeatureBar label="Mood" value={albumAudio.valence} color="#a855f7" icon="◐" />
+            <AudioFeatureBar label="Dance" value={albumAudio.danceability} color="#ffd700" icon="◎" />
+            <AudioFeatureBar label="Acoustic" value={albumAudio.acousticness} color="#10b981" icon="◈" />
+          </div>
+        )}
+
+        {/* Suggested Vibes - Compact Tags */}
+        {prediction.suggestedVibes.length > 0 && (
+          <div className="flex items-center gap-2 pt-3 border-t border-white/[0.04]">
+            <span className="text-[9px] text-white/20 uppercase tracking-wider">Vibes:</span>
+            <div className="flex flex-wrap gap-1.5">
+              {prediction.suggestedVibes.slice(0, 3).map(vibe => (
+                <span
+                  key={vibe}
+                  className="text-[9px] px-2 py-1 rounded-md bg-white/[0.03] text-white/40 uppercase tracking-wide border border-white/[0.04] hover:border-cyan-500/30 hover:text-cyan-400/70 transition-colors cursor-default"
+                >
+                  {vibe.replace('_', '-')}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// Audio Feature Bar - VU Meter Inspired Design
+function AudioFeatureBar({ label, value, color, icon }: { label: string; value: number; color: string; icon?: string }) {
+  // Generate segments for VU meter effect
+  const segments = 8
+  const activeSegments = Math.ceil((value / 100) * segments)
+
+  return (
+    <div className="group">
+      <div className="relative h-14 w-full rounded-lg bg-[#050505] border border-white/[0.04] overflow-hidden p-1.5">
+        {/* Segments */}
+        <div className="flex flex-col-reverse gap-[2px] h-full">
+          {Array.from({ length: segments }, (_, i) => {
+            const isActive = i < activeSegments
+            const intensity = i / segments // Higher segments = more intense
+            return (
+              <div
+                key={i}
+                className="flex-1 rounded-[2px] transition-all duration-300"
+                style={{
+                  backgroundColor: isActive
+                    ? color
+                    : 'rgba(255, 255, 255, 0.02)',
+                  opacity: isActive ? 0.4 + (intensity * 0.6) : 1,
+                  boxShadow: isActive && i === activeSegments - 1
+                    ? `0 0 10px ${color}40, inset 0 0 4px ${color}20`
+                    : 'none',
+                }}
+              />
+            )
+          })}
+        </div>
+
+        {/* Value overlay on hover */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 backdrop-blur-sm">
+          <span className="text-sm font-bold tabular-nums" style={{ color }}>{value}</span>
+        </div>
+      </div>
+
+      {/* Label */}
+      <div className="flex items-center justify-center gap-1 mt-1.5">
+        {icon && <span className="text-[8px] opacity-40">{icon}</span>}
+        <span className="text-[8px] text-white/30 uppercase tracking-wider">{label}</span>
+      </div>
+    </div>
+  )
+}
+
+// Prediction Celebration Overlay - Cinematic Reveal
+function PredictionCelebration({
+  result,
+  onClose,
+}: {
+  result: PredictionResult
+  onClose: () => void
+}) {
+  const isPerfect = result.result.perfect
+  const isMatch = result.result.match
+  const isSurprise = result.result.surprise
+
+  // Don't show if neither match nor surprise
+  if (!isMatch && !isSurprise) return null
+
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      {/* Animated background */}
+      <div className="absolute inset-0 bg-black/95">
+        {/* Radial gradient pulse */}
+        <div
+          className={`absolute inset-0 ${isMatch ? 'animate-pulse' : ''}`}
+          style={{
+            background: isPerfect
+              ? 'radial-gradient(circle at center, rgba(255, 215, 0, 0.15) 0%, transparent 50%)'
+              : isMatch
+              ? 'radial-gradient(circle at center, rgba(34, 211, 238, 0.1) 0%, transparent 50%)'
+              : 'radial-gradient(circle at center, rgba(168, 85, 247, 0.1) 0%, transparent 50%)',
+          }}
+        />
+        {/* Scan line effect */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: 'repeating-linear-gradient(0deg, transparent 0px, transparent 2px, rgba(255,255,255,1) 2px, rgba(255,255,255,1) 4px)',
+          }}
+        />
+      </div>
+
+      <div className="relative text-center p-12 max-w-md animate-in zoom-in-95 slide-in-from-bottom-4 duration-500">
+        {isPerfect ? (
+          <>
+            {/* Perfect celebration - gold theme */}
+            <div className="relative mb-6">
+              {/* Multiple expanding rings */}
+              <div className="absolute inset-0 w-28 h-28 mx-auto -mt-2 rounded-full border border-[#ffd700]/20 animate-ping" style={{ animationDuration: '1.5s' }} />
+              <div className="absolute inset-0 w-24 h-24 mx-auto rounded-full border-2 border-[#ffd700]/30 animate-ping" style={{ animationDuration: '1s' }} />
+              {/* Inner glow */}
+              <div
+                className="w-24 h-24 mx-auto rounded-full flex items-center justify-center"
+                style={{
+                  background: 'radial-gradient(circle, rgba(255, 215, 0, 0.3) 0%, transparent 70%)',
+                  boxShadow: '0 0 80px rgba(255, 215, 0, 0.4), inset 0 0 40px rgba(255, 215, 0, 0.15)',
+                }}
+              >
+                <svg className="w-12 h-12 text-[#ffd700]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <circle cx="12" cy="12" r="10" className="opacity-30" />
+                  <circle cx="12" cy="12" r="6" className="opacity-50" />
+                  <circle cx="12" cy="12" r="2" fill="currentColor" />
+                  {/* Crosshairs */}
+                  <line x1="12" y1="1" x2="12" y2="5" strokeWidth={1.5} className="opacity-60" />
+                  <line x1="12" y1="19" x2="12" y2="23" strokeWidth={1.5} className="opacity-60" />
+                  <line x1="1" y1="12" x2="5" y2="12" strokeWidth={1.5} className="opacity-60" />
+                  <line x1="19" y1="12" x2="23" y2="12" strokeWidth={1.5} className="opacity-60" />
+                </svg>
+              </div>
+            </div>
+
+            <p className="text-[10px] tracking-[0.4em] uppercase text-[#ffd700]/60 mb-2">Bullseye</p>
+            <h3
+              className="text-3xl font-bold mb-3"
+              style={{
+                background: 'linear-gradient(135deg, #ffd700, #ff8c00)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              PERFECT
+            </h3>
+
+            {/* Rating comparison */}
+            {result.predictedRating !== undefined && result.actualRating !== undefined && (
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <div className="flex flex-col items-center">
+                  <span className="text-[9px] text-white/30 uppercase tracking-wider">Predicted</span>
+                  <span className="text-lg font-bold text-[#ffd700] tabular-nums">{result.predictedRating.toFixed(1)}</span>
+                </div>
+                <div className="text-[#ffd700]/50">=</div>
+                <div className="flex flex-col items-center">
+                  <span className="text-[9px] text-white/30 uppercase tracking-wider">You gave</span>
+                  <span className="text-lg font-bold text-[#ffd700] tabular-nums">{result.actualRating.toFixed(1)}</span>
+                </div>
+              </div>
+            )}
+
+            <p className="text-white/50 text-sm mb-6">{result.celebration?.message || 'Exact prediction!'}</p>
+
+            {/* Streak badge - extra prominent for perfect */}
+            {result.streakUpdate.newStreak > 0 && (
+              <div className="inline-flex flex-col items-center gap-2">
+                <div className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-[#ffd700]/10 border border-[#ffd700]/30">
+                  <div className="relative">
+                    <div className="w-4 h-4 rounded-full bg-[#ffd700]" />
+                    <div className="absolute inset-0 w-4 h-4 rounded-full bg-[#ffd700] animate-ping" />
+                  </div>
+                  <span className="text-3xl font-bold text-[#ffd700] tabular-nums">{result.streakUpdate.newStreak}</span>
+                  <span className="text-xs text-[#ffd700]/70 uppercase tracking-wider">streak</span>
+                </div>
+                {result.streakUpdate.isNewMilestone && result.streakUpdate.streakMessage && (
+                  <span className="text-[11px] text-[#ffd700]/60">{result.streakUpdate.streakMessage}</span>
+                )}
+              </div>
+            )}
+          </>
+        ) : isMatch ? (
+          <>
+            {/* Match celebration */}
+            <div className="relative mb-6">
+              {/* Outer ring */}
+              <div className="absolute inset-0 w-24 h-24 mx-auto rounded-full border-2 border-cyan-400/30 animate-ping" />
+              {/* Inner glow */}
+              <div
+                className="w-24 h-24 mx-auto rounded-full flex items-center justify-center"
+                style={{
+                  background: 'radial-gradient(circle, rgba(34, 211, 238, 0.2) 0%, transparent 70%)',
+                  boxShadow: '0 0 60px rgba(34, 211, 238, 0.3), inset 0 0 30px rgba(34, 211, 238, 0.1)',
+                }}
+              >
+                <svg className="w-10 h-10 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <circle cx="12" cy="12" r="10" className="opacity-30" />
+                  <circle cx="12" cy="12" r="6" className="opacity-50" />
+                  <circle cx="12" cy="12" r="2" fill="currentColor" />
+                </svg>
+              </div>
+            </div>
+
+            <p className="text-[10px] tracking-[0.4em] uppercase text-cyan-400/50 mb-2">Taste Match</p>
+            <h3
+              className="text-3xl font-bold mb-3"
+              style={{
+                background: 'linear-gradient(135deg, #22d3ee, #8b5cf6)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              PREDICTED
+            </h3>
+
+            {/* Rating comparison */}
+            {result.predictedRating !== undefined && result.actualRating !== undefined && (
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <div className="flex flex-col items-center">
+                  <span className="text-[9px] text-white/30 uppercase tracking-wider">Predicted</span>
+                  <span className="text-lg font-bold text-cyan-400 tabular-nums">{result.predictedRating.toFixed(1)}</span>
+                </div>
+                <div className="text-cyan-400/40">≈</div>
+                <div className="flex flex-col items-center">
+                  <span className="text-[9px] text-white/30 uppercase tracking-wider">You gave</span>
+                  <span className="text-lg font-bold text-cyan-400 tabular-nums">{result.actualRating.toFixed(1)}</span>
+                </div>
+              </div>
+            )}
+
+            <p className="text-white/40 text-sm mb-6">{result.celebration?.message || 'We knew it!'}</p>
+
+            {/* Streak badge */}
+            {result.streakUpdate.newStreak > 0 && (
+              <div className="inline-flex flex-col items-center gap-2">
+                <div className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-[#ffd700]/5 border border-[#ffd700]/20">
+                  <div className="relative">
+                    <div className="w-3 h-3 rounded-full bg-[#ffd700]" />
+                    <div className="absolute inset-0 w-3 h-3 rounded-full bg-[#ffd700] animate-ping" />
+                  </div>
+                  <span className="text-2xl font-bold text-[#ffd700] tabular-nums">{result.streakUpdate.newStreak}</span>
+                  <span className="text-xs text-[#ffd700]/60 uppercase tracking-wider">streak</span>
+                </div>
+                {result.streakUpdate.isNewMilestone && result.streakUpdate.streakMessage && (
+                  <span className="text-[11px] text-[#ffd700]/50">{result.streakUpdate.streakMessage}</span>
+                )}
+              </div>
+            )}
+          </>
+        ) : isSurprise ? (
+          <>
+            {/* Surprise celebration */}
+            <div className="relative mb-6">
+              {/* Sparkle effect */}
+              <div
+                className="w-24 h-24 mx-auto rounded-full flex items-center justify-center"
+                style={{
+                  background: 'radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, transparent 70%)',
+                  boxShadow: '0 0 60px rgba(168, 85, 247, 0.3), inset 0 0 30px rgba(168, 85, 247, 0.1)',
+                }}
+              >
+                <svg className="w-10 h-10 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                  <path d="M12 2L14 8L20 8L15 12L17 18L12 14L7 18L9 12L4 8L10 8L12 2Z" strokeLinejoin="round" />
+                </svg>
+              </div>
+            </div>
+
+            <p className="text-[10px] tracking-[0.4em] uppercase text-purple-400/50 mb-2">Plot Twist</p>
+            <h3
+              className="text-3xl font-bold mb-3"
+              style={{
+                background: 'linear-gradient(135deg, #a855f7, #ec4899)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              SURPRISE
+            </h3>
+
+            {/* Rating comparison - shows the unexpected difference */}
+            {result.predictedRating !== undefined && result.actualRating !== undefined && (
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <div className="flex flex-col items-center">
+                  <span className="text-[9px] text-white/30 uppercase tracking-wider">Expected</span>
+                  <span className="text-lg font-bold text-purple-400/60 tabular-nums line-through">{result.predictedRating.toFixed(1)}</span>
+                </div>
+                <div className="text-purple-400/40">→</div>
+                <div className="flex flex-col items-center">
+                  <span className="text-[9px] text-white/30 uppercase tracking-wider">You gave</span>
+                  <span className="text-lg font-bold text-purple-400 tabular-nums">{result.actualRating.toFixed(1)}</span>
+                </div>
+              </div>
+            )}
+
+            <p className="text-white/40 text-sm mb-4">{result.celebration?.message || 'You defied our prediction!'}</p>
+            <p className="text-[11px] text-purple-400/40 flex items-center justify-center gap-2">
+              <span className="w-4 h-[1px] bg-purple-400/30" />
+              Recalibrating your taste profile
+              <span className="w-4 h-[1px] bg-purple-400/30" />
+            </p>
+          </>
+        ) : null}
+
+        {/* Tap to dismiss hint */}
+        <p className="absolute bottom-4 left-0 right-0 text-[10px] text-white/15 uppercase tracking-widest">
+          Tap to continue
+        </p>
       </div>
     </div>
   )
