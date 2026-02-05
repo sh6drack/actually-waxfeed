@@ -139,6 +139,7 @@ model User {
   replies      Reply[]
   lists        List[]
   reviewDrafts ReviewDraft[]
+  albumSkips   AlbumSkip[]
 
   // Social relations (friends only)
   friendRequestsSent     FriendRequest[] @relation("sender")
@@ -303,6 +304,7 @@ model Album {
   firstSpinBadges FirstSpinBadge[]
   bookmarks       AlbumBookmark[]
   audioProfile    AlbumAudioProfile?
+  skips           AlbumSkip[]
 
   @@index([spotifyId])
   @@index([artistName])
@@ -418,6 +420,8 @@ model Review {
   vibes       String[] // Vibe tags for TasteID Polarity Model (e.g., ["energetic", "hype"])
   isEdited    Boolean  @default(false)
   editHistory Json? // [{ text, rating, editedAt }]
+  isQuickRate      Boolean  @default(false) // True if from quick-rate (no text)
+  isTrackAggregate Boolean  @default(false) // True if auto-generated from track ratings
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -461,6 +465,26 @@ model Review {
   // Compound indexes for common query patterns
   @@index([userId, createdAt])
   @@index([albumId, createdAt])
+}
+
+// ============================================
+// SKIP TRACKING - For TasteID negative signals
+// ============================================
+
+model AlbumSkip {
+  id        String   @id @default(cuid())
+  userId    String
+  albumId   String
+  reason    String?  // Optional: "not_interested", "already_know", "not_now"
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  album Album @relation(fields: [albumId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, albumId])
+  @@index([userId])
+  @@index([albumId])
+  @@index([createdAt])
 }
 
 model ReviewDraft {

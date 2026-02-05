@@ -722,6 +722,13 @@ export interface GenreVector {
   [genre: string]: number // 0-1 affinity score
 }
 
+export interface SkipSignals {
+  skipsByGenre: Record<string, number> // genre -> skip count
+  skipRate: number // skips / (skips + reviews)
+  totalSkips: number
+  highSkipGenres: string[] // genres with >30% skip rate
+}
+
 export interface ArtistDNA {
   artistName: string
   weight: number // 0-1 importance
@@ -812,8 +819,8 @@ interface ReviewWithAlbum {
  * Compute a user's complete TasteID from their reviews
  */
 export async function computeTasteID(userId: string): Promise<TasteIDComputation | null> {
-  // Fetch all user reviews with album data
-  const [reviews, trackReviews] = await Promise.all([
+  // Fetch all user reviews, track reviews, and skip data
+  const [reviews, trackReviews, albumSkips] = await Promise.all([
     prisma.review.findMany({
       where: { userId },
       include: {
@@ -853,6 +860,20 @@ export async function computeTasteID(userId: string): Promise<TasteIDComputation
       },
       orderBy: { createdAt: 'desc' },
     }),
+    // Fetch skip data for negative signal analysis
+    prisma.albumSkip.findMany({
+      where: { userId },
+      include: {
+        album: {
+          select: {
+            id: true,
+            genres: true,
+            artistName: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    }),
   ])
 
   if (reviews.length === 0) {
@@ -865,8 +886,11 @@ export async function computeTasteID(userId: string): Promise<TasteIDComputation
   // Apply recency weighting - more recent reviews matter more
   const weightedReviews = applyRecencyWeighting(reviews)
 
-  // 1. Compute genre vector
-  const genreVector = computeGenreVector(weightedReviews)
+  // Compute skip signals (negative taste indicators)
+  const skipSignals = computeSkipSignals(albumSkips, reviews)
+
+  // 1. Compute genre vector (adjusted by skip signals)
+  const genreVector = computeGenreVector(weightedReviews, skipSignals)
 
   // 2. Compute artist DNA
   const artistDNA = computeArtistDNA(weightedReviews)
@@ -1193,9 +1217,69 @@ function computeTrackDepth(reviews: any[], trackReviews: any[]): TrackDepthData 
 }
 
 /**
- * Compute genre affinity vector
+ * Compute skip signals - negative taste indicators
+ * Skipping albums reveals what genres/artists user actively avoids
  */
-function computeGenreVector(reviews: Array<ReviewWithAlbum & { weight: number }>): GenreVector {
+type AlbumSkipWithAlbum = {
+  album: {
+    id: string
+    genres: string[]
+    artistName: string
+  }
+}
+
+function computeSkipSignals(
+  albumSkips: AlbumSkipWithAlbum[],
+  reviews: Array<{ album: { genres: string[] } }>
+): SkipSignals {
+  const skipsByGenre: Record<string, number> = {}
+  const reviewsByGenre: Record<string, number> = {}
+
+  // Count skips per genre
+  for (const skip of albumSkips) {
+    for (const genre of skip.album.genres) {
+      const normalizedGenre = genre.toLowerCase()
+      skipsByGenre[normalizedGenre] = (skipsByGenre[normalizedGenre] || 0) + 1
+    }
+  }
+
+  // Count reviews per genre
+  for (const review of reviews) {
+    for (const genre of review.album.genres) {
+      const normalizedGenre = genre.toLowerCase()
+      reviewsByGenre[normalizedGenre] = (reviewsByGenre[normalizedGenre] || 0) + 1
+    }
+  }
+
+  // Calculate skip rate per genre and identify high-skip genres
+  const highSkipGenres: string[] = []
+  for (const genre of Object.keys(skipsByGenre)) {
+    const skips = skipsByGenre[genre]
+    const reviews = reviewsByGenre[genre] || 0
+    const total = skips + reviews
+    if (total >= 3 && skips / total > 0.3) { // >30% skip rate with at least 3 interactions
+      highSkipGenres.push(genre)
+    }
+  }
+
+  const totalSkips = albumSkips.length
+  const skipRate = totalSkips / (totalSkips + reviews.length) || 0
+
+  return {
+    skipsByGenre,
+    skipRate,
+    totalSkips,
+    highSkipGenres,
+  }
+}
+
+/**
+ * Compute genre affinity vector (adjusted by skip signals)
+ */
+function computeGenreVector(
+  reviews: Array<ReviewWithAlbum & { weight: number }>,
+  skipSignals?: SkipSignals
+): GenreVector {
   const genreScores: Record<string, { total: number; count: number }> = {}
 
   for (const review of reviews) {

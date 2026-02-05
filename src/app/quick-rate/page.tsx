@@ -21,6 +21,7 @@ import {
   type PredictionData,
   type PredictionResult,
 } from "@/components/quick-rate"
+import { SkipReasonToast } from "@/components/skip-reason-toast"
 
 const BATCH_SIZE = 20
 
@@ -144,6 +145,11 @@ export default function QuickRatePage() {
     currentStreak: number
     totalPredictions: number
   } | null>(null)
+
+  // Skip tracking state
+  const [sessionSkipCount, setSessionSkipCount] = useState(0)
+  const [showSkipReasonToast, setShowSkipReasonToast] = useState(false)
+  const [lastSkippedAlbumId, setLastSkippedAlbumId] = useState<string | null>(null)
 
   const actualRatedCount = ratedCount ?? 0
   const isStatsLoaded = ratedCount !== null
@@ -442,9 +448,45 @@ export default function QuickRatePage() {
     }
   }
 
-  const skip = () => {
+  const skip = async () => {
+    const album = albums[currentAlbumIndex]
+    if (!album) return
+
+    // Track skip locally
     setSkippedCount((prev) => prev + 1)
+    const newSessionSkipCount = sessionSkipCount + 1
+    setSessionSkipCount(newSessionSkipCount)
+
+    // Record skip to API (fire and forget)
+    fetch(`/api/albums/${album.id}/skip`, {
+      method: 'POST',
+      credentials: 'include',
+    }).catch(() => {}) // Silent fail - skip tracking shouldn't block UX
+
+    // Show toast every 5th skip
+    if (newSessionSkipCount % 5 === 0) {
+      setLastSkippedAlbumId(album.id)
+      setShowSkipReasonToast(true)
+    }
+
     nextAlbum()
+  }
+
+  const handleSkipReasonSelect = async (reason: 'not_interested' | 'already_know' | 'not_now') => {
+    setShowSkipReasonToast(false)
+    if (!lastSkippedAlbumId) return
+
+    // Update the skip with the reason
+    await fetch(`/api/albums/${lastSkippedAlbumId}/skip`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ reason }),
+    }).catch(() => {})
+  }
+
+  const handleSkipReasonDismiss = () => {
+    setShowSkipReasonToast(false)
   }
 
   const nextAlbum = (saveToHistory = true) => {
@@ -637,6 +679,13 @@ export default function QuickRatePage() {
           </div>
         </div>
       )}
+
+      {/* Skip Reason Toast */}
+      <SkipReasonToast
+        isVisible={showSkipReasonToast}
+        onSelect={handleSkipReasonSelect}
+        onDismiss={handleSkipReasonDismiss}
+      />
 
       {/* Prediction Celebration Overlay */}
       {showPredictionCelebration && predictionResult && (

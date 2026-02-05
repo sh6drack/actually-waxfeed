@@ -653,18 +653,21 @@ export default async function Home() {
       {/* STATS BAR - Compact Social Proof */}
       <section className="border-b border-[var(--border)] bg-[var(--surface)]">
         <div className="w-full px-4 md:px-6 lg:px-12 xl:px-20 py-3 md:py-4">
-          <div className="flex justify-center gap-6 md:gap-8 lg:gap-16">
+          <div className="flex justify-center gap-8 md:gap-8 lg:gap-16">
             <div className="text-center">
               <span className="text-lg md:text-2xl font-bold tabular-nums">{stats.albumCount.toLocaleString()}</span>
-              <span className="text-[10px] md:text-xs tracking-widest uppercase text-[var(--muted-dim)] ml-1 md:ml-2">Albums</span>
+              <span className="hidden md:inline text-[10px] md:text-xs tracking-widest uppercase text-[var(--muted-dim)] ml-1 md:ml-2">Albums</span>
+              <span className="md:hidden text-[10px] tracking-widest uppercase text-[var(--muted-dim)] ml-1">Albums</span>
             </div>
             <div className="text-center">
               <span className="text-lg md:text-2xl font-bold tabular-nums">{stats.reviewCount.toLocaleString()}</span>
-              <span className="text-[10px] md:text-xs tracking-widest uppercase text-[var(--muted-dim)] ml-1 md:ml-2">Ratings</span>
+              <span className="hidden md:inline text-[10px] md:text-xs tracking-widest uppercase text-[var(--muted-dim)] ml-1 md:ml-2">Ratings</span>
+              <span className="md:hidden text-[10px] tracking-widest uppercase text-[var(--muted-dim)] ml-1">Ratings</span>
             </div>
             <div className="text-center">
               <span className="text-lg md:text-2xl font-bold tabular-nums">{stats.userCount.toLocaleString()}</span>
-              <span className="text-[10px] md:text-xs tracking-widest uppercase text-[var(--muted-dim)] ml-1 md:ml-2">Members</span>
+              <span className="hidden md:inline text-[10px] md:text-xs tracking-widest uppercase text-[var(--muted-dim)] ml-1 md:ml-2">Members</span>
+              <span className="md:hidden text-[10px] tracking-widest uppercase text-[var(--muted-dim)] ml-1">Members</span>
             </div>
           </div>
         </div>
@@ -900,8 +903,8 @@ export default async function Home() {
         </details>
       </section>
 
-      {/* COLLEGE RADIO PARTNERSHIP */}
-      <section className="border-b border-[var(--border)]">
+      {/* COLLEGE RADIO PARTNERSHIP - Hidden on mobile for cleaner experience */}
+      <section className="hidden md:block border-b border-[var(--border)]">
         <div className="w-full px-4 md:px-6 lg:px-12 xl:px-20 py-10 md:py-16 lg:py-20">
           <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
             <div>
@@ -960,29 +963,29 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* FINAL CTA */}
+      {/* FINAL CTA - Simplified for mobile */}
       <section className="bg-[var(--surface)]">
-        <div className="w-full px-4 md:px-6 lg:px-12 xl:px-20 py-10 md:py-12 lg:py-16 text-center">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-6">
+        <div className="w-full px-4 md:px-6 lg:px-12 xl:px-20 py-8 md:py-12 lg:py-16 text-center">
+          <h2 className="text-xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-6">
             Ready to learn what you actually like?
           </h2>
-          <p className="text-base md:text-lg text-[var(--muted)] mb-8 md:mb-10 max-w-xl mx-auto px-4">
+          <p className="text-sm md:text-lg text-[var(--muted)] mb-6 md:mb-10 max-w-xl mx-auto px-4">
             Stop saying &quot;I listen to everything.&quot; Start understanding your taste.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center px-4">
             {!session ? (
               <Link
                 href="/signup"
-                className="px-10 py-4 bg-[#ffd700] text-black text-sm font-bold uppercase tracking-wider hover:bg-[#ffe44d] transition-colors"
+                className="px-8 md:px-10 py-3.5 md:py-4 bg-[#ffd700] text-black text-sm font-bold uppercase tracking-wider hover:bg-[#ffe44d] transition-colors rounded-lg"
               >
-                Discover Your TasteID
+                Get Started
               </Link>
             ) : (
               <Link
                 href="/quick-rate"
-                className="px-10 py-4 bg-[#ffd700] text-black text-sm font-bold uppercase tracking-wider hover:bg-[#ffe44d] transition-colors"
+                className="px-8 md:px-10 py-3.5 md:py-4 bg-[#ffd700] text-black text-sm font-bold uppercase tracking-wider hover:bg-[#ffe44d] transition-colors rounded-lg"
               >
-                Keep Building TasteID
+                Rate Albums
               </Link>
             )}
           </div>
@@ -997,12 +1000,12 @@ export default async function Home() {
               <p className="text-sm text-[var(--muted-dim)]">WAXFEED · Polarity Lab LLC · 2025</p>
               <p className="text-xs text-[var(--muted-faint)] mt-1">Learn your music taste.</p>
             </div>
-            <nav className="flex flex-wrap gap-6">
+            <nav className="flex flex-wrap justify-center gap-4 md:gap-6">
               <Link href="/discover" className="text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Discover</Link>
-              <Link href="/pricing" className="text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Pricing</Link>
-              <Link href="/stations" className="text-sm text-[--accent-primary] hover:text-[--accent-hover] transition-colors">College Radio</Link>
+              <Link href="/pricing" className="hidden md:inline text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Pricing</Link>
+              <Link href="/stations" className="text-sm text-[--accent-primary] hover:text-[--accent-hover] transition-colors">Radio</Link>
               <Link href="/faq" className="text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">FAQ</Link>
-              <Link href="/changelog" className="text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Changelog</Link>
+              <Link href="/changelog" className="hidden md:inline text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Changelog</Link>
             </nav>
           </div>
         </div>

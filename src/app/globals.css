@@ -92,26 +92,29 @@ body {
 
 /* Brutalist style resets */
 * {
-  border-radius: 0 !important;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
-/* Exceptions for elements that need rounded corners */
-.tooltip-content {
-  border-radius: 6px !important;
+/* Default border-radius - modern app aesthetic */
+* {
+  border-radius: 0;
 }
 
-/* Quick Rate page - premium rounded UI elements */
-[class*="rounded-2xl"],
-[class*="rounded-xl"],
-[class*="rounded-lg"],
-[class*="rounded-full"],
-[class*="rounded-md"] {
-  border-radius: revert !important;
+/* Allow components to opt-in to rounded corners */
+.rounded-sm { border-radius: 0.125rem; }
+.rounded-md { border-radius: 0.375rem; }
+.rounded-lg { border-radius: 0.5rem; }
+.rounded-xl { border-radius: 0.75rem; }
+.rounded-2xl { border-radius: 1rem; }
+.rounded-full { border-radius: 9999px; }
+
+/* Tooltip exceptions */
+.tooltip-content {
+  border-radius: 6px;
 }
 
 .tooltip-trigger-icon {
-  border-radius: 50% !important;
+  border-radius: 50%;
 }
 
 /* Custom scrollbar - desktop only */
