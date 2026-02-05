@@ -211,7 +211,7 @@ export default function QuickRatePage() {
 
   useEffect(() => {
     if (status === "authenticated" && session?.user) {
-      fetchAlbums()
+      fetchAlbums(true) // Initial load - replace
       fetchUserStats()
     }
   }, [status, session])
@@ -293,13 +293,27 @@ export default function QuickRatePage() {
     }
   }
 
-  const fetchAlbums = async () => {
+  // Track album IDs we've already shown to prevent duplicates
+  const shownAlbumIds = useRef<Set<string>>(new Set())
+
+  const fetchAlbums = async (replace = false) => {
     setLoadingAlbums(true)
     try {
       const res = await fetch(`/api/albums/swipe?limit=${BATCH_SIZE * 2}`, { credentials: 'include' })
       const data = await res.json()
-      if (data.success) {
-        setAlbums(data.data || [])
+      if (data.success && data.data) {
+        const newAlbums = (data.data as Album[]).filter(album => !shownAlbumIds.current.has(album.id))
+
+        if (replace || albums.length === 0) {
+          // Initial load or explicit replace
+          newAlbums.forEach(album => shownAlbumIds.current.add(album.id))
+          setAlbums(newAlbums)
+          setCurrentAlbumIndex(0)
+        } else {
+          // Append to existing queue (don't reset index)
+          newAlbums.forEach(album => shownAlbumIds.current.add(album.id))
+          setAlbums(prev => [...prev, ...newAlbums])
+        }
       }
     } catch (err) {
       console.error('Failed to fetch albums:', err)
