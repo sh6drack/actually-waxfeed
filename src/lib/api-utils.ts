@@ -43,6 +43,54 @@ export async function requireAdmin() {
   return user
 }
 
+// ============================================
+// INPUT SANITIZATION
+// ============================================
+
+/**
+ * Sanitize user-generated text to prevent XSS
+ */
+export function sanitizeText(input: string | null | undefined): string {
+  if (!input) return ''
+  return input
+    .replace(/[<>]/g, '')
+    .replace(/javascript:/gi, '')
+    .replace(/on\w+=/gi, '')
+    .trim()
+}
+
+// ============================================
+// SECURE LOGGING
+// ============================================
+
+const SENSITIVE_FIELDS = ['password', 'token', 'secret', 'authorization', 'cookie']
+
+function sanitizeForLogging(data: unknown): unknown {
+  if (!data || typeof data !== 'object') return data
+  const sanitized = { ...data as Record<string, unknown> }
+  for (const key of Object.keys(sanitized)) {
+    if (SENSITIVE_FIELDS.some(f => key.toLowerCase().includes(f))) {
+      sanitized[key] = '[REDACTED]'
+    } else if (typeof sanitized[key] === 'object') {
+      sanitized[key] = sanitizeForLogging(sanitized[key])
+    }
+  }
+  return sanitized
+}
+
+export function secureLog(message: string, data?: unknown): void {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(message, data ? sanitizeForLogging(data) : '')
+  }
+}
+
+export function secureError(message: string, error?: unknown): void {
+  const sanitized = error instanceof Error
+    ? { message: error.message, name: error.name }
+    : sanitizeForLogging(error)
+  console.error(message, sanitized)
+}
+
 export function hasPremiumAccess(user: { role?: string; isPremium?: boolean }): boolean {
   return user.role === 'ADMIN' || user.role === 'PREMIUM' || user.isPremium === true
 }
