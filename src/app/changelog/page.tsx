@@ -8,6 +8,45 @@ export const metadata: Metadata = {
 
 const CHANGELOG_ENTRIES = [
   {
+    version: "2.8",
+    codename: "Surface",
+    date: "2026-02-07",
+    highlight: true,
+    summary: "New landing page, redesigned TasteID dashboard, and codebase cleanup. First impressions matter.",
+    changes: [
+      {
+        type: "feature" as const,
+        title: "Landing Page",
+        description: "Cinematic hero section with album marquee, feature showcase, and review highlights. The front door finally matches the house.",
+      },
+      {
+        type: "feature" as const,
+        title: "TasteID Dashboard",
+        description: "Full dashboard with hero card, genre breakdown, vibe signature, and listening stats. Your taste profile, visualized.",
+      },
+      {
+        type: "feature" as const,
+        title: "Tier Journey",
+        description: "Visual progression from Listener to Oracle. See exactly where you are and what's next.",
+      },
+      {
+        type: "enhancement" as const,
+        title: "Archetype Badges",
+        description: "Redesigned archetype badges across circles, messaging, and TasteID pages.",
+      },
+      {
+        type: "enhancement" as const,
+        title: "Onboarding Flow",
+        description: "Updated onboarding page with improved layout and component structure.",
+      },
+      {
+        type: "fix" as const,
+        title: "Codebase Cleanup",
+        description: "Removed old waxfeed-ui-design prototype directory. Leaner repo, faster clones.",
+      },
+    ],
+  },
+  {
     version: "2.7",
     codename: "Vault",
     date: "2026-02-07",
@@ -549,7 +588,7 @@ export default function ChangelogPage() {
                 waxfeed
               </span>
               <span className="font-mono text-[10px] text-[var(--accent-primary)]">
-                2.7
+                2.8
               </span>
             </div>
             <span className="text-xs text-[--muted]">
