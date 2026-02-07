@@ -90,9 +90,9 @@ export default function NotificationsPage() {
         return `Your review of "${content.albumTitle}" is trending!`
       case "first_spin_badge":
         const badge = content as { badgeType?: string; position?: number; albumTitle?: string; artistName?: string; waxReward?: number }
-        return `🎖️ You earned a ${badge.badgeType} Spin badge! You were #${badge.position} to rate "${badge.albumTitle}" (+${badge.waxReward} Wax)`
+        return `You earned a ${badge.badgeType} Spin badge! You were #${badge.position} to rate "${badge.albumTitle}" (+${badge.waxReward} Wax)`
       case "album_trending":
-        return `🔥 "${content.albumTitle}" is now trending! Check if you earned a badge.`
+        return `"${content.albumTitle}" is now trending! Check if you earned a badge.`
       default:
         return "New notification"
     }

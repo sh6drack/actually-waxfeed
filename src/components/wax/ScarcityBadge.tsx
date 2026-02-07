@@ -1,6 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { FlameIcon } from "@/components/icons"
+import { ClockUrgentIcon } from "@/components/icons/ui-icons"
 
 type Props = {
   remaining: number | null
@@ -61,7 +63,7 @@ export function ScarcityBadge({ remaining, total, expiresAt, className = "" }: P
               : "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
           }`}
         >
-          {isVeryLowStock && "🔥"}
+          {isVeryLowStock && <FlameIcon size={14} />}
           {remaining} left
           {total && <span className="text-[#888]">/ {total}</span>}
         </span>
@@ -74,7 +76,7 @@ export function ScarcityBadge({ remaining, total, expiresAt, className = "" }: P
               : "bg-blue-500/20 text-blue-400 border border-blue-500/30"
           }`}
         >
-          ⏰ {timeRemaining}
+          <ClockUrgentIcon size={14} /> {timeRemaining}
         </span>
       )}
     </div>

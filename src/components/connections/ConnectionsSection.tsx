@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { ConnectionCard } from "./ConnectionCard"
+import { MusicNoteIcon, ChartBarIcon, SearchEmptyIcon } from "@/components/icons/ui-icons"
 import type { EnhancedTasteMatch, ListeningSignature } from "@/lib/tasteid"
 
 interface ConnectionsSectionProps {
@@ -123,7 +124,7 @@ export function ConnectionsSection({ userId }: ConnectionsSectionProps) {
   if (!userId) {
     return (
       <div className="border-2 border-dashed border-[--border] p-8 text-center">
-        <div className="text-3xl mb-3">🎵</div>
+        <div className="mb-3"><MusicNoteIcon size={32} /></div>
         <h3 className="text-lg font-bold mb-2">Discover Taste Connections</h3>
         <p className="text-sm text-[--muted] mb-4 max-w-md mx-auto">
           Sign in to find people who share your musical taste—or can expand your horizons.
@@ -141,7 +142,7 @@ export function ConnectionsSection({ userId }: ConnectionsSectionProps) {
   if (needsMoreReviews) {
     return (
       <div className="border-2 border-dashed border-[--border] p-8 text-center">
-        <div className="text-3xl mb-3">📊</div>
+        <div className="mb-3"><ChartBarIcon size={32} /></div>
         <h3 className="text-lg font-bold mb-2">Build Your TasteID</h3>
         <p className="text-sm text-[--muted] mb-4 max-w-md mx-auto">
           Review {20 - reviewCount} more albums to unlock taste connections.
@@ -205,7 +206,7 @@ export function ConnectionsSection({ userId }: ConnectionsSectionProps) {
         </div>
       ) : error ? (
         <div className="border-2 border-dashed border-[--border] p-8 text-center">
-          <div className="text-3xl mb-3">📊</div>
+          <div className="mb-3"><ChartBarIcon size={32} /></div>
           <h3 className="text-lg font-bold mb-2">Complete Your Brain ID</h3>
           <p className="text-sm text-[--muted] mb-4 max-w-md mx-auto">
             Review more albums to build your Brain ID and unlock taste connections.
@@ -219,7 +220,7 @@ export function ConnectionsSection({ userId }: ConnectionsSectionProps) {
         </div>
       ) : connections.length === 0 ? (
         <div className="border-2 border-dashed border-[--border] p-8 text-center">
-          <div className="text-3xl mb-3">🔍</div>
+          <div className="mb-3"><SearchEmptyIcon size={32} /></div>
           <h3 className="text-lg font-bold mb-2">No connections found</h3>
           <p className="text-sm text-[--muted] max-w-md mx-auto">
             {mode === "twins"

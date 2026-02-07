@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import { DefaultAvatar } from "@/components/default-avatar"
 import { FriendRequestActions } from "./friend-request-actions"
+import { MusicNoteIcon } from "@/components/icons/ui-icons"
 
 async function getFriendsData(userId: string) {
   // Get all friendships
@@ -287,7 +288,7 @@ export default async function FriendsPage() {
 
           {friends.length === 0 ? (
             <div className="border-2 border-dashed border-[--border] p-12 text-center">
-              <div className="text-4xl mb-4">🎵</div>
+              <div className="mb-4"><MusicNoteIcon size={40} /></div>
               <h3 className="text-xl font-bold mb-2">Build your taste network</h3>
               <p className="text-[--muted] mb-6 max-w-md mx-auto">
                 Connect with people who share your taste. See what they&apos;re reviewing, compare your TasteIDs, and discover albums through trusted sources.

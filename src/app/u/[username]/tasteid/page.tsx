@@ -21,6 +21,7 @@ import {
   MusicNetworkKey,
   MUSIC_NETWORKS,
 } from "@/components/tasteid"
+import { TasteIDDashboard } from "@/components/tasteid/TasteIDDashboard"
 import { DefaultAvatar } from "@/components/default-avatar"
 import { CCXGraphMini, DyadicIndicator } from "@/components/polarity-system"
 import {
@@ -36,6 +37,8 @@ import {
   ArtistDNA,
 } from "@/lib/tasteid"
 import { ArrowRightIcon } from "@/components/icons"
+import { MoodCuratorIcon } from "@/components/icons/archetype-icons"
+import { ChartBarIcon, HandshakeIcon } from "@/components/icons/ui-icons"
 import { GenerateTasteIDButton, RecomputeButton, SmallRecomputeButton, ResetTasteIDButton } from "./tasteid-actions"
 
 interface Props {
@@ -293,21 +296,21 @@ export default async function TasteIDPage({ params }: Props) {
                     <div className="grid grid-cols-3 gap-3">
                       <div className="p-4 rounded-xl bg-white/5 text-center hover:bg-white/10 transition-colors">
                         <div className="w-10 h-10 mx-auto mb-3 rounded-lg bg-gradient-to-br from-[#ff6b6b] to-[#ff8585] flex items-center justify-center">
-                          <span className="text-lg">🎭</span>
+                          <MoodCuratorIcon size={20} color="white" />
                         </div>
                         <div className="text-xs font-bold text-white/90 mb-1">Archetype</div>
                         <div className="text-[10px] text-white/50">Your personality</div>
                       </div>
                       <div className="p-4 rounded-xl bg-white/5 text-center hover:bg-white/10 transition-colors">
                         <div className="w-10 h-10 mx-auto mb-3 rounded-lg bg-gradient-to-br from-[#00bfff] to-[#00d4ff] flex items-center justify-center">
-                          <span className="text-lg">📊</span>
+                          <ChartBarIcon size={20} color="white" />
                         </div>
                         <div className="text-xs font-bold text-white/90 mb-1">Analysis</div>
                         <div className="text-[10px] text-white/50">Deep insights</div>
                       </div>
                       <div className="p-4 rounded-xl bg-white/5 text-center hover:bg-white/10 transition-colors">
                         <div className="w-10 h-10 mx-auto mb-3 rounded-lg bg-gradient-to-br from-[#00ff88] to-[#00ffaa] flex items-center justify-center">
-                          <span className="text-lg">🤝</span>
+                          <HandshakeIcon size={20} color="white" />
                         </div>
                         <div className="text-xs font-bold text-white/90 mb-1">Connect</div>
                         <div className="text-[10px] text-white/50">Find your people</div>

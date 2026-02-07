@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { DefaultAvatar } from "@/components/default-avatar"
+import { HeadphonesIcon } from "@/components/icons/ui-icons"
 
 interface ListeningSession {
   id: string
@@ -153,7 +154,7 @@ export default function ListenPage() {
     return (
       <div className="min-h-screen flex items-center justify-center px-6">
         <div className="text-center max-w-md">
-          <div className="text-6xl mb-6">🎧</div>
+          <div className="mb-6"><HeadphonesIcon size={48} /></div>
           <h1 className="text-3xl font-bold mb-4">Shared Listening</h1>
           <p className="text-[--muted] mb-6">
             Sign in to listen to albums together with friends in real-time.
@@ -283,8 +284,8 @@ export default function ListenPage() {
                             className="w-16 h-16 object-cover"
                           />
                         ) : (
-                          <div className="w-16 h-16 bg-[--surface] flex items-center justify-center text-2xl">
-                            🎧
+                          <div className="w-16 h-16 bg-[--surface] flex items-center justify-center">
+                            <HeadphonesIcon size={24} />
                           </div>
                         )}
 
@@ -350,8 +351,8 @@ export default function ListenPage() {
                             className="w-12 h-12 object-cover grayscale"
                           />
                         ) : (
-                          <div className="w-12 h-12 bg-[--surface] flex items-center justify-center text-xl">
-                            🎧
+                          <div className="w-12 h-12 bg-[--surface] flex items-center justify-center">
+                            <HeadphonesIcon size={24} />
                           </div>
                         )}
 
@@ -375,7 +376,7 @@ export default function ListenPage() {
             {/* Empty state */}
             {sessions.length === 0 && (
               <div className="border-2 border-dashed border-[--border] p-12 text-center">
-                <div className="text-4xl mb-4">🎧</div>
+                <div className="mb-4"><HeadphonesIcon size={40} /></div>
                 <h3 className="text-xl font-bold mb-2">No listening sessions yet</h3>
                 <p className="text-[--muted] max-w-md mx-auto">
                   Start a session and invite a friend to listen to music together in real-time.

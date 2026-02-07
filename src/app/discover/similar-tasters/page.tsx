@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { findSimilarTasters, getArchetypeInfo } from "@/lib/tasteid"
 import { DefaultAvatar } from "@/components/default-avatar"
+import { MusicNoteIcon, SearchEmptyIcon } from "@/components/icons/ui-icons"
+import { GenreSwapIcon } from "@/components/icons/network-icons"
 
 // Always fetch fresh TasteID data
 export const dynamic = "force-dynamic"
@@ -133,7 +135,7 @@ export default async function SimilarTastersPage() {
           </div>
         ) : (
           <div className="border-2 border-dashed border-[--border] p-12 text-center">
-            <div className="text-4xl mb-4">🎵</div>
+            <div className="mb-4"><MusicNoteIcon size={40} /></div>
             <h3 className="text-xl font-bold mb-2">No matches yet</h3>
             <p className="text-[--muted] mb-6 max-w-md mx-auto">
               Not enough users with TasteIDs to find matches. Check back soon as more people discover their musical identity!
@@ -155,13 +157,13 @@ export default async function SimilarTastersPage() {
           <h3 className="text-[11px] tracking-[0.2em] uppercase text-[--muted] mb-4">Improve Your Matches</h3>
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="p-4 border border-[--border]">
-              <div className="text-lg mb-2">📝</div>
+              <div className="mb-2"><SearchEmptyIcon size={20} /></div>
               <p className="text-sm text-[--muted]">
                 Rate more albums to refine your TasteID and find better matches.
               </p>
             </div>
             <div className="p-4 border border-[--border]">
-              <div className="text-lg mb-2">🔄</div>
+              <div className="mb-2"><GenreSwapIcon size={20} /></div>
               <p className="text-sm text-[--muted]">
                 Your TasteID updates automatically as you review more music.
               </p>

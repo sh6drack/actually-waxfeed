@@ -2,6 +2,7 @@
 
 import { Tooltip } from '@/components/ui/tooltip'
 import { ARCHETYPES } from '@/lib/tasteid'
+import { MusicNoteIcon } from '@/components/icons/ui-icons'
 
 interface ArchetypeBadgeProps {
   archetype: string
@@ -23,7 +24,7 @@ export function ArchetypeBadge({
     w => w.charAt(0).toUpperCase() + w.slice(1)
   ).join(' ')
 
-  const icon = archetypeInfo?.icon || '🎵'
+  const icon = archetypeInfo?.icon || null
   const description = archetypeInfo?.description || ''
 
   const sizeClasses = {
@@ -41,7 +42,7 @@ export function ArchetypeBadge({
             : 'bg-[--muted]/10 text-[--foreground] border border-[--border] hover:border-[--muted]'
         }`}
       >
-        {showIcon && <span className="flex-shrink-0">{icon}</span>}
+        {showIcon && <span className="flex-shrink-0">{icon || <MusicNoteIcon size={size === 'sm' ? 12 : size === 'md' ? 16 : 20} />}</span>}
         <span className="truncate">{displayName}</span>
       </span>
     </Tooltip>

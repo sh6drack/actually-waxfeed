@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { CircleList } from '@/components/messaging/CircleList'
+import { MoodCuratorIcon } from '@/components/icons/archetype-icons'
 
 export default function CirclesPage() {
   const { data: session, status } = useSession()
@@ -52,7 +53,7 @@ export default function CirclesPage() {
              style={{ animationDelay: '100ms' }}>
           <div className="flex items-start gap-4">
             <div className="w-10 h-10 flex items-center justify-center bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/30 flex-shrink-0">
-              <span className="text-lg">🎭</span>
+              <MoodCuratorIcon size={18} />
             </div>
             <div>
               <p className="text-sm font-semibold tracking-tight">Algorithm-Assigned Communities</p>

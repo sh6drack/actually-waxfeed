@@ -4,9 +4,11 @@ import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useState, useEffect, useRef, useCallback } from "react"
 import { DefaultAvatar } from "@/components/default-avatar"
+import { CheckIcon } from "@/components/icons"
 import { RatingSlider } from "@/components/rating-slider"
 import { COUNTRIES } from "@/data/countries"
 import { useCustomization, ACCENT_COLORS, AccentColor, CARD_STYLES, CardStyle } from "@/components/customization-provider"
+import { VIBE_ICONS } from "@/components/icons/vibe-icons"
 
 const TOTAL_STEPS = 5
 const REQUIRED_RATINGS = 20
@@ -14,14 +16,14 @@ const REQUIRED_RATINGS = 20
 // Scientific mood/vibe descriptors for TasteID Polarity Model
 // These map to psychological and acoustic dimensions
 const VIBE_TAGS = [
-  { id: 'energetic', label: 'Energetic', emoji: '⚡' },
-  { id: 'chill', label: 'Chill', emoji: '🌊' },
-  { id: 'emotional', label: 'Emotional', emoji: '💔' },
-  { id: 'hype', label: 'Hype', emoji: '🔥' },
-  { id: 'nostalgic', label: 'Nostalgic', emoji: '📼' },
-  { id: 'experimental', label: 'Experimental', emoji: '🔬' },
-  { id: 'timeless', label: 'Timeless', emoji: '💎' },
-  { id: 'dark', label: 'Dark', emoji: '🌑' },
+  { id: 'energetic', label: 'Energetic' },
+  { id: 'chill', label: 'Chill' },
+  { id: 'emotional', label: 'Emotional' },
+  { id: 'hype', label: 'Hype' },
+  { id: 'nostalgic', label: 'Nostalgic' },
+  { id: 'experimental', label: 'Experimental' },
+  { id: 'timeless', label: 'Timeless' },
+  { id: 'dark', label: 'Dark' },
 ] as const
 
 interface Album {
@@ -677,7 +679,7 @@ export default function OnboardingPage() {
             ) : isRatingComplete ? (
               <div className="text-center py-12">
                 <div className="w-20 h-20 mx-auto mb-6 flex items-center justify-center border-2 border-[var(--accent-primary)]">
-                  <span className="text-4xl">✓</span>
+                  <CheckIcon size={40} className="text-[var(--accent-primary)]" />
                 </div>
                 <h2 className="text-2xl font-bold mb-2">You&apos;re All Set!</h2>
                 <p className="text-[--muted] mb-2">You rated</p>
@@ -750,7 +752,10 @@ export default function OnboardingPage() {
                             : 'bg-transparent text-[--muted] border-[--border] hover:border-[#666] hover:text-white'
                         } border`}
                       >
-                        <span className="mr-1">{vibe.emoji}</span>
+                        {(() => {
+                          const VibeIcon = VIBE_ICONS[vibe.id]
+                          return VibeIcon ? <span className="mr-1 inline-flex"><VibeIcon size={14} /></span> : null
+                        })()}
                         {vibe.label}
                       </button>
                     ))}

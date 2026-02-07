@@ -1,9 +1,12 @@
 "use client"
 
+import { ARCHETYPE_ICONS } from "@/components/icons/archetype-icons"
+import { MusicNoteIcon } from "@/components/icons/ui-icons"
+
 interface ArchetypeBadgeProps {
   id: string
   name: string
-  icon: string
+  icon?: string
   description?: string
   confidence?: number
   size?: "sm" | "md" | "lg"
@@ -25,11 +28,14 @@ export function ArchetypeBadge({
     lg: "px-4 py-2 text-base",
   }
 
-  const iconSizes = {
-    sm: "text-sm",
-    md: "text-lg",
-    lg: "text-xl",
+  const iconPixelSizes = {
+    sm: 14,
+    md: 18,
+    lg: 22,
   }
+
+  // Look up custom SVG icon by archetype ID
+  const IconComponent = ARCHETYPE_ICONS[id] || ARCHETYPE_ICONS[id?.toUpperCase()] || null
 
   return (
     <div className="inline-flex flex-col">
@@ -43,7 +49,11 @@ export function ArchetypeBadge({
         `}
         title={description}
       >
-        <span className={iconSizes[size]}>{icon}</span>
+        {IconComponent ? (
+          <IconComponent size={iconPixelSizes[size]} />
+        ) : (
+          <MusicNoteIcon size={iconPixelSizes[size]} />
+        )}
         <span>{name}</span>
         {confidence !== undefined && confidence > 0 && (
           <span className="text-white/60 font-normal text-[0.7em]">

@@ -5,10 +5,11 @@ let _stripe: Stripe | null = null
 
 export function getStripe(): Stripe {
   if (!_stripe) {
-    if (!process.env.STRIPE_SECRET_KEY) {
+    const key = process.env.STRIPE_SECRET_KEY?.trim()
+    if (!key) {
       throw new Error('STRIPE_SECRET_KEY is not set in environment variables')
     }
-    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    _stripe = new Stripe(key, {
       apiVersion: '2025-12-15.clover',
       typescript: true,
     })
@@ -17,8 +18,8 @@ export function getStripe(): Stripe {
 }
 
 // For backwards compatibility - will throw if used without STRIPE_SECRET_KEY
-export const stripe = process.env.STRIPE_SECRET_KEY
-  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+export const stripe = process.env.STRIPE_SECRET_KEY?.trim()
+  ? new Stripe(process.env.STRIPE_SECRET_KEY.trim(), {
       apiVersion: '2025-12-15.clover',
       typescript: true,
     })
@@ -31,7 +32,7 @@ export const stripe = process.env.STRIPE_SECRET_KEY
 export const SUBSCRIPTION_TIERS = {
   WAX_PLUS: {
     name: 'Wax+',
-    priceId: process.env.STRIPE_WAX_PLUS_PRICE_ID || 'price_wax_plus',
+    priceId: (process.env.STRIPE_WAX_PLUS_PRICE_ID || 'price_wax_plus').trim(),
     monthlyPriceCents: 499,
     monthlyWaxGrant: 300,
     weeklyEarnCap: null, // Unlimited
@@ -52,7 +53,7 @@ export const SUBSCRIPTION_TIERS = {
   },
   WAX_PRO: {
     name: 'Wax Pro',
-    priceId: process.env.STRIPE_WAX_PRO_PRICE_ID || 'price_wax_pro',
+    priceId: (process.env.STRIPE_WAX_PRO_PRICE_ID || 'price_wax_pro').trim(),
     monthlyPriceCents: 999,
     monthlyWaxGrant: 750,
     weeklyEarnCap: null, // Unlimited
@@ -99,7 +100,7 @@ export const WAX_PAX = {
   starter: {
     id: 'starter',
     name: 'Starter Pax',
-    priceId: process.env.STRIPE_WAX_STARTER_PRICE_ID || 'price_wax_starter',
+    priceId: (process.env.STRIPE_WAX_STARTER_PRICE_ID || 'price_wax_starter').trim(),
     priceCents: 99,
     waxAmount: 100,
     bonusPercent: 0,
@@ -108,7 +109,7 @@ export const WAX_PAX = {
   popular: {
     id: 'popular',
     name: 'Popular Pax',
-    priceId: process.env.STRIPE_WAX_POPULAR_PRICE_ID || 'price_wax_popular',
+    priceId: (process.env.STRIPE_WAX_POPULAR_PRICE_ID || 'price_wax_popular').trim(),
     priceCents: 499,
     waxAmount: 550,
     bonusPercent: 10,
@@ -117,7 +118,7 @@ export const WAX_PAX = {
   value: {
     id: 'value',
     name: 'Value Pax',
-    priceId: process.env.STRIPE_WAX_VALUE_PRICE_ID || 'price_wax_value',
+    priceId: (process.env.STRIPE_WAX_VALUE_PRICE_ID || 'price_wax_value').trim(),
     priceCents: 999,
     waxAmount: 1200,
     bonusPercent: 20,
@@ -126,7 +127,7 @@ export const WAX_PAX = {
   super: {
     id: 'super',
     name: 'Super Pax',
-    priceId: process.env.STRIPE_WAX_SUPER_PRICE_ID || 'price_wax_super',
+    priceId: (process.env.STRIPE_WAX_SUPER_PRICE_ID || 'price_wax_super').trim(),
     priceCents: 1999,
     waxAmount: 2700,
     bonusPercent: 35,
@@ -135,7 +136,7 @@ export const WAX_PAX = {
   mega: {
     id: 'mega',
     name: 'Mega Pax',
-    priceId: process.env.STRIPE_WAX_MEGA_PRICE_ID || 'price_wax_mega',
+    priceId: (process.env.STRIPE_WAX_MEGA_PRICE_ID || 'price_wax_mega').trim(),
     priceCents: 3999,
     waxAmount: 6000,
     bonusPercent: 50,

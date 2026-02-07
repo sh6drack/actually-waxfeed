@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { DefaultAvatar } from "@/components/default-avatar"
+import { ChallengeIcon, GenreSwapIcon, DecadeDiveIcon, DiscoveryIcon } from "@/components/icons/network-icons"
 
 interface CreateChallengeModalProps {
   partnerId?: string | null
@@ -21,29 +22,32 @@ interface SearchUser {
   image: string | null
 }
 
+const CHALLENGE_TYPE_ICON_MAP: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+  rate_same_album: ChallengeIcon,
+  genre_swap: GenreSwapIcon,
+  decade_dive: DecadeDiveIcon,
+  discover_together: DiscoveryIcon,
+}
+
 const CHALLENGE_TYPES = [
   {
     id: "rate_same_album",
     label: "Rate Same Album",
-    icon: "⚔️",
     description: "Both rate the same album - highest rating wins!",
   },
   {
     id: "genre_swap",
     label: "Genre Swap",
-    icon: "🔄",
     description: "Rate 3 albums from a genre you don't usually listen to",
   },
   {
     id: "decade_dive",
     label: "Decade Dive",
-    icon: "📅",
     description: "Explore music from a specific decade together",
   },
   {
     id: "discover_together",
     label: "Discover Together",
-    icon: "🔍",
     description: "Find and rate new albums neither of you have heard",
   },
 ]
@@ -249,7 +253,10 @@ export function CreateChallengeModal({
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-xl">{type.icon}</span>
+                    {(() => {
+                      const IconComponent = CHALLENGE_TYPE_ICON_MAP[type.id]
+                      return IconComponent ? <IconComponent size={20} /> : null
+                    })()}
                     <div>
                       <p className="font-medium">{type.label}</p>
                       <p className="text-xs text-[--muted]">{type.description}</p>

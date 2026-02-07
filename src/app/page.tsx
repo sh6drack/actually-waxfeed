@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth"
 import { format, formatDistanceToNow } from "date-fns"
 import { TasteIDCompletionBanner } from "@/components/tasteid-completion-banner"
 import { getCurrentTier, getKeepBuildingMessage } from "@/lib/tasteid-tiers"
+import { LandingPage } from "@/components/landing/LandingPage"
 
 export const dynamic = "force-dynamic"
 
@@ -140,6 +141,36 @@ export default async function Home() {
     }),
   ])
 
+  // Non-logged-in users get the immersive landing experience
+  if (!session?.user) {
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        <LandingPage
+          stats={stats}
+          albums={billboardAlbums}
+          reviews={recentReviews.filter(r => r.text)}
+        />
+        <footer className="border-t border-[var(--border)]">
+          <div className="w-full px-6 lg:px-12 xl:px-20 py-10">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+              <div>
+                <p className="text-sm text-[var(--muted-dim)]">WAXFEED · Polarity Lab LLC · 2025</p>
+                <p className="text-xs text-[var(--muted-faint)] mt-1">Learn your music taste.</p>
+              </div>
+              <nav className="flex flex-wrap justify-center gap-4 md:gap-6">
+                <Link href="/discover" className="text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Discover</Link>
+                <Link href="/pricing" className="hidden md:inline text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Pricing</Link>
+                <Link href="/stations" className="text-sm text-[--accent-primary] hover:text-[--accent-hover] transition-colors">Radio</Link>
+                <Link href="/faq" className="text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">FAQ</Link>
+                <Link href="/changelog" className="hidden md:inline text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Changelog</Link>
+              </nav>
+            </div>
+          </div>
+        </footer>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* PERSONALIZED DASHBOARD BAR - Always visible when logged in */}
@@ -248,8 +279,6 @@ export default async function Home() {
       <section className="border-b border-[var(--border)]">
         <div className="w-full px-4 md:px-6 lg:px-12 xl:px-20 py-6 md:py-8 lg:py-12">
           <div className="grid lg:grid-cols-2 gap-6 md:gap-8 lg:gap-12">
-            {session ? (
-              /* Personalized hero for logged in users */
               <>
                 {/* Left - Tagline + Progress */}
                 <div>
@@ -489,155 +518,7 @@ export default async function Home() {
                   )}
                 </div>
               </>
-            ) : (
-              /* Default hero for logged out users - FIRST IMPRESSION */
-              <>
-                {/* Left Column - Main Content */}
-                <div>
-                  <p className="text-xs tracking-[0.3em] uppercase text-[--accent-primary] mb-3 font-medium">
-                    Learn Your Music Taste
-                  </p>
-                  <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight mb-4">
-                    &quot;I listen to everything.&quot;<br />
-                    <span className="text-[var(--muted)]">Do you though?</span>
-                  </h1>
-                  <p className="text-base md:text-lg text-[var(--muted)] mb-6 leading-relaxed">
-                    Everyone says it. Nobody means it. WAXFEED <span className="text-[--accent-primary] font-semibold">reflects your taste back to you</span>—what you actually love,
-                    why you love it, and <span className="text-[var(--foreground)]">what that says about you</span>.
-                  </p>
-                  
-                  {/* TasteID Progress Preview - Engagement hook for logged out users */}
-                  <div className="mb-6 p-4 border border-[var(--border)] bg-[var(--surface)] rounded-sm">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-gradient-to-br from-[#ff6b6b] to-[#ffd700] rounded-sm flex items-center justify-center">
-                          <svg className="w-3.5 h-3.5 text-black" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M10 2L3 7l7 5 7-5-7-5zM3 17l7 5 7-5M3 12l7 5 7-5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                          </svg>
-                        </div>
-                        <span className="text-xs font-bold uppercase tracking-wider">Your TasteID Journey</span>
-                      </div>
-                      <span className="text-xs font-bold text-[var(--muted)]">0%</span>
-                    </div>
-                    
-                    {/* Progress Bar - Empty to show potential */}
-                    <div className="h-2.5 bg-[var(--border)] overflow-hidden rounded-full mb-3">
-                      <div 
-                        className="h-full bg-gradient-to-r from-[#ff6b6b] via-[#ffd700] to-[#00ff88] transition-all duration-700 ease-out rounded-full"
-                        style={{ width: '0%' }}
-                      />
-                    </div>
-                    
-                    {/* Progress Milestones */}
-                    <div className="flex justify-between text-[10px] text-[var(--muted)] mb-2">
-                      <span>5 ratings</span>
-                      <span>10 ratings</span>
-                      <span>25 ratings</span>
-                    </div>
-                    
-                    {/* Status Message */}
-                    <p className="text-xs text-[var(--muted)]">
-                      Rate 25 albums and we&apos;ll show you who you really are musically. Your <span className="text-[--accent-primary] font-medium">TasteID</span> is waiting.
-                    </p>
-                  </div>
-                  
-                  {/* 4 Action Buttons - Same as logged in */}
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    <Link
-                      href="/discover"
-                      className="px-4 py-2.5 bg-[#00bfff] text-black text-xs font-bold uppercase tracking-wider hover:bg-[#33ccff] transition-all hover:scale-105"
-                    >
-                      Discover
-                    </Link>
-                    <Link
-                      href="/signup"
-                      className="px-4 py-2.5 bg-[#00ff88] text-black text-xs font-bold uppercase tracking-wider hover:bg-[#33ff9f] transition-all hover:scale-105"
-                    >
-                      Connect
-                    </Link>
-                    <Link
-                      href="/signup"
-                      className="px-4 py-2.5 bg-[#ffd700] text-black text-xs font-bold uppercase tracking-wider hover:bg-[#ffe033] transition-all hover:scale-105"
-                    >
-                      Rate
-                    </Link>
-                    <Link
-                      href="/signup"
-                      className="px-4 py-2.5 bg-[#ff6b6b] text-black text-xs font-bold uppercase tracking-wider hover:bg-[#ff8585] transition-all hover:scale-105"
-                    >
-                      TasteID
-                    </Link>
-                  </div>
 
-                  {/* Social Proof */}
-                  <p className="text-xs text-[var(--muted-dim)]">
-                    Join <span className="text-[var(--foreground)] font-medium">{stats.userCount.toLocaleString()}+</span> music lovers · <span className="text-[var(--foreground)] font-medium">{stats.reviewCount.toLocaleString()}</span> ratings logged
-                  </p>
-                </div>
-                
-                {/* Right Column - Feature Highlights */}
-                <div className="border border-[var(--border)] p-4">
-                  <h2 className="text-xs tracking-[0.2em] uppercase text-[var(--muted)] mb-4">What You&apos;ll Learn</h2>
-
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-3 p-3 border-b border-[var(--border)]">
-                      <div className="w-8 h-8 bg-[#ff6b6b] rounded-sm flex items-center justify-center flex-shrink-0">
-                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M10 2L3 7l7 5 7-5-7-5zM3 17l7 5 7-5M3 12l7 5 7-5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-[#ff6b6b]">TasteID</p>
-                        <p className="text-xs text-[var(--muted)]">Your musical DNA decoded—genres, vibes, patterns you didn&apos;t know you had</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3 p-3 border-b border-[var(--border)]">
-                      <div className="w-8 h-8 bg-[#00bfff] rounded-sm flex items-center justify-center flex-shrink-0">
-                        <svg className="w-4 h-4 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-[#00bfff]">Discover</p>
-                        <p className="text-xs text-[var(--muted)]">Recs that actually make sense once you know your own taste</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3 p-3 border-b border-[var(--border)]">
-                      <div className="w-8 h-8 bg-[#00ff88] rounded-sm flex items-center justify-center flex-shrink-0">
-                        <svg className="w-4 h-4 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-[#00ff88]">Connect</p>
-                        <p className="text-xs text-[var(--muted)]">Find your people—those who actually share your wavelength</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3 p-3">
-                      <div className="w-8 h-8 bg-[#FFD700] rounded-sm flex items-center justify-center flex-shrink-0">
-                        <svg className="w-4 h-4 text-black" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-[#FFD700]">Prove It</p>
-                        <p className="text-xs text-[var(--muted)]">Timestamped receipts when you find artists before they blow</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <Link
-                    href="/signup"
-                    className="block w-full mt-4 px-4 py-3 bg-[--accent-primary] text-black text-xs font-bold uppercase tracking-wider hover:bg-[--accent-hover] transition-all text-center"
-                  >
-                    Get Started Free →
-                  </Link>
-                </div>
-              </>
-            )}
           </div>
         </div>
       </section>

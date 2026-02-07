@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { DefaultAvatar } from "@/components/default-avatar"
+import { HeadphonesIcon, WarningIcon, MusicNoteIcon } from "@/components/icons/ui-icons"
 
 interface Track {
   id: string
@@ -181,7 +182,7 @@ export function ListeningSession({ inviteCode, currentUserId }: ListeningSession
   if (error || !session) {
     return (
       <div className="text-center py-12">
-        <div className="text-4xl mb-4">😕</div>
+        <div className="mb-4"><WarningIcon size={40} /></div>
         <h2 className="text-xl font-bold mb-2">Session Not Found</h2>
         <p className="text-[--muted] mb-6">{error || "This listening session doesn't exist or has ended."}</p>
         <Link
@@ -199,7 +200,7 @@ export function ListeningSession({ inviteCode, currentUserId }: ListeningSession
   if (session.status === "ended") {
     return (
       <div className="text-center py-12">
-        <div className="text-4xl mb-4">👋</div>
+        <div className="mb-4"><HeadphonesIcon size={40} /></div>
         <h2 className="text-xl font-bold mb-2">Session Ended</h2>
         <p className="text-[--muted] mb-6">Thanks for listening together!</p>
         <Link
@@ -215,7 +216,7 @@ export function ListeningSession({ inviteCode, currentUserId }: ListeningSession
   if (session.status === "waiting" && !session.isHost) {
     return (
       <div className="text-center py-12">
-        <div className="text-4xl mb-4">🎧</div>
+        <div className="mb-4"><HeadphonesIcon size={40} /></div>
         <h2 className="text-xl font-bold mb-2">Join Listening Session</h2>
         <p className="text-[--muted] mb-6">
           @{session.host.username} invited you to listen together
@@ -368,7 +369,7 @@ export function ListeningSession({ inviteCode, currentUserId }: ListeningSession
             </div>
           ) : (
             <div className="border-2 border-dashed border-[--border] p-12 text-center">
-              <div className="text-4xl mb-4">🎵</div>
+              <div className="mb-4"><MusicNoteIcon size={40} /></div>
               <p className="text-[--muted]">
                 {session.isHost
                   ? "Select an album to start listening"

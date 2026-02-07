@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
+import { FlameIcon } from "@/components/icons"
 
 type Props = {
   className?: string
@@ -32,7 +33,7 @@ export function StreakIndicator({ className = "", showLabel = true }: Props) {
 
   return (
     <div className={`flex items-center gap-1 ${className}`}>
-      <span className="text-orange-500">🔥</span>
+      <FlameIcon size={16} className="text-orange-500" />
       <span className="font-bold text-orange-500">{streak}</span>
       {showLabel && <span className="text-[#888] text-sm">streak</span>}
     </div>

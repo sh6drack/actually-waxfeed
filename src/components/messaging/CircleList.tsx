@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ArchetypeBadge } from './ArchetypeBadge'
 import { formatDistanceToNow } from 'date-fns'
+import { WarningIcon } from '@/components/icons/ui-icons'
+import { MoodCuratorIcon } from '@/components/icons/archetype-icons'
 
 interface UserCircle {
   id: string
@@ -78,7 +80,7 @@ export function CircleList({ onSelectCircle }: CircleListProps) {
     return (
       <div className="p-12 text-center">
         <div className="w-12 h-12 mx-auto mb-4 flex items-center justify-center border border-[--border]">
-          <span className="text-xl">⚠</span>
+          <WarningIcon size={20} />
         </div>
         <p className="text-[--muted] mb-4">{error}</p>
         <button
@@ -95,7 +97,7 @@ export function CircleList({ onSelectCircle }: CircleListProps) {
     return (
       <div className="p-12 text-center">
         <div className="w-16 h-16 mx-auto mb-6 flex items-center justify-center bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/30">
-          <span className="text-3xl">🎭</span>
+          <MoodCuratorIcon size={28} />
         </div>
         <h3 className="text-lg font-semibold mb-2">No circles yet</h3>
         <p className="text-sm text-[--muted] mb-6 max-w-xs mx-auto leading-relaxed">

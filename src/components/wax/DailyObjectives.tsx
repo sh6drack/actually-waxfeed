@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
+import { FlameIcon } from "@/components/icons"
 
 type WaxStats = {
   balance: number
@@ -146,7 +147,7 @@ export function DailyObjectives() {
       {stats.currentStreak > 0 && (
         <div className="px-4 py-3 border-b border-[--border] flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-lg">🔥</span>
+            <FlameIcon size={18} />
             <span className="font-medium">{stats.currentStreak} Day Streak</span>
           </div>
           <span className="text-green-500 text-sm">+{streakBonus} bonus</span>

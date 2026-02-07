@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
+import { FlameIcon } from "@/components/icons"
 
 export function StreakWarning() {
   const { data: session } = useSession()
@@ -54,7 +55,7 @@ export function StreakWarning() {
         ✕
       </button>
       <div className="flex items-start gap-3">
-        <div className="text-3xl">🔥</div>
+        <FlameIcon size={32} />
         <div>
           <h4 className="font-bold text-orange-100">
             Don&apos;t lose your {stats.currentStreak}-day streak!

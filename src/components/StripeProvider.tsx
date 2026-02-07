@@ -4,7 +4,7 @@ import { Elements } from "@stripe/react-stripe-js"
 import { loadStripe, type Appearance } from "@stripe/stripe-js"
 
 const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!.trim()
 )
 
 const appearance: Appearance = {

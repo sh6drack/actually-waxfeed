@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
+import { WarningIcon, ClockUrgentIcon, ChartBarIcon } from "@/components/icons/ui-icons"
 
 type Props = {
   className?: string
@@ -46,7 +47,7 @@ export function WeeklyCapBar({ className = "" }: Props) {
       <div className="flex justify-between items-center mb-2">
         <div className="flex items-center gap-2">
           <span className={isAtCap ? "text-red-500" : isNearCap ? "text-yellow-500" : "text-[#888]"}>
-            {isAtCap ? "⚠️" : isNearCap ? "⏰" : "📊"}
+            {isAtCap ? <WarningIcon size={16} /> : isNearCap ? <ClockUrgentIcon size={16} /> : <ChartBarIcon size={16} />}
           </span>
           <span className="text-sm font-medium">
             {isAtCap ? "Weekly Cap Reached!" : isNearCap ? "Almost at Cap!" : "Weekly Progress"}

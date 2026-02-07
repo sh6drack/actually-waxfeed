@@ -23,7 +23,7 @@ export function TasteCardShare({ username, archetype }: TasteCardShareProps) {
     : `https://waxfeed.com/u/${username}/tasteid` // Fallback for SSR
 
   const tweetText = encodeURIComponent(
-    `I'm a ${archetype} on WaxFeed. Check out my music taste fingerprint! 🎵\n\n${profileUrl}`
+    `I'm a ${archetype} on WaxFeed. Check out my music taste fingerprint!\n\n${profileUrl}`
   )
 
   const handleCopyLink = async () => {

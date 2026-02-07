@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
+import { FlameIcon, SparkleIcon } from "@/components/icons"
+import { CandleWaxIcon, ClockUrgentIcon } from "@/components/icons/ui-icons"
 
 type Props = {
   isOpen: boolean
@@ -73,10 +75,10 @@ export function DailyRewardModal({ isOpen, onClose, onClaimed }: Props) {
         {result ? (
           // Success state
           <div className="text-center">
-            <div className="text-6xl mb-4 animate-bounce">🎁</div>
+            <div className="mb-4 animate-bounce flex justify-center"><SparkleIcon size={48} /></div>
             <h2 className="text-2xl font-bold mb-2">Daily Wax Claimed!</h2>
             <div className="text-4xl font-bold text-yellow-500 mb-4">
-              +{result.earned} 🕯️
+              +{result.earned} <CandleWaxIcon size={16} className="inline-block" />
             </div>
             {result.streakBonus > 0 && (
               <div className="text-green-500 mb-4">
@@ -84,7 +86,7 @@ export function DailyRewardModal({ isOpen, onClose, onClaimed }: Props) {
               </div>
             )}
             <div className="flex items-center justify-center gap-2 text-orange-500 mb-6">
-              <span className="text-2xl">🔥</span>
+              <FlameIcon size={24} />
               <span className="font-bold">{result.streak} day streak</span>
             </div>
             <button
@@ -97,7 +99,7 @@ export function DailyRewardModal({ isOpen, onClose, onClaimed }: Props) {
         ) : (
           // Claim state
           <div className="text-center">
-            <div className="text-6xl mb-4">🕯️</div>
+            <div className="mb-4 flex justify-center"><CandleWaxIcon size={48} /></div>
             <h2 className="text-2xl font-bold mb-2">Daily Wax Reward</h2>
             <p className="text-[#888] mb-6">
               Claim your daily Wax! Come back tomorrow to keep your streak going.
@@ -111,12 +113,12 @@ export function DailyRewardModal({ isOpen, onClose, onClaimed }: Props) {
 
             <div className="grid grid-cols-2 gap-3 mb-6">
               <div className="p-3 bg-[#1a1a1a] rounded-lg">
-                <div className="text-2xl mb-1">📅</div>
+                <div className="mb-1 flex justify-center"><ClockUrgentIcon size={24} /></div>
                 <div className="text-sm text-[#888]">Login</div>
                 <div className="font-bold text-yellow-500">+5 Wax</div>
               </div>
               <div className="p-3 bg-[#1a1a1a] rounded-lg">
-                <div className="text-2xl mb-1">🔥</div>
+                <div className="mb-1 flex justify-center"><FlameIcon size={24} /></div>
                 <div className="text-sm text-[#888]">Streak</div>
                 <div className="font-bold text-orange-500">+2/day</div>
               </div>
