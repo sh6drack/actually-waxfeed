@@ -23,8 +23,20 @@ export async function POST(request: NextRequest) {
     const stripe = getStripe()
     let customerId = dbUser.stripeCustomerId
 
+    // Validate existing customer or create new one
+    if (customerId) {
+      try {
+        const existing = await stripe.customers.retrieve(customerId)
+        if (existing.deleted) {
+          customerId = null
+        }
+      } catch {
+        // Customer doesn't exist in this Stripe account (stale ID)
+        customerId = null
+      }
+    }
+
     if (!customerId) {
-      // Create Stripe customer
       const customer = await stripe.customers.create({
         email: dbUser.email || undefined,
         metadata: {
