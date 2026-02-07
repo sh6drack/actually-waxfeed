@@ -1300,7 +1300,24 @@ function computeGenreVector(
   const vector: GenreVector = {}
 
   for (const [genre, { total, count }] of Object.entries(genreScores)) {
-    vector[genre] = (total / count) / maxScore
+    let score = (total / count) / maxScore
+
+    // Apply skip penalty for high-skip genres
+    if (skipSignals) {
+      const skips = skipSignals.skipsByGenre[genre] || 0
+      const reviews = count
+      const totalInteractions = skips + reviews
+
+      if (totalInteractions >= 2 && skips > 0) {
+        // Calculate skip ratio for this genre
+        const skipRatio = skips / totalInteractions
+        // Reduce score proportionally (max 40% reduction for 100% skip rate)
+        const penalty = skipRatio * 0.4
+        score = score * (1 - penalty)
+      }
+    }
+
+    vector[genre] = score
   }
 
   return vector

@@ -49,6 +49,13 @@ export function TrackPlayer({ tracks, albumId, albumTitle, artistName, coverArtU
   const [ratingTrackId, setRatingTrackId] = useState<string | null>(null)
   const [showRatings, setShowRatings] = useState(false)
 
+  // Show ratings by default once user is logged in
+  useEffect(() => {
+    if (session?.user) {
+      setShowRatings(true)
+    }
+  }, [session])
+
   // Fetch user's track ratings for this album
   useEffect(() => {
     if (session?.user && albumId) {
@@ -196,17 +203,17 @@ export function TrackPlayer({ tracks, albumId, albumTitle, artistName, coverArtU
           )}
         </div>
 
-        {/* Progress indicator */}
-        {session && ratedCount > 0 && (
-          <Tooltip content={`You've rated ${ratedCount}/${totalCount} tracks${avgUserRating ? ` (avg: ${avgUserRating.toFixed(1)})` : ""}`}>
+        {/* Progress indicator - always visible when logged in */}
+        {session && (
+          <Tooltip content={ratedCount > 0 ? `You've rated ${ratedCount}/${totalCount} tracks${avgUserRating ? ` (avg: ${avgUserRating.toFixed(1)})` : ""}` : `Rate tracks to build your album score`}>
             <div className="flex items-center gap-2 cursor-help">
               <div className="w-16 h-1 bg-[--border] overflow-hidden">
                 <div
                   className={`h-full transition-all ${progressPercent === 100 ? "bg-green-500" : "bg-[var(--accent-primary)]"}`}
-                  style={{ width: `${progressPercent}%` }}
+                  style={{ width: `${Math.max(progressPercent, 2)}%` }}
                 />
               </div>
-              <span className="text-[10px] text-[--muted] tabular-nums">
+              <span className={`text-[10px] tabular-nums ${ratedCount > 0 ? "text-[--muted]" : "text-[--muted]/50"}`}>
                 {ratedCount}/{totalCount}
               </span>
               {progressPercent === 100 && (
@@ -282,11 +289,15 @@ export function TrackPlayer({ tracks, albumId, albumTitle, artistName, coverArtU
                 />
               )}
 
-              {/* User Rating Badge (when ratings hidden but user has rated) */}
-              {!showRatings && userRating !== null && (
-                <span className="text-xs font-bold text-[var(--accent-primary)] tabular-nums w-5 text-center">
-                  {userRating}
-                </span>
+              {/* User Rating Badge (when ratings hidden) */}
+              {!showRatings && session && (
+                userRating !== null ? (
+                  <span className="text-xs font-bold text-[var(--accent-primary)] tabular-nums w-5 text-center">
+                    {userRating}
+                  </span>
+                ) : (
+                  <span className="w-1.5 h-1.5 rounded-full bg-[--muted]/30 flex-shrink-0" title="Not rated" />
+                )
               )}
 
               {/* Duration */}
