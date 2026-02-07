@@ -150,19 +150,20 @@ export default async function Home() {
           albums={billboardAlbums}
           reviews={recentReviews.filter(r => r.text)}
         />
-        <footer className="border-t border-[var(--border)]">
-          <div className="w-full px-6 lg:px-12 xl:px-20 py-10">
+        <footer className="relative border-t border-[var(--border)]">
+          <div className="grain absolute inset-0 pointer-events-none" />
+          <div className="w-full px-6 lg:px-12 xl:px-20 py-12 relative z-10">
             <div className="flex flex-col md:flex-row justify-between items-center gap-6">
               <div>
-                <p className="text-sm text-[var(--muted-dim)]">WAXFEED · Polarity Lab LLC · 2025</p>
-                <p className="text-xs text-[var(--muted-faint)] mt-1">Learn your music taste.</p>
+                <p className="text-[10px] tracking-[0.4em] uppercase font-technical text-[--muted-dim]">WAXFEED · Polarity Lab LLC · 2026</p>
+                <p className="text-xs text-[var(--muted-faint)] mt-1.5">The music discourse medium.</p>
               </div>
               <nav className="flex flex-wrap justify-center gap-4 md:gap-6">
-                <Link href="/discover" className="text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Discover</Link>
-                <Link href="/pricing" className="hidden md:inline text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Pricing</Link>
-                <Link href="/stations" className="text-sm text-[--accent-primary] hover:text-[--accent-hover] transition-colors">Radio</Link>
-                <Link href="/faq" className="text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">FAQ</Link>
-                <Link href="/changelog" className="hidden md:inline text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Changelog</Link>
+                <Link href="/discover" className="text-xs tracking-wider uppercase text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Discover</Link>
+                <Link href="/pricing" className="hidden md:inline text-xs tracking-wider uppercase text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Pricing</Link>
+                <Link href="/stations" className="text-xs tracking-wider uppercase text-[--accent-primary] hover:text-[--accent-hover] transition-colors">Radio</Link>
+                <Link href="/faq" className="text-xs tracking-wider uppercase text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">FAQ</Link>
+                <Link href="/changelog" className="hidden md:inline text-xs tracking-wider uppercase text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Changelog</Link>
               </nav>
             </div>
           </div>
@@ -674,11 +675,11 @@ export default async function Home() {
               </div>
 
               <div className="space-y-0 flex-1">
-                {recentReviews.slice(0, 30).map((review) => (
+                {recentReviews.slice(0, 22).map((review) => (
                   <Link
                     key={review.id}
                     href={`/album/${review.album.spotifyId}`}
-                    className="group flex gap-3 py-3 md:py-3 border-b border-[var(--border)] hover:bg-[var(--surface)] active:bg-[var(--surface)] -mx-3 md:-mx-3 px-3 transition-colors"
+                    className="group flex gap-3 py-2.5 md:py-2 border-b border-[var(--border)] hover:bg-[var(--surface)] active:bg-[var(--surface)] -mx-3 md:-mx-3 px-3 transition-colors"
                   >
                     <div className="w-14 h-14 md:w-12 md:h-12 flex-shrink-0 bg-[var(--surface)]">
                       {review.album.coverArtUrl && (
@@ -694,11 +695,11 @@ export default async function Home() {
                       </div>
                       <p className="text-xs md:text-xs text-[var(--muted)] truncate">{review.album.artistName}</p>
                       {review.text && (
-                        <p className="text-xs md:text-[11px] text-[var(--muted)] mt-1.5 md:mt-2 line-clamp-2 leading-relaxed">
+                        <p className="text-xs md:text-[11px] text-[var(--muted)] mt-1 md:mt-1 line-clamp-2 leading-snug">
                           &quot;{review.text}&quot;
                         </p>
                       )}
-                      <div className="flex items-center gap-2 mt-2">
+                      <div className="flex items-center gap-2 mt-1.5">
                         {review.user.image ? (
                           <img src={review.user.image} alt="" loading="lazy" decoding="async" className="w-5 h-5 md:w-4 md:h-4 rounded-full" />
                         ) : (
@@ -760,7 +761,7 @@ export default async function Home() {
                 </div>
                 <p className="font-bold mb-2">See Your Taste Reflected Back</p>
                 <p className="text-sm text-[var(--muted)] mb-3">
-                  TasteID analyzes your patterns. Genres, vibes, eras—things you didn&apos;t realize about yourself.
+                  TasteID analyzes your patterns. Genres, vibes, eras. Things you didn&apos;t realize about yourself.
                 </p>
                 <span className="text-xs text-[#ff6b6b]">Your archetype revealed</span>
               </div>
@@ -797,7 +798,7 @@ export default async function Home() {
                 Now you can prove it.
               </h2>
               <p className="text-sm md:text-base text-[var(--muted)] mb-5 md:mb-6 leading-relaxed">
-                First 50 stations get Founding Status—free premium features forever.
+                First 50 stations get Founding Status. Free premium features forever.
                 Station leaderboards. Verified DJ badges. Conference rankings.
               </p>
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 md:gap-4">
@@ -836,7 +837,7 @@ export default async function Home() {
                     <span className="text-[var(--muted)] font-bold">#3</span>
                     <span className="text-[var(--muted)]">Your Station?</span>
                   </div>
-                  <span className="text-sm text-[var(--muted)]">—</span>
+                  <span className="text-sm text-[var(--muted)]">-</span>
                 </div>
               </div>
             </div>
@@ -874,19 +875,19 @@ export default async function Home() {
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-[var(--border)]">
-        <div className="w-full px-6 lg:px-12 xl:px-20 py-10">
+      <footer className="relative border-t border-[var(--border)]">
+        <div className="w-full px-6 lg:px-12 xl:px-20 py-12">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div>
-              <p className="text-sm text-[var(--muted-dim)]">WAXFEED · Polarity Lab LLC · 2025</p>
-              <p className="text-xs text-[var(--muted-faint)] mt-1">Learn your music taste.</p>
+              <p className="text-[10px] tracking-[0.4em] uppercase font-technical text-[--muted-dim]">WAXFEED · Polarity Lab LLC · 2026</p>
+              <p className="text-xs text-[var(--muted-faint)] mt-1.5">The music discourse medium.</p>
             </div>
             <nav className="flex flex-wrap justify-center gap-4 md:gap-6">
-              <Link href="/discover" className="text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Discover</Link>
-              <Link href="/pricing" className="hidden md:inline text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Pricing</Link>
-              <Link href="/stations" className="text-sm text-[--accent-primary] hover:text-[--accent-hover] transition-colors">Radio</Link>
-              <Link href="/faq" className="text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">FAQ</Link>
-              <Link href="/changelog" className="hidden md:inline text-sm text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Changelog</Link>
+              <Link href="/discover" className="text-xs tracking-wider uppercase text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Discover</Link>
+              <Link href="/pricing" className="hidden md:inline text-xs tracking-wider uppercase text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Pricing</Link>
+              <Link href="/stations" className="text-xs tracking-wider uppercase text-[--accent-primary] hover:text-[--accent-hover] transition-colors">Radio</Link>
+              <Link href="/faq" className="text-xs tracking-wider uppercase text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">FAQ</Link>
+              <Link href="/changelog" className="hidden md:inline text-xs tracking-wider uppercase text-[var(--muted-dim)] hover:text-[var(--foreground)] transition-colors">Changelog</Link>
             </nav>
           </div>
         </div>
