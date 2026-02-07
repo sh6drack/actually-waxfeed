@@ -54,6 +54,12 @@ export function PaymentForm({
       setProcessing(false)
     } else {
       setSucceeded(true)
+      // Call fulfill endpoint as safety net in case webhook is delayed
+      try {
+        await fetch("/api/stripe/fulfill", { method: "POST" })
+      } catch {
+        // Webhook will handle it - this is just a safety net
+      }
       onSuccess?.()
     }
   }
@@ -110,7 +116,14 @@ export function PaymentForm({
 
       {error && (
         <div className="p-3 border border-red-500/30 bg-red-500/10">
-          <p className="text-sm text-red-400">{error}</p>
+          <p className="text-sm text-red-400 mb-2">{error}</p>
+          <button
+            type="button"
+            onClick={() => setError(null)}
+            className="text-[10px] tracking-[0.15em] uppercase text-[var(--accent-primary)] hover:underline"
+          >
+            Dismiss
+          </button>
         </div>
       )}
 

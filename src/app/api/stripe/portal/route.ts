@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { stripe } from '@/lib/stripe'
+import { getStripe } from '@/lib/stripe'
 import { successResponse, errorResponse, requireAuth } from '@/lib/api-utils'
 
 // POST /api/stripe/portal - Create a customer portal session
@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
+    const stripe = getStripe()
     const session = await stripe.billingPortal.sessions.create({
       customer: dbUser.stripeCustomerId,
       return_url: `${appUrl}/settings`,

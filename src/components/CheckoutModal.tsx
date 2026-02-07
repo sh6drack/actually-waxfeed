@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, type ReactNode } from "react"
+import { useState, useEffect, useRef, useCallback, type ReactNode } from "react"
 import { StripeProvider } from "./StripeProvider"
 import { PaymentForm } from "./PaymentForm"
 
@@ -47,16 +47,10 @@ export function CheckoutModal({
   const [error, setError] = useState<string | null>(null)
   const creatingRef = useRef(false)
 
-  useEffect(() => {
-    if (isOpen && !clientSecret && !creatingRef.current) {
-      creatingRef.current = true
-      createPaymentIntent()
-    }
-  }, [isOpen, clientSecret])
-
-  async function createPaymentIntent(): Promise<void> {
+  const createPaymentIntent = useCallback(async (): Promise<void> => {
     setLoading(true)
     setError(null)
+    creatingRef.current = true
 
     try {
       const res = await fetch("/api/stripe/payment-intent", {
@@ -79,11 +73,18 @@ export function CheckoutModal({
     } finally {
       setLoading(false)
     }
-  }
+  }, [type, productId])
+
+  useEffect(() => {
+    if (isOpen && !clientSecret && !creatingRef.current) {
+      createPaymentIntent()
+    }
+  }, [isOpen, clientSecret, createPaymentIntent])
 
   function handleClose(): void {
     setClientSecret(null)
     setError(null)
+    setLoading(false)
     creatingRef.current = false
     onClose()
   }
@@ -122,7 +123,10 @@ export function CheckoutModal({
             <div className="p-4 border border-red-500/30 bg-red-500/10">
               <p className="text-sm text-red-400 mb-3">{error}</p>
               <button
-                onClick={createPaymentIntent}
+                onClick={() => {
+                  creatingRef.current = false
+                  createPaymentIntent()
+                }}
                 className="text-[11px] tracking-[0.15em] uppercase text-[var(--accent-primary)] hover:underline"
               >
                 Try Again

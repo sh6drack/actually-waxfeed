@@ -69,6 +69,14 @@ function WalletContent() {
     }
   }, [status, router])
 
+  // Handle ?purchase=success - call fulfill endpoint to ensure Wax is granted
+  useEffect(() => {
+    const purchaseParam = searchParams.get("purchase")
+    if (purchaseParam === "success" && session) {
+      fetch("/api/stripe/fulfill", { method: "POST" }).catch(() => {})
+    }
+  }, [searchParams, session])
+
   useEffect(() => {
     const fetchData = async () => {
       if (!session) return

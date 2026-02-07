@@ -8,10 +8,108 @@ export const metadata: Metadata = {
 
 const CHANGELOG_ENTRIES = [
   {
+    version: "2.7",
+    codename: "Vault",
+    date: "2026-02-07",
+    highlight: true,
+    summary: "Complete Stripe payment system overhaul. Bulletproof webhook handling, proper idempotency, and fulfillment safety nets across every payment flow.",
+    changes: [
+      {
+        type: "fix" as const,
+        title: "Webhook Reliability",
+        description: "All Stripe API calls now use lazy initialization (getStripe) instead of a static import that could be null. Webhook signature verification and event processing are now rock-solid.",
+      },
+      {
+        type: "fix" as const,
+        title: "Idempotency Protection",
+        description: "Every Wax grant (purchases and subscription grants) now stores stripeEventId in metadata. Duplicate webhook events are caught even after server restarts.",
+      },
+      {
+        type: "fix" as const,
+        title: "Subscription Activation",
+        description: "Cleaned up handleSubscriptionCreated to eliminate redundant Stripe API calls and properly mark Purchase records as completed.",
+      },
+      {
+        type: "feature" as const,
+        title: "Fulfillment Safety Net",
+        description: "PaymentForm now calls /api/stripe/fulfill after successful payment as a fallback if webhooks are delayed. Shop and wallet pages also trigger fulfillment checks.",
+      },
+      {
+        type: "enhancement" as const,
+        title: "Checkout Modal State",
+        description: "Proper state reset on close, retry button correctly clears locks, and useCallback prevents stale closure bugs.",
+      },
+      {
+        type: "fix" as const,
+        title: "Portal & Checkout Routes",
+        description: "Fixed all remaining Stripe API routes that used the potentially-null static stripe import.",
+      },
+    ],
+  },
+  {
+    version: "2.6",
+    codename: "Signal",
+    date: "2026-02-05",
+    highlight: false,
+    summary: "Skip behavior now shapes your TasteID. Track ratings aggregate into album scores. Smarter taste intelligence.",
+    changes: [
+      {
+        type: "feature" as const,
+        title: "Skip Tracking",
+        description: "Skips are now recorded and feed into TasteID. High-skip genres get reduced affinity in your taste profile.",
+      },
+      {
+        type: "feature" as const,
+        title: "Skip Reason Prompts",
+        description: "Every 5th skip, a subtle toast asks why: \"Not my vibe\", \"Know it already\", or \"Not in the mood\".",
+      },
+      {
+        type: "feature" as const,
+        title: "Track → Album Aggregation",
+        description: "Rate 50%+ of an album's tracks and we'll auto-generate an album rating from your track scores.",
+      },
+      {
+        type: "enhancement" as const,
+        title: "Track Ratings Visible by Default",
+        description: "Track rating widgets now show immediately when logged in. No more hidden controls.",
+      },
+      {
+        type: "enhancement" as const,
+        title: "Progress Always Visible",
+        description: "Track rating progress bar shows even with 0 ratings. Unrated tracks get a subtle dot indicator.",
+      },
+      {
+        type: "enhancement" as const,
+        title: "Skip Signal Intelligence",
+        description: "TasteID now penalizes genres with high skip rates—up to 40% reduction in affinity scores.",
+      },
+      {
+        type: "feature" as const,
+        title: "The Taste Algorithm v2",
+        description: "Completely rebuilt quick-rate selection. Now uses TasteID genre vectors, Audio DNA matching, skip penalties, quality signals, and smart interleaving.",
+      },
+      {
+        type: "enhancement" as const,
+        title: "Recency-Weighted Preferences",
+        description: "What you liked this month matters more than 6 months ago. Recent favorites surface first.",
+      },
+      {
+        type: "enhancement" as const,
+        title: "True Random Discovery",
+        description: "Random DB offsets ensure you see different albums each session, not the same shuffled results.",
+      },
+      {
+        type: "enhancement" as const,
+        title: "Interleaved Variety",
+        description: "No more 5 hip-hop albums in a row. Categories are mixed: artist → genre → quality → discovery.",
+      },
+    ],
+  },
+  {
     version: "2.5.1",
     codename: "Decipher Polish",
     date: "2026-02-04",
-    highlight: true,
+    highlight: false,
     summary: "Premium polish pass on the Audio DNA prediction system. Smoother, smarter, more satisfying.",
     changes: [
       {
@@ -451,7 +549,7 @@ export default function ChangelogPage() {
                 waxfeed
               </span>
               <span className="font-mono text-[10px] text-[var(--accent-primary)]">
-                2.5.1
+                2.7
               </span>
             </div>
             <span className="text-xs text-[--muted]">

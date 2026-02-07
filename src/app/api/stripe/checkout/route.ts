@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { stripe, SUBSCRIPTION_TIERS, WAX_PAX, WaxPaxId } from '@/lib/stripe'
+import { getStripe, SUBSCRIPTION_TIERS, WAX_PAX, WaxPaxId } from '@/lib/stripe'
 import { successResponse, errorResponse, requireAuth } from '@/lib/api-utils'
 
 // POST /api/stripe/checkout - Create a checkout session
@@ -20,12 +20,13 @@ export async function POST(request: NextRequest) {
       return errorResponse('User not found', 404)
     }
 
+    const stripe = getStripe()
     let customerId = dbUser.stripeCustomerId
 
     if (!customerId) {
       // Create Stripe customer
       const customer = await stripe.customers.create({
-        email: dbUser.email,
+        email: dbUser.email || undefined,
         metadata: {
           userId: user.id,
         }

@@ -66,7 +66,14 @@ export default function ShopPage() {
   }
 
   const handleCheckoutSuccess = async () => {
-    // Refresh balance after successful purchase
+    // Call fulfill as safety net, then refresh balance
+    try {
+      await fetch("/api/stripe/fulfill", { method: "POST" })
+    } catch {
+      // Webhook will handle it
+    }
+    // Short delay to let fulfill/webhook process
+    await new Promise(r => setTimeout(r, 1500))
     try {
       const res = await fetch("/api/wax/balance")
       const data = await res.json()

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { prisma } from '@/lib/prisma'
-import { stripe, SUBSCRIPTION_TIERS, getWaxPackByPriceId, getSubscriptionByPriceId } from '@/lib/stripe'
+import { getStripe, SUBSCRIPTION_TIERS, getSubscriptionByPriceId } from '@/lib/stripe'
 import Stripe from 'stripe'
 
 // Disable body parsing for webhooks
@@ -68,7 +68,7 @@ function markEventProcessed(eventId: string): void {
   }
 }
 
-async function grantSubscriptionWax(userId: string, tier: 'WAX_PLUS' | 'WAX_PRO') {
+async function grantSubscriptionWax(userId: string, tier: 'WAX_PLUS' | 'WAX_PRO', stripeEventId: string) {
   const tierConfig = SUBSCRIPTION_TIERS[tier]
   const waxAmount = tierConfig.monthlyWaxGrant
 
@@ -86,7 +86,7 @@ async function grantSubscriptionWax(userId: string, tier: 'WAX_PLUS' | 'WAX_PRO'
         amount: waxAmount,
         type: 'SUBSCRIPTION_GRANT',
         description: `Monthly ${tierConfig.name} Wax grant`,
-        metadata: { tier }
+        metadata: { tier, stripeEventId }
       }
     })
   ])
@@ -109,31 +109,26 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       stripePaymentId: session.payment_intent as string,
     }
   })
-  // Subscription activation is handled by subscription.created event
 }
 
-async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
-  const userId = subscription.metadata?.userId
-  const tier = subscription.metadata?.tier as 'WAX_PLUS' | 'WAX_PRO'
+async function handleSubscriptionCreated(subscription: Stripe.Subscription, stripeEventId: string) {
+  const stripe = getStripe()
 
-  if (!userId || !tier) {
-    // Try to get from customer
+  // Extract userId - try subscription metadata first, then customer metadata
+  let finalUserId = subscription.metadata?.userId
+  let finalTier = subscription.metadata?.tier as 'WAX_PLUS' | 'WAX_PRO' | undefined
+
+  if (!finalUserId) {
     const customer = await stripe.customers.retrieve(subscription.customer as string)
     if (customer.deleted) return
-    
-    const metaUserId = (customer.metadata as { userId?: string })?.userId
-    if (!metaUserId) {
-      console.error('No userId in subscription or customer metadata')
+    finalUserId = customer.metadata?.userId
+    if (!finalUserId) {
+      console.error('No userId in subscription or customer metadata for subscription:', subscription.id)
       return
     }
   }
 
-  const finalUserId = userId || (await stripe.customers.retrieve(subscription.customer as string) as Stripe.Customer).metadata?.userId
-
-  if (!finalUserId) return
-
-  // Determine tier from price
-  let finalTier = tier
+  // Determine tier from metadata or price
   if (!finalTier && subscription.items.data[0]) {
     const priceId = subscription.items.data[0].price.id
     const subInfo = getSubscriptionByPriceId(priceId)
@@ -142,7 +137,10 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
     }
   }
 
-  if (!finalTier) return
+  if (!finalTier) {
+    console.error('Could not determine subscription tier for subscription:', subscription.id)
+    return
+  }
 
   // Update user subscription
   const periodEnd = (subscription as { current_period_end?: number }).current_period_end
@@ -157,8 +155,14 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
     }
   })
 
+  // Update purchase record
+  await prisma.purchase.updateMany({
+    where: { stripeSessionId: subscription.id },
+    data: { status: 'COMPLETED' }
+  })
+
   // Grant initial monthly Wax
-  await grantSubscriptionWax(finalUserId, finalTier)
+  await grantSubscriptionWax(finalUserId, finalTier, stripeEventId)
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
@@ -228,10 +232,12 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   })
 }
 
-async function handleInvoicePaid(invoice: Stripe.Invoice) {
-  // Grant monthly Wax on subscription renewal
+async function handleInvoicePaid(invoice: Stripe.Invoice, stripeEventId: string) {
+  // Only grant Wax on renewal cycles, NOT on initial subscription creation
+  // Initial grant is handled by handleSubscriptionCreated
   if (invoice.billing_reason !== 'subscription_cycle') return
 
+  const stripe = getStripe()
   const subscription = (invoice as { subscription?: string | null }).subscription
   if (!subscription) return
 
@@ -244,7 +250,7 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
   if (!subInfo) return
 
   const tier = subInfo.tier as 'WAX_PLUS' | 'WAX_PRO'
-  await grantSubscriptionWax(userId, tier)
+  await grantSubscriptionWax(userId, tier, stripeEventId)
 }
 
 async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent, stripeEventId: string) {
@@ -252,7 +258,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent,
   const type = paymentIntent.metadata?.type
 
   if (!userId) {
-    console.error('No userId in payment intent metadata')
+    // PaymentIntents from subscriptions may not have userId in metadata - that's ok
     return
   }
 
@@ -301,6 +307,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Missing signature or webhook secret' }, { status: 400 })
   }
 
+  const stripe = getStripe()
   let event: Stripe.Event
 
   try {
@@ -328,7 +335,7 @@ export async function POST(request: NextRequest) {
         break
 
       case 'customer.subscription.created':
-        await handleSubscriptionCreated(event.data.object as Stripe.Subscription)
+        await handleSubscriptionCreated(event.data.object as Stripe.Subscription, event.id)
         markEventProcessed(event.id)
         break
 
@@ -343,12 +350,11 @@ export async function POST(request: NextRequest) {
         break
 
       case 'invoice.payment_succeeded':
-        await handleInvoicePaid(event.data.object as Stripe.Invoice)
+        await handleInvoicePaid(event.data.object as Stripe.Invoice, event.id)
         markEventProcessed(event.id)
         break
 
       case 'invoice.payment_failed':
-        // Could notify user, but subscription.deleted will handle downgrade
         console.log('Payment failed for invoice:', event.data.object.id)
         break
 
