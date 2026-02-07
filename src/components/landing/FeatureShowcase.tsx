@@ -162,7 +162,7 @@ export function FeatureShowcase() {
         >
           <Link
             href="/signup"
-            className="inline-flex items-center gap-3 px-8 py-4 bg-[--accent-primary] text-black text-xs font-bold uppercase tracking-[0.2em] hover:scale-[1.02] transition-all glow-gold"
+            className="inline-flex items-center gap-3 px-8 py-4 bg-[--accent-primary] text-[--background] text-xs font-bold uppercase tracking-[0.2em] hover:bg-[--accent-hover] hover:scale-[1.02] transition-all"
           >
             Start Your TasteID
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

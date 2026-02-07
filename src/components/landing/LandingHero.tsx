@@ -194,7 +194,7 @@ export function LandingHero({ stats, albumCovers }: LandingHeroProps) {
           >
             <Link
               href="/signup"
-              className="group relative px-8 py-4 bg-[--accent-primary] text-black text-xs font-bold uppercase tracking-[0.2em] hover:scale-[1.02] transition-all glow-gold"
+              className="group relative px-8 py-4 bg-[--accent-primary] text-[--background] text-xs font-bold uppercase tracking-[0.2em] hover:bg-[--accent-hover] hover:scale-[1.02] transition-all"
             >
               <span className="relative z-10">Get Started Free</span>
             </Link>
