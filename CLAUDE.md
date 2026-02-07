@@ -18,6 +18,8 @@
 ### Working Style
 - Knows what he's doing. Trust his visual feedback immediately.
 - Don't second-guess when he says something is broken - act on it.
+- **Bug reports → test first, fix second.** When I report a bug, don't start by trying to fix it. Start by writing a test that reproduces the bug. Then, use subagents to fix the bug and prove it with the test passing.
+
 ---
 
 ## Project: WAXFEED

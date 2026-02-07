@@ -529,6 +529,8 @@ export default function QuickRatePage() {
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (submitting) return
+      const tag = (e.target as HTMLElement)?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
       if (e.key === 'Enter' && canSubmit) {
         e.preventDefault()
         submitRating()

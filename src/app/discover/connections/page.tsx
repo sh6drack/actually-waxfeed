@@ -5,35 +5,41 @@ import Link from "next/link"
 import { getArchetypeInfo, computeTasteMatch } from "@/lib/tasteid"
 import { DefaultAvatar } from "@/components/default-avatar"
 import { ConnectionFilters } from "./connection-filters"
+import { TasteTwinIcon, OppositeAttractsIcon, ExplorerGuideIcon, GenreBuddyIcon } from "@/components/icons/network-icons"
+import { MusicNoteIcon, SearchEmptyIcon } from "@/components/icons/ui-icons"
+import { ARCHETYPE_ICONS } from "@/components/icons/archetype-icons"
 
 export const dynamic = "force-dynamic"
 
 // Match type metadata
+const MATCH_TYPE_ICON_MAP: Record<string, React.ComponentType<{ size?: number; className?: string; color?: string }>> = {
+  taste_twin: TasteTwinIcon,
+  genre_buddy: GenreBuddyIcon,
+  complementary: OppositeAttractsIcon,
+  explorer_guide: ExplorerGuideIcon,
+}
+
 const MATCH_TYPES = {
   taste_twin: {
     name: "Taste Twin",
-    icon: "👯",
     color: "text-[var(--accent-primary)]",
     borderColor: "border-[var(--accent-primary)]/30",
     description: "80%+ compatibility - your musical soulmate",
   },
   genre_buddy: {
     name: "Genre Buddy",
-    icon: "🎵",
     color: "text-blue-400",
     borderColor: "border-blue-400/30",
     description: "Strong genre overlap",
   },
   complementary: {
     name: "Opposite Attracts",
-    icon: "🌀",
     color: "text-purple-400",
     borderColor: "border-purple-400/30",
     description: "Different tastes that could expand your horizons",
   },
   explorer_guide: {
     name: "Explorer Guide",
-    icon: "🧭",
     color: "text-emerald-400",
     borderColor: "border-emerald-400/30",
     description: "One explores, one guides - learn from each other",
@@ -135,7 +141,7 @@ export default async function ConnectionsPage({
       <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
         <div className="w-full px-6 lg:px-12 xl:px-20 py-12">
           <div className="border-2 border-dashed border-[--border] p-12 text-center">
-            <div className="text-6xl mb-6">🎵</div>
+            <div className="mb-6"><MusicNoteIcon size={48} className="mx-auto" /></div>
             <h1 className="text-3xl font-bold mb-4">
               {reviewsNeeded} More Review{reviewsNeeded !== 1 ? 's' : ''} Needed
             </h1>
@@ -226,7 +232,12 @@ export default async function ConnectionsPage({
 
         {/* Your TasteID */}
         <div className="mb-8 p-5 border border-[--border] flex items-center gap-4">
-          <div className="text-4xl">{userArchetype.icon}</div>
+          <div className="flex items-center justify-center w-12 h-12">
+            {(() => {
+              const ArchIcon = ARCHETYPE_ICONS[userArchetype.id?.toUpperCase()] || ARCHETYPE_ICONS[Object.keys(ARCHETYPE_ICONS).find(k => k.toUpperCase() === (userArchetype.id || '').toUpperCase()) || '']
+              return ArchIcon ? <ArchIcon size={40} /> : <MusicNoteIcon size={40} />
+            })()}
+          </div>
           <div className="flex-1">
             <div className="text-[10px] tracking-[0.2em] uppercase text-[--muted] mb-1">
               Your Archetype
@@ -275,12 +286,18 @@ export default async function ConnectionsPage({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-bold text-lg truncate">@{connection.username}</span>
-                        <span className={`text-sm ${matchMeta.color}`}>{matchMeta.icon}</span>
+                        {(() => {
+                          const MatchIcon = MATCH_TYPE_ICON_MAP[connection.matchType]
+                          return MatchIcon ? <MatchIcon size={16} className={matchMeta.color} /> : null
+                        })()}
                       </div>
 
                       {/* Archetype */}
                       <div className="text-sm text-[--muted] mb-3 flex items-center gap-2">
-                        <span>{archetypeInfo.icon}</span>
+                        {(() => {
+                          const AIcon = ARCHETYPE_ICONS[connection.archetype?.toUpperCase()] || null
+                          return AIcon ? <AIcon size={16} /> : <MusicNoteIcon size={16} />
+                        })()}
                         <span className="uppercase text-[10px] tracking-wider">{archetypeInfo.name}</span>
                       </div>
 
@@ -336,7 +353,7 @@ export default async function ConnectionsPage({
           </div>
         ) : (
           <div className="border-2 border-dashed border-[--border] p-12 text-center">
-            <div className="text-4xl mb-4">🔍</div>
+            <div className="mb-4"><SearchEmptyIcon size={36} className="mx-auto" /></div>
             <h3 className="text-xl font-bold mb-2">
               {filter === "all" ? "No connections found" : `No ${MATCH_TYPES[filter as keyof typeof MATCH_TYPES]?.name || filter} matches`}
             </h3>
@@ -362,13 +379,16 @@ export default async function ConnectionsPage({
             Understanding Match Types
           </h3>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {Object.entries(MATCH_TYPES).map(([key, meta]) => (
+            {Object.entries(MATCH_TYPES).map(([key, meta]) => {
+              const MatchIcon = MATCH_TYPE_ICON_MAP[key]
+              return (
               <div key={key} className={`p-4 border ${meta.borderColor}`}>
-                <div className="text-2xl mb-2">{meta.icon}</div>
+                <div className="mb-2">{MatchIcon ? <MatchIcon size={28} /> : null}</div>
                 <div className={`font-bold mb-1 ${meta.color}`}>{meta.name}</div>
                 <p className="text-[11px] text-[--muted]">{meta.description}</p>
               </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       </div>

@@ -88,15 +88,7 @@ const NETWORK_DISPLAY_INFO: Record<NetworkKey, {
   },
 }
 
-const NETWORK_ICONS: Record<NetworkKey, string> = {
-  discovery: "\uD83D\uDD0D",
-  comfort: "\uD83C\uDFE0",
-  deep_dive: "\uD83D\uDCBF",
-  reactive: "\u26A1",
-  emotional: "\uD83D\uDC9C",
-  social: "\uD83E\uDD1D",
-  aesthetic: "\uD83C\uDFA8",
-}
+import { NETWORK_ICONS as NETWORK_SVG_ICONS } from "@/components/icons/network-icons"
 
 interface MusicNetworksVisualizationProps {
   networkActivations: NetworkActivationsInput
@@ -123,7 +115,7 @@ export function MusicNetworksVisualization({
     return keys.map(key => ({
       key,
       ...NETWORK_DISPLAY_INFO[key],
-      icon: NETWORK_ICONS[key],
+      IconComponent: NETWORK_SVG_ICONS[key],
       value: normalizedActivations[key] ?? 0,
     }))
   }, [normalizedActivations])
@@ -328,8 +320,12 @@ export function MusicNetworksLegend({
                 style={{ backgroundColor: network.color }}
               />
               <div className="min-w-0">
-                <p className="text-xs font-bold truncate">
-                  {NETWORK_ICONS[key]} {network.name}
+                <p className="text-xs font-bold truncate flex items-center gap-1">
+                  {(() => {
+                    const NetIcon = NETWORK_SVG_ICONS[key]
+                    return NetIcon ? <NetIcon size={12} color={network.color} /> : null
+                  })()}
+                  {network.name}
                 </p>
                 <p className="text-[10px] text-muted-foreground truncate">{network.typicalRange}</p>
                 {showYeoMapping && libNetwork && (
